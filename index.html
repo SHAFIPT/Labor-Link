@@ -39,11 +39,87 @@
                 </div>
             </label>
         </div>
+        
     </div>
     <script src="script.js"></script>
 </body>
 
 </html>
+
+
+
+
+
+
+imput first
+
+
+import LoginNav from "./LoginNav";
+import LoginImage from "../../assets/upsacelLoginpageimage.jpeg";
+import './userLoginBody.css'
+import { useEffect, useState } from "react";
+
+const UserLoginForm = () => {
+
+const [isDark, setIsDark] = useState(true)
+
+useEffect(() => {
+const darkMode = localStorage.getItem('isDarkMode') === 'true'
+setIsDark(darkMode)
+},[])
+
+return (
+<div>
+    <LoginNav />
+    <div className="flex p-10">
+        <div className="LeftImage hidden sm:hidden lg:block md:block lg:w-[760px] ml-6">
+            <img src={LoginImage} alt="" className='' />
+        </div>
+        <div className="formFields  flex flex-col  pl-0 sm:pl-0 md:pl-[50px] lg:pl-0 ">
+
+            <div className="form-control" style={{borderBottom: `3px solid ${isDark ? "#fff" : "#8dcbdd" }`}}>
+                <input type="email" required />
+                <label>
+                    <span style={{ transitionDelay: '0ms' }}>E</span>
+                    <span style={{ transitionDelay: '50ms' }}>m</span>
+                    <span style={{ transitionDelay: '100ms' }}>a</span>
+                    <span style={{ transitionDelay: '150ms' }}>i</span>
+                    <span style={{ transitionDelay: '200ms' }}>l</span>
+                </label>
+            </div>
+            <div className="form-control" style={{borderBottom: `3px solid ${isDark ? "#fff" : "#8dcbdd" }`}}>
+                <input type="" required />
+                <label>
+                    <span style={{ transitionDelay: '0ms' }}>P</span>
+                    <span style={{ transitionDelay: '50ms' }}>a</span>
+                    <span style={{ transitionDelay: '100ms' }}>s</span>
+                    <span style={{ transitionDelay: '150ms' }}>s</span>
+                    <span style={{ transitionDelay: '200ms' }}>w</span>
+                    <span style={{ transitionDelay: '250ms' }}>o</span>
+                    <span style={{ transitionDelay: '300ms' }}>r</span>
+                    <span style={{ transitionDelay: '350ms' }}>d</span>
+                </label>
+            </div>
+            <div className="form-control" style={{borderBottom: `3px solid ${isDark ? "#fff" : "#8dcbdd" }`}}>
+                <input type="" required />
+                <label>
+                    <span style={{ transitionDelay: '0ms' }}>P</span>
+                    <span style={{ transitionDelay: '50ms' }}>a</span>
+                    <span style={{ transitionDelay: '100ms' }}>s</span>
+                    <span style={{ transitionDelay: '150ms' }}>s</span>
+                    <span style={{ transitionDelay: '200ms' }}>w</span>
+                    <span style={{ transitionDelay: '250ms' }}>o</span>
+                    <span style={{ transitionDelay: '300ms' }}>r</span>
+                    <span style={{ transitionDelay: '350ms' }}>d</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+);
+};
+
+export default UserLoginForm;
 
 
 
