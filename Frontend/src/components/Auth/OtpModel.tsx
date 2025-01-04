@@ -1,30 +1,218 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { RootState } from '../../redux/store/store';
+import { registUser, verifyOtp, resendOtp } from '../../services/UserAuthServices';
+import ErrorMessage from '../../utils/Errormsage';
+import {
+  setLoading,
+  setAccessToken,
+  setIsAuthenticated,
+  setError,
+  setUser,
+  setFormData
+} from '../../redux/slice/userSlice'
+import toast from 'react-hot-toast';
+import './LoadingBody.css'
+import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 
-const Form = () => {
+
+const OtpForm = ({ isVisible, onClose }) => {
+  
+  const [timer, setTimer] = useState(60)
+  const [otp, setOtp] = useState({ input1: '', input2: '', input3: '', input4: '' })
+  const { formData, loading } = useSelector((state: RootState) => state.user);
+  const [message, setMessage] = useState({ type: '', content: '', description: '' });
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const handleInputChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    if (/^[0-9]?$/.test(value)) {
+        setOtp((prev) => ({
+        ...prev,
+        [id] : value
+      }))
+    }
+  }
+
+  const handleSubmit = async (e : React.FormEvent) => {
+    e.preventDefault();
+
+    const otpCode = `${otp.input1}${otp.input2}${otp.input3}${otp.input4}`;
+    
+    console.log('This is otpCode :',otpCode)
+
+    try {
+
+      const VerifyOtpResponse = await verifyOtp(formData.email, otpCode)
+
+      
+      if (VerifyOtpResponse.status === 200) {
+        
+        setTimeout(async () => {
+                dispatch(setLoading(true));
+                // Register the new user after the delay
+                const registernewUser = await registUser(formData);
+                console.log('User Registered Successfully:', registernewUser);
+          
+          if (registernewUser.data) {
+            const { user, accessToken } = registernewUser.data
+            
+            dispatch(setUser(user))
+            dispatch(setAccessToken(accessToken))
+            dispatch(setIsAuthenticated(true))
+            dispatch(setFormData({}))
+            navigate('/')
+          } else {
+            dispatch(setError(registernewUser))
+          }
+                
+          setTimeout(() => {
+              dispatch(setLoading(false))
+          }, 3000)
+          
+          setMessage({
+            type: 'success',
+            content: 'OTP Verified Successfully!',
+              description: registernewUser.data?.message || 'An error occurred during registration.',
+          });
+          
+          onClose();
+        }, 2000); // 5 seconds delay 
+      } else {
+         setMessage({
+          type: 'error',
+          content: 'Invalid OTP',
+          description: VerifyOtpResponse.data?.message || 'Please try again with the correct OTP.',
+        });
+      }
+       
+    } catch (error) {
+      console.error(error)
+       setMessage({
+        type: 'error',
+        content: 'Error during OTP verification',
+        description: error.response?.data?.message || 'An error occurred while verifying OTP.',
+      });
+    }
+
+  }
+
+  useEffect(() => {
+    if (isVisible && timer > 0) {
+      const interval = setInterval(() => setTimer((prev) => prev - 1), 1000)
+      return () => clearInterval(interval)
+    }
+  }, [isVisible, timer])
+  
+  if (!isVisible) return null;
+  
+
+  const handleResend = async () => {
+    if (timer === 0) {
+      setTimer(60)
+
+      const otpResponse = await resendOtp(formData)
+
+      if (otpResponse instanceof AxiosError) {
+      toast.error(otpResponse.message);
+    } else if (otpResponse?.data?.error) {
+      toast.error(otpResponse.data.error);
+    }
+    }
+  }
+
+  const handleCloseMessage = () => {
+    setMessage({ type: '', content: '', description: '' });
+  };
+
   return (
     <StyledWrapper>
-      <form className="otp-Form">
+
+      {message.content && (
+        <ErrorMessage message={message} onClose={handleCloseMessage} />
+      )}
+
+      {loading && (
+        <div className="loader "></div>
+    )}
+
+      <div className="modal-overlay">
+      <form className="otp-Form" onSubmit={handleSubmit}>
         <span className="mainHeading">Enter OTP</span>
-        <p className="otpSubheading">We have sent a verification code to your mobile number</p>
+        <p className="otpSubheading">We have sent a verification code to your email</p>
         <div className="inputContainer">
-          <input required="required" maxLength={1} type="text" className="otp-input" id="otp-input1" />
-          <input required="required" maxLength={1} type="text" className="otp-input" id="otp-input2" />
-          <input required="required" maxLength={1} type="text" className="otp-input" id="otp-input3" />
-          <input required="required" maxLength={1} type="text" className="otp-input" id="otp-input4" /> 
+            <input
+              required="required"
+              maxLength={1}
+              type="text"
+              className="otp-input"
+              id="input1"
+              value={otp.input1}
+              onChange={handleInputChange}
+            />
+            <input
+              required="required"
+              maxLength={1}
+              type="text"
+              className="otp-input
+              " id="input2"
+              value={otp.input2}
+              onChange={handleInputChange}
+            />
+            <input
+              required="required"
+              maxLength={1}
+              type="text"
+              className="otp-input"
+              id="input3"
+              value={otp.input3}
+              onChange={handleInputChange}
+            />
+            <input
+              required="required"
+              maxLength={1}
+              type="text"
+              className="otp-input"
+              id="input4"
+              value={otp.input4}
+              onChange={handleInputChange}
+            /> 
         </div>
         <button className="verifyButton" type="submit">Verify</button>
-        <button className="exitBtn">×</button>
+        <button className="exitBtn" onClick={onClose}>×</button>
+          <p className="resendNote">
+            {timer > 0 ? (
+              `Resend available in ${timer}s`
+            ) : (
+              <button className="resendBtn" onClick={handleResend}>Resend Code</button>
+            )}
+          </p>
         <p className="resendNote">Didn't receive the code? <button className="resendBtn">Resend Code</button></p>
       </form>
+      </div>
     </StyledWrapper>
   );
 }
 
 const StyledWrapper = styled.div`
+ .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
   .otp-Form {
-    width: 230px;
-    height: 300px;
+    width: 330px;
+    height: 360px;
     background-color: rgb(255, 255, 255);
     display: flex;
     flex-direction: column;
@@ -61,8 +249,8 @@ const StyledWrapper = styled.div`
 
   .otp-input {
     background-color: rgb(228, 228, 228);
-    width: 30px;
-    height: 30px;
+    width: 50px;
+    height: 50px;
     text-align: center;
     border: none;
     border-radius: 7px;
@@ -130,4 +318,4 @@ const StyledWrapper = styled.div`
     font-weight: 700;
   }`;
 
-export default Form;
+export default OtpForm;

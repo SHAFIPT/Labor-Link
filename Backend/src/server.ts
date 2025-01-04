@@ -11,7 +11,10 @@ connectDB()
 
 app.use(express.json())
 app.use(cookieParser())
-app.use(cores({ credentials: true }))
+app.use(cores({
+    origin: 'http://localhost:5173',
+    credentials: true
+}))
 
 app.use('/',router)
 

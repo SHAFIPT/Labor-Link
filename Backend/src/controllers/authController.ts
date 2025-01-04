@@ -7,10 +7,20 @@ import { sendEmailOtp } from "../utils/emailService"; // Email sending function
 import { ApiError } from "../middleware/errorHander";
 import User from "../models/userModel";
 import { IUser } from "../entities/UserEntity";
+import OtpModel from "models/otpModel";
+import ApiResponse from "../utils/Apiresponse";
 
 class AuthController {
     private otpservices: OTPservices;
     private authService: AuthService;
+
+
+    options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "development",
+        sameSite: "strict" as const,
+        maxAge: 24 * 60 * 60 * 1000,
+    };
 
     constructor() {
         const userRepository = new UserRepository();
@@ -22,21 +32,12 @@ class AuthController {
 
     async register(req: Request, res: Response): Promise<void> {
         try {
-            const { email, password } = req.body;
-
- 
-            if (!email || !password) {
-                throw new ApiError(400, "Email and password are required.");
-            }
-
-            console.log('BEFORE')
+            const user = req.body;
             
-            const result = await this.authService.register({ email, password });
-
-            // console.log('This is the result',result)
+            const result = await this.authService.register(user);
 
             if (result) {
-                res.status(201).json({
+                res.status(201).cookie("refreshToken", result.refreshToken, this.options).json({
                     message: "User registered successfully!",
                     user: result.user,
                     accessToken: result.accessToken,
@@ -53,25 +54,24 @@ class AuthController {
 
     async sendOtp(req: Request, res: Response): Promise<void> {
         try {
-            const { email } = req.body;
-            
-            console.log('this is email from body',email);
-            
 
-            if (!email) {
-                throw new ApiError(400, "Email is required.");
-            }
-
-            const user = await User.findOne({ email });
-            console.log('this is the user finded ',user);
+            
+            const user = req.body;
+            
             if (!user) {
-                throw new ApiError(404, "User not found.");
+                res.status(404).json({ message: 'user is not found..!' })
             }
 
-            await this.otpservices.sendOtp(user as IUser);
-            console.log('completed the send otp');
+            const otpExist = await this.otpservices.checkOTPExists(user)
+
+            if (otpExist) {
+                res.status(500).json(new ApiError(500, "Please Wait 1 Minute. Before Trying to register again"))
+            }
+
+            const Response = await this.otpservices.sendOtp(user as IUser);
+            console.log('completed the send otp', Response);
             
-            res.status(200).json({ message: "OTP sent successfully!" });
+            res.status(200).json({ message: "OTP sent successfully!", email: user.email });
         } catch (error: any) {
             console.error("Send OTP Error:", error.message || error);
             res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
@@ -82,16 +82,17 @@ class AuthController {
         try {
             const { email, otp } = req.body;
 
+            console.log('This is emil :', email)
+            console.log('This is otp :', otp)
+            
+
             if (!email || !otp) {
                 res.status(400).json('Email and OTP are required.')
             }
 
-            const user = await User.findOne({ email });
-            if (!user) {
-                res.status(404).json("User not found.")
-            }
+            const isValidOTP = await this.otpservices.verifyOtp(email, otp);
 
-            const isValidOTP = await this.otpservices.verifyOtp(user as IUser, otp);
+            console.log('this is ivAalidOtp Response', isValidOTP)
 
             if (isValidOTP) {
                 res.status(200).json({ message: "OTP verified successfully!" });
@@ -113,7 +114,7 @@ class AuthController {
             }
 
             const user = await User.findOne({ email });
-            console.log('this is the user :',user)
+            console.log('this is the user :', user)
             if (!user) {
                 throw new ApiError(404, "User not found.");
             }
@@ -125,6 +126,35 @@ class AuthController {
             res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
         }
     }
-}
 
+    async googleSignIn(req: Request, res: Response): Promise<void> {
+        try {
+            const { displayName, email, photoURL } = req.body;
+
+            console.log('this is displayName :',displayName)
+            console.log('this is email :',email)
+            console.log('this is photoUrl :',photoURL)
+
+            const userAfterAuth = await this.authService.googleSignIn({
+                firstName: displayName,
+                email: email,
+                ProfilePic: photoURL,
+            }); 
+
+            console.log('====================================');
+            console.log(userAfterAuth);
+            console.log('====================================');
+
+            res
+                .status(200)
+                .cookie("refreshToken", userAfterAuth.refreshToken, this.options)
+                .json(
+                    new ApiResponse(200, userAfterAuth, "User authentication success")
+                );
+        } catch (error) {
+            console.error("Resend OTP Error:", error.message || error);
+            res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
+        }
+    }
+}
 export default AuthController;

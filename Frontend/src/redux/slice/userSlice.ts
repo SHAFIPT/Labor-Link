@@ -1,6 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { IUser } from '../../@types/user';
 
+// interface FormData extends IUser {
+//     firstName: string;
+//     lastName: string;
+//     email: string;
+//     password: string;
+// }
+
 interface InitialState {
     user: IUser;
     loading: boolean;
@@ -8,7 +15,7 @@ interface InitialState {
     isAthenticated: boolean;
     accessToken: string;
     modal: boolean;
-    formData: object;
+    formData: Partial<IUser>;
 }
 
 const initialState: InitialState = {
@@ -18,7 +25,7 @@ const initialState: InitialState = {
     isAthenticated: false,
     accessToken: "",
     modal: false,
-    formData: {}
+    formData: {},
 }
 
 const userSlice = createSlice({
@@ -53,7 +60,12 @@ const userSlice = createSlice({
             state.isAthenticated = false;
             state.accessToken = "";
             state.modal = false;
-            state.formData = {};
+             state.formData = {
+                firstName: "",
+                lastName: "",
+                email: "",
+                password: "",
+            };
         }
     }
 })

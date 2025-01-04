@@ -40,4 +40,25 @@ export default class UserRepository implements IUserRepository{
             return null 
         }
     }
+
+    async googleSignIn(user: Partial<IUser>): Promise<IUser | null>{
+        try {
+
+            const userExist = await User.findOne({ email: user.email })
+            
+            if (userExist) {
+                return userExist
+            }
+
+            const newUser = new User(user)
+
+            const userData = await newUser.save()
+
+            return userData
+            
+        } catch (error) {
+            console.error('Error in googleAuthentication :', error);
+            throw new ApiError(500, 'Failed to googleAuthentication.');
+        }
+    }
 }

@@ -39,8 +39,8 @@ export default class OTPservices implements IOTPservices{
         return newOTp
     } 
 
-    async verifyOtp(user: IUser, otp: string): Promise<boolean> {
-        const existOTP = await this.otpRepository.findOtpByEmail(user.email)
+    async verifyOtp(email : string, otp: string): Promise<boolean> {
+        const existOTP = await this.otpRepository.findOtpByEmail(email)
         if (!existOTP) {
             throw new Error('OTP not found for the user...')
         }

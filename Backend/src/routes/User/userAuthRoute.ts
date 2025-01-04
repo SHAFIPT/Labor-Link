@@ -9,5 +9,6 @@ userAuthRoute.post('/register', validateRegistration, authController.register.bi
 userAuthRoute.post('/send-otp', authController.sendOtp.bind(authController));
 userAuthRoute.post('/verify-otp', authController.verifyOtp.bind(authController));
 userAuthRoute.post('/resend-otp', authController.resendOtp.bind(authController));
+userAuthRoute.post('/google-sign-in',authController.googleSignIn.bind(authController))
 
 export default userAuthRoute

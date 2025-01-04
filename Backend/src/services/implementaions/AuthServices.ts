@@ -55,4 +55,37 @@ export  class AuthService implements IAuthService{
             throw new ApiError(500, 'Failed to register user.');
         }
     }
+
+    async googleSignIn(user: Partial<IUser>): Promise<{ user: IUser, accessToken: string, refreshToken: string } | null>{
+        try {
+            
+            const useAfterSuccess = await this.userRepository.googleSignIn(user);
+
+            if (!useAfterSuccess) {
+                return null;
+            }
+
+            const userId = useAfterSuccess.id || (useAfterSuccess.toObject && useAfterSuccess.toObject().id);
+  
+            if (!userId) {
+                throw new Error('User ID is not available');
+            }
+
+            const accessToken = generateAccessToken({ id: userId, role: useAfterSuccess.role });
+            const refreshToken = generateRefreshToken({ id: userId, role: useAfterSuccess.role });
+
+            const userAfterSavedToken = await this.userRepository.saveRefreshToken(userId, refreshToken)
+
+            return {
+                user: userAfterSavedToken,
+                accessToken,
+                refreshToken,
+            }
+
+
+        } catch (error) {
+            console.error('Error during Google sign-in:', error);
+            return null;
+        }
+    }
 }
