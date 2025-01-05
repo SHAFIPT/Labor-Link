@@ -4,7 +4,7 @@ import { IUser } from '../../entities/UserEntity';
 import { IUserRepository } from '../../repositories/interface/IUserRepository';
 import User from '../../models/userModel';
 import { ApiError } from '../../middleware/errorHander';
-import { generateAccessToken, generateRefreshToken } from '../../utils/tokenUtils';
+import { generateAccessToken, generateRefreshToken ,accessTokenForReset , decodeAndVerifyToken} from '../../utils/tokenUtils';
 
 export  class AuthService implements IAuthService{
     private userRepository: IUserRepository
@@ -12,6 +12,46 @@ export  class AuthService implements IAuthService{
     constructor(userRepository: IUserRepository) {
         this.userRepository = userRepository
     }
+
+    async login(user: Partial<IUser>): Promise<{ accessToken: string; refreshToken: string; userFound: Omit<IUser, "password">; }> {
+    try {
+        const userFound = await this.userRepository.LoginUser(user.email.toString());
+
+        // Handle case when user is not found
+        if (!userFound) {
+            throw new ApiError(404, 'User not found. Please check your email.');
+        }
+
+        // Check if password matches
+        const isPasswordValid = await bcrypt.compare(user.password.toString(), userFound.password.toString());
+        if (!isPasswordValid) {
+            throw new ApiError(401, 'Incorrect password. Please try again.');
+        }
+
+        // Generate tokens if login is successful
+        const accessToken = generateAccessToken({
+            id: userFound.id,
+            role: userFound.role,
+        });
+
+        const refreshToken = generateRefreshToken({
+            id: userFound.id,
+            role: userFound.role,
+        });
+
+        const userWithNewToken = await this.userRepository.saveRefreshToken(userFound.id, refreshToken);
+
+        return {
+            accessToken,
+            refreshToken,
+            userFound: userWithNewToken
+        };
+    } catch (error) {
+        console.error('Error during Login registration in AuthService:', error);
+        // Provide a generic error for login failure
+        throw new ApiError(500, 'Failed to Login user.');
+    }
+}
 
     async register(user: Partial<IUser>): Promise<{ user: IUser; accessToken: string; refreshToken: string; } | null> {
         try {
@@ -87,5 +127,49 @@ export  class AuthService implements IAuthService{
             console.error('Error during Google sign-in:', error);
             return null;
         }
+    }
+
+    async findUserWithEmail(email : string): Promise<IUser | null> {
+        try {
+
+            const userFound = await this.userRepository.findByUserEmil(email) 
+
+            console.log('this is service userFound :',userFound)
+
+            if (userFound) {
+                return userFound
+            } else {
+                return null
+            }
+            
+        } catch (error) {
+            console.error('Error during forgotPasswordSendOTP:', error);
+            return null;
+        }
+    }
+
+    generateTokenForForgotPassword(user: Partial<IUser>): string {
+         return accessTokenForReset(user)
+    }
+
+    decodeAndVerifyToken(token: string): Promise<Partial<IUser | null>> {
+        try {
+
+            const decode = decodeAndVerifyToken(token)
+
+
+         return decode
+            
+        } catch (error) {
+            return null
+        }
+    }
+
+    async changePassword(password: string, email: string): Promise<IUser | null> {
+        const hashPassword = await bcrypt.hash(password.toString(), 10)
+        
+        const userAfterUpdate = await this.userRepository.changePassword(hashPassword, email)
+        
+        return userAfterUpdate
     }
 }

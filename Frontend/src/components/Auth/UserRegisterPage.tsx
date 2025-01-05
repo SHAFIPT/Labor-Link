@@ -17,7 +17,7 @@ import {
 import validate from "../../utils/userRegisterValidators";
 import { sendOtp , googleAuth} from "../../services/UserAuthServices";
 import axios from "axios";
-import toast from "react-hot-toast";
+import { toast } from 'react-toastify';
 import OtpForm from "./OtpModel";
 
 const UserRegisterPage = () => {
@@ -77,41 +77,38 @@ const UserRegisterPage = () => {
       password,
     });
 
-    if (formattedErrors) {
-      setTimeout(() => {
-        dispatch(setLoading(false));
-        dispatch(setError(formattedErrors));
-      }, 1000);
-    }
+    if (formattedErrors && Object.keys(formattedErrors).length > 0) {
+        setTimeout(() => {
+          dispatch(setLoading(false));
+          dispatch(setError(formattedErrors));
+          toast.error("Please correct the highlighted errors.");
+        }, 1000);
+
+      return;
+  }
+
     dispatch(setError({}));
     dispatch(setFormData({ firstName, lastName, email, password }));
-    console.log("response is sendeing ");
 
     try {
       const Otpresponce = await sendOtp({ email, password });
       console.log("This is the Otpresponce:", Otpresponce);
 
       if (Otpresponce.status === 200) {
-        // dispatch(setModal(true));
-        console.log("the modal is oppending///");
-
         const userEmail = Otpresponce.data.email;
-        console.log("User email from response:", userEmail);
-
         setEmail(userEmail);
-
         setOtpModalVisible(true);
+        toast.success("OTP sent successfully! Please check your email.");
       } else {
-        toast.error("Unexpected response from server.");
+        toast.error(
+          Otpresponce.data?.message || "Unexpected response from the server."
+        );
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error("Axios error:", error.response?.data || error.message);
-        toast.error(
-          error.response?.data?.message ||
-            error.message ||
-            "An unexpected error occurred."
-        );
+        const message = error.response?.data?.message || error.message;
+        console.error("Axios error:", message);
+        toast.error(message);
       } else {
         console.error("Unexpected error:", error);
         toast.error("An unexpected error occurred.");
@@ -121,27 +118,31 @@ const UserRegisterPage = () => {
     }
   };
 
-
   const handleGoogleSignIn = async () => {
     try {
-      dispatch(setLoading(true))
-      const googleResoponse = await googleAuth()
+      dispatch(setLoading(true));
+      const googleResoponse = await googleAuth();
 
-      if (googleResoponse.status == 200) {
-        const { user, accessToken } = googleResoponse.data
-        dispatch(setUser(user))
-        dispatch(setAccessToken(accessToken))
-        dispatch(setIsAuthenticated(true))
-        dispatch(setLoading(false))
-        navigate('/')
+      if (googleResoponse.status === 200) {
+        const { user, accessToken } = googleResoponse.data;
+        dispatch(setUser(user));
+        dispatch(setAccessToken(accessToken));
+        dispatch(setIsAuthenticated(true));
+        dispatch(setLoading(false));
+        toast.success("Successfully signed in with Google!");
+        navigate('/');
+      } else {
+        toast.error(
+          googleResoponse.data?.message || "Google Sign-In failed."
+        );
       }
-
     } catch (error) {
-      console.error(error);
+      console.error("Google Sign-In error:", error);
+      toast.error("Something went wrong with Google Sign-In.");
+    } finally {
       dispatch(setLoading(false));
-      toast.success("Something Went Wrong");
     }
-  }
+  };
 
   return (
     <div>
@@ -206,6 +207,7 @@ const UserRegisterPage = () => {
               <div className="form-control relative">
                 <input
                   required
+                  value={firstName}
                   className="w-full p-2 bg-transparent outline-none"
                   onChange={(e) => setFirstName(e.target.value)}
                 />
@@ -231,6 +233,7 @@ const UserRegisterPage = () => {
               <div className="form-control relative">
                 <input
                   required
+                  value={lastName}
                   className="w-full p-2 bg-transparent outline-none"
                   onChange={(e) => setLastName(e.target.value)}
                 />
@@ -255,6 +258,7 @@ const UserRegisterPage = () => {
               <div className="form-control relative">
                 <input
                   required
+                  value={email}
                   className="w-full p-2 bg-transparent outline-none"
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -278,6 +282,7 @@ const UserRegisterPage = () => {
               <div className="form-control relative">
                 <input
                   required
+                  value={password}
                   className="w-full bg-transparent outline-none pr-10 "
                   type={showPassword ? "text" : "password"}
                   onChange={handlePasswordChange}

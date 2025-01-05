@@ -13,7 +13,7 @@ export default class OTPRepository implements IOTPRepository{
             email: user.email,
             otp: otp,
             expirationTime: expirationTime,
-            attempts: 0,
+            attempts: 0,   
             reSendCount: 0, 
             lastResendTime: null,
             role: user.role
@@ -25,7 +25,11 @@ export default class OTPRepository implements IOTPRepository{
     }
 
     async findOtpByEmail(email: string): Promise<IOTP | null> {
-        return otpModel.findOne({email})
+        const OTPFound = await otpModel.findOne({ email })
+        console.log('this is otp : ',OTPFound)
+        if (OTPFound) {
+            return OTPFound
+        }
     }
 
     async updateOtpAttempts(otpId: string, attempts: number): Promise<IOTP | null> {

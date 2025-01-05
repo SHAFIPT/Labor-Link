@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { RootState } from '../../redux/store/store';
 import { registUser, verifyOtp, resendOtp } from '../../services/UserAuthServices';
-import ErrorMessage from '../../utils/Errormsage';
 import {
   setLoading,
   setAccessToken,
@@ -12,7 +11,7 @@ import {
   setUser,
   setFormData
 } from '../../redux/slice/userSlice'
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import './LoadingBody.css'
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
@@ -37,68 +36,74 @@ const OtpForm = ({ isVisible, onClose }) => {
     }
   }
 
-  const handleSubmit = async (e : React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const otpCode = `${otp.input1}${otp.input2}${otp.input3}${otp.input4}`;
-    
-    console.log('This is otpCode :',otpCode)
+  const otpCode = `${otp.input1}${otp.input2}${otp.input3}${otp.input4}`;
 
-    try {
+  console.log('This is otpCode :', otpCode);
 
-      const VerifyOtpResponse = await verifyOtp(formData.email, otpCode)
+  try {
+    const VerifyOtpResponse = await verifyOtp(formData.email, otpCode);
 
-      
-      if (VerifyOtpResponse.status === 200) {
-        
-        setTimeout(async () => {
-                dispatch(setLoading(true));
-                // Register the new user after the delay
-                const registernewUser = await registUser(formData);
-                console.log('User Registered Successfully:', registernewUser);
-          
-          if (registernewUser.data) {
-            const { user, accessToken } = registernewUser.data
-            
-            dispatch(setUser(user))
-            dispatch(setAccessToken(accessToken))
-            dispatch(setIsAuthenticated(true))
-            dispatch(setFormData({}))
-            navigate('/')
-          } else {
-            dispatch(setError(registernewUser))
-          }
-                
-          setTimeout(() => {
-              dispatch(setLoading(false))
-          }, 3000)
-          
-          setMessage({
-            type: 'success',
-            content: 'OTP Verified Successfully!',
-              description: registernewUser.data?.message || 'An error occurred during registration.',
-          });
-          
-          onClose();
-        }, 2000); // 5 seconds delay 
-      } else {
-         setMessage({
-          type: 'error',
-          content: 'Invalid OTP',
-          description: VerifyOtpResponse.data?.message || 'Please try again with the correct OTP.',
-        });
-      }
-       
-    } catch (error) {
-      console.error(error)
-       setMessage({
-        type: 'error',
-        content: 'Error during OTP verification',
-        description: error.response?.data?.message || 'An error occurred while verifying OTP.',
+    if (VerifyOtpResponse.status === 200) {
+      toast.success('OTP Verified Successfully!', {
+        position: 'top-right',
+        autoClose: 3000,
       });
-    }
 
+      setTimeout(async () => {
+        dispatch(setLoading(true));
+        // Register the new user after the delay
+        const registernewUser = await registUser(formData);
+        console.log('User Registered Successfully:', registernewUser);
+
+        if (registernewUser.data) {
+          const { user, accessToken } = registernewUser.data;
+
+          dispatch(setUser(user));
+          dispatch(setAccessToken(accessToken));
+          dispatch(setIsAuthenticated(true));
+          dispatch(setFormData({}));
+          navigate('/');
+
+          toast.success('Registration Successful!', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+        } else {
+          dispatch(setError(registernewUser));
+          toast.error('Error during registration.', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+        }
+
+        setTimeout(() => {
+          dispatch(setLoading(false));
+        }, 3000);
+      }, 2000); // 2 seconds delay
+    } else {
+      toast.error(
+        VerifyOtpResponse.data?.message || 'Invalid OTP. Please try again.',
+        {
+          position: 'top-right',
+          autoClose: 3000,
+        }
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error(
+      error.response?.data?.message || 'An error occurred during OTP verification.',
+      {
+        position: 'top-right',
+        autoClose: 3000,
+      }
+    );
   }
+};
+
 
   useEffect(() => {
     if (isVisible && timer > 0) {

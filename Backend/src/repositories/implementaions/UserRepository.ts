@@ -4,6 +4,22 @@ import User from "../../models/userModel";
 import { ApiError } from "../../middleware/errorHander";
 
 export default class UserRepository implements IUserRepository{
+
+    async LoginUser(email : string): Promise<IUser | null> {
+        try {
+            const registedUser = await User.findOne({ email: email })
+            
+            if (!registedUser) {
+                throw new ApiError(404, 'User is not found')
+            }
+
+            return registedUser
+            
+        } catch (error) {
+            
+        }
+    }
+
     async createUser(user: IUser): Promise<IUser | null> {
         try {
             const isUserExist = await User.findOne({ email: user.email })
@@ -59,6 +75,36 @@ export default class UserRepository implements IUserRepository{
         } catch (error) {
             console.error('Error in googleAuthentication :', error);
             throw new ApiError(500, 'Failed to googleAuthentication.');
+        }
+    }
+
+    async findByUserEmil(email: string): Promise<IUser | null> {
+        try {
+
+            console.log('this reppooo email : ',email)
+
+            const userfind = await User.findOne({ email })
+            
+             console.log('this reppooo userfind : ',userfind)
+            
+            return userfind
+            
+        } catch (error) {
+            console.error('Error in forgetPasswordOtp send :', error);
+            throw new ApiError(500, 'Failed to forgetPasswordOtp send.');
+        }
+    }
+
+    async changePassword(password: string, email: string): Promise<IUser | null> {
+        try {
+
+            const updatePassword = await User.findByIdAndUpdate({ email: email }, { $set: { password: password } })
+            
+            return updatePassword
+            
+        } catch (error) {
+            console.error('Error in resetNew password :', error);
+            throw new ApiError(500, 'Failed to forgetPasswordOtp send.');
         }
     }
 }

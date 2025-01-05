@@ -11,6 +11,10 @@ export const generateAccessToken = (payload: { id: string, role: string }) => {
     })
 };
 
+export const accessTokenForReset =  (payload: object): string => {
+  return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: '1m' });
+};
+
 
 export const generateRefreshToken = (payload: { id: string, role: string }) => {
     return jwt.sign(payload, REFRESH_TOKEN_EXPIRATION, {
@@ -35,3 +39,21 @@ export const verifyRefreshToken = (token: string) => {
         throw new Error('Invalid Refresh Token')        
     }
 }
+
+
+export const decodeAndVerifyToken = (token: string): any => {
+  try {
+
+    const decoded: any = jwt.verify(token, ACCESS_TOKEN_SECRET);
+
+
+    if (decoded && decoded._doc) {
+      return decoded._doc;
+    }
+
+
+    return decoded;
+  } catch (error) {
+    throw new Error("Invalid token");
+  }
+};

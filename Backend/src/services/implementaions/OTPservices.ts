@@ -18,6 +18,29 @@ export default class OTPservices implements IOTPservices{
         return this.otpRepository.findOtpByEmail(user.email)
     }
 
+    async sendForgetOtp(user: IUser): Promise<IOTP | null> {
+        try {
+
+            const newOTp = await this.otpRepository.createOtp(user)
+
+            if (!newOTp) {
+            throw new Error('Faild to generate the OTP..!')
+            }   
+
+            const sendOTP = await this.sendEmailOtp(user.email, newOTp.otp);
+            if (!sendOTP) {
+                throw new Error('Faild to send the otp to the user ')
+            } 
+
+            return newOTp
+
+
+            
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     async sendOtp(user: IUser): Promise<IOTP | null> {
 
 
@@ -53,8 +76,8 @@ export default class OTPservices implements IOTPservices{
         return true
     }
 
-    async resendOtp(user: IUser): Promise<IOTP | null> {
-        const existOTp = await this.checkOTPExists(user)
+    async resendOtp(email : string): Promise<IOTP | null> {
+        const existOTp = await this.otpRepository.findOtpByEmail(email)
         if (!existOTp) {
             throw new Error('NO OTP found for this user')
         }
@@ -64,7 +87,7 @@ export default class OTPservices implements IOTPservices{
 
         await this.otpRepository.updateOtpResendCount(existOTp._id.toString(), existOTp.reSendCount + 1)
         
-        const otpSend = await this.sendEmailOtp(user.email, existOTp.otp)
+        const otpSend = await this.sendEmailOtp(email, existOTp.otp)
         if (!otpSend) {
             throw new Error('Faild to resend OTp')
         }
