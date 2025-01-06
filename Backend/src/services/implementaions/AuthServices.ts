@@ -14,43 +14,38 @@ export  class AuthService implements IAuthService{
     }
 
     async login(user: Partial<IUser>): Promise<{ accessToken: string; refreshToken: string; userFound: Omit<IUser, "password">; }> {
-    try {
-        const userFound = await this.userRepository.LoginUser(user.email.toString());
+    // Remove the try-catch block here since we want to propagate the specific errors
+    const userFound = await this.userRepository.LoginUser(user.email.toString());
 
-        // Handle case when user is not found
-        if (!userFound) {
-            throw new ApiError(404, 'User not found. Please check your email.');
-        }
-
-        // Check if password matches
-        const isPasswordValid = await bcrypt.compare(user.password.toString(), userFound.password.toString());
-        if (!isPasswordValid) {
-            throw new ApiError(401, 'Incorrect password. Please try again.');
-        }
-
-        // Generate tokens if login is successful
-        const accessToken = generateAccessToken({
-            id: userFound.id,
-            role: userFound.role,
-        });
-
-        const refreshToken = generateRefreshToken({
-            id: userFound.id,
-            role: userFound.role,
-        });
-
-        const userWithNewToken = await this.userRepository.saveRefreshToken(userFound.id, refreshToken);
-
-        return {
-            accessToken,
-            refreshToken,
-            userFound: userWithNewToken
-        };
-    } catch (error) {
-        console.error('Error during Login registration in AuthService:', error);
-        // Provide a generic error for login failure
-        throw new ApiError(500, 'Failed to Login user.');
+    // Handle case when user is not found
+    if (!userFound) {
+        throw new ApiError(404, 'User not found', 'User not found. Please check your email.');
     }
+
+    // Check if password matches
+    const isPasswordValid = await bcrypt.compare(user.password.toString(), userFound.password.toString());
+    if (!isPasswordValid) {
+        throw new ApiError(401, 'Invalid Credentials', 'Incorrect password. Please try again.');
+    }
+
+    // Generate tokens if login is successful
+    const accessToken = generateAccessToken({
+        id: userFound.id,
+        role: userFound.role,
+    });
+
+    const refreshToken = generateRefreshToken({
+        id: userFound.id,
+        role: userFound.role,
+    });
+
+    const userWithNewToken = await this.userRepository.saveRefreshToken(userFound.id, refreshToken);
+
+    return {
+        accessToken,
+        refreshToken,
+        userFound: userWithNewToken
+    };
 }
 
     async register(user: Partial<IUser>): Promise<{ user: IUser; accessToken: string; refreshToken: string; } | null> {
@@ -136,7 +131,7 @@ export  class AuthService implements IAuthService{
 
             console.log('this is service userFound :',userFound)
 
-            if (userFound) {
+            if (userFound) { 
                 return userFound
             } else {
                 return null
@@ -155,7 +150,11 @@ export  class AuthService implements IAuthService{
     decodeAndVerifyToken(token: string): Promise<Partial<IUser | null>> {
         try {
 
+            console.log('This is tokeen to dedode :',token)
+
             const decode = decodeAndVerifyToken(token)
+
+            console.log('This is decodeAndVerifyToken',decode)
 
 
          return decode
@@ -167,9 +166,18 @@ export  class AuthService implements IAuthService{
 
     async changePassword(password: string, email: string): Promise<IUser | null> {
         const hashPassword = await bcrypt.hash(password.toString(), 10)
+
+        console.log('this is hashPassword :',hashPassword, email)
         
         const userAfterUpdate = await this.userRepository.changePassword(hashPassword, email)
         
         return userAfterUpdate
+    }
+
+
+    async logout(token: string, id: string): Promise<IUser | null> {
+        const user = await this.userRepository.removeRefreshToken(id,token)
+    
+          return user ? user : null
     }
 }

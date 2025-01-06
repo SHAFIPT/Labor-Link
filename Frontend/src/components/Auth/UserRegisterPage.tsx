@@ -14,7 +14,7 @@ import {
   setIsAuthenticated,
   setUser,
 } from "../../redux/slice/userSlice";
-import validate from "../../utils/userRegisterValidators";
+import {register} from "../../utils/userRegisterValidators";
 import { sendOtp , googleAuth} from "../../services/UserAuthServices";
 import axios from "axios";
 import { toast } from 'react-toastify';
@@ -70,7 +70,7 @@ const UserRegisterPage = () => {
 
     dispatch(setLoading(true));
 
-    const formattedErrors = validate({
+    const formattedErrors = register({
       firstName,
       lastName,
       email,
@@ -172,17 +172,16 @@ const UserRegisterPage = () => {
           </div>
 
           {/* User/Labor Options with Line Below */}
-          <div className="relative ">
-            {/* Options */}
+          {/* <div className="relative ">
+ 
             <div className="flex justify-center items-center space-x-[253px]">
-              {/* I am a user option */}
+       
               <div className="text-center cursor-pointer hover:text-blue-600 transition duration-200">
                 <h2 className="text-[14px] font-medium font-poppins flex items-center justify-center gap-2">
                   <i className="fas fa-user text-blue-500"></i> I am a user
                 </h2>
               </div>
 
-              {/* I am a labor option */}
               <div className="text-center cursor-pointer hover:text-yellow-600 transition duration-200">
                 <h2 className="text-[14px] font-medium font-sans flex items-center justify-center gap-2">
                   <i className="fas fa-hard-hat text-yellow-500"></i> I am a
@@ -191,18 +190,17 @@ const UserRegisterPage = () => {
               </div>
             </div>
 
-            {/* Line below options */}
             <span
               className="absolute w-[450px] bottom-[-15px] h-[3.5px] left-1/2 transform -translate-x-1/2"
               style={{
                 background: `linear-gradient(to right, #21A391 50%, #8dcbdd  50%)`,
               }}
             ></span>
-          </div>
+          </div> */}
 
-          <form onSubmit={handleSubmit}>
+          <form className="" onSubmit={handleSubmit}>
             {/* Form Fields */}
-            <div className="formFields flex flex-col pt-7">
+            <div className="formFields  gap-3 flex flex-col pt-7">
               {/* Email Field */}
               <div className="form-control relative">
                 <input
@@ -389,10 +387,8 @@ const UserRegisterPage = () => {
             <div className="text-sm mt-[26px]">
               Looking to join us as a Labor ?
               <span>
-                <a href="#" className="hover:underline text-[#23c7b1]">
-                  {" "}
-                  Apply as a labor
-                </a>
+                <Link to={'/laborHome'} className="hover:underline text-[#23c7b1]">Apply as a labor</Link>
+                
               </span>
             </div>
           </div>

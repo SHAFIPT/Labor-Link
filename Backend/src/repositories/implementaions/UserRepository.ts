@@ -81,11 +81,8 @@ export default class UserRepository implements IUserRepository{
     async findByUserEmil(email: string): Promise<IUser | null> {
         try {
 
-            console.log('this reppooo email : ',email)
 
             const userfind = await User.findOne({ email })
-            
-             console.log('this reppooo userfind : ',userfind)
             
             return userfind
             
@@ -98,13 +95,32 @@ export default class UserRepository implements IUserRepository{
     async changePassword(password: string, email: string): Promise<IUser | null> {
         try {
 
-            const updatePassword = await User.findByIdAndUpdate({ email: email }, { $set: { password: password } })
-            
+            const updatePassword = await User.findOneAndUpdate(
+            { email: email }, // Query by email
+            { $set: { password: password } }, // Update password
+            { new: true } // Return the updated document
+        );
             return updatePassword
             
         } catch (error) {
             console.error('Error in resetNew password :', error);
             throw new ApiError(500, 'Failed to forgetPasswordOtp send.');
+        }
+    }
+
+    async removeRefreshToken(userId: string, refreshToken: string): Promise<IUser | null> {
+        try {
+
+            const resoponce = await User.findByIdAndUpdate(
+                { _id: userId },
+                { $pull: { refreshToken: refreshToken } },
+                { new: true }).select("-password -refreshToken");
+            
+            return resoponce
+
+        } catch (error) {
+            console.error('Error in Logout :', error);
+            throw new ApiError(500, 'Failed to logout');
         }
     }
 }

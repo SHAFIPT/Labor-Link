@@ -12,7 +12,7 @@ export const generateAccessToken = (payload: { id: string, role: string }) => {
 };
 
 export const accessTokenForReset =  (payload: object): string => {
-  return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: '1m' });
+  return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: '30m' });
 };
 
 
@@ -43,17 +43,26 @@ export const verifyRefreshToken = (token: string) => {
 
 export const decodeAndVerifyToken = (token: string): any => {
   try {
+    console.log('Token received for decoding:', token);
 
     const decoded: any = jwt.verify(token, ACCESS_TOKEN_SECRET);
 
-
-    if (decoded && decoded._doc) {
-      return decoded._doc;
-    }
-
+    console.log('Decoded JWT:', decoded);
 
     return decoded;
   } catch (error) {
-    throw new Error("Invalid token");
+    console.error('Error verifying token:', error.message);
+    return null;
   }
 };
+
+export const decodeToken = (token:string):any =>{
+  try {
+    return jwt.decode(token)
+
+  } catch (error) {
+
+    throw new Error("invalid")
+  }
+ 
+}

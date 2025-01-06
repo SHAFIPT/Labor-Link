@@ -31,35 +31,48 @@ class AuthController {
     }
 
 
-    async loginUser(req: Request, res: Response): Promise<void>{
-        try {
+    public loginUser = async (req: Request, res: Response) => {
+    try {
+        const user = req.body;
+        const loginData = await this.authService.login(user);
 
-            const user = req.body;
+        console.log('this is loginData :',loginData)
 
-            const loginData = await this.authService.login(user)
-
-            console.log('this si loging data',loginData)
-
-             if (loginData?.userFound?.isBlocked) {
-                 res.status(401).json(new ApiError(401, "You're blocked", "You're blocked"));
-            }
-            
-            console.log('this is loginData' ,loginData)
- 
-            if (loginData) {
-                res.status(200).cookie("refreshToken", loginData.refreshToken, this.options).json({
-                    message: 'User Logined successfully...!',
-                    loginData
-                })
-            } else { 
-                res.status(400).json(new ApiError(400 , 'Faild to login user'))
-            } 
-            
-        } catch (error) {
-            console.error("Login Error:", error.message || error);
-            res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
+        if (loginData?.userFound?.isBlocked) {
+            throw new ApiError(401, "Account Blocked", "Your account has been blocked");
         }
+
+        return res.status(200)
+            .cookie("refreshToken", loginData.refreshToken, this.options)
+            .json({
+                success: true,
+                message: 'User Login successful!',
+                data: loginData
+            });
+
+    } catch (error) {
+        console.error("Login Error:", error);
+
+        // Check if it's an ApiError instance
+        if (error instanceof ApiError) {
+            return res.status(error.statusCode).json({
+                success: false,
+                error: error.error,
+                message: error.message,
+                data: null
+            });
+        }
+
+        // For unexpected errors
+        return res.status(500).json({
+            success: false,
+            error: "Internal Server Error",
+            message: "An unexpected error occurred",
+            data: null
+        });
     }
+}
+
 
     async register(req: Request, res: Response): Promise<void> {
         try {
@@ -188,15 +201,12 @@ class AuthController {
 
    public forgetPassword = async (req: Request, res: Response) => {
     try {
-        console.log('this is email from body :', req.body)
         
         const { email } = req.body
         
-        console.log('this is email in backend:', email)
 
         const isUserExists = await this.authService.findUserWithEmail(email)
 
-        console.log('this email exists:', isUserExists)
 
         if (!isUserExists || isUserExists?.isBlocked) {
             return res
@@ -214,7 +224,6 @@ class AuthController {
 
         const isOtpExist = await this.otpservices.checkOTPExists(req.body)
 
-        console.log('the OTP exists:', isOtpExist)
 
         // If OTP exists, inform the user and exit early
         // if (isOtpExist) {
@@ -259,13 +268,14 @@ class AuthController {
                     )
                 );
             }
+
             
-            const OTPVerification = await this.otpservices.verifyOtp(email, otp)
+            const OTPVerification = await this.otpservices.isVerify(isUserExists , req.body)
 
             
             if (!OTPVerification) {
                 return res.status(500).json(new ApiError(500, "Entered Wrong OTP"));
-            }
+            } 
 
             const { password, refreshToken, ...user } = isUserExists;
 
@@ -288,10 +298,12 @@ class AuthController {
     public resetPassword = async (req: Request, res: Response) => {
         try {
 
-             const { password, token } = req.body;
+            const { password, token } = req.body;
+            
 
             const decode = await this.authService.decodeAndVerifyToken(token);
             req.body.user = decode;
+
 
             if (!decode) {
                 return res
@@ -299,24 +311,33 @@ class AuthController {
                 .json(new ApiResponse(405, null, "Session Expired Try Again"));
             }
 
-             const isUserExists = await this.authService.findUserWithEmail(req.body.user)
+            const user = decode as { _doc: Partial<IUser> };
 
-            if (!isUserExists || isUserExists?.isBlocked) {
+            const email = user._doc?.email;
+
+            // console.log('i got the email :',email)
+            // console.log('here the details of user :',req.body.user)
+
+            const isUserExists = await this.authService.findUserWithEmail(email)
+            
+
+            if (!isUserExists ) {
                 return res
                 .status(400)
                 .json(
                     new ApiResponse(
                     400,
                     null,
-                    isUserExists.isBlocked ? "Account is blocked" : "Something Wrong"
-                    )
+                    ) 
                 );
             }
 
+
              const passwordUpdated = await this.authService.changePassword(
                 password,
-                decode.email
+                email
             );
+
 
 
              if (passwordUpdated) {
@@ -335,5 +356,62 @@ class AuthController {
             return res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
         }
     }
+
+
+    public logout = async ( req: Request & { user: { rawToken: string; id: string } }, res: Response) => {
+    try {
+        const { user } = req;
+
+        console.log("this is user  ", user);
+
+
+    if (!user) {
+     return res.status(400).json({
+        success: false,
+        message: 'User ID is required',
+      });
+    }
+
+    const logoutData = await this.authService.logout(user.rawToken, user.id);
+
+    console.log('this is logoutData :', logoutData);
+
+    if (logoutData) {
+      return res
+        .status(200)
+        .clearCookie("refreshToken")
+        .json(
+          new ApiResponse(
+            200,
+            { message: "successfully cleared the token" },
+            "logout success"
+          )
+        );
+    } else {
+      throw new ApiError(400, 'Logout Failed', 'Failed to logout user');
+    }
+  } catch (error) {
+    console.error("Logout Error:", error);
+
+    if (error instanceof ApiError) {
+      res.status(error.statusCode).json({
+        success: false,
+        error: error.error,
+        message: error.message,
+        data: null,
+      });
+      return; // End the function execution
+    }
+ 
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      message: "An unexpected error occurred during logout",
+      data: null,
+    });
+    return; // End the function execution
+  }
+}
+
 }
 export default AuthController;

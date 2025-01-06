@@ -23,10 +23,14 @@ const UserLoginForm = () => {
   const [forgetpassword, setforgetPassword] = useState(false)
   const [visiblePassword, setvisiblePasswod] = useState(false)
   const [resetPassword, setResetPassword] = useState(false)
-  const [otpToken , setOtpToken] = useState("")
+  const [otpToken, setOtpToken] = useState("")
+  const [imaLabor , setIamLabor] = useState(false)
+  const [imaUser , setIamUser] = useState(true)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { loading } = useSelector((state: RootState) => state.user)
+
+  // console.log('this is user :',imaUser)
   
   const error: {
     email?: string;
@@ -58,12 +62,25 @@ const UserLoginForm = () => {
         console.log('this is LoginResponse :',LoginResponse)
         
         if (LoginResponse.status === 200) {
+
+          const { userFound, accessToken } = LoginResponse.data.data;
+
+          console.log('THis is the userFound :',userFound)
+          console.log('THis is the accessToken :',accessToken)
+
+          localStorage.setItem("accessToken", accessToken);
+
           const message = LoginResponse.data.message
-          toast.success( message ||"User Login successfully...!");
+          toast.success(message || "User Login successfully...!");
+          
+          dispatch(setUser(userFound))
+          dispatch(setAccessToken(accessToken))
+          dispatch(setIsAuthenticated(true))
           dispatch(setLoading(false))
           navigate('/')
         } else {
-           const errorMessage = LoginResponse.data.message || 'Something went wrong during user login.';
+          const errorMessage = LoginResponse.data.message || 'Something went wrong during user login.';
+          console.log(errorMessage)
            toast.error(errorMessage); 
         }
         
@@ -209,6 +226,7 @@ const UserLoginForm = () => {
   }
 
 
+
     return (
       <div>
         {loading && <div className="loader"></div>}
@@ -256,26 +274,42 @@ const UserLoginForm = () => {
               <div className="flex justify-center items-center space-x-[253px]">
                 {/* I am a user option */}
                 <div className="text-center cursor-pointer hover:text-blue-600 transition duration-200">
-                  <h2 className="text-[14px] font-medium font-poppins flex items-center justify-center gap-2">
+                  <h2 className="text-[14px] font-medium font-poppins flex items-center justify-center gap-2"
+                    onClick={() => { setIamUser(true);  setIamLabor(false)}}
+                  >
                     <i className="fas fa-user text-blue-500"></i> I am a user
                   </h2>
                 </div>
 
                 {/* I am a labor option */}
                 <div className="text-center cursor-pointer hover:text-yellow-600 transition duration-200">
-                  <h2 className="text-[14px] font-medium font-sans flex items-center justify-center gap-2">
+                  <h2 className="text-[14px] font-medium font-sans flex items-center justify-center gap-2"
+                    onClick={() => { setIamLabor(true); setIamUser(false)}}
+                  >
                     <i className="fas fa-hard-hat text-yellow-500"></i> I am a labor
                   </h2>
                 </div>
               </div>
                 
               {/* Line below options */}
-              <span
+              
+              {imaUser && !imaLabor ? (
+                <span
                 className="absolute w-[450px] bottom-[-15px] h-[3.5px] left-1/2 transform -translate-x-1/2"
-                style={{
-                  background: `linear-gradient(to right, #21A391 50%, #8dcbdd  50%)`,
-                }}
-              ></span>
+                   style={{
+                     background: `linear-gradient(to right, #21A391 50%, #8dcbdd  50%)`,
+                  }}
+                ></span>
+              ) : (
+                 <span
+                className="absolute w-[450px] bottom-[-15px] h-[3.5px] left-1/2 transform -translate-x-1/2"
+                   style={{
+                     background: `linear-gradient(to left, #21A391 50%, #8dcbdd  50%)`,
+                  }}
+                ></span> 
+                )}
+               
+              
             </div>
 
             {/* Form Fields */}
@@ -344,15 +378,20 @@ const UserLoginForm = () => {
                 </div>
               </button>
               </div>
-              </form>
-            <div className="flex justify-center mt-2 mb-2">
+            </form>
+            
+            {imaUser && !imaLabor &&  (
+               <div className="flex justify-center mt-2 mb-2">
               <div className="flex items-center my-2">
                 <hr className="w-[199px] border-t border-gray-400" />
                 <span className="mx-4 text-gray-500">OR</span>
                 <hr className="w-[199px] border-t border-gray-400" />
               </div>
             </div>
-            <div className="googleLogin flex justify-center">
+            )}
+
+            {imaUser && !imaLabor &&  (
+              <div className="googleLogin flex justify-center">
               <button
                 className="border w-[450px] cursor-pointer text-black flex gap-2 items-center justify-center bg-white px-4 py-3 rounded font-medium text-sm hover:bg-zinc-300 transition-all ease-in duration-200"
                 onClick={handleGoogleSignIn}
@@ -378,6 +417,8 @@ const UserLoginForm = () => {
                 Continue with Google
               </button>
             </div>
+            )}
+
             <div className="div ml-0 sm:ml-[0px] md:ml-[0px] lg:ml-[85px]">
               <div className="forgetpassword mt-2 ">
                 <a className="text-sm text-[#7747ff] underline" href="#" onClick={()=> setforgetPassword(true)}>Forgot your password?
@@ -386,9 +427,9 @@ const UserLoginForm = () => {
               <div className="text-sm mt-[5px]">Don’t have an account yet?</div>
               <div className="signUnasuser">
                 <div className="flex gap-4 font-semibold text-[#23c7b1] mt-2">
-                  <Link to={'/register'}><a href="#" className="hover:underline" >Sign up as user</a></Link>
+                  <Link to={'/register'}  className="hover:underline" >Sign up as user</Link>
                   <span className="text-gray-500">OR</span>
-                  <a href="#" className="hover:underline">Sign up as labor</a>
+                  <Link to={'/laborHome'} className="hover:underline">Sign up as labor</Link>
                 </div>
               </div>
             </div>

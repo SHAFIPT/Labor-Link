@@ -64,6 +64,7 @@ export default class OTPservices implements IOTPservices{
 
     async verifyOtp(email : string, otp: string): Promise<boolean> {
         const existOTP = await this.otpRepository.findOtpByEmail(email)
+        console.log('theis exist otp :',otp)
         if (!existOTP) {
             throw new Error('OTP not found for the user...')
         }
@@ -92,5 +93,23 @@ export default class OTPservices implements IOTPservices{
             throw new Error('Faild to resend OTp')
         }
         return existOTp
+    }
+
+    async isVerify(user: Partial<IUser>, otp: IOTP): Promise<IOTP | null> {
+
+        console.log('This is getted otp :',otp)
+        const OTPFound = await this.otpRepository.findOTP(user)
+        
+        console.log('This is OtpFound :',OTPFound)
+
+        if(!OTPFound){
+            return null
+        }
+
+        if(OTPFound.otp == otp.otp){
+            return OTPFound
+        }
+
+        return null    
     }
 }

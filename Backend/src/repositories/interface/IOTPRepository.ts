@@ -10,4 +10,5 @@ export interface IOTPRepository{
     deleteOtp(otpId: string): Promise<IOTP | null>
     findOtpById(otpId: string): Promise<IOTP | null>
     resetOtp(user: IUser): Promise<IOTP | null>
+    findOTP(user: Partial<IUser>) : Promise <IOTP> | null ;
 }

@@ -6,8 +6,7 @@ import otpModel from "../../models/otpModel";
 export default class OTPRepository implements IOTPRepository{
     async createOtp(user: IUser): Promise<IOTP | null> {
         const otp = this.generateOtp()
-        const expirationTime = new Date();
-        expirationTime.setMinutes(expirationTime.getMinutes() + 10)
+        const expirationTime = new Date(Date.now() + 1 * 60000);
         
         const newOtp = new otpModel({
             email: user.email,
@@ -59,6 +58,14 @@ export default class OTPRepository implements IOTPRepository{
         }
         return this.createOtp(user)
     }
+
+    async findOTP(user: Partial<IUser>): Promise<IOTP | null> {
+    const OTPFound = await otpModel.findOne({ email: user.email }).sort({ createdAt: -1 });
+    if (OTPFound) {
+        return OTPFound;
+    } 
+    return null;
+}
 
     private generateOtp(): string{
         return Math.floor(1000  + Math.random() * 9000).toString()

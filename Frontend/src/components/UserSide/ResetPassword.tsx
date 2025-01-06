@@ -65,7 +65,7 @@ const ResetPassword = ({
               id="password"
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter new password"
-              className="w-full px-3 py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+              className="w-full px-3 text-black py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
             />
             <button
               type="button"
@@ -87,21 +87,22 @@ const ResetPassword = ({
             id="confirmPassword"
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirm new password"
-            className="w-full px-3 py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+            className="w-full px-3 text-black py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
           />
         </div>
 
         <div className="flex justify-end space-x-4 mt-6">
           <button
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition ease-in-out"
+            className="px-4 py-2 w-full bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition ease-in-out"
           >
             Cancel
           </button>
           <button
             onClick={handleConfirm}
-            className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition ease-in-out"
-          >
+            className="px-4 py-2 w-full bg-orange-500 text-white rounded hover:bg-orange-600 transition ease-in-out"
+           >
+             confirm
           </button>
         </div>
       </div>

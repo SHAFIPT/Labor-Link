@@ -179,3 +179,21 @@ export const forgotPasswordReset = async (password: string, token:string) => {
         }  
     }
 }
+
+export const logout = async () => { 
+    try {
+
+        const response = await api.patch('/api/user/auth/log_out',null ,{withCredentials: true});
+
+        console.log('here the responce :',response)
+
+        return response;
+        
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            return error.response;
+        } else {
+            return null;
+        }  
+    }
+};

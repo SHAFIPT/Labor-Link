@@ -7,4 +7,5 @@ export interface IUserRepository{
     googleSignIn(user: Partial<IUser>): Promise<IUser | null>;
     findByUserEmil(email: string): Promise<IUser | null>
     changePassword(password: string, email: string): Promise<IUser | null>;
+    removeRefreshToken(userId: string, refreshToken: string): Promise<IUser | null>;
 }
