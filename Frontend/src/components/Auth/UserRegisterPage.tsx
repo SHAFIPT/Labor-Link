@@ -387,7 +387,7 @@ const UserRegisterPage = () => {
             <div className="text-sm mt-[26px]">
               Looking to join us as a Labor ?
               <span>
-                <Link to={'/laborHome'} className="hover:underline text-[#23c7b1]">Apply as a labor</Link>
+                <Link to={'/labor/dashboard'} className="hover:underline text-[#23c7b1]">Apply as a labor</Link>
                 
               </span>
             </div>

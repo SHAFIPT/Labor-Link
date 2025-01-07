@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import lightModeLogo from "../../assets/laborLink light.jpg";
 import darkModeLogo from "../../assets/night.png";
 import "./userLogin.css";
+import { Link } from "react-router-dom";
 
 const LoginNav = () => {
   // Check localStorage for dark mode preference on initial load
@@ -26,7 +27,9 @@ const LoginNav = () => {
   };
 
   return (
+    
     <div className="w-full flex justify-between">
+      <Link to={'/'}>
       <div className="loginNavbarlogo ">
         {isDarkMode ? (
           <svg
@@ -177,6 +180,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           <img src={lightModeLogo} alt="" className="w-[122px] sm:w-[102px] lg:w-[139px] ml-6 lg:ml-16 pt-8 sm:pt-8 lg:pt-4" />
         )}
       </div>
+      </Link>
       <div className="rightDarkLighMode p-16 lg:p-12 -mr-32 sm:mr-1 md:mr-6 lg:mr-8">
         <label className="toggle" htmlFor="switch" onClick={toggleDarkMode}>
           <input

@@ -429,7 +429,7 @@ const UserLoginForm = () => {
                 <div className="flex gap-4 font-semibold text-[#23c7b1] mt-2">
                   <Link to={'/register'}  className="hover:underline" >Sign up as user</Link>
                   <span className="text-gray-500">OR</span>
-                  <Link to={'/laborHome'} className="hover:underline">Sign up as labor</Link>
+                  <Link to={'/labor/dashboard'} className="hover:underline">Sign up as labor</Link>
                 </div>
               </div>
             </div>
