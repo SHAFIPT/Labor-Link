@@ -9,7 +9,7 @@ import User from "../models/userModel";
 import { IUser } from "../entities/UserEntity";
 import OtpModel from "models/otpModel";
 import ApiResponse from "../utils/Apiresponse";
-
+      
 class AuthController {
     private otpservices: OTPservices;
     private authService: AuthService;

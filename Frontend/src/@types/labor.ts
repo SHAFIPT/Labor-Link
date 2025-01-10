@@ -1,21 +1,25 @@
-
 export interface ILaborer {
   _id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
-  profilePicture: string;
-  categories: string[];
+  phoneNumber?: string;
+  language: string;
+  address: string;
+  password: string;
+  image: string;
+  category: string; // existing field, category list
   certificates: {
     certificateDocument: string;
     certificateName: string;
     lastUpdated: string;
   }[];
-  personalDetails: {
-    dateOfBirth: string;
-    gender: string;
-    lastUpdated: string;
-  };
+  DurationofEmployment: {
+    startDate: string,
+    EndDAte
+  }
+  dateOfBirth: string;
+  gender: string;
   workHistory: {
     bookingId: string;
     status: string;
@@ -32,4 +36,8 @@ export interface ILaborer {
   isApproved: boolean;
   profileCompletion: boolean;
   currentStage: 'aboutYou' | 'profile' | 'experience';
+  skill: string; // Skill or expertise of the laborer
+  startTime: string; // Start time (could be a timestamp or ISO string)
+  endTime: string; // End time (could be a timestamp or ISO string)
+  availability: string[]; // Array of availability slots or statuses
 }

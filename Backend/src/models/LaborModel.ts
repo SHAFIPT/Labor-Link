@@ -16,6 +16,10 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
     gender: { type: String },
     lastUpdated: { type: Date, default: Date.now },
   },
+   skill: { type: String, required: false }, // Skill or expertise of the laborer
+  startTime: { type: String, required: false }, // Start time (ISO string or timestamp)
+  endTime: { type: String, required: false }, // End time (ISO string or timestamp)
+  availability: [{ type: String, required: false }], 
   categories: [{ type: String, required: false }],
   certificates: [{
     certificateDocument: { type: String, required: false }, // Field name updated to match interface

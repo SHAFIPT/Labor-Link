@@ -27,17 +27,39 @@ export class LaborAuthServies implements ILaborAuthSerives{
                     currentStage: 'aboutYou',
                 }); 
             } else {
+                let bcryptPassword; 
                 if (labor.password) {
-                    labor.password = await bycript.hash(labor.password , 10)
+                     bcryptPassword = await bycript.hash(labor.password , 10)
                 }
+                console.log('this is let bcryptPassword; :',bcryptPassword)
                 return this.laborRepository.createLabor({
                     ...labor,
+                    password : bcryptPassword,
                     currentStage: 'aboutYou',
                 });
             }
 
         } catch (error) {
             console.error("Error in registerAboutYou service:", error);
+            throw error;
+        }
+    }
+
+    async registerProfile(labor: Partial<ILaborer>): Promise<ILaborer | null> {
+        try {
+
+            const isExistOfLabor = await this.laborRepository.findByEmail(labor.email)
+
+            console.log('this is exisitng userse :',isExistOfLabor)
+
+            if (isExistOfLabor) {
+                return this.laborRepository.updateLabor(isExistOfLabor._id, {
+                    ...labor,
+                    currentStage: 'profile',
+                });
+            }
+        } catch (error) {
+            console.error("Error in registerProfile service:", error);
             throw error;
         }
     }

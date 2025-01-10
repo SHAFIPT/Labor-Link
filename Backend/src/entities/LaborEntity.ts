@@ -40,4 +40,8 @@ export interface ILaborer extends Document {
   chats: Schema.Types.ObjectId;
   profileCompletion: boolean;
   currentStage: 'aboutYou' | 'profile' | 'experience';
+  skill: string; // Skill or expertise of the laborer
+  startTime: string; // Start time (could be a timestamp or ISO string)
+  endTime: string; // End time (could be a timestamp or ISO string)
+  availability: string[]; // Array of availability slots or statuses
 }

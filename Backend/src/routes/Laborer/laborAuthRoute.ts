@@ -5,5 +5,6 @@ const laborAuthRoute = Router()
 const authController = new AuthLaborController()
 
 laborAuthRoute.post('/registerAboutYou',authController.aboutYou.bind(authController))
+laborAuthRoute.post('/registerProfilePage',authController.profilePage.bind(authController))
 
 export default laborAuthRoute
