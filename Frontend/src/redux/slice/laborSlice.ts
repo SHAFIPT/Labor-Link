@@ -10,6 +10,7 @@ interface InitialState {
   modal: boolean;
   formData: Partial<ILaborer>;
   unsavedChanges: false,
+  navigateBack: false,
 }
 
 const initialState: InitialState = {
@@ -19,7 +20,9 @@ const initialState: InitialState = {
   accessToken: '',
   modal: false,
   formData: {},
-  unsavedChanges : false,
+  unsavedChanges: false,
+  navigateBack: false,
+  
 };
 
 // Create the slice
@@ -41,6 +44,9 @@ const laborerSlice = createSlice({
     },
     setModal(state, action) {
       state.modal = action.payload;
+    },
+    setNavigateBack(state, action) {
+      state.navigateBack = action.payload
     },
     setFormData(state, action) {
       state.formData = action.payload;
@@ -67,6 +73,7 @@ export const {
   setModal,
   setFormData,
   setUnsavedChanges,
+  setNavigateBack,
   resetLaborer,
 } = laborerSlice.actions;
 

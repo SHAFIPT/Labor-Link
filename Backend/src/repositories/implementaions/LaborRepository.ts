@@ -26,11 +26,21 @@ export class LaborRepository implements ILaborRepository{
     async updateLabor(laborId: string, updates: Partial<ILaborer>): Promise<ILaborer | null> {
         try {
 
-            return await Labor.findByIdAndUpdate(laborId , updates ,{new : true})
+            return await Labor.findByIdAndUpdate(laborId , updates ,{new : true}).select('-password')
             
         } catch (error) {
              console.error("Error in updateLabor repository:", error);
             throw new ApiError(500, "Failed to update laborer.");
         }
     }
+
+    async saveRefreshToken(laborId: string, refreshToken: string): Promise<ILaborer | null> {
+        try {
+            return await Labor.findByIdAndUpdate(laborId , {$push : {refreshToken : refreshToken}}).select('-password')
+        } catch (error) {
+            console.error("Error in saving RefreshToken", error);
+            throw new ApiError(500, "Failed to saving RefreshToken.");
+        }
+    }
+
 }

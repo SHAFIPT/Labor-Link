@@ -7,7 +7,8 @@ export interface ILaborer extends Document {
   email: string;
   password: string;
     phone: string;
-    address: string;
+  address: string;
+  responsibility: string;
   profilePicture: string;
     language: string;
   personalDetails: {
@@ -19,8 +20,12 @@ export interface ILaborer extends Document {
   certificates: {
     certificateDocument: string;
     certificateName: string;
-    lastUpdated: Date;
+    lastUpdated?: Date;
   }[];
+   DurationofEmployment: {
+    startDate: string,
+    currentlyWorking : boolean
+  }
   workHistory: {
     bookingId: Schema.Types.ObjectId;
     status: string;
@@ -34,7 +39,6 @@ export interface ILaborer extends Document {
   isApproved: boolean;
   governmentProof: {
     idDocument: string;
-    idNumber: string;
     idType: string;
   };
   chats: Schema.Types.ObjectId;
@@ -44,4 +48,6 @@ export interface ILaborer extends Document {
   startTime: string; // Start time (could be a timestamp or ISO string)
   endTime: string; // End time (could be a timestamp or ISO string)
   availability: string[]; // Array of availability slots or statuses
+  role: string;
+  refreshToken: string[];
 }

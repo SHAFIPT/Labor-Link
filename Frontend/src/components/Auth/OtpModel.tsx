@@ -41,7 +41,8 @@ const OtpForm = ({ isVisible, onClose }) => {
 
   const otpCode = `${otp.input1}${otp.input2}${otp.input3}${otp.input4}`;
 
-  console.log('This is otpCode :', otpCode);
+    console.log('This is otpCode :', otpCode);
+    console.log('this is the user formData :',formData)
 
   try {
     const VerifyOtpResponse = await verifyOtp(formData.email, otpCode);
@@ -195,7 +196,7 @@ const OtpForm = ({ isVisible, onClose }) => {
               <button className="resendBtn" onClick={handleResend}>Resend Code</button>
             )}
           </p>
-        <p className="resendNote">Didn't receive the code? <button className="resendBtn">Resend Code</button></p>
+        {/* <p className="resendNote">Didn't receive the code? <button className="resendBtn">Resend Code</button></p> */}
       </form>
       </div>
     </StyledWrapper>

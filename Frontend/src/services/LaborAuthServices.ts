@@ -31,7 +31,7 @@ export const profilePage = async (formData: FormData ) => {
   }
 }
 
-export const ExperiencePage = async (formData: FromData) => {
+export const ExperiencePage = async (formData: FormData) => {
   try {
 
     const response = await api.post('/api/labor/auth/registerExperiencePage', formData)

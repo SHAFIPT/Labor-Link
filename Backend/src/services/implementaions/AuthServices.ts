@@ -14,39 +14,49 @@ export  class AuthService implements IAuthService{
     }
 
     async login(user: Partial<IUser>): Promise<{ accessToken: string; refreshToken: string; userFound: Omit<IUser, "password">; }> {
-    // Remove the try-catch block here since we want to propagate the specific errors
-    const userFound = await this.userRepository.LoginUser(user.email.toString());
+        try {
+             // Remove the try-catch block here since we want to propagate the specific errors
+            const userFound = await this.userRepository.LoginUser(user.email.toString());
 
-    // Handle case when user is not found
-    if (!userFound) {
-        throw new ApiError(404, 'User not found', 'User not found. Please check your email.');
+            // Handle case when user is not found
+            if (!userFound) {
+                // throw new ApiError(404, 'User not found', 'User not found. Please check your email.');
+                console.log('Invalid credentials...')
+                return null
+            }
+
+            // Check if password matches
+            const isPasswordValid = await bcrypt.compare(user.password.toString(), userFound.password.toString());
+            if (!isPasswordValid) {
+                // throw new ApiError(401, 'Invalid Credentials', 'Incorrect password. Please try again.');
+                 return null
+            }
+
+            // Generate tokens if login is successful
+            const accessToken = generateAccessToken({
+                id: userFound.id,
+                role: userFound.role,
+            });
+
+            const refreshToken = generateRefreshToken({
+                id: userFound.id,
+                role: userFound.role,
+            });
+
+            const userWithNewToken = await this.userRepository.saveRefreshToken(userFound.id, refreshToken);
+
+            return {
+                accessToken,
+                refreshToken,
+                userFound: userWithNewToken
+            };
+        } catch (error) {
+            if (!(error instanceof ApiError)) {
+            throw new ApiError(500, 'Server Error', error.message, error.stack);
+        }
+        throw error;
+        }
     }
-
-    // Check if password matches
-    const isPasswordValid = await bcrypt.compare(user.password.toString(), userFound.password.toString());
-    if (!isPasswordValid) {
-        throw new ApiError(401, 'Invalid Credentials', 'Incorrect password. Please try again.');
-    }
-
-    // Generate tokens if login is successful
-    const accessToken = generateAccessToken({
-        id: userFound.id,
-        role: userFound.role,
-    });
-
-    const refreshToken = generateRefreshToken({
-        id: userFound.id,
-        role: userFound.role,
-    });
-
-    const userWithNewToken = await this.userRepository.saveRefreshToken(userFound.id, refreshToken);
-
-    return {
-        accessToken,
-        refreshToken,
-        userFound: userWithNewToken
-    };
-}
 
     async register(user: Partial<IUser>): Promise<{ user: IUser; accessToken: string; refreshToken: string; } | null> {
         try {

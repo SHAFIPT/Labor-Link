@@ -29,10 +29,8 @@ class AuthController {
         // console.log("AuthService initialized:", this.authService); 
         this.otpservices = new OTPservices(otpRepository, sendEmailOtp);
     }
-
-
+ 
     public loginUser = async (req: Request, res: Response) => {
-    try {
         const user = req.body;
         const loginData = await this.authService.login(user);
 
@@ -42,37 +40,16 @@ class AuthController {
             throw new ApiError(401, "Account Blocked", "Your account has been blocked");
         }
 
-        return res.status(200)
+        if (loginData) {
+            return res.status(200)
             .cookie("refreshToken", loginData.refreshToken, this.options)
-            .json({
-                success: true,
-                message: 'User Login successful!',
-                data: loginData
-            });
-
-    } catch (error) {
-        console.error("Login Error:", error);
-
-        // Check if it's an ApiError instance
-        if (error instanceof ApiError) {
-            return res.status(error.statusCode).json({
-                success: false,
-                error: error.error,
-                message: error.message,
-                data: null
-            });
+            .json(new ApiResponse(200, loginData));
+        } else {
+            console.log('this is the errorr')
+            return res.status(400).json(new ApiError(400, "Invalid Credentials"));
         }
-
-        // For unexpected errors
-        return res.status(500).json({
-            success: false,
-            error: "Internal Server Error",
-            message: "An unexpected error occurred",
-            data: null
-        });
-    }
 }
-
+ 
 
     async register(req: Request, res: Response): Promise<void> {
         try {
@@ -101,6 +78,7 @@ class AuthController {
 
             
             const user = req.body;
+            console.log('this is the user from  the sendOtp  : ',user)
             
             if (!user) {
                 res.status(404).json({ message: 'user is not found..!' })
@@ -132,7 +110,7 @@ class AuthController {
 
             if (!email || !otp) {
                 res.status(400).json('Email and OTP are required.')
-            }
+            }     
 
             const isValidOTP = await this.otpservices.verifyOtp(email, otp);
 
@@ -151,16 +129,18 @@ class AuthController {
 
     async resendOtp(req: Request, res: Response): Promise<void> {
         try {
-            const { email } = req.body;
+            // const user = req.body; 
+            const  user = req.body;
 
-            console.log('this is the email  : ',email)
-
-            if (!email) {
-                throw new ApiError(400, "Email is required.");
-            }
-
-            const Response = await this.otpservices.resendOtp(email);
+            // console.log('this is the email  : ',email)
+            console.log('this is the user for resendotp from  the backend  : ',user)
             
+            // if (!email) {
+            //     throw new ApiError(400, "Email is required.");
+            // }
+
+            const Response = await this.otpservices.resendOtp(user as IUser);
+             
             console.log('this resend otp :', Response) 
             res.status(200).json({ message: "OTP resent successfully!" });
         } catch (error: any) {

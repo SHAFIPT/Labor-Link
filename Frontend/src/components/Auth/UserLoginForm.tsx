@@ -79,7 +79,7 @@ const UserLoginForm = () => {
           dispatch(setLoading(false))
           navigate('/')
         } else {
-          const errorMessage = LoginResponse.data.message || 'Something went wrong during user login.';
+          const errorMessage = LoginResponse.data.error || 'Something went wrong during user login.';
           console.log(errorMessage)
            toast.error(errorMessage); 
         }

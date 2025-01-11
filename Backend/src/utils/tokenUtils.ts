@@ -17,9 +17,9 @@ export const accessTokenForReset =  (payload: object): string => {
 
 
 export const generateRefreshToken = (payload: { id: string, role: string }) => {
-    return jwt.sign(payload, REFRESH_TOKEN_EXPIRATION, {
+    return jwt.sign(payload, REFRESH_TOKEN_SECRET, {
         expiresIn: REFRESH_TOKEN_EXPIRATION
-    })
+    });
 };
 
 export const verifyAccessToken = (token: string) => {

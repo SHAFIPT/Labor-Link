@@ -16,7 +16,7 @@ export interface ILaborer {
   }[];
   DurationofEmployment: {
     startDate: string,
-    EndDAte
+    currentlyWorking : boolean
   }
   dateOfBirth: string;
   gender: string;

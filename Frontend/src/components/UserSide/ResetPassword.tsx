@@ -65,7 +65,7 @@ const ResetPassword = ({
               id="password"
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter new password"
-              className="w-full px-3 text-black py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+              className="w-full px-3 bg-white text-black py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
             />
             <button
               type="button"
@@ -87,7 +87,7 @@ const ResetPassword = ({
             id="confirmPassword"
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirm new password"
-            className="w-full px-3 text-black py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+            className="w-full px-3 bg-white text-black py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
           />
         </div>
 

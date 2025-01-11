@@ -82,7 +82,7 @@ const Forgottpasswod = ({
               id="email"
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="w-full text-black px-3 py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+              className="w-full text-black bg-white px-3 py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
             />
             {error?.email && (
               <p className="text-red-500 text-sm mt-1">{error.email}</p>
@@ -102,7 +102,7 @@ const Forgottpasswod = ({
                   onChange={(e) => handleOtpChange(e.target.value, index)}
                   id={`otp-${index}`}
                   maxLength={1} // Limit each input to one character
-                  className="w-10 h-10 text-black text-center border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+                  className="w-10 h-10 bg-white text-black text-center border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
                 />
               ))}
             </div>

@@ -11,7 +11,10 @@ const OTPSchema: Schema<IOTP> = new Schema({
     lastResendTime: { type: Date, default: null },
     role : {type : String , default : 'user'}
 },
-    {timestamps : true}
+    {timestamps : true},
 )
+
+OTPSchema.index({ expirationTime: 1 }, { expireAfterSeconds: 86400 });
+
 
 export default mongoose.model<IOTP>('OTP', OTPSchema)

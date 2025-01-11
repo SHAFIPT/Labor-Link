@@ -1,4 +1,13 @@
 import * as Joi from 'joi';
+interface IdProofData {
+  idType: string;
+  idImage: File | string | null;
+}
+
+interface CertificateData {
+  certificateText: string;
+  certificateImages: (File | string)[];
+}
 
 // First Name Validation Schema
 const firstNameSchema = Joi.string()
@@ -131,10 +140,8 @@ const skillSchema = Joi.string()
 
 // Time Schema (Start and End Time)
 const timeSchema = Joi.string()
-  .pattern(/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/) // Matches HH:MM format
   .required()
   .messages({
-    "string.pattern.base": "Invalid time format", // Custom error message for invalid format
     "string.empty": "Time is required",
   });
 
@@ -155,21 +162,34 @@ const availabilitySchema = Joi.array() // Adjust with your valid options
     'string.empty': 'ID type is required.',
   });
 
-  const certificationsSchema = Joi.string()
-  .max(500)
-  .allow('')
-  .messages({
-    'string.max': 'Certifications and training description should be less than 500 characters.',
-  });
+  // const certificationsSchema = Joi.string()
+  // .max(500)
+  // .allow('')
+  // .messages({
+  //   'string.max': 'Certifications and training description should be less than 500 characters.',
+  // });
+
+//  const idProofSchema = Joi.object({
+//   idType: Joi.string()
+//     .valid('drivers-license', 'voter-id', 'others')
+//     .required()
+//     .messages({
+//       'any.only': 'Please select a valid ID type.',
+//       'any.required': 'ID type is required.',
+//     }),
+//   idImage: Joi.any()
+//     .required()
+//     .messages({
+//       'any.required': 'ID proof image is required.',
+//     }),
+// });
 
 
   const startDateSchema = Joi.date()
-  .iso()
   .less('now')
   .required()
   .messages({
     'date.less': 'Start date must be in the past.',
-    'date.iso': 'Start date must be in ISO format.',
     'any.required': 'Start date is required.',
   });
 
@@ -274,9 +294,44 @@ export const validateAvailability = (availability: string[]) => {
 };
 
 
-export const validateCertifications = (certifications) => {
-  const { error } = certificationsSchema.validate(certifications);
-  return error ? error.details[0].message : null;
+export const validateCertificate = (data: CertificateData) => {
+  // Validate certificate text
+  if (!data.certificateText || data.certificateText.trim() === '') {
+    return 'Please provide certification details';
+  }
+
+  // Check minimum length for certificate text
+  if (data.certificateText.trim().length < 10) {
+    return 'Certificate description should be at least 10 characters long';
+  }
+
+  // Check if any images are uploaded
+  if (!data.certificateImages || data.certificateImages.length === 0) {
+    return 'Please upload at least one certificate image';
+  }
+
+  // Check maximum number of images
+  // if (data.certificateImages.length > 2) {
+  //   return 'Maximum 2 certificate images allowed';
+  // }
+
+  // // Validate each image
+  // for (const image of data.certificateImages) {
+  //   if (image instanceof File) {
+  //     // Validate file size (max 5MB)
+  //     if (image.size > 5 * 1024 * 1024) {
+  //       return 'Each certificate image must be less than 5MB';
+  //     }
+
+  //     // Validate file type
+  //     const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+  //     if (!validTypes.includes(image.type)) {
+  //       return 'Please upload certificates in JPG, JPEG, or PNG format only';
+  //     }
+  //   }
+  // }
+
+  return null;
 };
 
 export const validateStartDate = (startDate) => {
@@ -287,4 +342,24 @@ export const validateStartDate = (startDate) => {
 export const validateResponsibilities = (responsibilities) => {
   const { error } = responsibilitiesSchema.validate(responsibilities);
   return error ? error.details[0].message : null;
+};
+
+export const validateIdProof = (data: IdProofData) => {
+  // Check if ID type is selected
+  if (!data.idType || data.idType === '') {
+    return 'Please select an ID type';
+  }
+
+  // Check if ID type is valid
+  const validTypes = ['drivers-license', 'voter-id', 'others'];
+  if (!validTypes.includes(data.idType)) {
+    return 'Please select a valid ID type';
+  }
+
+  // Check if image is uploaded
+  if (!data.idImage) {
+    return 'Please upload your ID proof image';
+  }
+
+  return null;
 };

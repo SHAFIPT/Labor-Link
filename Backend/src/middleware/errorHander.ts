@@ -1,45 +1,63 @@
-import { Request, Response, NextFunction } from "express";
+// errorHandler.ts
+import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 
-
-class ApiError extends Error{
+class ApiError extends Error {
     statusCode: number;
     error: string;
     data: any;
     success: boolean;
 
-    constructor(statusCode: number, error: string, message : string = 'Something Went wrong...!', stack: string = '', data: any = null) {
-        super(message)
-        this.statusCode = statusCode
+    constructor(
+        statusCode: number,
+        error: string,
+        message: string = 'Something went wrong...!',
+        stack: string = '',
+        data: any = null
+    ) {
+        super(message);
+        this.statusCode = statusCode;
         this.data = data;
         this.success = false;
-        this.error = error
+        this.error = error;
 
-        Error.captureStackTrace(this , this.constructor)
+        if (stack) {
+            this.stack = stack;
+        } else {
+            Error.captureStackTrace(this, this.constructor);
+        }
     }
 }
 
-export const errorHandle = (err: ApiError | Error, req: Request, res: Response, next: NextFunction) => {
-    console.error(`[Error] : `, {
-        message: err.message, 
-        stack : err.stack
-    })
+const errorHandler: ErrorRequestHandler = (
+    err: ApiError | Error,
+    req: Request,
+    res: Response,
+    next: NextFunction
+): void => {
+    console.error(`[Error]:`, {
+        message: err.message,
+        stack: err.stack
+    });
 
     // If the error is an instance of ApiError, use its details
     if (err instanceof ApiError) {
-        return res.status(err.statusCode).json({
-        success: err.success,
-        error: err.error,
-        message: err.message,
-        data: err.data,
+        res.status(err.statusCode).json({
+            success: err.success,
+            error: err.error,
+            message: err.message,
+            data: err.data,
         });
+        return;
     }
 
-    return res.status(500).json({
+    // Default error response
+    res.status(500).json({
         success: false,
         error: "Internal Server Error",
         message: err.message || "Something Went Wrong",
         data: null,
     });
-}
+    return;
+};
 
-export { ApiError }
+export { ApiError, errorHandler };

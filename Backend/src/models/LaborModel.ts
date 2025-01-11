@@ -16,9 +16,14 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
     gender: { type: String },
     lastUpdated: { type: Date, default: Date.now },
   },
+   DurationofEmployment: {
+    startDate: {type : String},
+    currentlyWorking : {type : Boolean}
+  },
    skill: { type: String, required: false }, // Skill or expertise of the laborer
   startTime: { type: String, required: false }, // Start time (ISO string or timestamp)
   endTime: { type: String, required: false }, // End time (ISO string or timestamp)
+  responsibility: { type : String },
   availability: [{ type: String, required: false }], 
   categories: [{ type: String, required: false }],
   certificates: [{
@@ -32,6 +37,7 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
     lastUpdated: { type: Date, default: Date.now },
   }],
   rating: { type: Number, required: false },
+  role: { type: String, default: 'labor' },
   createdAt: { type: Date, default: Date.now },
   walletBalance: { type: Number },
   updatedAt: { type: Date, default: Date.now },
@@ -52,6 +58,7 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
     enum: ['aboutYou', 'profile', 'experience'], // Enum to track where the user is in the process
     default: 'aboutYou', // Default to 'aboutYou'
   },
+  refreshToken: { type: [String], default: [] }, 
 });
 
 const Labor = mongoose.model<ILaborer>('Labor', LaborersSchema);

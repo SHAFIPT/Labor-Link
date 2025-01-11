@@ -48,6 +48,7 @@ const navigate = useNavigate()
     availability?: string;
   } = useSelector((state: RootState) => state.labor.error);
 
+  console.log('this is profile page form data :',formData)
   useEffect(() => {
   if (formData) {  // Only set data if formData exists
     dispatch(setUnsavedChanges(true))
@@ -58,7 +59,9 @@ const navigate = useNavigate()
     setImage(formData.image || '') 
     setAvailability(Array.isArray(formData.availability) ? formData.availability : [])
   }
-}, [formData , dispatch])
+  }, [formData, dispatch])
+  
+  console.log('endTime from formData:', formData.endTime);
 
     useEffect(() => {
       const handleBeforeunLoad = (event: BeforeUnloadEvent) => {
@@ -117,6 +120,10 @@ const navigate = useNavigate()
     const endTimeError = validateEndTime(endTime);
     const availabilityError = validateAvailability(availability);
 
+
+    console.log('this is the error from starttime:',startTimeError)
+    console.log('this is the error from endTimeError:',endTimeError)
+
     const formDataError = {
       image: imageError,
       category: categoryError,
@@ -152,6 +159,12 @@ const navigate = useNavigate()
       formDataForAPI.append('endTime', endTime);
       formDataForAPI.append('availability', JSON.stringify(availability));
       formDataForAPI.append('email',email)
+
+
+       // Log formData contents for debugging
+        for (let pair of formDataForAPI.entries()) {
+          console.log(pair[0] + ': ' + pair[1]);
+        }
 
       try {
 
@@ -341,7 +354,7 @@ const navigate = useNavigate()
                     <input
                       type="time"
                       id="start-time"
-                      className="px-3 w-[150px] p-2 text-[14px]border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
+                      className="px-3 w-[150px] bg-black text-white p-2 text-[14px]border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                       placeholder="08:00 AM"
                       value={startTime}
                       onChange={handleInputChange(setStartTime)}
@@ -356,8 +369,9 @@ const navigate = useNavigate()
                 <input
                   type="time"
                   id="end-time"
-                  className="px-3 w-[150px] p-2 text-[14px] border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
+                  className="px-3 w-[150px] bg-black text-white p-2 text-[14px] border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                   placeholder="05:00 PM"
+                  
                   value={endTime}
                   onChange={handleInputChange(setEndTime)}
                 />

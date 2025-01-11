@@ -24,7 +24,7 @@ export default class OTPRepository implements IOTPRepository{
     }
 
     async findOtpByEmail(email: string): Promise<IOTP | null> {
-        const OTPFound = await otpModel.findOne({ email })
+        const OTPFound = await otpModel.findOne({ email }).sort({ createdAt: -1 });
         console.log('this is otp : ',OTPFound)
         if (OTPFound) {
             return OTPFound

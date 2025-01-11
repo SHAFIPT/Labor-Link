@@ -63,6 +63,7 @@ export default class OTPservices implements IOTPservices{
     } 
 
     async verifyOtp(email : string, otp: string): Promise<boolean> {
+        //  console.log('this is the user to verifiy:',user)
         const existOTP = await this.otpRepository.findOtpByEmail(email)
         console.log('theis exist otp :',otp)
         if (!existOTP) {
@@ -77,23 +78,38 @@ export default class OTPservices implements IOTPservices{
         return true
     }
 
-    async resendOtp(email : string): Promise<IOTP | null> {
-        const existOTp = await this.otpRepository.findOtpByEmail(email)
-        if (!existOTp) {
-            throw new Error('NO OTP found for this user')
-        }
-        if (existOTp.reSendCount >= 3) {
-            throw new Error('Your have exceed the maximum no of OTP resend!')
-        }
-
-        await this.otpRepository.updateOtpResendCount(existOTp._id.toString(), existOTp.reSendCount + 1)
-        
-        const otpSend = await this.sendEmailOtp(email, existOTp.otp)
-        if (!otpSend) {
-            throw new Error('Faild to resend OTp')
-        }
-        return existOTp
+    async resendOtp(user: IUser): Promise<IOTP | null> {
+    const existOTp = await this.otpRepository.findOtpByEmail(user.email);
+    if (!existOTp) {
+        throw new Error('NO OTP found for this user');
     }
+
+    if (existOTp.reSendCount >= 3) {
+        throw new Error('You have exceeded the maximum number of OTP resends!');
+    }
+
+    await this.otpRepository.updateOtpResendCount(existOTp._id.toString(), existOTp.reSendCount + 1);
+
+    const newOtpValue = await this.otpRepository.createOtp(user);
+
+    if (!newOtpValue) {
+        throw new Error('Error occurred during OTP creation.');
+    }
+
+    const otp = await this.otpRepository.findOTP(user);
+
+    if (!otp) {
+        throw new Error('Failed to fetch the latest OTP.');
+    }
+
+    const otpSend = await this.sendEmailOtp(user.email, otp.otp); // Access the `otp` property
+
+    if (!otpSend) {
+        throw new Error('Failed to resend OTP.');
+    }
+
+    return existOTp;
+}
 
     async isVerify(user: Partial<IUser>, otp: IOTP): Promise<IOTP | null> {
 
@@ -101,8 +117,8 @@ export default class OTPservices implements IOTPservices{
         const OTPFound = await this.otpRepository.findOTP(user)
         
         console.log('This is OtpFound :',OTPFound)
-
-        if(!OTPFound){
+ 
+        if(!OTPFound){ 
             return null
         }
 
