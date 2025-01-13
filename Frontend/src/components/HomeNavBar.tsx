@@ -16,6 +16,7 @@ import './userHomeNave.css'
 const HomeNavBar = () => {
 
   const storedDarkMode = localStorage.getItem("isDarkMode") === "true";
+  console.log("storedDarkMode is this :",storedDarkMode)
           
   const [isDarkMode, setIsDarkMode] = useState(storedDarkMode)
 

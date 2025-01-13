@@ -4,41 +4,57 @@ import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "../../redux/store/store"
 import { toast } from "react-toastify"
 import { logout } from "../../services/UserAuthServices"
-import { setIsAuthenticated, setUser } from '../../redux/slice/userSlice'
+import { setisUserAthenticated, setUser } from '../../redux/slice/userSlice'
+import { useEffect } from "react"
 
 const UserHome = () => {
 
   const { user } = useSelector((state: RootState) => state.user)
+  const  email  = useSelector((state: RootState) => state.user.user.email)
+  const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
+  const isLaborAthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
+  const accessToken = localStorage.getItem('accessToken');
   console.log('this is user',user)
+  console.log('this is accessToken',accessToken)
+  console.log('this is role',email)
+  console.log('this is isAthenticated',isUserAthenticated)
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-  const handleLogout = async () => {
-    try {
+  // useEffect(() => {
+  //   dispatch(setUser({}))
+  // })
 
-      const response = await logout()
+    const handleLogout = async () => {
+      try {
 
-      console.log('this is response : ',response)
+        const response = await logout()
 
-    if (response?.status === 200) {
-        // Clear local storage
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        console.log('this is response : ',response)
 
-      
-      dispatch(setUser({}))
-      dispatch(setIsAuthenticated(false)) 
-      // Redirect to login page
-      toast('logout successfully....!')
-        navigate('/login');
-      } else {
-        console.error('Logout failed:', response);
-        alert('Failed to logout. Please try again.');
+      if (response?.status === 200) {
+          // Clear local storage
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+
+        
+        dispatch(setUser({}))
+        dispatch(setisUserAthenticated(false)) 
+        // Redirect to login page
+        toast('logout successfully....!')
+          navigate('/login');
+        } else {
+          console.error('Logout failed:', response);
+          alert('Failed to logout. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error during logout:', error);
       }
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
   };
+  
+
+  const shouldShowLoginButton = !isUserAthenticated || isLaborAthenticated;
+  const shouldShowUserName = isUserAthenticated && !isLaborAthenticated && user.firstName
   
  return (
   <div className="flex justify-between items-center p-10">
@@ -49,7 +65,7 @@ const UserHome = () => {
 
     {/* Right Side: User Info or Login/Logout */}
     <div className="flex items-center gap-9">
-     {Object.keys(user).length !== 0 ? (
+     {shouldShowUserName ? (
       <h1 className="w-auto p-3 rounded-lg bg-[#24c852] text-white">
         {user.firstName} {user.lastName}
       </h1>
@@ -60,7 +76,7 @@ const UserHome = () => {
     )}
 
       {/* Logout button for logged-in users */}
-      {Object.keys(user).length !== 0 && (
+      {shouldShowUserName && (
         <div className="p-3 rounded-lg bg-[#d71313] text-white" onClick={handleLogout}>
           Logout
         </div>

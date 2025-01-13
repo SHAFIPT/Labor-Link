@@ -146,30 +146,24 @@ export class AuthLaborController {
     });
   };
 
-  public experiencePage = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+ public experiencePage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const form = formidable({ multiples: true });
 
-      const form = formidable({ multiples: true })
-    
-    form.parse(req, async (err, field, files) => {
+    form.parse(req, async (err, fields, files) => {
       if (err) {
         console.error("Error parsing form data:", err);
         return res.status(500).json({ error: "Error parsing form data" });
       }
+
+      // Handle ID Image
       const idImageFile = files.idImage?.[0];
       let idImageUrl = "";
-
-      const certificatImageFiles = files.certificateImages || [];
-      let certificateUrl: string[] = [];
-
       if (idImageFile) {
         try {
-          const result = await cloudinary.uploader.upload(
-            idImageFile.filepath,
-            {
-              folder: "labor_experience/id_documents",
-            }
-          );
+          const result = await cloudinary.uploader.upload(idImageFile.filepath, {
+            folder: "labor_experience/id_documents",
+          });
           idImageUrl = result.secure_url;
         } catch (error) {
           console.error("Error uploading ID image:", error);
@@ -177,96 +171,106 @@ export class AuthLaborController {
         }
       }
 
-      for (const certificateFile of certificatImageFiles) {
+      // Handle Certificate Images
+      const certificateImageFiles = files.certificateImages || [];
+      let certificateUrls: string[] = [];
+
+      for (const certificateFile of certificateImageFiles) {
         try {
-          const result = await cloudinary.uploader.upload(
-            certificateFile.filepath,
-            {
-              folder: "labor_experience/certificate",
-            }
-          );
-          certificateUrl.push(result.secure_url);
+          const result = await cloudinary.uploader.upload(certificateFile.filepath, {
+            folder: "labor_experience/certificate",
+          });
+          certificateUrls.push(result.secure_url);
         } catch (error) {
           console.error("Error uploading certificate image:", error);
-          continue; // Continue with other images if one fails
+          continue;
         }
       }
 
+      // Parse certificates data from JSON string
+      const certificates = JSON.parse(fields.certificates[0] || '[]');
+
+      // Combine certificate URLs with certificate data
+      const completeCertificates = certificates.map((cert: any, index: number) => ({
+        certificateDocument: certificateUrls[index] || '',
+        certificateName: cert.certificateName,
+        lastUpdated: new Date()
+      }));
+
       const {
-        certificateText,
-        startTime,
+        startDate,
         responsibility,
         currentlyWorking,
         email,
         idType,
-      } = field;
+      } = fields;
 
-      // const isCurrentlyWorking = currentlyWorking === "true";
-
-      // Log the extracted data
-      console.log("Extracted Data:", {
-         governmentProof: {
-          idDocument: idImageUrl,
-          idType: idType[0],
-        },
-        certificates: {
-        certificateDocument: certificateUrl,
-        certificateName: certificateText[0],
-        },
-        DurationofEmployment: {
-          startDate: startTime[0],
-          currentlyWorking : currentlyWorking[0],
-        },
-        responsibility : responsibility[0],
-        email : email[0],
-      });
-
-      const response = await this.laborAuthservice.registerExperience({
+      // Create the experience data object
+      const experienceData = {
         governmentProof: {
           idDocument: idImageUrl,
           idType: idType[0],
         },
-        certificates: [
-          {
-            certificateDocument: certificateUrl[0],
-            certificateName: certificateText[0],
-            lastUpdated: new Date(), // Include this field since it's part of the interface
-          }
-        ],
+        certificates: completeCertificates,
         DurationofEmployment: {
-          startDate: startTime[0],
-          currentlyWorking : currentlyWorking[0] == 'true',
+          startDate: startDate[0],
+          currentlyWorking: currentlyWorking[0] === 'true',
         },
-        responsibility : responsibility[0],
-        email : email[0],
-      })
+        responsibility: responsibility[0],
+        email: email[0],
+      };
 
-      console.log('this is the ExperiencePage response :',response)
+      console.log('Experience Data:', experienceData);
+
+      const response = await this.laborAuthservice.registerExperience(experienceData);
 
       if (response) {
-        return res.status(200).cookie("refreshToken", response.refreshToken, this.options).json({
-        success: true,
-        message: "Experience data saved successfully",
-        data: {
-          idImage: idImageUrl,
-          certificateImages: certificateUrl,
-          certificateText,
-          startTime,
-          responsibility,
-          currentlyWorking,
-          email,
-          idType
-        },
-      });
+        return res.status(200)
+          .cookie("refreshToken", response.refreshToken, this.options) // HTTP-only cookie for refresh token
+          .json({
+            success: true,
+            message: "Experience data saved successfully",
+            data: {
+              ...experienceData,
+              certificateUrls,
+              accessToken: response.accessToken, // Include access token here
+            },
+          });
       } else {
-         return res.status(400).json({ error: 'error occurred ducing ExperiencePage submission...!' });
+        return res.status(400).json({ 
+          error: 'Error occurred during ExperiencePage submission!' 
+        });
       }
+    });
+  } catch (error) {
+    console.error("Error in experiencePage controller:", error);
+    next(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+  };
+  
+  public logoutLabor = async ( req: Request & { labor: { rawToken: string; id: string } }, res: Response , next : NextFunction) => {
+    try {
 
-    
-    })
+       const { labor } = req;
+
+      console.log("this is labor  ", labor);
+
+     if (!labor) {
+     return res.status(400).json({
+        success: false, 
+        message: 'User ID is required',
+      });
+    }
+      
+      const logoutLabor = await this.laborAuthservice.logout(labor.rawToken, labor.id)
+      
+      if (logoutLabor) {
+        res.status(200).json({message : 'Labor Logout successfully....!'})
+      }
       
     } catch (error) {
-       console.error("Error in experiencePage controller:", error);
+      console.error("Error in labor logout :", error);
       next(error);
       return res.status(500).json({ error: "Internal server error" });
     }

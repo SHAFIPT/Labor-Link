@@ -183,7 +183,7 @@ export const forgotPasswordReset = async (password: string, token:string) => {
 export const logout = async () => { 
     try {
 
-        const response = await api.patch('/api/user/auth/log_out',null ,{withCredentials: true});
+        const response = await api.patch('/api/user/auth/log_out' );
 
         console.log('here the responce :',response)
 

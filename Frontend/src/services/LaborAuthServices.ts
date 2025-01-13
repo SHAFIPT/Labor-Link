@@ -42,4 +42,16 @@ export const ExperiencePage = async (formData: FormData) => {
     throw error;
   }
 }
+
+export const logout = async () => {
+  try {
+
+    const response = await api.patch('/api/labor/auth/logout' )
+    return response
+    
+  } catch (error) {
+    console.error("Error during logout..!", error);
+    throw error;
+  }
+}
   

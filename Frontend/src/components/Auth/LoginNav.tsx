@@ -8,6 +8,7 @@ const LoginNav = () => {
   // Check localStorage for dark mode preference on initial load
   const storedDarkMode = localStorage.getItem("isDarkMode") === "true";
 
+  console.log("storedDarkMode is this :",storedDarkMode)
   const [isDarkMode, setIsDarkMode] = useState(storedDarkMode);
 
   useEffect(() => {
@@ -22,7 +23,9 @@ const LoginNav = () => {
     localStorage.setItem("isDarkMode", isDarkMode);
   }, [isDarkMode]);
 
-  const toggleDarkMode = () => {
+  const toggleDarkMode = (e) => {
+    event.preventDefault();
+    e.stopPropagation();
     setIsDarkMode((prevMode) => !prevMode);
   };
 

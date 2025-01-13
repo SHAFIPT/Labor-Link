@@ -8,7 +8,7 @@ export class LaborRepository implements ILaborRepository{
     async findByEmail(email: string): Promise<ILaborer | null> {
         return await Labor.findOne({email})
     }
-
+   
 
     async createLabor(labor: Partial<ILaborer>): Promise<ILaborer | null> {
         try {
@@ -40,6 +40,23 @@ export class LaborRepository implements ILaborRepository{
         } catch (error) {
             console.error("Error in saving RefreshToken", error);
             throw new ApiError(500, "Failed to saving RefreshToken.");
+        }
+    }
+
+    async removeRefreshToken(laborId: string, refreshToken: string): Promise<ILaborer | null> {
+        try {
+
+            const resoponce = await Labor.findByIdAndUpdate(
+                { _id: laborId },
+                { $pull: { refreshToken: refreshToken } },
+                { new: true }).select("-password -refreshToken");
+        
+            
+            return resoponce
+
+        } catch (error) {
+            console.error('Error in Logout :', error);
+            throw new ApiError(500, 'Failed to logout');
         }
     }
 

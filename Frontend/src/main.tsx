@@ -1,19 +1,18 @@
-import store from './redux/store/store';
+import store ,{persistor} from './redux/store/store';
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 import { BrowserRouter } from 'react-router-dom';
-import { Provider as ReduxProvider } from "react-redux";
-import { Provider as ChakraProvider } from "./components/ui/provider";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 
-
-createRoot(document.getElementById('root')!).render(
-  <ReduxProvider store={store}>
-    <BrowserRouter>
-      <ChakraProvider>
+createRoot(document.getElementById("root")!).render(
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <BrowserRouter>
         <App />
-        </ChakraProvider>
       </BrowserRouter>
-  </ReduxProvider>
-)
+    </PersistGate>
+  </Provider>
+);
     

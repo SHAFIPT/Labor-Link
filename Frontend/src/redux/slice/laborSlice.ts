@@ -8,6 +8,7 @@ interface InitialState {
   error: object | null;
   accessToken: string;
   modal: boolean;
+  isLaborAuthenticated:false,
   formData: Partial<ILaborer>;
   unsavedChanges: false,
   navigateBack: false,
@@ -19,6 +20,7 @@ const initialState: InitialState = {
   error: null,
   accessToken: '',
   modal: false,
+  isLaborAuthenticated:false,
   formData: {},
   unsavedChanges: false,
   navigateBack: false,
@@ -51,6 +53,9 @@ const laborerSlice = createSlice({
     setFormData(state, action) {
       state.formData = action.payload;
     },
+    setIsLaborAuthenticated(state, action){
+      state.isLaborAuthenticated = action.payload;
+    },
     setUnsavedChanges(state, action) {
       state.unsavedChanges = action.payload
     },
@@ -74,6 +79,7 @@ export const {
   setFormData,
   setUnsavedChanges,
   setNavigateBack,
+  setIsLaborAuthenticated,
   resetLaborer,
 } = laborerSlice.actions;
 

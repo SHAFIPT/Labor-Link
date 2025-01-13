@@ -187,7 +187,7 @@ export  class AuthService implements IAuthService{
 
     async logout(token: string, id: string): Promise<IUser | null> {
         const user = await this.userRepository.removeRefreshToken(id,token)
-    
+        console.log('htissi user',user)
           return user ? user : null
     }
 }

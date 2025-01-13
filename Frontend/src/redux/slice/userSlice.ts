@@ -10,9 +10,10 @@ import { IUser } from '../../@types/user';
 
 interface InitialState {
     user: IUser;
+    role: 'admin' | 'labor' | 'user' | null;
     loading: boolean;
     error: object;
-    isAthenticated: boolean;
+    isUserAthenticated: boolean;
     accessToken: string;
     modal: boolean;
     formData: Partial<IUser>;
@@ -22,7 +23,8 @@ const initialState: InitialState = {
     user: {} as IUser,
     loading: false,
     error: {},
-    isAthenticated: false,
+    role: null,
+    isUserAthenticated: false,
     accessToken: "",
     modal: false,
     formData: {},
@@ -34,6 +36,7 @@ const userSlice = createSlice({
     reducers: {
         setUser(state, action) {
             state.user = action.payload;
+            state.role = action.payload.role;
         },
         setLoading(state, action) {
             state.loading = action.payload;
@@ -41,8 +44,8 @@ const userSlice = createSlice({
         setError(state, action) {
             state.error = action.payload;
         },
-        setIsAuthenticated(state, action) {
-            state.isAthenticated = action.payload;
+        setisUserAthenticated(state, action) {
+            state.isUserAthenticated = action.payload;
         },
         setAccessToken(state, action) {
             state.accessToken = action.payload;
@@ -57,7 +60,7 @@ const userSlice = createSlice({
             state.user = {} as IUser;
             state.loading = false;
             state.error = {};
-            state.isAthenticated = false;
+            state.isUserAthenticated = false;
             state.accessToken = "";
             state.modal = false;
              state.formData = {
@@ -71,7 +74,7 @@ const userSlice = createSlice({
 })
 
 
-export const { setUser, setAccessToken, resetUser, setError, setFormData, setIsAuthenticated, setLoading, setModal } = userSlice.actions
+export const { setUser, setAccessToken, resetUser, setError, setFormData, setisUserAthenticated, setLoading, setModal } = userSlice.actions
 
 export default userSlice.reducer
 export type { InitialState }; 

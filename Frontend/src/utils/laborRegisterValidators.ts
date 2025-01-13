@@ -294,42 +294,18 @@ export const validateAvailability = (availability: string[]) => {
 };
 
 
-export const validateCertificate = (data: CertificateData) => {
-  // Validate certificate text
-  if (!data.certificateText || data.certificateText.trim() === '') {
-    return 'Please provide certification details';
+export const validateCertificate = (data: { certificateText: string[], certificateImages: File[] }) => {
+  // Check if at least one certificate is required
+  if (!data.certificateImages.length || !data.certificateText.length) {
+    return "At least one certificate is required";
   }
 
-  // Check minimum length for certificate text
-  if (data.certificateText.trim().length < 10) {
-    return 'Certificate description should be at least 10 characters long';
+  // Validate each certificate text
+  for (let i = 0; i < data.certificateImages.length; i++) {
+    if (!data.certificateText[i] || !data.certificateText[i].trim()) {
+      return `Certificate ${i + 1} details are required`;
+    }
   }
-
-  // Check if any images are uploaded
-  if (!data.certificateImages || data.certificateImages.length === 0) {
-    return 'Please upload at least one certificate image';
-  }
-
-  // Check maximum number of images
-  // if (data.certificateImages.length > 2) {
-  //   return 'Maximum 2 certificate images allowed';
-  // }
-
-  // // Validate each image
-  // for (const image of data.certificateImages) {
-  //   if (image instanceof File) {
-  //     // Validate file size (max 5MB)
-  //     if (image.size > 5 * 1024 * 1024) {
-  //       return 'Each certificate image must be less than 5MB';
-  //     }
-
-  //     // Validate file type
-  //     const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-  //     if (!validTypes.includes(image.type)) {
-  //       return 'Please upload certificates in JPG, JPEG, or PNG format only';
-  //     }
-  //   }
-  // }
 
   return null;
 };

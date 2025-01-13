@@ -11,7 +11,7 @@ import {
   setFormData,
   setError,
   setAccessToken,
-  setIsAuthenticated,
+  setisUserAthenticated,
   setUser,
 } from "../../redux/slice/userSlice";
 import {register} from "../../utils/userRegisterValidators";
@@ -125,9 +125,10 @@ const UserRegisterPage = () => {
 
       if (googleResoponse.status === 200) {
         const { user, accessToken } = googleResoponse.data;
+        localStorage.setItem("accessToken", accessToken);
         dispatch(setUser(user));
         dispatch(setAccessToken(accessToken));
-        dispatch(setIsAuthenticated(true));
+        dispatch(setisUserAthenticated(true));
         dispatch(setLoading(false));
         toast.success("Successfully signed in with Google!");
         navigate('/');

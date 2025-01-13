@@ -39,7 +39,7 @@ class AuthController {
         if (loginData?.userFound?.isBlocked) {
             throw new ApiError(401, "Account Blocked", "Your account has been blocked");
         }
-
+ 
         if (loginData) {
             return res.status(200)
             .cookie("refreshToken", loginData.refreshToken, this.options)
@@ -346,8 +346,8 @@ class AuthController {
 
 
     if (!user) {
-     return res.status(400).json({
-        success: false,
+     return res.status(400).json({     
+        success: false, 
         message: 'User ID is required',
       });
     }

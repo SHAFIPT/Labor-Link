@@ -12,7 +12,7 @@ import {
   validatePassword,
   validatePhoneNumber
 } from "../../../utils/laborRegisterValidators"
-import { setError , setLoading ,setLaborer ,setFormData , setUnsavedChanges} from '../../../redux/slice/laborSlice'
+import { setError , setLoading ,setFormData , setUnsavedChanges} from '../../../redux/slice/laborSlice'
 import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "../../../redux/store/store"
 import '../../Auth/LoadingBody.css'

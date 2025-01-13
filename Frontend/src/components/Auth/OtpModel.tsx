@@ -6,7 +6,7 @@ import { registUser, verifyOtp, resendOtp } from '../../services/UserAuthService
 import {
   setLoading,
   setAccessToken,
-  setIsAuthenticated,
+  setisUserAthenticated,
   setError,
   setUser,
   setFormData
@@ -20,26 +20,32 @@ import { AxiosError } from 'axios';
 const OtpForm = ({ isVisible, onClose }) => {
   
   const [timer, setTimer] = useState(60)
-  const [otp, setOtp] = useState({ input1: '', input2: '', input3: '', input4: '' })
+  const [otp, setOtp] = useState(['', '', '', '']); 
   const { formData, loading } = useSelector((state: RootState) => state.user);
   const [message, setMessage] = useState({ type: '', content: '', description: '' });
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const handleInputChange = (e : React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
+  const handleOtpChange = (value: string, index: number) => {
     if (/^[0-9]?$/.test(value)) {
-        setOtp((prev) => ({
-        ...prev,
-        [id] : value
-      }))
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+
+      // Auto-focus next input
+      if (value && index < 3) {
+        const nextInput = document.getElementById(`otp-${index + 1}`);
+        if (nextInput) {
+          nextInput.focus();
+        }
+      }
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  const otpCode = `${otp.input1}${otp.input2}${otp.input3}${otp.input4}`;
+  const otpCode = otp.join('');
 
     console.log('This is otpCode :', otpCode);
     console.log('this is the user formData :',formData)
@@ -62,9 +68,11 @@ const OtpForm = ({ isVisible, onClose }) => {
         if (registernewUser.data) {
           const { user, accessToken } = registernewUser.data;
 
+          localStorage.setItem("accessToken", accessToken);
+
           dispatch(setUser(user));
           dispatch(setAccessToken(accessToken));
-          dispatch(setIsAuthenticated(true));
+          dispatch(setisUserAthenticated(true));
           dispatch(setFormData({}));
           navigate('/');
 
@@ -130,6 +138,8 @@ const OtpForm = ({ isVisible, onClose }) => {
     }
   }
 
+  
+
   const handleCloseMessage = () => {
     setMessage({ type: '', content: '', description: '' });
   };
@@ -145,48 +155,25 @@ const OtpForm = ({ isVisible, onClose }) => {
         <div className="loader "></div>
     )}
 
-      <div className="modal-overlay">
+      <div className="modal-overlay flex justify-center items-center">
       <form className="otp-Form" onSubmit={handleSubmit}>
         <span className="mainHeading">Enter OTP</span>
         <p className="otpSubheading">We have sent a verification code to your email</p>
-        <div className="inputContainer">
-            <input
-              required="required"
-              maxLength={1}
-              type="text"
-              className="otp-input"
-              id="input1"
-              value={otp.input1}
-              onChange={handleInputChange}
-            />
-            <input
-              required="required"
-              maxLength={1}
-              type="text"
-              className="otp-input
-              " id="input2"
-              value={otp.input2}
-              onChange={handleInputChange}
-            />
-            <input
-              required="required"
-              maxLength={1}
-              type="text"
-              className="otp-input"
-              id="input3"
-              value={otp.input3}
-              onChange={handleInputChange}
-            />
-            <input
-              required="required"
-              maxLength={1}
-              type="text"
-              className="otp-input"
-              id="input4"
-              value={otp.input4}
-              onChange={handleInputChange}
-            /> 
-        </div>
+        <div className="flex flex-col items-center justify-center mt-2">
+            <div className="flex justify-center space-x-2 mt-2">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  value={digit}
+                  onChange={(e) => handleOtpChange(e.target.value, index)}
+                  id={`otp-${index}`}
+                  maxLength={1} // Limit each input to one character
+                  className="w-10 h-10 bg-white text-black text-center border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+                />
+              ))}
+            </div>
+          </div>
         <button className="verifyButton" type="submit">Verify</button>
         <button className="exitBtn" onClick={onClose}>×</button>
           <p className="resendNote">
@@ -204,18 +191,18 @@ const OtpForm = ({ isVisible, onClose }) => {
 }
 
 const StyledWrapper = styled.div`
- .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
+//  .modal-overlay {
+//     position: fixed;
+//     top: 0;
+//     left: 0;
+//     width: 100vw;
+//     height: 100vh;
+//     background-color: rgba(0, 0, 0, 0.5);
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     z-index: 1000;
+//   }
   .otp-Form {
     width: 330px;
     height: 360px;

@@ -26,7 +26,6 @@ export class LaborAuthServies implements ILaborAuthSerives{
                 return this.laborRepository.updateLabor(existingLabor._id, {
                     ...labor,
                     currentStage: 'aboutYou',
-                    profileCompletion : true
                 }); 
             } else {
                 let bcryptPassword; 
@@ -76,6 +75,7 @@ export class LaborAuthServies implements ILaborAuthSerives{
             const updatedLabor = await this.laborRepository.updateLabor(isExistOfLabor._id, {
                 ...labor,
                 currentStage: 'experience',
+                profileCompletion : true
             });
 
             if (updatedLabor?.currentStage === 'experience') {
@@ -107,5 +107,10 @@ export class LaborAuthServies implements ILaborAuthSerives{
         console.error('Error occurred during registerExperience:', error);
         throw error;
     }
-}
+    } 
+
+    async logout(token: string, id: string): Promise<ILaborer | null> {
+        const labor = await this.laborRepository.removeRefreshToken(id, token)
+        return labor ? labor : null
+    }
 }

@@ -1,8 +1,14 @@
+import { useSelector } from 'react-redux';
 import './LaborHome.css'
 import { Link } from "react-router-dom";
+import { RootState } from '../../../redux/store/store';
+import { useEffect } from 'react';
 
 const LaborHome = () => {
-
+  const labor = useSelector((state: RootState) => state.labor.formData)  
+  // useEffect(() => {
+  //   console.log('this is labor',labor)
+  // })
   return (
     <div className='labor-home flex flex-col justify-center items-center'>
       <div className="mainText mt-14 text-[45px]">

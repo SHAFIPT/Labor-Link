@@ -81,8 +81,10 @@ const navigate = useNavigate()
 
   const handleInputChange =
   (setter: React.Dispatch<React.SetStateAction<string>>) =>
-  (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setter(event.target.value);
+    (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    console.log('Input changing:', event.target.value);
+    const newValue = event.target.value;
+    setter(newValue);
     dispatch(setUnsavedChanges(true));
   };
   
@@ -168,26 +170,26 @@ const navigate = useNavigate()
 
       try {
 
-        const response = await profilePage(formDataForAPI)
+          const response = await profilePage(formDataForAPI)
 
-        console.log('thsi is response :',response)
+          console.log('thsi is response :',response)
 
-        if (response.status === 200) {
+          if (response.status === 200) {
 
-          const reduxData = {
-           ...formData,
-          category,
-          skill,
-          startTime,
-          endTime,
-          availability,
-          email,
-          // Handle image URL from response if needed
-          image
-          };
-          console.log('This it is the reduxData : ',reduxData)
-    
-          dispatch(setFormData(reduxData))
+            const reduxData = {
+            ...formData,
+            category,
+            skill,
+            startTime,
+            endTime,
+            availability,
+            email,
+            // Handle image URL from response if needed
+            image
+            };
+            console.log('This it is the reduxData : ',reduxData)
+      
+            dispatch(setFormData(reduxData))
           dispatch(setLoading(false))
           toast.success('Profile Page uploaded sucessfuly....!')
           navigate("/labor/experiencePage");
@@ -215,6 +217,18 @@ const navigate = useNavigate()
   }
 
   const handleBacktotheAbout = () => {
+    const reduxData = {
+      ...formData,
+      category,
+      skill,
+      startTime,
+      endTime,
+      availability,
+      email,
+      // Handle image URL from response if needed
+      image,
+    };
+    dispatch(setFormData(reduxData))
     navigate("/labor/registerPage");
   };
   
@@ -354,7 +368,7 @@ const navigate = useNavigate()
                     <input
                       type="time"
                       id="start-time"
-                      className="px-3 w-[150px] bg-black text-white p-2 text-[14px]border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
+                      className="px-3 w-[150px]  bg-white text-black p-2 text-[14px] border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                       placeholder="08:00 AM"
                       value={startTime}
                       onChange={handleInputChange(setStartTime)}
@@ -369,7 +383,7 @@ const navigate = useNavigate()
                 <input
                   type="time"
                   id="end-time"
-                  className="px-3 w-[150px] bg-black text-white p-2 text-[14px] border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
+                  className="px-3 w-[150px]  bg-white text-black p-2 text-[14px] border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                   placeholder="05:00 PM"
                   
                   value={endTime}

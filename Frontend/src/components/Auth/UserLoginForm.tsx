@@ -3,10 +3,10 @@ import LoginImage from "../../assets/upsacelLoginpageimage.jpeg";
 import './userLoginBody.css'
 import './LoadingBody.css'
 import { Link, useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import validate from "../../utils/userRegisterValidators";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading, setUser , setError , setAccessToken , setIsAuthenticated} from '../../redux/slice/userSlice'
+import { setLoading, setUser , setError , setAccessToken , setisUserAthenticated} from '../../redux/slice/userSlice'
 import { RootState } from "../../redux/store/store";
 import { toast } from 'react-toastify';
 import axios from "axios";
@@ -29,9 +29,15 @@ const UserLoginForm = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { loading } = useSelector((state: RootState) => state.user)
-
-  // console.log('this is user :',imaUser)
+  // const isIsAuthenticated = useSelector((state : RootState) => state.user.isAthenticated)
+  // console.log('this is isIsAuthenticated :',isIsAuthenticated)
   
+  // useEffect(() => {
+  // //   if (localStorage.getItem("accessToken")) {
+  // //     navigate('/')
+  // //   }
+  // // },[navigate])
+
   const error: {
     email?: string;
     password?: string;
@@ -75,7 +81,7 @@ const UserLoginForm = () => {
           
           dispatch(setUser(userFound))
           dispatch(setAccessToken(accessToken))
-          dispatch(setIsAuthenticated(true))
+          dispatch(setisUserAthenticated(true))
           dispatch(setLoading(false))
           navigate('/')
         } else {
@@ -199,7 +205,8 @@ const UserLoginForm = () => {
         const googleResoponse = await googleAuth();
     
         if (googleResoponse.status === 200) {
-          const { user, accessToken } = googleResoponse.data;
+          const { user, accessToken } = googleResoponse.data.data;
+          
           dispatch(setUser(user));
           dispatch(setAccessToken(accessToken));
           dispatch(setIsAuthenticated(true));
