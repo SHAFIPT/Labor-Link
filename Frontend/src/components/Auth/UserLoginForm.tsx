@@ -6,12 +6,15 @@ import { Link, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import validate from "../../utils/userRegisterValidators";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading, setUser , setError , setAccessToken , setisUserAthenticated} from '../../redux/slice/userSlice'
+import { setLoading, setUser, setError, setisUserAthenticated }
+  from '../../redux/slice/userSlice'
+import { setLaborer , setIsLaborAuthenticated , setAccessToken ,setFormData} from '../../redux/slice/laborSlice'
 import { RootState } from "../../redux/store/store";
 import { toast } from 'react-toastify';
 import axios from "axios";
 import { googleAuth } from "../../services/UserAuthServices";
-import { Login , forgotPasswordSendOTP , forgetPasswordVerify , forgotPasswordReset} from "../../services/UserAuthServices";
+import { Login, forgotPasswordSendOTP, forgetPasswordVerify, forgotPasswordReset ,  } from "../../services/UserAuthServices";
+import { LaborLogin } from '../../services/LaborAuthServices'
 import Forgottpasswod from "../UserSide/Forgottpasswod";
 import AnimatedPage from "../AnimatedPage/Animated";
 import ResetPassword from "../UserSide/ResetPassword";
@@ -32,17 +35,17 @@ const UserLoginForm = () => {
   // const isIsAuthenticated = useSelector((state : RootState) => state.user.isAthenticated)
   // console.log('this is isIsAuthenticated :',isIsAuthenticated)
   
-  // useEffect(() => {
-  // //   if (localStorage.getItem("accessToken")) {
-  // //     navigate('/')
-  // //   }
-  // // },[navigate])
+  //   useEffect(() => {
+  // dispatch(setError({}))
+  //   })
 
   const error: {
     email?: string;
     password?: string;
   } = useSelector((state: RootState) => state.user.error);
 
+  // console.log(dispatch(setError({})))
+  console.log('this is errors :',error)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,6 +53,8 @@ const UserLoginForm = () => {
     dispatch(setLoading(true))
 
     const formDataError = validate({ email, password })
+
+    console.log('Thsi sis formData Errror :',formDataError)
     
     if (formDataError) {
       setTimeout(() => {
@@ -62,35 +67,66 @@ const UserLoginForm = () => {
       dispatch(setError({}))
 
       try {
+        let loginResponse
 
-        const LoginResponse = await Login({ email, password })
-
-        console.log('this is LoginResponse :',LoginResponse)
-        
-        if (LoginResponse.status === 200) {
-
-          const { userFound, accessToken } = LoginResponse.data.data;
-
-          console.log('THis is the userFound :',userFound)
-          console.log('THis is the accessToken :',accessToken)
-
-          localStorage.setItem("accessToken", accessToken);
-
-          const message = LoginResponse.data.message
-          toast.success(message || "User Login successfully...!");
+        if (imaUser) {
           
-          dispatch(setUser(userFound))
-          dispatch(setAccessToken(accessToken))
-          dispatch(setisUserAthenticated(true))
-          dispatch(setLoading(false))
-          navigate('/')
-        } else {
-          const errorMessage = LoginResponse.data.error || 'Something went wrong during user login.';
-          console.log(errorMessage)
-           toast.error(errorMessage); 
+           loginResponse = await Login({ email, password })
+
+        console.log('this is LoginResponse :',loginResponse)
+        
+          if (loginResponse.status === 200) {
+
+            const { userFound, accessToken } = loginResponse.data.data;
+
+            console.log('THis is the userFound :', userFound)
+            console.log('THis is the accessToken :', accessToken)
+
+            localStorage.setItem("accessToken", accessToken);
+
+            const message = loginResponse.data.message
+            toast.success(message || "User Login successfully...!");
+            
+            dispatch(setUser(userFound))
+            dispatch(setAccessToken(accessToken))
+            dispatch(setisUserAthenticated(true))
+            dispatch(setLoading(false))
+            navigate('/')
+          } else {
+            const message = loginResponse.data.error
+            toast.error(message || "Error occurred in user Login");
+          }
+        } else if (imaLabor) {
+            
+            loginResponse = await LaborLogin({ email, password })
+            
+            console.log('this is LoginResponse :', loginResponse)
+            
+             if (loginResponse.status === 200) {
+               const { LaborFound, accessToken } = loginResponse.data.data;
+               
+               console.log('Labor Found Data:', LaborFound); 
+            localStorage.setItem("accessToken", accessToken);
+            
+            dispatch(setFormData(LaborFound))
+            dispatch(setLaborer(LaborFound))
+            dispatch(setAccessToken(accessToken))
+            dispatch(setIsLaborAuthenticated(true))
+            // console.log('iman iherer ')
+            // navigate('/labor/ProfilePage')
+          }else {
+            const message = loginResponse.data.error
+            toast.error(message || "Error occurred in user Login");
+          }
+
         }
         
-      } catch (error) {
+        // const message = loginResponse.data.error
+        // console.log('Thsis is the error message :',message)
+        // toast.success(message || `${imaUser ? 'User' : 'Labor'} Login successful!`);
+        dispatch(setLoading(false))
+          
+        } catch (error) {
         if (axios.isAxiosError(error)) {
           const message = error.response?.data?.message || error.message;
           console.error("Axios error:", message);
@@ -209,7 +245,7 @@ const UserLoginForm = () => {
           
           dispatch(setUser(user));
           dispatch(setAccessToken(accessToken));
-          dispatch(setIsAuthenticated(true));
+          dispatch(setisUserAthenticated(true));
           dispatch(setLoading(false));
           toast.success("Successfully signed in with Google!");
           navigate('/');
@@ -231,6 +267,20 @@ const UserLoginForm = () => {
     dispatch(setLoading(false))
     setResetPassword(false)
   }
+
+    const handleLoginTypeChange = (type: 'user' | 'labor') => {
+      if (type === 'user') {
+        setIamUser(true)
+        setIamLabor(false)
+      } else {
+        setIamLabor(true)
+        setIamUser(false)
+      }
+      // Clear form when switching types
+      setEmail('')
+      setPassword('')
+      dispatch(setError({}))
+    }
 
 
 
@@ -259,16 +309,16 @@ const UserLoginForm = () => {
           </AnimatedPage>
 
         <LoginNav />
-        <div className="flex flex-wrap lg:flex-nowrap">
+        <div className="flex">
           {/* Left Side Image */}
-          <div className="LeftImage hidden lg:block lg:w-[60%]  ml-12 mt-3">
-            <img src={LoginImage} alt="Login" className="w-full h-auto rounded-md" />
-          </div>
+          <div className="hidden sm:hidden md:mt-[40px] lg:mt-5 md:block w-[80%] md:w-[50%] lg:block lg:w-[60%] ml-12 ">
+          <img src={LoginImage} alt="Login" className=" w-full h-auto rounded-md" />
+        </div>
 
           {/* Right Side Content */}
-          <div className="flex flex-col lg:w-[50%] px-8">
+          <div className="flex flex-col  lg:w-[50%] px-14 sm:px-20 md:px-20 lg:px-9">
             {/* Heading */}
-            <div className="text-center lg:text-left mb-[30px] mt-12 lg:mt-0 lg:ml-[73px]">
+            <div className="text-center lg:text-left mb-[30px] lg:ml-[73px]">
               <h1 className="text-3xl font-serif relative">
                 Sign In
             
@@ -282,7 +332,7 @@ const UserLoginForm = () => {
                 {/* I am a user option */}
                 <div className="text-center cursor-pointer hover:text-blue-600 transition duration-200">
                   <h2 className="text-[14px] font-medium font-poppins flex items-center justify-center gap-2"
-                    onClick={() => { setIamUser(true);  setIamLabor(false)}}
+                    onClick={() => handleLoginTypeChange('user')}
                   >
                     <i className="fas fa-user text-blue-500"></i> I am a user
                   </h2>
@@ -291,7 +341,7 @@ const UserLoginForm = () => {
                 {/* I am a labor option */}
                 <div className="text-center cursor-pointer hover:text-yellow-600 transition duration-200">
                   <h2 className="text-[14px] font-medium font-sans flex items-center justify-center gap-2"
-                    onClick={() => { setIamLabor(true); setIamUser(false)}}
+                    onClick={() => handleLoginTypeChange('labor')}
                   >
                     <i className="fas fa-hard-hat text-yellow-500"></i> I am a labor
                   </h2>

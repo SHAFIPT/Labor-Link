@@ -4,6 +4,8 @@ import { LaborAuthServies } from "../services/implementaions/LaborAuthServies";
 import { ILaborAuthSerives } from "../services/interface/ILaborAuthServies";
 import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
+import { ApiError } from "../middleware/errorHander";
+import ApiResponse from "../utils/Apiresponse";
 
 
 export class AuthLaborController {
@@ -19,6 +21,38 @@ export class AuthLaborController {
   constructor() {
     const laborRepositoy = new LaborRepository();
     this.laborAuthservice = new LaborAuthServies(laborRepositoy);
+  }
+
+  public login = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const labor = req.body
+      console.log('thsi is the loogged labor :', labor)
+      
+      const response = await this.laborAuthservice.login(labor)
+
+      console.log('Thsis is the repsose from labor login :', response)
+      
+      if (response?.LaborFound?.isBlocked) {
+            throw new ApiError(401, "Account Blocked", "Your account has been blocked");
+      }
+      
+      if (response) {
+        res.status(200)
+          .cookie("refreshToken", response.refreshToken, this.options)
+          .json(new ApiResponse(200, response))
+      } else {
+         console.log('this is the errorr')
+          return res.status(400).json(new ApiError(400, "Invalid Credentials"));
+      }
+      
+    } catch (error) {
+       console.error("Error in labor login:", error);
+      next(error);
+      return res
+        .status(500)
+        .json({ error: "Something went wrong. Please try again." });
+    }
   }
 
   public aboutYou = async (req: Request, res: Response, next: NextFunction) => {

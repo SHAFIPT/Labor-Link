@@ -12,7 +12,7 @@ const UserRoute = () => {
     <Routes>
       <Route path='/admin/*' element={<AdminRoute/>}/>
       <Route path='/labor/*' element={<LaborRoute />} /> 
-      <Route path='/login' element={<PublicRoute> <UserLoginPage/> </PublicRoute> }/>  
+      <Route path='/login' element={<PublicRoute><UserLoginPage/></PublicRoute> }/>  
       <Route path="/register" element={<PublicRoute> <UserRegister /></PublicRoute>} />
       <Route path='/' element={<UserHomePage/>}/>
     </Routes>

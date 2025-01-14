@@ -1,7 +1,7 @@
 import { IAdmin } from "../../entities/adminEntity";
 import { ApiError } from "../../middleware/errorHander";
 import Admin from "../../models/AdminModal";
-import { IAdminRepositoy } from "../../repositories/interface/IAdminRepositoy";
+import { IAdminRepositoy } from "../interface/IAdminAuthRepositoy";
 
 
 export class AdminRepository implements IAdminRepositoy{

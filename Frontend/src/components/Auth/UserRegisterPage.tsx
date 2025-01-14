@@ -155,9 +155,9 @@ const UserRegisterPage = () => {
       />
 
       <LoginNav />
-      <div className="flex flex-wrap lg:flex-nowrap">
+      <div className="flex md:flex-nowrap lg:flex-nowrap">
         {/* Left Side Image */}
-        <div className="LeftImage hidden lg:block lg:w-[60%] ml-16 mt-3 mb-7">
+        <div className="LeftImage hidden sm:hidden md:block lg:block lg:w-[60%] ml-16 mt-3 mb-7">
           <img
             src={LoginImage}
             alt="Login"
@@ -166,7 +166,7 @@ const UserRegisterPage = () => {
         </div>
 
         {/* Right Side Content */}
-        <div className="flex flex-col lg:w-[50%] px-8">
+        <div className="flex flex-col  lg:w-[50%] px-16 md:px-16 lg:px-8">
           {/* Heading */}
           <div className="text-center lg:text-left mb-[30px] mt-12 lg:mt-0 lg:ml-[73px]">
             <h1 className="text-3xl font-serif relative">Sign Up</h1>

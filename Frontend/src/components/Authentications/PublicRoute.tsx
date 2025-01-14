@@ -9,6 +9,7 @@
     const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
 
       const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
+      console.log('thsi is logingin :',isUserAuthenticated)
       const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
       
       if (isUserAuthenticated) {

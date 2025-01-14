@@ -38,7 +38,7 @@ const LaborRegisterExperience = () => {
   const [uploadType, setUploadType] = useState(null);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [certificateImages, setCertificateImages] = useState<File[]>([]);
-  const [certificateText, setCertificateText] = useState<string[]>([]); 
+  const [certificateText, setCertificateText] = useState<string[]>([]);
   const [showSecondCertificate, setShowSecondCertificate] = useState(false);
   const [startDate, setStartDate] = useState<string>("");
   const [responsiblity, setResponsiblity] = useState<string>("");
@@ -72,7 +72,7 @@ const LaborRegisterExperience = () => {
   //     setStartTime(formData.startTime || '')
   //     setEndTime(formData.endTime || '')
   //     setSkill(formData.skill || '')
-  //     setImage(formData.image || '') 
+  //     setImage(formData.image || '')
   //     setAvailability(Array.isArray(formData.availability) ? formData.availability : [])
   //   }
   //   }, [formData, dispatch])
@@ -94,24 +94,24 @@ const LaborRegisterExperience = () => {
   }, [unsavedChanges]);
 
   // Handle certificate text change
-    const handleCertificateTextChange = (
-      e: React.ChangeEvent<HTMLTextAreaElement>,
-      index: number
-    ) => {
-      const newCertificateText = [...certificateText];
-      newCertificateText[index] = e.target.value;
-      setCertificateText(newCertificateText);
+  const handleCertificateTextChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+    index: number
+  ) => {
+    const newCertificateText = [...certificateText];
+    newCertificateText[index] = e.target.value;
+    setCertificateText(newCertificateText);
 
-      // Update certificate name
-      const newCertificates = [...certificates];
-      if (newCertificates[index]) {
-        newCertificates[index] = {
-          ...newCertificates[index],
-          certificateName: e.target.value,
-        };
-        setCertificates(newCertificates);
-      }
-    };
+    // Update certificate name
+    const newCertificates = [...certificates];
+    if (newCertificates[index]) {
+      newCertificates[index] = {
+        ...newCertificates[index],
+        certificateName: e.target.value,
+      };
+      setCertificates(newCertificates);
+    }
+  };
 
   // Handle file selection
   const handleImageSelect = (file: File) => {
@@ -119,12 +119,12 @@ const LaborRegisterExperience = () => {
       if (uploadType === "id") {
         setIdImage(file); // Store the raw file
       } else if (uploadType === "certificate") {
-         const newCertificate: Certificate = {
-          certificateDocument: '', // This will be populated by backend
-          certificateName: certificateText[certificateImages.length] || '',
-        }; 
-          setCertificates(prev => [...prev, newCertificate]);
-          setCertificateImages(prev => [...prev, file]);
+        const newCertificate: Certificate = {
+          certificateDocument: "", // This will be populated by backend
+          certificateName: certificateText[certificateImages.length] || "",
+        };
+        setCertificates((prev) => [...prev, newCertificate]);
+        setCertificateImages((prev) => [...prev, file]);
       }
     } else {
       toast.error("Please upload a valid image file");
@@ -200,6 +200,8 @@ const LaborRegisterExperience = () => {
       dispatch(setLoading(false));
       toast.error("Please correct the highlighted errors.");
       return;
+    } else {
+      dispatch(setError({}))
     }
 
     try {
@@ -215,8 +217,8 @@ const LaborRegisterExperience = () => {
       });
 
       const certificatesData = certificateImages.map((_, index) => ({
-        certificateName: certificateText[index] || '',
-        certificateDocument: '',
+        certificateName: certificateText[index] || "",
+        certificateDocument: "",
       }));
 
       formDataForAPI.append("idType", idType);
@@ -240,15 +242,15 @@ const LaborRegisterExperience = () => {
 
       // Log formData contents for debugging
       for (let pair of formDataForAPI.entries()) {
-        console.log('thsi si the fomrDatafroApit',pair[0] + ': ' + pair[1]);
+        console.log("thsi si the fomrDatafroApit", pair[0] + ": " + pair[1]);
       }
 
       const response = await ExperiencePage(formDataForAPI);
 
       console.log("response is this :", response);
 
-        if (response.status === 200) {
-          const experienceData = {
+      if (response.status === 200) {
+        const experienceData = {
           ...formData, // Other form data
           certificates: certificatesData,
           email,
@@ -259,26 +261,26 @@ const LaborRegisterExperience = () => {
             startDate, // Assign the startDate here
             currentlyWorking, // Assign currentlyWorking here
           },
-          role : 'labor'
-          };
-          
-            const {accessToken} = response.data.data;
+          role: "labor",
+        };
 
-            console.log("thisis seh accessToken page data :", accessToken);
-             // Store access token in localStorage
-             localStorage.setItem('LaborAccessToken', accessToken);
+        const { accessToken } = response.data.data;
 
-          console.log("thisis seh exprence page data :", experienceData);
+        console.log("thisis seh accessToken page data :", accessToken);
+        // Store access token in localStorage
+        localStorage.setItem("LaborAccessToken", accessToken);
 
-          dispatch(setLoading(false));
-          dispatch(setIsLaborAuthenticated(true));
-          dispatch(setFormData(experienceData));
-          toast.success("experience Page uploaded sucessfuly....!");
-          setSucess(true);
-        } else {
-          dispatch(setLoading(false));
-          throw new Error(response.data.message || "An error occurred");
-        }
+        console.log("thisis seh exprence page data :", experienceData);
+        setSucess(true);
+        dispatch(setIsLaborAuthenticated(true));
+        dispatch(setFormData(experienceData));
+        
+        dispatch(setLoading(false));
+        toast.success("experience Page uploaded sucessfuly....!");
+      } else {
+        dispatch(setLoading(false));
+        throw new Error(response.data.message || "An error occurred");
+      }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const message = error.response?.data?.message || error.message;
@@ -295,6 +297,11 @@ const LaborRegisterExperience = () => {
     }
   };
 
+  const handleSuccessNavigation = (e: React.FormEvent) => {
+    e.preventDefault()
+    navigate('/labor/ProfilePage')
+  }
+
   //  console.log('this is the idType : to send ',idType)
   const handleNavigateTotheProfile = () => {
     const experienceData = {
@@ -308,9 +315,9 @@ const LaborRegisterExperience = () => {
       DurationofEmployment: {
         startDate, // Assign the startDate here
         currentlyWorking,
-        role : 'labor'// Assign currentlyWorking here
-      }
-    }
+        role: "labor", // Assign currentlyWorking here
+      },
+    };
     dispatch(setFormData(experienceData));
     navigate("/labor/Profile");
   };
@@ -395,12 +402,9 @@ const LaborRegisterExperience = () => {
               </p>
             </div>
             <div className="pt-5 pb-6 px-6 text-center bg-gray-800 -mb-2">
-              <Link
-                to={"/labor/ProfilePage"}
-                className="inline-block py-3 px-5 mb-2 text-center font-semibold leading-6 text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition duration-200"
-              >
+              <button className="inline-block py-3 px-5 mb-2 text-center font-semibold leading-6 text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition duration-200" onClick={handleSuccessNavigation}>
                 Go to Home
-              </Link>
+             </button>
             </div>
           </div>
         </div>
@@ -540,18 +544,20 @@ const LaborRegisterExperience = () => {
             </div>
 
             <div className="flex flex-col">
-             <div className="flex flex-col  space-y-4">
+              <div className="flex flex-col  space-y-4">
                 <span className="font-sans text-[14px] my-1">
                   You can upload a maximum of 2 certificates
                 </span>
 
                 {/* First Certificate Section */}
                 <div className="flex flex-col space-y-2">
-                  <label className="text-[14px] font-medium">Certificate 1 Details</label>
+                  <label className="text-[14px] font-medium">
+                    Certificate 1 Details
+                  </label>
                   <textarea
                     placeholder="Enter details for Certificate 1"
                     className="px-3 h-28 text-black w-[340px] p-4 text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500 resize-none overflow-auto"
-                    value={certificateText[0] || ''}
+                    value={certificateText[0] || ""}
                     onChange={(e) => handleCertificateTextChange(e, 0)}
                   />
                 </div>
@@ -566,59 +572,67 @@ const LaborRegisterExperience = () => {
                     <span className="btn__text">Upload First Certificate</span>
                   </button>
                 ) : (
-                 <div className="relative mt-4 flex space-x-4">
-                  {/* Certificate 1 */}
-                  <div className="relative">
-                    <img
-                      src={URL.createObjectURL(certificateImages[0])}
-                      alt="Certificate 1"
-                      className="w-[160px] h-[160px] rounded-md"
-                    />
-                    <button
-                      onClick={() => handleDeleteImage("certificate", 0)}
-                      className="absolute top-1 right-1 z-10 rounded-full p-1 text-red-500 hover:bg-gray-400"
-                    >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Certificate 2 */}
-                  {certificateImages[1] && (
+                  <div className="relative mt-4 flex space-x-4">
+                    {/* Certificate 1 */}
                     <div className="relative">
                       <img
-                        src={URL.createObjectURL(certificateImages[1])}
-                        alt="Certificate 2"
+                        src={URL.createObjectURL(certificateImages[0])}
+                        alt="Certificate 1"
                         className="w-[160px] h-[160px] rounded-md"
                       />
                       <button
-                        onClick={() => handleDeleteImage("certificate", 1)}
+                        onClick={() => handleDeleteImage("certificate", 0)}
                         className="absolute top-1 right-1 z-10 rounded-full p-1 text-red-500 hover:bg-gray-400"
                       >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          className="w-4 h-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <path d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
                     </div>
-                  )}
-                </div>
+
+                    {/* Certificate 2 */}
+                    {certificateImages[1] && (
+                      <div className="relative">
+                        <img
+                          src={URL.createObjectURL(certificateImages[1])}
+                          alt="Certificate 2"
+                          className="w-[160px] h-[160px] rounded-md"
+                        />
+                        <button
+                          onClick={() => handleDeleteImage("certificate", 1)}
+                          className="absolute top-1 right-1 z-10 rounded-full p-1 text-red-500 hover:bg-gray-400"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
 
-
-                 {/* Add Second Certificate Button */}
-                  {certificateImages[0] && !showSecondCertificate && (
+                {/* Add Second Certificate Button */}
+                {certificateImages[0] && !showSecondCertificate && (
                   <button
                     onClick={handleShowSecondCertificate}
                     className="rounded-lg relative w-40  h-10 cursor-pointer flex items-center border border-green-500 bg-green-500 group hover:bg-green-500 active:bg-green-500 active:border-green-500"
                   >
-                    <span
-                      className="text-white font-semibold ml-8 transform group-hover:translate-x-20 transition-all duration-300"
-                      >Add 1 more</span
-                    >
-                    <span
-                      className="absolute right-0 h-full w-10 rounded-lg bg-green-500 flex items-center justify-center transform group-hover:translate-x-0 group-hover:w-full transition-all duration-300"
-                    >
+                    <span className="text-white font-semibold ml-8 transform group-hover:translate-x-20 transition-all duration-300">
+                      Add 1 more
+                    </span>
+                    <span className="absolute right-0 h-full w-10 rounded-lg bg-green-500 flex items-center justify-center transform group-hover:translate-x-0 group-hover:w-full transition-all duration-300">
                       <svg
                         className="svg w-8 text-white"
                         fill="none"
@@ -636,18 +650,19 @@ const LaborRegisterExperience = () => {
                       </svg>
                     </span>
                   </button>
-                  )}
+                )}
 
-
-                  {/* Second Certificate Section */}
+                {/* Second Certificate Section */}
                 {showSecondCertificate && (
                   <div className="mt-4 ">
                     <div className="flex flex-col space-y-2">
-                      <label className="text-[14px] font-medium">Certificate 2 Details</label>
+                      <label className="text-[14px] font-medium">
+                        Certificate 2 Details
+                      </label>
                       <textarea
                         placeholder="Enter details for Certificate 2"
                         className="px-3 h-28 text-black w-[340px] p-4 text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500 resize-none overflow-auto"
-                        value={certificateText[1] || ''}
+                        value={certificateText[1] || ""}
                         onChange={(e) => handleCertificateTextChange(e, 1)}
                       />
                     </div>
@@ -658,21 +673,22 @@ const LaborRegisterExperience = () => {
                         className="button mt-4"
                         onClick={() => handleOpenModal("certificate")}
                       >
-                        <span className="btn__text">Upload Second Certificate</span>
+                        <span className="btn__text">
+                          Upload Second Certificate
+                        </span>
                       </button>
                     )}
-
-                    
                   </div>
                 )}
 
                 {showErrors && error?.certificate && (
-                  <p className="text-red-500 text-sm mt-1">{error.certificate}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {error.certificate}
+                  </p>
                 )}
+              </div>
+            </div>
           </div>
-          </div>
-          </div>
-          
 
           <div className="rightDive space-y-7">
             <div className="flex flex-col mb-4">

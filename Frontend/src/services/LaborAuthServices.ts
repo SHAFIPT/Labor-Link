@@ -55,3 +55,13 @@ export const logout = async () => {
   }
 }
   
+
+export const LaborLogin = async (labor : Partial<ILaborer>) => {
+  try {
+    const reseponse = await api.post('/api/labor/auth/login', labor)
+    return reseponse
+  } catch (error) {
+    console.error("Error during logout..!", error);
+    throw error;
+  }
+}

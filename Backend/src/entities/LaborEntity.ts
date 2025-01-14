@@ -50,4 +50,5 @@ export interface ILaborer extends Document {
   availability: string[]; // Array of availability slots or statuses
   role: string;
   refreshToken: string[];
+  isBlocked: boolean | null;
 }

@@ -7,7 +7,7 @@ export interface ILaborer {
   language: string;
   address: string;
   password: string;
-  role: string;
+  role: 'labor';
   image: string;
   category: string; // existing field, category list
   certificates: {

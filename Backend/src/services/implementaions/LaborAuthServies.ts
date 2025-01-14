@@ -4,6 +4,7 @@ import bycript from 'bcrypt'
 import Labor from "../../models/LaborModel";
 import { ILaborRepository } from '../../repositories/interface/ILaborRepository';
 import { generateAccessToken, generateRefreshToken } from "../../utils/tokenUtils";
+import { ApiError } from "../../middleware/errorHander";
 
 export class LaborAuthServies implements ILaborAuthSerives{
    private laborRepository : ILaborRepository
@@ -11,6 +12,53 @@ export class LaborAuthServies implements ILaborAuthSerives{
     
     constructor(laborRepository: ILaborRepository) {
         this.laborRepository = laborRepository
+    }
+
+    async login(labor: Partial<ILaborer>): Promise<{ accessToken: string; refreshToken: string; LaborFound: Omit<ILaborer, "password">; }> {
+        try {
+
+            if (!labor.email) {
+                throw new Error('Email is required');
+            }    
+
+            const LaborFound= await this.laborRepository.findByEmail(labor.email.toString())
+
+            if (!LaborFound) {
+                console.log('Invalid credentials...')
+                return null
+            }
+
+            const compairPassword = await bycript.compare(labor.password.toString(), LaborFound.password.toString())
+            
+            if (!compairPassword) {
+                // throw new ApiError(401, 'Invalid Credentials', 'Incorrect password. Please try again.');
+                return null
+            }
+
+            const accessToken = generateAccessToken({
+                id: LaborFound.id,
+                role : LaborFound.role
+            })
+
+            const refreshToken = generateRefreshToken({
+                id: LaborFound.id,
+                role : LaborFound.role
+            })
+
+            const userWithNewToken = await this.laborRepository.saveRefreshToken(LaborFound.id, refreshToken);
+
+            return {
+                accessToken,
+                refreshToken,
+                LaborFound : userWithNewToken
+            }
+            
+        } catch (error) {
+            if (!(error instanceof ApiError)) {
+                throw new ApiError(500, 'Server Error', error.message, error.stack);
+            }
+            throw error;
+        }
     }
 
     async registerAboutYou(labor: Partial<ILaborer>): Promise<ILaborer | null> {

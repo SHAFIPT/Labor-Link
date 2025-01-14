@@ -1,31 +1,46 @@
 import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "../../../redux/store/store"
 import { useEffect } from "react"
-import { setFormData, setIsLaborAuthenticated } from "../../../redux/slice/laborSlice"
+import { setFormData, setIsLaborAuthenticated, setLaborer, resetLaborer } from "../../../redux/slice/laborSlice"
+import { resetUser } from '../../../redux/slice/userSlice'
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
 import { logout } from "../../../services/LaborAuthServices"
 
 const LaborProfile = () => {
     const formdata = useSelector((state: RootState) => state.labor.formData)
-    const formdatarole = useSelector((state: RootState) => state.labor.formData.role)
-    const Oldrole = useSelector((state: RootState) => state.labor.laborer.role)
+    const formdatarole = useSelector((state: RootState) => state.labor?.formData?.role)
+    const Oldrole = useSelector((state: RootState) => state.labor?.laborer?.role)
     console.log('formdata :',formdata)
     console.log('formdata :',formdatarole)
     console.log('formdata :',Oldrole)
     const dispatch = useDispatch()
     const navigate = useNavigate()
-//    useEffect(() => {
-//   console.log('Dispatching setIsLaborAuthenticated to false');
-//   dispatch(setIsLaborAuthenticated(false));
-// }, [dispatch]);
+  //  useEffect(() => {
+  //   console.log('Dispatching setIsLaborAuthenticated to false');
+  //     dispatch(setFormData({}))
+  // dispatch(setIsLaborAuthenticated(false));
+  // });
+  
+   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
+    // const laborRole = useSelector((state: RootState) => state.labor.formData.role);
+  
+  
+      console.log('Role required')
+      console.log('Is Labor Authenticated:', isLaborAuthenticated);
+      // console.log('Labor Role:', laborRole);
 
     const handleLogoutLabor = async () => {
-        const response = await logout()
+      console.log('this is logout going logooiiu :')
+      const response = await logout()
+      console.log('this is logout response :',response)
+      
         
         if (response.status === 200) {
-            localStorage.removeItem('LaborAccessToken');
-            
+          localStorage.removeItem('LaborAccessToken');
+            dispatch(resetUser())
+            dispatch(resetLaborer())
+            dispatch(setLaborer({}))
             dispatch(setFormData({}))
             dispatch(setIsLaborAuthenticated(false))
             toast('logout successfully....!')

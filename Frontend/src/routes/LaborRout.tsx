@@ -31,7 +31,7 @@ const LaborRout = () => {
       <Route path='/registerPage' element={<LaborResterPages />} />
       <Route path="/Profile" element={<LaborRegisterProfile/>}/>
       <Route path="/experiencePage" element={<LaborRegisterExperience/>}/>
-      <Route path="/ProfilePage" element={<PrivateRoute role="labor"><LaborProfilePage/></PrivateRoute>}/>
+      <Route path="/ProfilePage" element={<PrivateRoute><LaborProfilePage/></PrivateRoute>}/>
     </Routes>
   )
 }

@@ -2,7 +2,7 @@ import mongoose, { Document } from "mongoose";
 
 export interface IOTP extends Document {
     email: string;
-    otp: string;
+    otp: string;       
     expirationTime: Date;
     attempts: number;
     reSendCount: number;

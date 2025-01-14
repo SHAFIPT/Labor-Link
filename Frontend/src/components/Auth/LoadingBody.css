@@ -1,12 +1,19 @@
 .loader {
-  position: relative;
+  position: fixed;
+  /* Use fixed to ensure the loader stays in the center even when scrolling */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 2.5em;
   height: 2.5em;
-  transform: rotate(165deg);
+  transform: translate(-50%, -50%) rotate(165deg);
+  z-index: 9999;
+  /* Ensure it appears above all other elements */
 }
 
-/* Positioning the loader at the center of the screen */
-.loader:before, .loader:after {
+/* Loader pseudo-elements */
+.loader:before,
+.loader:after {
   content: "";
   position: absolute;
   top: 50%;
@@ -31,14 +38,17 @@
     width: 0.5em;
     box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
   }
+
   35% {
     width: 2.5em;
     box-shadow: 0 -0.5em rgba(225, 20, 98, 0.75), 0 0.5em rgba(111, 202, 220, 0.75);
   }
+
   70% {
     width: 0.5em;
     box-shadow: -1em -0.5em rgba(225, 20, 98, 0.75), 1em 0.5em rgba(111, 202, 220, 0.75);
   }
+
   100% {
     box-shadow: 1em -0.5em rgba(225, 20, 98, 0.75), -1em 0.5em rgba(111, 202, 220, 0.75);
   }
@@ -49,36 +59,31 @@
     height: 0.5em;
     box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
   }
+
   35% {
     height: 2.5em;
     box-shadow: 0.5em 0 rgba(61, 184, 143, 0.75), -0.5em 0 rgba(233, 169, 32, 0.75);
   }
+
   70% {
     height: 0.5em;
     box-shadow: 0.5em -1em rgba(61, 184, 143, 0.75), -0.5em 1em rgba(233, 169, 32, 0.75);
   }
+
   100% {
     box-shadow: 0.5em 1em rgba(61, 184, 143, 0.75), -0.5em -1em rgba(233, 169, 32, 0.75);
   }
 }
 
-/* Positioning the loader in the center for all screen sizes */
-.loader {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-/* Adjust loader size for smaller screens */
+/* Responsive adjustments */
 @media (max-width: 600px) {
   .loader {
     width: 2em;
     height: 2em;
-   margin-left : 73px; 
-   margin-top: 92px;
   }
-  .loader:before, .loader:after {
+
+  .loader:before,
+  .loader:after {
     width: 0.4em;
     height: 0.4em;
   }

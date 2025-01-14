@@ -27,10 +27,10 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
 
   // Allow access based on authentication type
   if (userRole === 'user' && isUserAuthenticated) {
-    return <>{children}</>;
+    return <Navigate to="/" />;
   }
 
-  if (laborRole === 'labor' &&  isLaborAuthenticated) {
+  if (isLaborAuthenticated) {
     return <>{children}</>;
   }
 

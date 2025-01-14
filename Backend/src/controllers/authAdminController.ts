@@ -1,8 +1,8 @@
 import { Request , Response ,NextFunction } from "express"
 import { ApiError } from "../middleware/errorHander";
-import { AdminRepository } from "../repositories/implementaions/AdimnRepository";
-import { AdminService } from "../services/implementaions/AdminService";
-import { IAdminService } from "../services/interface/IAdminService";
+import { AdminRepository } from "../repositories/implementaions/AdimnAuthRepository";
+import { AdminService } from "../services/implementaions/AdminAuthService";
+import { IAdminService } from "../services/interface/IAdminAuthService";
 
 
 class adminController {
@@ -52,7 +52,7 @@ class adminController {
             error: error.message || 'Something went wrong.'
         });
     }
-};
+    };
 
 }
 
