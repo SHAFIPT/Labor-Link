@@ -18,15 +18,18 @@ export  class AuthService implements IAuthService{
              // Remove the try-catch block here since we want to propagate the specific errors
             const userFound = await this.userRepository.LoginUser(user.email.toString());
 
+            console.log('this is find user :',userFound)
+            console.log('this is find suedr password :',user.password)
+            console.log('this is find userFound :',userFound.password)
+
             // Handle case when user is not found
-            if (!userFound) {
-                // throw new ApiError(404, 'User not found', 'User not found. Please check your email.');
-                console.log('Invalid credentials...')
-                return null
-            }
+              if (!userFound || !userFound.password) {
+                    console.log('Invalid credentials: User not found or password missing.');
+                    return null;
+                }
 
             // Check if password matches
-            const isPasswordValid = await bcrypt.compare(user.password.toString(), userFound.password.toString());
+            const isPasswordValid = await bcrypt.compare(user.password, userFound.password);
             if (!isPasswordValid) {
                 // throw new ApiError(401, 'Invalid Credentials', 'Incorrect password. Please try again.');
                  return null

@@ -37,6 +37,7 @@ export interface ILaborer extends Document {
   updatedAt: Date;
   isActive: boolean;
   isApproved: boolean;
+  lastLogin: Date | null;
   governmentProof: {
     idDocument: string;
     idType: string;

@@ -6,10 +6,10 @@ import axios from "axios";
 import {
     setError,
     setLoading,
-    setUser,
+    setAdmin,
     setAccessToken,
     setFormData,
-    setIsAuthenticated
+    setIsAdminAuthenticated
 } from '../../redux/slice/adminSlice'
 
 import { toast } from 'react-toastify';
@@ -53,15 +53,22 @@ const AdminAuth = () => {
 
             console.log('thsi si the front end response :',response)
             
-            if (response.status === 200) {
+          if (response.status === 200) {
+              
+            console.log("Thei is the resonse as admin :",response)
 
-                const { user, accessToken } = response.data;
-                localStorage.setItem('accessToken',accessToken)
-                dispatch(setIsAuthenticated(true))    
-                dispatch(setUser(user))
+            const { admin, accessToken } = response.data;
+            
+            console.log('Thsi is the  accessToken',accessToken)
+            console.log('Thsi is the admin', admin)
+            
+
+                localStorage.setItem('AdminAccessToken',accessToken)
+                dispatch(setAdmin(admin))
+                dispatch(setIsAdminAuthenticated(true))   
                 dispatch(setAccessToken(accessToken))
                 dispatch(setLoading(false))
-                navigate('/admin/adimDashboard')
+                // navigate('/admin/adimDashboard')
             } else {
               dispatch(setLoading(false))
                 throw new Error(response.data.message || 'An error occurred');

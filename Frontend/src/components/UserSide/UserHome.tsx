@@ -67,9 +67,9 @@ const UserHome = () => {
   // const clearLaborDetails = () => {
   //   dispatch(resetLaborer());
   // };
-  const clearLaborDetails = () => {
-    dispatch(resetUser());
-  };
+  // const clearLaborDetails = () => {
+  //   dispatch(resetUser());
+  // };
   
   // const shouldlaborShow =  isLaborAthenticated && laborer.firstName ;
   const shouldShowUserName = isUserAthenticated 
@@ -79,10 +79,10 @@ const UserHome = () => {
  return (
    <div className="flex justify-between items-center p-10">
      
-
+{/* 
      <button onClick={clearLaborDetails}>
       Clear Labor Details
-    </button>
+    </button> */}
 
     {/* Left Side: Welcome Text */}
     <AnimatedPage>

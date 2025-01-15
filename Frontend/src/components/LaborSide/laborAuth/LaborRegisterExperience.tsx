@@ -54,6 +54,11 @@ const LaborRegisterExperience = () => {
   const email = useSelector((state: RootState) => state.labor.formData.email);
   const formData = useSelector((state: RootState) => state.labor.formData);
 
+
+  useEffect(() => {
+  console.log('Success state:', sucess);
+}, [sucess]);
+
   const error: {
     idType?: string;
     certificate?: string;
@@ -286,7 +291,7 @@ const LaborRegisterExperience = () => {
         const message = error.response?.data?.message || error.message;
         console.error("Axios error:", message);
         toast.error(message);
-        dispatch(setLoading(false));
+        dispatch(setLoading(false)); 
       } else {
         dispatch(setLoading(false));
         console.error("Unexpected error:", error);
@@ -297,10 +302,30 @@ const LaborRegisterExperience = () => {
     }
   };
 
-  const handleSuccessNavigation = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSuccessNavigation = () => {
+    const certificatesData = certificateImages.map((_, index) => ({
+      certificateName: certificateText[index] || "",
+      certificateDocument: "",
+    }));
+    const experienceData = {
+      ...formData, // Other form data
+      certificates: certificatesData,
+      email,
+      idImage,
+      idType,
+      responsiblity,
+      DurationofEmployment: {
+        startDate, // Assign the startDate here
+        currentlyWorking, // Assign currentlyWorking here
+      },
+      role: "labor",
+    };
+    dispatch(setIsLaborAuthenticated(true));
+    dispatch(setFormData(experienceData));
+
+    toast.success("his every one ..");
     navigate('/labor/ProfilePage')
-  }
+  };
 
   //  console.log('this is the idType : to send ',idType)
   const handleNavigateTotheProfile = () => {
@@ -324,7 +349,7 @@ const LaborRegisterExperience = () => {
 
   return (
     <div className="">
-      {sucess && (
+      {!loading && sucess && ( 
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
           <div className="max-w-xl w-full mx-auto bg-gray-900 rounded-xl overflow-hidden">
             <div className="max-w-md mx-auto pt-12 pb-14 px-5 text-center">

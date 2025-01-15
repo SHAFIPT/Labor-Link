@@ -41,6 +41,7 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
   createdAt: { type: Date, default: Date.now },
   walletBalance: { type: Number },
   updatedAt: { type: Date, default: Date.now },
+  lastLogin: { type: Date, default: null },
   isBlocked: { type: Boolean, default: false },
   isActive: { type: Boolean, default: false }, // Profile starts as inactive
   isApproved: { type: Boolean, default: false }, // Admin review flag

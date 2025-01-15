@@ -1,48 +1,37 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import AdminSideRow from './AdminSideRow'
 import './User.css'
 import { toast } from "react-toastify"
 import { Link, useNavigate } from "react-router-dom"
 import { UserPlus , Eye, Trash2} from 'lucide-react';
+import { fetchUser } from '../../../services/AdminAuthServices'
 const UserMangement = () => {
   const navigate = useNavigate()
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState('')
-  const [image ,setImage] = useState("")
 
-  const users = [
-    {
-      id: 1,
-      name: "John Smith",
-      email: "john.smith@example.com",
-      image: "/api/placeholder/40/40",
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      email: "sarah.j@example.com",
-      image: "/api/placeholder/40/40",
-    },
-    {
-      id: 3,
-      name: "Michael Brown",
-      email: "m.brown@example.com",
-      image: "/api/placeholder/40/40",
-    },
-  ];
+  const [users, setUsers] = useState([]);
 
-  const fetchUsers = async (e : React.FormEvent) => {
-    e.preventDefault()
+
+  const fetchUsers = async () => {  
     
     const resoponse = await fetchUser()
 
+    console.log('This is the resonse of the user fetch :',resoponse)
+
     if (resoponse.status === 200) {
+      setUsers(resoponse.data.data)
       console.log('thhi is the response :',resoponse)
+    } else {
+      toast.error("Error occurd during fetchUser....!")
     }
   }
 
-  const handleViewPage = () => {
-    navigate('/admin/userView')
+    useEffect(() => {
+    fetchUsers()
+  },[])
+
+
+  const handleViewPage = (user) => {
+    navigate('/admin/userView',{state : {user}})
   }
 
   return (
@@ -207,7 +196,7 @@ const UserMangement = () => {
 
                   {/* User Name */}
                   <div className="col-span-3  lg:text-center sm:text-left text-sm font-medium text-white">
-                    {user.name}
+                     {user.firstName ?? "User"}
                   </div>
 
                   {/* User Email */}
@@ -218,14 +207,14 @@ const UserMangement = () => {
                   {/* User Status */}
                   <div className="col-span-2 lg:text-center">
                     <span className="px-2 py-1 lg:text-center text-xs rounded-full bg-green-500 text-white">
-                      Active
+                      {user.isBlocked ? "Blocked" : "Active"}
                     </span>
                   </div>
 
                   {/* Action Buttons */}
                   <div className="col-span-2 flex  lg:justify-center sm:justify-start gap-2">
                     <button
-                      onClick={handleViewPage}
+                      onClick={() => handleViewPage(user) }
                       className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-xs"
                       aria-label="View profile"
                     >

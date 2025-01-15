@@ -10,6 +10,7 @@ const UserSchema: Schema<IUser> = new Schema({
   role: { type: String, default: 'user' },
   isBlocked: { type: Boolean, default: false },
   refreshToken: { type: [String], default: [] }, 
+  lastLogin: { type: Date, default: null },
 }, {timestamps : true});
 
 const User = mongoose.model<IUser>('Users', UserSchema)

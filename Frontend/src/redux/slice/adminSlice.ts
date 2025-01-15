@@ -20,7 +20,7 @@ const adminSlice = createSlice({
 
   reducers: {
 
-    setUser(state, action) {
+    setAdmin(state, action) {
       state.admin = action.payload;
     },
     setLoading(state, action) {
@@ -29,7 +29,7 @@ const adminSlice = createSlice({
     setError(state, action) {
       state.error = action.payload;
     },
-    setIsAuthenticated(state, action){
+    setIsAdminAuthenticated(state, action){
       state.isAuthenticated = action.payload;
     },
     setAccessToken(state,action){
@@ -54,7 +54,7 @@ const adminSlice = createSlice({
 
 });
 
-export const { setUser, setLoading, setError ,setIsAuthenticated , setTempData, setAccessToken ,setModal , setFormData , resetAdmin ,setPageTitle } = adminSlice.actions;
+export const { setAdmin, setLoading, setError ,setIsAdminAuthenticated , setTempData, setAccessToken ,setModal , setFormData , resetAdmin ,setPageTitle } = adminSlice.actions;
 
 export default adminSlice.reducer;
 

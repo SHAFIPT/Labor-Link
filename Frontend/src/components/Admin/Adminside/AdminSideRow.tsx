@@ -25,8 +25,10 @@ const AdminSideRow = () => {
         {isOpen && (
           <div className="leftDrawerContent p-3 mt-12 space-y-14 ">
             <div className="flex items-center mb-4 space-x-3 ">
-               <FaHome className="text-black mr-3" />
-              <p className="text-black">Dashboard</p>
+              <FaHome className="text-black mr-3" />
+              <Link to='/admin/adimDashboard'>
+                <p className="text-black">Dashboard</p>
+              </Link>
             </div>
             <div className="flex items-center mb-4 space-x-3 ">
               <FaUsers className="text-black mr-3 " />

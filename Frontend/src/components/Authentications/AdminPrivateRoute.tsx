@@ -5,7 +5,7 @@ import { Navigate } from 'react-router-dom'
 
 const AdminPrivateRoute= ({children}) => {
   const isAuthenticated= useSelector((state:RootState)=>state.admin.isAuthenticated)
-    console.log('this is isAthenticated',isAuthenticated)
+    console.log('this is admin  isAthenticated',isAuthenticated)
   return isAuthenticated?children:<Navigate to='/admin/login'/>;
 }
 

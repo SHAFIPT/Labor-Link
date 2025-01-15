@@ -20,7 +20,7 @@ const LaborProfile = () => {
   //   console.log('Dispatching setIsLaborAuthenticated to false');
   //     dispatch(setFormData({}))
   // dispatch(setIsLaborAuthenticated(false));
-  // });
+  // },[]);
   
    const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
     // const laborRole = useSelector((state: RootState) => state.labor.formData.role);

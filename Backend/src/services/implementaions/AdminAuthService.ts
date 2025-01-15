@@ -1,15 +1,15 @@
 import  bcrypt  from 'bcrypt';
 import { IAdmin } from "../../entities/adminEntity";
 import { ApiError } from "../../middleware/errorHander";
-import { IAdminRepositoy } from "../../repositories/interface/IAdminAuthRepositoy";
-import { IAdminService } from "../interface/IAdminAuthService";
+import { IAdminAuthRepositoy } from "../../repositories/interface/IAdminAuthRepositoy";
+import { IAdminAuthService } from "../interface/IAdminAuthService";
 import { generateAccessToken } from '../../utils/tokenUtils';
 
 
-export class AdminService implements IAdminService{
-    private adminRepository: IAdminRepositoy
+export class AdminService implements IAdminAuthService{
+    private adminRepository: IAdminAuthRepositoy
     
-    constructor(adminRepository: IAdminRepositoy) {
+    constructor(adminRepository: IAdminAuthRepositoy) {
         this.adminRepository = adminRepository
     }
 
@@ -40,6 +40,10 @@ export class AdminService implements IAdminService{
             refreshToken 
         };
         }
+    }
+    async logout(token: string, id: string): Promise<IAdmin | null> {
+        const admin = await this.adminRepository.removeRefreshToken(id, token)
+        return admin ? admin : null
     }
 
 }

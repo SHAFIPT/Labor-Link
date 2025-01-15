@@ -32,14 +32,17 @@ class AuthController {
  
     public loginUser = async (req: Request, res: Response) => {
         const user = req.body;
+        console.log("thsi is the user to login :", user)
+        
         const loginData = await this.authService.login(user);
 
         console.log('this is loginData :',loginData)
 
         if (loginData?.userFound?.isBlocked) {
-            throw new ApiError(401, "Account Blocked", "Your account has been blocked");
+           return res.status(401).json({message :"Your account has been blocked"})
+            // throw new ApiError(401, "Account Blocked", );
         }
- 
+      
         if (loginData) {
             return res.status(200)
             .cookie("refreshToken", loginData.refreshToken, this.options)

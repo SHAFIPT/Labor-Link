@@ -1,38 +1,50 @@
-import React from "react";
+import React, { useState ,useEffect } from "react";
 import AdminSideRow from "./AdminSideRow";
 import "./User.css";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { UserPlus, Eye, Trash2 } from "lucide-react";
+import { fetchLabor } from "../../../services/AdminAuthServices";
 
 const LaborMangement = () => {
   const navigate = useNavigate()
-  const users = [
-    {
-      id: 1,
-      name: "John Smith",
-      email: "john.smith@example.com",
-      image: "/api/placeholder/40/40",
-      expertise: "plumber",
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      email: "sarah.j@example.com",
-      image: "/api/placeholder/40/40",
-      expertise: "Electritian",
-    },
-    {
-      id: 3,
-      name: "Michael Brown",
-      email: "m.brown@example.com",
-      image: "/api/placeholder/40/40",
-      expertise: "carpenter",
-    },
-  ];
+  
+  const [Labors, setLabors] = useState([]);
+  
+  console.log('this is the repnse of the users users :', Labors)
+  Labors.map((user) => {
+    const userName = `${user.firstName} ${user.lastName}`;  // Combine first and last name
+    const isBlocked = user.isBlocked;  // Get the isBlocked status
 
-   const handleViewPage = () => {
-    navigate('/admin/laborView')
+    console.log('User is name :',userName)
+    console.log('isBlocked is this:',isBlocked)
+  })
+    
+  
+  
+    const fetchUsers = async () => {  
+      
+      const resoponse = await fetchLabor()
+
+      console.log('this is the repnse of the labor fetch :',resoponse)
+  
+      if (resoponse.status === 200) {
+        setLabors(resoponse.data.data)
+        console.log('thhi is the response :',resoponse)
+      } else {
+        toast.error("Error occurd during fetchUser....!")
+      }
+    }
+  
+      useEffect(() => {
+      fetchUsers()
+    },[])
+  
+  
+
+  const handleViewPage = (labor) => {
+    //  console.log('this is passing user :',user)
+    navigate('/admin/laborView', {state : {labor}})
   }
 
   return (
@@ -188,9 +200,9 @@ const LaborMangement = () => {
 
             {/* User List Section */}
             <div className="relative grid gap-4 mt-4">
-              {users.map((user, index) => (
+              {Labors.map((labor, index) => (
                 <div
-                  key={user.id}
+                  key={labor.id}
                   className="grid grid-cols-12 gap-4 bg-[#ABA0A0] rounded-lg shadow-md p-3 items-center"
                 >
                   {/* Number */}
@@ -200,17 +212,17 @@ const LaborMangement = () => {
 
                   {/* User Name */}
                   <div className="col-span-2 lg:text-center sm:text-left text-sm font-medium text-white">
-                    {user.name}
+                     {labor.firstName ?? "User"}
                   </div>
 
                   {/* User Email */}
                   <div className="col-span-3 lg:text-center sm:text-left text-sm text-white">
-                    {user.email}
+                    {labor.email}
                   </div>
 
                   {/* User Expertise */}
                   <div className="col-span-2 lg:text-center sm:text-left text-sm text-white">
-                    {user.expertise || "N/A"}
+                    {labor.categories[0] || "N/A"}
                   </div>
 
                   {/* User Status */}
@@ -223,7 +235,7 @@ const LaborMangement = () => {
                   {/* Action Buttons */}
                   <div className="col-span-2 flex lg:justify-center sm:justify-start gap-2">
                     <button
-                      onClick={handleViewPage}
+                      onClick={()=> handleViewPage(labor)}
                       className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-xs"
                       aria-label="View profile"
                     >

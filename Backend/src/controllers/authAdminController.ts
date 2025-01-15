@@ -1,12 +1,12 @@
 import { Request , Response ,NextFunction } from "express"
 import { ApiError } from "../middleware/errorHander";
-import { AdminRepository } from "../repositories/implementaions/AdimnAuthRepository";
+import { AdminAuthRepository} from "../repositories/implementaions/AdimnAuthRepository";
 import { AdminService } from "../services/implementaions/AdminAuthService";
-import { IAdminService } from "../services/interface/IAdminAuthService";
+import { IAdminAuthService } from "../services/interface/IAdminAuthService";
 
 
 class adminController {
-    private adminservice: IAdminService
+    private adminservice: IAdminAuthService
 
     options = {
         httpOnly: true,
@@ -16,7 +16,7 @@ class adminController {
     };
     
     constructor() {
-        const adminRepository = new AdminRepository()
+        const adminRepository = new AdminAuthRepository()
         this.adminservice = new AdminService(adminRepository)
     }
 
@@ -53,6 +53,40 @@ class adminController {
         });
     }
     };
+
+    public logout = async ( req: Request & { admin: { rawToken: string; id: string } }, res: Response , next : NextFunction) => {
+        try {
+
+            const { admin } = req
+            
+            console.log('this is the admin : ,',admin)
+
+
+            if (!admin) {
+            return res.status(400).json({
+                success: false, 
+                message: 'User ID is required',
+            });
+            }
+
+            const logoutResponse = await this.adminservice.logout(admin.rawToken, admin.id)
+            
+            if (logoutResponse) {
+                res.status(200).clearCookie("refreshToken").json({message : 'admin Logout successfully....!'})
+            } else {
+                 console.log('this is the errorr')
+                return res.status(400).json(new ApiError(400, "Error in Admin logout...!"));
+            }
+                    
+                    
+        } catch (error) {
+            console.error('Error in admin logout:', error);
+            next(error);
+            return res.status(error.statusCode || 500).json({
+                error: error.message || 'Something went wrong.'
+            });
+        }
+    }
 
 }
 

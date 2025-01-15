@@ -11,4 +11,5 @@ export interface IUser extends Document{
     isBlocked: boolean | null;
     Chat: ObjectId | null;
     refreshToken: string[];
+    lastLogin: Date | null;
 }

@@ -93,7 +93,7 @@ const UserLoginForm = () => {
             dispatch(setLoading(false))
             navigate('/')
           } else {
-            const message = loginResponse.data.error
+            const message = loginResponse.data.message
             toast.error(message || "Error occurred in user Login");
           }
         } else if (imaLabor) {
@@ -115,8 +115,9 @@ const UserLoginForm = () => {
             // console.log('iman iherer ')
             // navigate('/labor/ProfilePage')
           }else {
-            const message = loginResponse.data.error
-            toast.error(message || "Error occurred in user Login");
+            const message = loginResponse.data.error || "Error occurred in user ";
+            console.log('This is the error meessage from backend :',message)
+            toast.error(message || "Error occurred in user ");
           }
 
         }

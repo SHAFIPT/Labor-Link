@@ -7,7 +7,12 @@ export default class UserRepository implements IUserRepository{
 
     async LoginUser(email : string): Promise<IUser | null> {
         try {
-            const registedUser = await User.findOne({ email: email })
+                const registedUser = await User.findOneAndUpdate(
+                { email: email },  // Search for the user by email
+                { $set: { lastLogin: new Date() } },  // Update lastLogin field
+                { new: true }  // Return the updated user
+            );
+
             
             if (!registedUser) {
                 throw new ApiError(404, 'User is not found')

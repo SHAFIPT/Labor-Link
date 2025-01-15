@@ -34,7 +34,8 @@ export class AuthLaborController {
       console.log('Thsis is the repsose from labor login :', response)
       
       if (response?.LaborFound?.isBlocked) {
-            throw new ApiError(401, "Account Blocked", "Your account has been blocked");
+        return res.status(401).json({message :"Your account has been blocked"})
+            // throw new ApiError(401, "Account Blocked", "Your account has been blocked");
       }
       
       if (response) {
@@ -300,7 +301,7 @@ export class AuthLaborController {
       const logoutLabor = await this.laborAuthservice.logout(labor.rawToken, labor.id)
       
       if (logoutLabor) {
-        res.status(200).json({message : 'Labor Logout successfully....!'})
+        res.status(200).clearCookie("refreshToken").json({message : 'Labor Logout successfully....!'})
       }
       
     } catch (error) {
