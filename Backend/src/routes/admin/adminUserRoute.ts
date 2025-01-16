@@ -20,6 +20,9 @@ adminUserRoute.patch('/laborUnblock', authenticate,adminUserController.laborUnbl
 
 //labor aproove and unApprove
 adminUserRoute.patch('/laborApprove',authenticate,adminUserController.Approve.bind(adminUserController))
-adminUserRoute.patch('/UnApprove',authenticate,adminUserController.UnApprove.bind(adminUserController))
+adminUserRoute.patch('/UnApprove', authenticate, adminUserController.UnApprove.bind(adminUserController))
+
+//labor rejection with reason
+adminUserRoute.post('/rejectionReson',authenticate,adminUserController.rejectionReson.bind(adminUserController))
 
 export default adminUserRoute

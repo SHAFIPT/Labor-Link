@@ -176,6 +176,29 @@ class adminController {
             next(error);
         }
     }
+
+    public rejectionReson = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+
+            const { email, reason } = req.body
+            
+            console.log('Thsi is the reason :',reason)
+            console.log('Thsi is the email :',email)
+
+            const updatedLabor = await this.adminService.existLaborAndSendMail(email,reason)
+
+            if (!updatedLabor) {
+                return res.status(404).json({message : 'Labor not found...!'})
+            } else {
+                  return res.status(200).json({ message: 'Labor rejected successfully, email sent.', updatedLabor  });
+            }
+
+            
+        } catch (error) {
+            console.error("Error in labor rejections :", error);
+            next(error);
+        }
+    }
     
 }
 

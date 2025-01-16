@@ -9,7 +9,7 @@ import { fetchLabor } from "../../../services/AdminAuthServices";
 const LaborMangement = () => {
   const navigate = useNavigate()
   
-  const [Labors, setLabors] = useState([]);
+  const [Labors, setLabors] = useState([])
   
   console.log('this is the repnse of the users users :', Labors)
   Labors.map((user) => {

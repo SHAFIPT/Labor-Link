@@ -27,3 +27,33 @@ export const sendEmailOtp = async (email: string, otp: string): Promise<boolean>
         return false;  
     }
 }
+
+export const sendRejectionEmail = async (email: string, reason: string, userName: string): Promise<boolean> => {
+
+    console.log('here is iam going to send the email : , ',email)
+    console.log('here is iam going to send the userName : , ',userName)
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_USER, // Sender's email address
+            to: email,                    // Recipient's email address
+            subject: 'Your Request Has Been Rejected', // Email subject
+            html: `
+                <p>Dear ${userName},</p>
+                <p>We regret to inform you that your request has been rejected. The reason for rejection is as follows:</p>
+                <p><strong>${reason}</strong></p>
+                <p>If you have any questions or concerns, please feel free to contact us.</p>
+                <p>Best regards,</p>
+                <p>Your Team</p>
+            `, // HTML body content
+        }
+
+        // Send the rejection email
+        const info = await transporter.sendMail(mailOptions)
+
+        console.log('Rejection email sent: ' + info.response)
+        return true
+    } catch (error) {
+        console.error('Error sending rejection email:', error)
+        return false
+    }
+}

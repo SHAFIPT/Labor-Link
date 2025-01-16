@@ -55,6 +55,11 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
     type: Boolean, 
     default: false, // Set to false until all steps are completed
   },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending',
+  },
   currentStage: { 
     type: String, 
     enum: ['aboutYou', 'profile', 'experience'], // Enum to track where the user is in the process

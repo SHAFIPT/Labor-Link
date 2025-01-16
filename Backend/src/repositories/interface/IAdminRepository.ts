@@ -10,4 +10,6 @@ export interface IAdminRepository{
     unblockLabor(email : string ) : Promise<ILaborer | null>
     approveLabor(email : string ) : Promise<ILaborer | null>
     UnApproveLabor(email : string ) : Promise<ILaborer | null>
-}
+    existLabor(email : string ) : Promise<ILaborer | null>
+    updateStatus(email : string ) : Promise<ILaborer | null>
+}    

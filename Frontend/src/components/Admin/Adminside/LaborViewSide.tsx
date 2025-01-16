@@ -1,19 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
-import { Approve, blockLabor, unApprove, UnblockLabor } from "../../../services/AdminAuthServices";
+import { Approve, blockLabor, fetchLabor, rejection, unApprove, UnblockLabor } from "../../../services/AdminAuthServices";
 import { ArrowLeft } from 'lucide-react';
 import logo from '../../../assets/char1.jpeg'
 import './Labor.css'
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../../redux/store/store";
+import {
+    setLoading
+} from '../../../redux/slice/adminSlice'
 const LaborViewSide = () => {
   const location = useLocation();
+  const dispatch = useDispatch()
   const labor = location.state.labor || {};
-  console.log("thsi the user :", labor);
+  console.log("thsi the evaasdf :", labor.email);
+  console.log("thsi the labor status :", labor.status);
 
   const [isBlocked, setIsBlocked] = useState(labor.isBlocked);
   const [isApproved, setIsApproved] = useState(labor.isApproved);
+  const [rejfectModal, setRejectModal] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [updatedLabor, setUpdatedLabor] = useState(null); 
+   const loading = useSelector((state : RootState) => state.admin.loading)
 
   console.log("this is the isBlocked :", isBlocked);
+  console.log("this is the updatedLabor :", updatedLabor?.status);
 
   const categoryIcons = {
     plumber: (
@@ -89,15 +101,17 @@ const LaborViewSide = () => {
 
   const handleApprove = async () => {
     try {
-
+      dispatch(setLoading(true))
       const response = await isApproved 
         ? await unApprove({ email: labor.email })
         : await Approve({ email: labor.email })
       
       if (response.status === 200) {
         setIsApproved(!isApproved)
+        dispatch(setLoading(false))
         toast.success(`labor Approved succesfully ${isApproved ? 'Approved' : 'rejected the Approval'}`)
       } else {
+        dispatch(setLoading(false))
         toast.error('error occud in approval')
       }
       
@@ -106,12 +120,14 @@ const LaborViewSide = () => {
         "Error in block/unblock operation:",
         error.response?.data || error.message
       );
+      dispatch(setLoading(false))
       toast.error(`Failed to approve the list...!`)
     }
   }
 
   const handleBlockTheUser = async () => {
     try {
+      dispatch(setLoading(true))
       // Decide which API to call based on the current block status
       const response = isBlocked
         ? await UnblockLabor({ email: labor.email })
@@ -120,10 +136,12 @@ const LaborViewSide = () => {
       if (response.status === 200) {
         // Toggle the state on success
         setIsBlocked(!isBlocked);
+        dispatch(setLoading(false))
         toast.success(
           `labor blocked  successfully ${isBlocked ? "unblocked" : "blocked"}!`
         );
       } else {
+        dispatch(setLoading(false))
         toast.error("An error occurred. Please try again.");
       }
     } catch (error) {
@@ -131,12 +149,102 @@ const LaborViewSide = () => {
         "Error in block/unblock operation:",
         error.response?.data || error.message
       );
+      dispatch(setLoading(false))
       toast.error(`Failed to ${isBlocked ? "unblock" : "block"} user.`);
-    }
+    }    
   };
+
+
+  const handleSubmitRejection = async (e : React.FormEvent) => {
+    e.preventDefault()
+    dispatch(setLoading(true))
+    const resoponse = await rejection({ reason: rejectionReason , email : labor.email})
+    if (resoponse.status === 200) {
+
+      const { updatedLabor } = resoponse.data
+      console.log('Thsi rejectd updated data : ', updatedLabor)
+      // console.log('Thsi resoponse : ', resoponse)
+      setUpdatedLabor(updatedLabor)
+      setRejectModal(false)
+      dispatch(setLoading(false))
+      
+      toast.success('you rejection Approval succesfully Done')
+    } else {
+      dispatch(setLoading(false))
+      toast.error('Error in reason submission..!')
+    }
+  }
+
 
   return (
     <div className="bg-[#D6CCCC] h-screen">
+       {loading && <div className="loader"></div>}
+     {rejfectModal && (
+        <>
+          {/* Overlay */}
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50" />
+          {/* Modal */}
+          <div className="fixed inset-0 flex justify-center items-center z-50">
+            <div className="max-w-xl w-full mx-auto bg-gray-900 rounded-xl overflow-hidden">
+              <div className="max-w-md mx-auto pt-12 pb-14 px-5 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 mb-5 rounded-full">
+                  <svg
+                    viewBox="0 0 48 48"
+                    height="100"
+                    width="100"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle cx="24" cy="24" r="22" fill="#FF4D4D" />
+                    <line
+                      x1="16" y1="16"
+                      x2="32" y2="32"
+                      stroke="#FFFFFF"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                    />
+                    <line
+                      x1="16" y1="32"
+                      x2="32" y2="16"
+                      stroke="#FFFFFF"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+
+                </div>
+                <h4 className="text-xl text-gray-100 font-semibold mb-5">
+                  Rejection Reason Submission
+                </h4>
+                <p className="text-gray-300 font-medium mb-4">
+                  Please provide the reason for rejecting this request:
+                </p>
+
+                <textarea
+                  className="w-full h-24 p-3 rounded-md bg-gray-800 text-gray-300 border border-gray-600 focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter the rejection reason here..."
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                />
+              </div>
+              <div className="pt-5 pb-6 px-6 text-right bg-gray-800 -mb-2">
+                <button
+                  onClick={() => setRejectModal(false)} // Close the modal
+                  className="inline-block w-full sm:w-auto py-3 px-5 mb-2 mr-4 text-center font-semibold leading-6 text-gray-200 bg-gray-500 hover:bg-gray-400 rounded-lg transition duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitRejection} // Function to handle submission
+                  className="inline-block w-full sm:w-auto py-3 px-5 mb-2 text-center font-semibold leading-6 text-blue-50 bg-green-500 hover:bg-green-600 rounded-lg transition duration-200"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       <div className="bg-[#D6CCCC] profileCard flex lg:p-16 sm:p-28 p-28 md:p-12 lg:flex-row items-center sm:items-center md:items-center flex-col sm:flex-col lg:justify-evenly ">
         {/* Back Button */}
         <button
@@ -145,7 +253,7 @@ const LaborViewSide = () => {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="profile-card   w-[300px] rounded-md shadow-xl overflow-hidden z-[100] relative  snap-start shrink-0 bg-white flex flex-col items-center justify-center gap-3 transition-all duration-300 group">
+        <div className="profile-card   w-[300px] rounded-md shadow-xl relative  snap-start shrink-0 bg-white flex flex-col items-center justify-center gap-3 transition-all duration-300 group">
           <div className="avatar w-full pt-5 flex items-center justify-center flex-col gap-1">
             <div className="img_container w-full flex items-center justify-center relative z-40 after:absolute after:h-[6px] after:w-full after:bg-[#58b0e0] after:top-4 after:group-hover:size-[1%] after:delay-300 after:group-hover:delay-0 after:group-hover:transition-all after:group-hover:duration-300 after:transition-all after:duration-300 before:absolute before:h-[6px] before:w-full before:bg-[#58b0e0] before:bottom-4 before:group-hover:size-[1%] before:delay-300 before:group-hover:delay-0 before:group-hover:transition-all before:group-hover:duration-300 before:transition-all before:duration-300">
               <svg
@@ -366,19 +474,36 @@ const LaborViewSide = () => {
               <h3 className="text-lg font-semibold text-gray-700">
                 {isApproved ? "Booking History" : "Approving for labor request"}
               </h3>
-              <button className="text-blue-500 text-sm hover:underline">
-                {isApproved ? (
-                  <button className="bg-gray-950 text-gray-400 border border-[#66dbdf44] border-b-4 font-medium overflow-hidden relative px-4 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
-                    <span className="bg-[#4be52c44] shadow-gray-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]"></span>
-                    View all
-                  </button>
-                ) : (
-                  <button className="bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white border border-green-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group" onClick={handleApprove}>
+              {labor.status === 'rejected' || updatedLabor?.status === 'rejected'? (
+                // Show "Labor Approval Rejected" Button
+                <button
+                  className="bg-red-500 text-white font-semibold px-4 py-2 rounded-md hover:bg-red-600 duration-300"
+                  disabled
+                >
+                  Labor Approval Rejected
+                </button>
+              ) : (
+                // Default buttons for non-rejected status
+                <div className="flex space-x-4">
+                  {/* Approve Button */}
+                  <button
+                    className="bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white border border-green-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group"
+                    onClick={handleApprove}
+                  >
                     <span className="bg-green-300 shadow-green-500 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(72,191,145,0.5)]"></span>
                     Approve
                   </button>
-                )}
-              </button>
+
+                  {/* Reject Button */}
+                  <button
+                    onClick={() => setRejectModal(true)}
+                    className="bg-gradient-to-r from-red-400 via-red-500 to-red-600 text-white border border-red-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group"
+                  >
+                    <span className="bg-red-300 shadow-red-500 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(255,72,72,0.5)]"></span>
+                    Reject
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Booking Headings */}

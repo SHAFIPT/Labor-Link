@@ -65,3 +65,8 @@ export const Approve = async ({ email }) => {
   const response = await api.patch('/api/admin/user/UnApprove', { email })
   return response
 }
+
+export const rejection = async ({ reason , email }) => {
+  const response = await api.post('/api/admin/user/rejectionReson', { reason  , email})
+  return response
+}

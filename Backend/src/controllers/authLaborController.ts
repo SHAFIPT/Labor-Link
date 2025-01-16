@@ -17,7 +17,7 @@ export class AuthLaborController {
         sameSite: "strict" as const,
         maxAge: 24 * 60 * 60 * 1000,
     };
-
+   
   constructor() {
     const laborRepositoy = new LaborRepository();
     this.laborAuthservice = new LaborAuthServies(laborRepositoy);

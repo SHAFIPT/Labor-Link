@@ -11,4 +11,5 @@ export interface IAdminService {
     unblockLabor(email: string): Promise<ILaborer | null>;
     approveLabor(email: string): Promise<ILaborer | null>;
     UnApproveLabor(email: string): Promise<ILaborer | null>;
+    existLaborAndSendMail(email: string , reason : string): Promise<ILaborer | null>;
 }

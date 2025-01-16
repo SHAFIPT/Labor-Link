@@ -144,4 +144,37 @@ export class AdminRepositooy implements IAdminRepository {
       throw new ApiError(500, 'Failed to UnApproveLabor the user', error.message, error.stack);
     }
   }
+  async existLabor(email: string): Promise<ILaborer | null> {
+    try {
+
+      const labor = await Labor.findOne({ email })
+      if (!labor) {
+        throw new ApiError(500, 'Labor not found....!');
+      }
+      return labor
+      
+    } catch (error) {
+      throw new ApiError(500, 'Failed to find labor', error.message, error.stack);
+    }
+  }
+
+  async updateStatus(email: string): Promise<ILaborer | null> {
+    try {
+
+      const labor = await Labor.findOneAndUpdate(
+        { email },
+        { status: 'rejected' },
+        {new : true}
+      ).select('-password -refreshToken  -__v')
+
+      if (!labor) {
+        throw new ApiError(404, 'Labor not found for status update.');
+      }
+
+      return labor
+      
+    } catch (error) {
+       throw new ApiError(500, 'Failed to update labor status.', error.message, error.stack);
+    }
+  }
 }
