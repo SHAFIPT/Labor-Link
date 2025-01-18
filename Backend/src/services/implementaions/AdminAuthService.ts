@@ -46,4 +46,25 @@ export class AdminService implements IAdminAuthService{
         return admin ? admin : null
     }
 
+    async refreshAccessToken(userId:string): Promise <string| null> {
+        
+        const adminFound  = await this.adminRepository.findById(userId)
+
+
+        if(adminFound){
+            const id = adminFound._id?.toString();
+            
+            const accessToken = generateAccessToken({
+                id,
+                role: adminFound.role,
+            });
+
+            return accessToken
+        }
+
+
+
+        return null
+    }
+
 }

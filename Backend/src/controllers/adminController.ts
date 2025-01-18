@@ -39,11 +39,22 @@ class adminController {
     public fetchLabor = async (req: Request, res: Response, next: NextFunction) => {
         try {
 
-            const laborFound = await this.adminService.fetchLabors()
+            const query = req.query.query as string || '';
+            const page = parseInt(req.query.page as string || '1');
+            const perPage = 7;
+            const skip = (page - 1) * perPage;
 
-            if (laborFound) {
+            const totalCount = await this.adminService.getTotalLaborsCount(query);
+            const laborFound = await this.adminService.fetchLabors(query, skip, perPage)
+    
+              if (laborFound) {
+                const totalPages = Math.ceil(totalCount / perPage);
+                const LaborDetails = {
+                    laborFound,
+                    totalPage: totalPages,
+            };
                 res.status(200)
-                .json(new ApiResponse(200, laborFound , 'laborFound succeffuly...!'))
+                .json(new ApiResponse(200, LaborDetails , 'laborFound succeffuly...!'))
             } else {
                 console.log('this is the errorr')
                  return res.status(400).json(new ApiError(400, "Faiald to fetch labores..."));
@@ -51,10 +62,8 @@ class adminController {
             
         } catch (error) {
             console.error('Error in admin login:', error);
-            next(error);
-            return res.status(error.statusCode || 500).json({
-                error: error.message || 'Something went wrong.'
-            });
+            // Remove the res.status().json() here and just use next(error)
+            return next(error);
         }
     }
 
@@ -196,6 +205,30 @@ class adminController {
             
         } catch (error) {
             console.error("Error in labor rejections :", error);
+            next(error);
+        }
+    }
+
+    public deleteLabor = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+
+            const { email } = req.query as { email: string };
+            
+            console.log('Thsi si sthe email. to delete : ', email)
+            
+            const response = await this.adminService.deleteLabor(email) 
+
+            console.log('Response of delete labor',response)
+
+            if (response) {
+                return res.status(200)
+                .json({message : 'Labor deleted succefuflyyll'})
+            } else {
+                throw new ApiError(401 , 'Error in labor removal...!')
+            }
+            
+        } catch (error) {
+            console.error("Error in labor deletion :", error);
             next(error);
         }
     }

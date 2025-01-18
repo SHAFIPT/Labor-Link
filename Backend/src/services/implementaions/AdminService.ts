@@ -26,9 +26,9 @@ export class AdminService implements IAdminService {
     }
   }
 
-  async fetchLabors(): Promise<ILaborer[]> {
+  async fetchLabors(query: string = '', skip: number, perPage: number): Promise<ILaborer[]> {
     try {
-      const laborFound = await this.adminRepositery.laborFound();
+      const laborFound = await this.adminRepositery.laborFound(query, skip, perPage);
       if (!laborFound) {
         throw new ApiError(404, "Labor not found for fetch ...!");
       }
@@ -95,5 +95,17 @@ export class AdminService implements IAdminService {
     } else {    
       throw new ApiError(404, "Labor not found...!");
     }
+  }
+   async getTotalLaborsCount(query: string): Promise<number> {
+        try {
+            const count = await this.adminRepositery.getLabourTotalCount(query);
+            return count;
+        } catch (error) {
+            console.error('Error getting total labor count:', error);
+            throw new Error('Failed to get total labor count');
+      }
+  }
+  async deleteLabor(email: string): Promise<ILaborer | null> {
+    return this.adminRepositery.deleteLabor(email)
   }
 }

@@ -102,12 +102,13 @@ const LaborViewSide = () => {
   const handleApprove = async () => {
     try {
       dispatch(setLoading(true))
-      const response = await isApproved 
-        ? await unApprove({ email: labor.email })
-        : await Approve({ email: labor.email })
+      const response = await Approve({ email: labor.email })
       
       if (response.status === 200) {
-        setIsApproved(!isApproved)
+        console.log('This is the labor resonse approval', response)
+        const {isApproved} = response.data.labor
+        console.log('This is the labor isApproved', isApproved)
+        setIsApproved(isApproved)
         dispatch(setLoading(false))
         toast.success(`labor Approved succesfully ${isApproved ? 'Approved' : 'rejected the Approval'}`)
       } else {
@@ -404,12 +405,14 @@ const LaborViewSide = () => {
               </svg>
             </span>
             <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-gray-200"></span>
-            <span
-              
-              className="relative text-base font-semibold"
+           <button
+              className={`relative text-base font-semibold ${
+                (labor.status === 'rejected' || updatedLabor?.status === 'rejected') ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={labor.status === 'rejected' || updatedLabor?.status === 'rejected'}
             >
               {isBlocked ? "Unblock" : "Block"}
-            </span>
+            </button>
           </button>
 
           <hr className="w-full group-hover:h-5 h-3 bg-[#58b0e0] group-hover:transition-all group-hover:duration-300 transition-all duration-300" />
@@ -471,10 +474,10 @@ const LaborViewSide = () => {
           {/* Booking History Section */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-700">
+              <h3 className="text-lg font-semibold px-8 text-gray-700">
                 {isApproved ? "Booking History" : "Approving for labor request"}
               </h3>
-              {labor.status === 'rejected' || updatedLabor?.status === 'rejected'? (
+              {labor.status === "rejected" || updatedLabor?.status === "rejected" ? (
                 // Show "Labor Approval Rejected" Button
                 <button
                   className="bg-red-500 text-white font-semibold px-4 py-2 rounded-md hover:bg-red-600 duration-300"
@@ -483,26 +486,39 @@ const LaborViewSide = () => {
                   Labor Approval Rejected
                 </button>
               ) : (
-                // Default buttons for non-rejected status
-                <div className="flex space-x-4">
-                  {/* Approve Button */}
-                  <button
-                    className="bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white border border-green-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group"
-                    onClick={handleApprove}
-                  >
-                    <span className="bg-green-300 shadow-green-500 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(72,191,145,0.5)]"></span>
-                    Approve
-                  </button>
+                <>
+                  {isApproved ? (
+                    // Show "View All" Button
+                    <button
+                      className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white border border-blue-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group"
+                      // onClick={handleViewAll}
+                    >
+                      <span className="bg-blue-300 shadow-blue-500 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(72,145,255,0.5)]"></span>
+                      View All
+                    </button>
+                  ) : (
+                    // Show "Approve" and "Reject" Buttons
+                    <div className="flex space-x-4">
+                      {/* Approve Button */}
+                      <button
+                        className="bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white border border-green-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group"
+                        onClick={handleApprove}
+                      >
+                        <span className="bg-green-300 shadow-green-500 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(72,191,145,0.5)]"></span>
+                        Approve
+                      </button>
 
-                  {/* Reject Button */}
-                  <button
-                    onClick={() => setRejectModal(true)}
-                    className="bg-gradient-to-r from-red-400 via-red-500 to-red-600 text-white border border-red-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group"
-                  >
-                    <span className="bg-red-300 shadow-red-500 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(255,72,72,0.5)]"></span>
-                    Reject
-                  </button>
-                </div>
+                      {/* Reject Button */}
+                      <button
+                        onClick={() => setRejectModal(true)}
+                        className="bg-gradient-to-r from-red-400 via-red-500 to-red-600 text-white border border-red-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group"
+                      >
+                        <span className="bg-red-300 shadow-red-500 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(255,72,72,0.5)]"></span>
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

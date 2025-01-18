@@ -23,23 +23,34 @@ export class AdminRepositooy implements IAdminRepository {
     }
   }
 
-  async laborFound(): Promise<ILaborer[]> {
+async laborFound(query: string = '', skip: number, perPage: number): Promise<ILaborer[]> {
     try {
-      const labors = await Labor.find().select("-password -refreshToken -__v");
+        // Use regex search instead of text search for more flexibility
+        const filter = query ? {
+            $or: [
+                { firstName : { $regex: query, $options: 'i' } },
+                { email: { $regex: query, $options: 'i' } }
+            ]
+        } : {};
 
-      if (!labors) {
-        throw new ApiError(404, "labors find errror occuded ");
-      }
-      return labors;
+        const labors = await Labor.find(filter)
+            .skip(skip)
+            .limit(perPage)
+            .select("-password -refreshToken -__v");
+
+        if (!labors) {
+            throw new ApiError(404, "labors find error occurred");
+        }
+        return labors;
     } catch (error) {
-      throw new ApiError(
-        500,
-        "Failed to fetch labors",
-        error.message,
-        error.stack
-      );
+        throw new ApiError(
+            500,
+            "Failed to fetch labors",
+            error.message,
+            error.stack
+        );
     }
-  }
+}
 
   async blockUser(email: string): Promise<IUser | null> {
     try {
@@ -122,7 +133,7 @@ export class AdminRepositooy implements IAdminRepository {
 
       const labor = await Labor.findOneAndUpdate(
         { email },
-        { isApproved: true },
+         { isApproved: true, status: 'approved' },
         { new: true }
       )
       return labor
@@ -177,4 +188,35 @@ export class AdminRepositooy implements IAdminRepository {
        throw new ApiError(500, 'Failed to update labor status.', error.message, error.stack);
     }
   }
+
+  async getLabourTotalCount(query: string): Promise<number> {
+        try {
+            const searchQuery = query
+                ? {
+                    $or: [
+                        { firstName: { $regex: query, $options: 'i' } },
+                        { email: { $regex: query, $options: 'i' } },
+                    ]
+                }
+                : {};
+
+            const count = await Labor.countDocuments(searchQuery);
+            return count;
+        } catch (error) {
+            console.error('Repository error getting labor count:', error);
+            throw new Error('Failed to get labor count from database');
+        }
+    }
+    async deleteLabor(email: string): Promise<ILaborer | null> {
+      try {
+
+        const deleteLabor = await Labor.findOneAndDelete({ email })
+        
+        return deleteLabor
+        
+      } catch (error) {
+         console.error('Repository error delete labor:', error);
+            throw new Error('Failed to delete labor');
+      }
+    }
 }

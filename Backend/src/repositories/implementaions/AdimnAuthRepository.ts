@@ -55,4 +55,10 @@ export class AdminAuthRepository implements IAdminAuthRepositoy {
       throw new ApiError(500, "Failed to reomve refreshToken....");
     }
   }
+
+  async findById(userId: string): Promise<IAdmin | null> {
+    const adminData = await Admin.findOne({ _id: userId });
+
+    return adminData;
+  }
 }

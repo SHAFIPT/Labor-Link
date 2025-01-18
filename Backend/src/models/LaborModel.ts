@@ -1,6 +1,7 @@
 
 import mongoose, { Schema, ObjectId ,Types } from 'mongoose';
 import { ILaborer } from 'entities/LaborEntity';
+import { string } from 'joi';
 
 const LaborersSchema: Schema = new Schema<ILaborer>({
   firstName: { type: String, required: true },  // Field name updated to match interface
@@ -54,7 +55,7 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
   profileCompletion: { 
     type: Boolean, 
     default: false, // Set to false until all steps are completed
-  },
+  },     
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],
@@ -66,7 +67,10 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
     default: 'aboutYou', // Default to 'aboutYou'
   },
   refreshToken: { type: [String], default: [] }, 
+  canReapply : {type : Boolean , default : false}
 });
+
+// LaborersSchema.index({ name: 'text', email: 'text' });
 
 const Labor = mongoose.model<ILaborer>('Labor', LaborersSchema);
 

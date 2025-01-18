@@ -31,14 +31,14 @@ export const verifyAccessToken = (token: string) => {
     }
 }
 
-export const verifyRefreshToken = (token: string) => {
-    try {
-        const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET)
-        return decoded
-    } catch (error) {
-        throw new Error('Invalid Refresh Token')        
-    }
-}
+export const verifyRefreshToken = (token: string): string | jwt.JwtPayload => {
+  try {
+    const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET);
+    return decoded;
+  } catch (error) {
+    throw new Error('Invalid Refresh Token');
+  }
+};
 
 
 export const decodeAndVerifyToken = (token: string): any => {

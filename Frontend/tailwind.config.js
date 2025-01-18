@@ -1,15 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-    content: ["./src/**/*.{html,js}"],
-  darkMode: 'class', // This is correct for class-based dark mode
+  content: ["./src/**/*.{html,js}"],
+  darkMode: 'class',
   theme: {
     extend: {
-      // You can extend the theme here if needed
-      backgroundColor: {
-        dark: '#111827', // Your dark mode background color
+      keyframes: {
+        scroll: {
+          '0%': { transform: 'translateY(0)' },
+          '100%': { transform: 'translateY(-50%)' }
+        }
       },
-      textColor: {
-        dark: '#ffffff', // Your dark mode text color
+      animation: {
+        scroll: 'scroll 40s linear infinite'
       }
     }
   },

@@ -3,6 +3,7 @@ import { ApiError } from "../middleware/errorHander";
 import { AdminAuthRepository} from "../repositories/implementaions/AdimnAuthRepository";
 import { AdminService } from "../services/implementaions/AdminAuthService";
 import { IAdminAuthService } from "../services/interface/IAdminAuthService";
+import ApiResponse from "../utils/Apiresponse";
 
 
 class adminController {
@@ -87,6 +88,28 @@ class adminController {
             });
         }
     }
+
+    public refreshAccessToken = async (req:Request & {user: {rawToken: string, id: string}} ,res:Response)=>{
+
+        const {user} = req
+
+ 
+
+        const accessToken = await this.adminservice.refreshAccessToken(user.id)
+
+        if(accessToken){
+          return res.status(200)
+          .json(
+            new ApiResponse(
+              200,
+              {accessToken},
+              "token Created Successfully"
+            )
+          )
+        }
+
+        
+      }
 
 }
 

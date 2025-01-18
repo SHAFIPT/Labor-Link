@@ -1,7 +1,7 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from 'express';
 import ApiResponse from "../utils/Apiresponse";
-import { decodeToken } from "../utils/tokenUtils";
+import { decodeToken, verifyRefreshToken } from "../utils/tokenUtils";
 import { verifyAccessToken } from '../utils/tokenUtils';  // Replace with your response class
 // import { JwtPayload } from 'jsonwebtoken'; 
 
@@ -164,6 +164,37 @@ export const decodedAdminRefreshToken = (
       null,
       "Invalid Admin Token"
     ));
+    return;
+  }
+};
+
+
+
+export const verifyRefreshTokenMiddleware = (
+  req: Request & Partial<{ user: string | jwt.JwtPayload }>,
+  res: Response,
+  next: NextFunction
+): void => {
+  const refreshToken = req.cookies['adminRefreshToken'] || req.header('adminRefreshToken');
+
+  if (!refreshToken) {
+    res.status(401).json(
+      new ApiResponse(401, null, "Access Denied")
+    );
+    return;
+  }
+
+  try {
+    const decoded = verifyRefreshToken(refreshToken);
+    // Check if decoded is an object before spreading
+    req.user = typeof decoded === 'object' 
+      ? { ...decoded, rawToken: refreshToken }
+      : { token: decoded, rawToken: refreshToken };
+    next();
+  } catch (err) {
+    res.status(401).json(
+      new ApiResponse(401, null, "Invalid Token or Expired")
+    );
     return;
   }
 };

@@ -52,5 +52,6 @@ export interface ILaborer extends Document {
   role: string;
   refreshToken: string[];
   isBlocked: boolean | null;
-  status : 'pending' | 'approved' | 'rejected'
+  status: 'pending' | 'approved' | 'rejected'
+  canReapply: boolean | null;
 }

@@ -1,0 +1,203 @@
+@media (max-width: 1500px) {
+    .h1Text{
+        /* width: 530px !important; */
+        font-size: 40px !important;
+        /* Adjust the width for smaller screens */
+    }
+    .pText{
+        font-size: 30px !important;
+    }
+
+    .FirstTrust{
+        margin-top: -60px;
+    }
+}
+@media (max-width: 1200px) {
+    .styleText{
+        font-size: 14px !important;
+        margin-top: -90px;
+
+    }
+    .h1Text{
+        /* width: 530px !important; */
+        font-size: 30px !important;
+        /* Adjust the width for smaller screens */
+    }
+    .pText{
+        font-size: 25px !important;
+    }
+
+    .FirstTrust{
+        margin-top: -70px;
+    }
+}
+@media (max-width: 1024px) {
+    .styleText{
+        font-size: 14px !important;
+        margin-top: 10px;
+        padding-left: 33px;
+
+    }
+    .h1Text{
+        /* width: 530px !important; */
+        font-size: 25px !important;
+        /* Adjust the width for smaller screens */
+    }
+    .pText{
+        font-size: 20px !important;
+    }
+
+}
+@media (max-width: 630px) {
+    .styleText {
+            font-size: 14px !important;
+            margin-top: 10px;
+    
+        }
+    
+        .h1Text {
+            /* width: 530px !important; */
+            font-size: 25px !important;
+            margin-top: 18px;
+            padding-left: 16px;
+            /* Adjust the width for smaller screens */
+        }
+    
+        .pText {
+            font-size: 20px !important;
+            padding-left: 16px;
+        }
+
+}
+@media (max-width: 605px) {
+    .styleText {
+            font-size: 14px !important;
+            margin-top: 7px;
+            padding-left: 33px;
+    
+        }
+    
+        .h1Text {
+            /* width: 530px !important; */
+            font-size: 25px !important;
+            /* Adjust the width for smaller screens */
+        }
+    
+        .pText {
+            font-size: 20px !important;
+        }
+
+}
+@media (max-width: 500px) {
+    .styleText {
+            font-size: 10px !important;
+            margin-top: 7px;
+            padding-left: 33px;
+    
+        }
+    
+        .h1Text {
+            /* width: 530px !important; */
+            font-size: 15px !important;
+            /* Adjust the width for smaller screens */
+        }
+    
+        .pText {
+            font-size: 9px !important;
+        }
+
+}
+@media (max-width: 947px) {
+    .box{
+        width: 802px !important;
+    }
+    
+}
+@media (max-width: 905px) {
+    .box{
+        width: 602px !important;
+    }
+    
+}
+@media (max-width: 916px) {
+    .SearchBoxe{
+        width: 802px !important;
+    }
+
+}
+@media (max-width: 413px) {
+    .SearchBoxe{
+        width: 302px !important;
+    }
+
+}
+@media (max-width: 816px) {
+    .box{
+        margin-top: -44px;
+        width: 602px !important;;
+    }
+}
+@media (max-width: 735px) {
+    .box{
+        margin-top: -64px;
+        width: 502px !important;
+        height: 60px !important;
+    }
+}
+@media (max-width: 584px) {
+    .box{
+        margin-top: -64px;
+        max-width: 1802px !important;
+    }
+}
+@media (max-width: 667px) {
+    .box{
+        display: none;
+    }
+}
+
+@media (max-width : 770px){
+    .About{
+        padding-top: 100px !important;
+        margin-right: 18px !important;
+    }
+}
+@media (max-width : 640px){
+    .About{
+        padding-top: 100px !important;
+        margin-right: 48px !important;
+    }
+}
+@media (max-width : 536px){
+    .About{
+        padding-top: 10px !important;
+        margin-right: 48px !important;
+        
+    }
+    .Abouttext{
+        font-size: 18px !important;
+    }
+}
+@media (max-width : 509px){
+    .About{
+        display: flex;
+        align-items:  center;
+        justify-content:  center;
+        margin-left: 14px;
+    }
+    .Abouttext{
+        font-size: 18px !important;
+    }
+}
+@media (max-width : 495px){
+    .About{
+        display: flex;
+        align-items:  center;
+        justify-content:  center;
+        margin-left: 45px;
+    }
+    .Abouttext{
+        font-size: 18px !important;
+    }
+}
+

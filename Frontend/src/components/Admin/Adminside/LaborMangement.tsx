@@ -4,48 +4,79 @@ import "./User.css";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { UserPlus, Eye, Trash2 } from "lucide-react";
-import { fetchLabor } from "../../../services/AdminAuthServices";
+import { deleteLabor, fetchLabor } from "../../../services/AdminAuthServices";
+import UseDebounce from "../../../Hooks/useDebounce";
 
 const LaborMangement = () => {
   const navigate = useNavigate()
   
-  const [Labors, setLabors] = useState([])
-  
-  console.log('this is the repnse of the users users :', Labors)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [Labors, setLabors] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const debouncedSearchTerm = UseDebounce(searchTerm, 500);
+
+  console.log("this is the repnse of the users users :", Labors);
   Labors.map((user) => {
-    const userName = `${user.firstName} ${user.lastName}`;  // Combine first and last name
-    const isBlocked = user.isBlocked;  // Get the isBlocked status
+    const userName = `${user.firstName} ${user.lastName}`; // Combine first and last name
+    const isBlocked = user.isBlocked; // Get the isBlocked status
 
-    console.log('User is name :',userName)
-    console.log('isBlocked is this:',isBlocked)
-  })
-    
-  
-  
-    const fetchUsers = async () => {  
-      
-      const resoponse = await fetchLabor()
+    console.log("User is name :", userName);
+    console.log("isBlocked is this:", isBlocked);
+  });
 
-      console.log('this is the repnse of the labor fetch :',resoponse)
-  
-      if (resoponse.status === 200) {
-        setLabors(resoponse.data.data)
-        console.log('thhi is the response :',resoponse)
-      } else {
-        toast.error("Error occurd during fetchUser....!")
-      }
+  const fetchUsers = async (query = "", pageNumber = 1) => {
+    const resoponse = await fetchLabor(query, pageNumber);
+
+    console.log("this is the repnse of the labor fetch :", resoponse);
+
+    if (resoponse.status === 200) {
+      const { totalPage, laborFound } = resoponse.data.data;
+
+      console.log("Thsi is the requestBody :", resoponse);
+      console.log("Thsi is the totalPages :", totalPage);
+      console.log("Thsi is the laborFound :", laborFound);
+
+      setLabors(laborFound);
+      setTotalPages(totalPage);
+      console.log("thhi is the response :", resoponse);
+    } else {
+      toast.error("Error occurd during fetchUser....!");
     }
-  
-      useEffect(() => {
-      fetchUsers()
-    },[])
-  
-  
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchUsers(debouncedSearchTerm, page);
+    };
+
+    fetchData();
+  }, [debouncedSearchTerm, page]);
+
+  const handleDeleteLabor = async (labor) => {
+  try {
+    console.log("This is the deleting labor:", labor.email);
+
+    const response = await deleteLabor({ email: labor.email });
+
+    if (response.status === 200) {
+      toast.success("Labor deleted successfully!");
+      
+      // Call fetchUsers to get the updated data
+      await fetchUsers(debouncedSearchTerm, page);
+    } else {
+      toast.error("Error occurred during deletion!");
+    }
+  } catch (error) {
+    console.error("Error during deletion:", error);
+    toast.error("Error occurred during deletion!");
+  }
+};
 
   const handleViewPage = (labor) => {
     //  console.log('this is passing user :',user)
-    navigate('/admin/laborView', {state : {labor}})
-  }
+    navigate("/admin/laborView", { state: { labor } });
+  };
 
   return (
     <div className="flex h-screen">
@@ -98,6 +129,8 @@ const LaborMangement = () => {
                 </span>
                 <input
                   type="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}       
                   placeholder="Search the users..."
                   className="w-full pl-10 pr-4 py-2 rounded-full text-white border 
                         bg-[#ABA0A0] border-gray-300 shadow-sm 
@@ -191,7 +224,7 @@ const LaborMangement = () => {
                 Expertise
               </div>
               <div className="col-span-2 text-center text-sm font-semibold text-gray-700">
-                Status
+               Approval Status
               </div>
               <div className="col-span-2 text-center text-sm font-semibold text-gray-700">
                 Actions
@@ -212,7 +245,7 @@ const LaborMangement = () => {
 
                   {/* User Name */}
                   <div className="col-span-2 lg:text-center sm:text-left text-sm font-medium text-white">
-                     {labor.firstName ?? "User"}
+                    {labor.firstName ?? "User"}
                   </div>
 
                   {/* User Email */}
@@ -225,17 +258,28 @@ const LaborMangement = () => {
                     {labor.categories[0] || "N/A"}
                   </div>
 
-                  {/* User Status */}
-                  <div className="col-span-2 lg:text-center">
-                    <span className="px-2 py-1 lg:text-center text-xs rounded-full bg-green-500 text-white">
-                      Aprove
-                    </span>
-                  </div>
+                 <div className="col-span-2 lg:text-center">
+                  <span
+                    className={`px-2 py-1 lg:text-center text-xs rounded-full text-white ${
+                      labor.status === 'rejected'
+                        ? 'bg-red-500'
+                        : labor.status === 'pending'
+                        ? 'bg-yellow-500'
+                        : 'bg-green-500'
+                    }`}
+                  >
+                    {labor.status === 'rejected'
+                      ? 'Rejected'
+                      : labor.status === 'pending'
+                      ? 'Pending'
+                      : 'Approved'}
+                  </span>
+                </div>
 
                   {/* Action Buttons */}
                   <div className="col-span-2 flex lg:justify-center sm:justify-start gap-2">
                     <button
-                      onClick={()=> handleViewPage(labor)}
+                      onClick={() => handleViewPage(labor)}
                       className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-xs"
                       aria-label="View profile"
                     >
@@ -246,6 +290,7 @@ const LaborMangement = () => {
                     <button
                       className="flex items-center gap-1 px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-xs"
                       aria-label="Delete user"
+                      onClick={() => handleDeleteLabor(labor)}
                     >
                       <Trash2 className="w-4 h-4" />
                       <span className="hidden md:inline">Delete</span>
@@ -255,6 +300,29 @@ const LaborMangement = () => {
               ))}
             </div>
           </div>
+        </div>
+        <div className="flex justify-center items-center space-x-4 mt-4">
+            {page > 1 && (  // Only show Previous when not on first page
+                <button
+                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+                >
+                    Previous
+                </button>
+            )}
+
+            <span className="text-gray-600">
+                Page {page} of {totalPages}
+            </span>
+
+            {page < totalPages && (  // Show Next button only if there are more pages
+                <button
+                    onClick={() => setPage((prev) => prev + 1)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+                >
+                    Next
+                </button>
+            )}
         </div>
       </div>
     </div>

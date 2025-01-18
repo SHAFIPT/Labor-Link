@@ -4,6 +4,8 @@ import { Router } from "express";
 
 const adminUserRoute = Router()
 const adminUserController = new adminController()
+
+
 // users fetch
 adminUserRoute.get('/usersFetch',authenticate,adminUserController.fetchUser.bind(adminUserController))
 
@@ -23,6 +25,10 @@ adminUserRoute.patch('/laborApprove',authenticate,adminUserController.Approve.bi
 adminUserRoute.patch('/UnApprove', authenticate, adminUserController.UnApprove.bind(adminUserController))
 
 //labor rejection with reason
-adminUserRoute.post('/rejectionReson',authenticate,adminUserController.rejectionReson.bind(adminUserController))
+adminUserRoute.post('/rejectionReson', authenticate, adminUserController.rejectionReson.bind(adminUserController))
+
+//labor delete
+adminUserRoute.delete('/deleteLabor', authenticate, adminUserController.deleteLabor.bind(adminUserController))
+
 
 export default adminUserRoute

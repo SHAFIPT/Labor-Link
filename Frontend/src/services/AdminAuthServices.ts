@@ -1,22 +1,7 @@
 import { IAdmin } from "../@types/admin";
-import axios from "axios";
+import { adminAxiosInstance } from './instance/adminInstance'
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('AdminAccessToken')
-  if (token) {
-    config.headers['authorization'] = `Bearer ${token}`;
-  }
-  return config;
-},
-  (error) => {
-    return Promise.reject(error);
-  }
-)
+const api = adminAxiosInstance;
 
 export default api;
 
@@ -35,10 +20,12 @@ export const fetchUser = async () => {
   return resonse
 }
 
-export const fetchLabor = async () => {
-  const response = await api.get('/api/admin/user/laborsFetch')
-  return response
-}
+export const fetchLabor = async (query, pageNumber) => {
+  const response = await api.get('/api/admin/user/laborsFetch', {
+    params: { query, page: pageNumber },
+  });
+  return response;
+};
 
 export const blockUser = async ({email}) => {
   const response = await api.patch('/api/admin/user/userBlock',{email})
@@ -57,12 +44,14 @@ export const UnblockLabor = async ({email}) => {
   return response
 }
 
-export const unApprove = async ({ email }) => {
-  const response = await api.patch('/api/admin/user/laborApprove', { email })
+export const deleteLabor = async ({ email }) => {
+  const response = await adminAxiosInstance.delete('/api/admin/user/deleteLabor', {
+    params : {email}
+  })
   return response
 }
 export const Approve = async ({ email }) => {
-  const response = await api.patch('/api/admin/user/UnApprove', { email })
+  const response = await api.patch('/api/admin/user/laborApprove', { email })
   return response
 }
 
