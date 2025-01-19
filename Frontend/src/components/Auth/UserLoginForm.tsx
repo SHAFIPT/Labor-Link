@@ -32,8 +32,10 @@ const UserLoginForm = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { loading } = useSelector((state: RootState) => state.user)
-  // const isIsAuthenticated = useSelector((state : RootState) => state.user.isAthenticated)
-  // console.log('this is isIsAuthenticated :',isIsAuthenticated)
+  const isLaborAuthenticated = useSelector((state : RootState) => state.labor.isLaborAuthenticated)
+  const laborer = useSelector((state : RootState) => state.labor.laborer)
+  console.log('this is isLaborAuthenticated :',isLaborAuthenticated)
+  console.log('this is laborer :',laborer)
   
   //   useEffect(() => {
   // dispatch(setError({}))

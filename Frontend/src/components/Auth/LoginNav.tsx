@@ -1,40 +1,27 @@
 import { useEffect, useState } from "react";
 import lightModeLogo from "../../assets/laborLink light.jpg";
 import darkModeLogo from "../../assets/night.png";
-// import "./userLogin.css";  
+import "./userLogin.css";  
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/store/store";
+import { toggleTheme } from "../../redux/slice/themeSlice";
 
 const LoginNav = () => {
-  // Check localStorage for dark mode preference on initial load
-  const storedDarkMode = localStorage.getItem("isDarkMode") === "true";
+      const dispatch = useDispatch();  // Get dispatch function
+    const theme = useSelector((state: RootState) => state.theme.mode);  // Get the current theme
 
-  console.log("storedDarkMode is this :",storedDarkMode)
-  const [isDarkMode, setIsDarkMode] = useState(storedDarkMode);
+    const toggleDarkMode = () => {
+      dispatch(toggleTheme());  // Dispatch toggle action
+    };
 
-  useEffect(() => {
-    // Add or remove the 'dark' class to the document root based on dark mode state
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-
-    // Store the dark mode preference in localStorage
-    localStorage.setItem("isDarkMode", isDarkMode);
-  }, [isDarkMode]);
-
-  const toggleDarkMode = (e) => {
-    event.preventDefault();
-    e.stopPropagation();
-    setIsDarkMode((prevMode) => !prevMode);
-  };
 
   return (
     
     <div className="w-full flex justify-between">
       <Link to={'/'}>
       <div className="loginNavbarlogo ">
-        {isDarkMode ? (
+        {theme === "dark"  ? (
           <svg
             className="w-[122px] sm:w-[102px] lg:w-[139px] ml-6 lg:ml-16 pt-8 sm:pt-8 lg:pt-4"
             version="1.0"
@@ -184,16 +171,18 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
         )}
       </div>
       </Link>
+
+
       <div className="rightDarkLighMode p-16 lg:p-12 -mr-32 sm:mr-1 md:mr-6 lg:mr-8">
         <label className="toggle" htmlFor="switch" onClick={toggleDarkMode}>
           <input
             id="switch"
             className="input"
             type="checkbox"
-            checked={isDarkMode}
+            checked={theme === "dark"}
             onChange={toggleDarkMode}
           />
-          {isDarkMode ? (
+          {theme === "dark"  ? (
             <div className="icon icon--sun">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -225,6 +214,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           )}
         </label>
       </div>
+      
     </div>
   );
 };

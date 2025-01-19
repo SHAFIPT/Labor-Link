@@ -43,11 +43,11 @@ export default class OTPservices implements IOTPservices{
 
     async sendOtp(user: IUser): Promise<IOTP | null> {
 
-
+   
         const existOtp = await this.checkOTPExists(user)
-        if (existOtp) {
-            throw new Error('OTP already sent . Pleace verify or request a new one .')
-        }
+        // if (existOtp) {
+        //     throw new Error('OTP already sent . Pleace verify or request a new one .')
+        // }
 
         const newOTp = await this.otpRepository.createOtp(user); 
         if (!newOTp) {

@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import userReducer from '../slice/userSlice'
 import laborerSlice from '../slice/laborSlice'
 import adminSlice from '../slice/adminSlice'
+import themeReducer from '../slice/themeSlice'; 
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
@@ -14,6 +15,7 @@ const persistConfig = {
 const persistedLaborReducer = persistReducer(persistConfig, laborerSlice);
 const persistedAdminReducer = persistReducer(persistConfig, adminSlice);
 const persistedUserReducer = persistReducer(persistConfig, userReducer);
+const persisteddarkModeReducer = persistReducer(persistConfig, themeReducer);
 
 
 export const store = configureStore({
@@ -21,6 +23,7 @@ export const store = configureStore({
         user: persistedUserReducer,
         labor: persistedLaborReducer,
         admin: persistedAdminReducer,
+        theme: persisteddarkModeReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

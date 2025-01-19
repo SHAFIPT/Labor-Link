@@ -1,0 +1,49 @@
+/* Custom styles for list bullets */
+.expertise-item::marker {
+    color: #21A391;
+    /* Bullet color */
+    font-size: 1.5rem;
+    /* Adjust bullet size */;
+}
+
+@media (max-width : 1261px) {
+    .CardPage {
+        width: 350px !important;
+    }
+}
+@media (max-width : 953px) {
+    .CardPage {
+        width: 350px !important;
+    }
+    
+}
+@media (max-width : 958px) {
+    .CardPage {
+        width: 320px !important;
+    }   
+}
+@media (max-width : 830px) {
+    .CardPage {
+        width: 220px !important;
+    }
+    .textPage{
+        font-size: 15px !important;
+    }
+    .textsies{
+        font-size: 12px !important;
+    }
+}
+@media (max-width : 846px) {
+    .textsies {
+        font-size: 12px !important;
+    }
+    .CardPage {
+            width: 270px !important;
+    }
+    .butoonText{
+        width: 200px;
+    }
+    .buttontext{
+        font-size: 12px !important;
+    }
+}

@@ -155,37 +155,39 @@ const OtpForm = ({ isVisible, onClose }) => {
         <div className="loader "></div>
     )}
 
-      <div className="modal-overlay flex justify-center items-center">
-      <form className="otp-Form" onSubmit={handleSubmit}>
-        <span className="mainHeading">Enter OTP</span>
-        <p className="otpSubheading">We have sent a verification code to your email</p>
-        <div className="flex flex-col items-center justify-center mt-2">
-            <div className="flex justify-center space-x-2 mt-2">
-              {otp.map((digit, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  value={digit}
-                  onChange={(e) => handleOtpChange(e.target.value, index)}
-                  id={`otp-${index}`}
-                  maxLength={1} // Limit each input to one character
-                  className="w-10 h-10 bg-white text-black text-center border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
-                />
-              ))}
+     <div className="modal-overlay fixed inset-0 flex justify-center items-center bg-black bg-opacity-80">
+          <form className="otp-Form bg-white p-6 rounded-lg shadow-lg" onSubmit={handleSubmit}>
+            <span className="mainHeading text-xl font-semibold">Enter OTP</span>
+            <p className="otpSubheading text-gray-600">We have sent a verification code to your email</p>
+            <div className="flex flex-col items-center justify-center mt-2">
+              <div className="flex justify-center space-x-2 mt-2">
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    value={digit}
+                    onChange={(e) => handleOtpChange(e.target.value, index)}
+                    id={`otp-${index}`}
+                    maxLength={1}
+                    className="w-10 h-10 bg-white text-black text-center border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        <button className="verifyButton" type="submit">Verify</button>
-        <button className="exitBtn" onClick={onClose}>×</button>
-          <p className="resendNote">
-            {timer > 0 ? (
-              `Resend available in ${timer}s`
-            ) : (
-              <button className="resendBtn" onClick={handleResend}>Resend Code</button>
-            )}
-          </p>
-        {/* <p className="resendNote">Didn't receive the code? <button className="resendBtn">Resend Code</button></p> */}
-      </form>
-      </div>
+            <button className="verifyButton bg-orange-500 text-white px-4 py-2 rounded-md mt-4" type="submit">
+              Verify
+            </button>
+            <button className="exitBtn absolute top-2 right-2 text-xl" onClick={onClose}>×</button>
+            <p className="resendNote text-gray-600 mt-4">
+              {timer > 0 ? (
+                `Resend available in ${timer}s`
+              ) : (
+                <button className="resendBtn text-blue-500" onClick={handleResend}>Resend Code</button>
+              )}
+            </p>
+          </form>
+        </div>
+
     </StyledWrapper>
   );
 }

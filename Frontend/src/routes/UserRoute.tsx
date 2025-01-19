@@ -19,12 +19,12 @@ const UserHomePage = React.lazy(() => import('../pages/userSide/UserHomePage'));
 const UserLoginPage = React.lazy(() => import('../pages/userAuth/userLogin'));
 const UserRegister = React.lazy(() => import('../pages/userAuth/userRegister'));
 const AdminRoute = React.lazy(() => import('./AdminRoute'));
-const LaborRoute = React.lazy(() => import('./AdminRoute'));
+const LaborRoute = React.lazy(() => import('./LaborRout'));
 
 const UserRoute = () => {
   return (
     <Routes>
-      {/* Admin and Labor routes with their own Suspense boundaries */}
+      {/* Admin and Labor routes with their own Suspense boundaries */} 
       <Route
         path="/admin/*"
         element={

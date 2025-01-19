@@ -75,33 +75,33 @@ class AuthController {
             res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
         }
     }
+ 
+    public async sendOtp(req: Request, res: Response) {
+        
+    try {
+        const user = req.body;
+        console.log('This is the user from the sendOtp:', user);
 
-    async sendOtp(req: Request, res: Response): Promise<void> {
-        try {
-
-            
-            const user = req.body;
-            console.log('this is the user from  the sendOtp  : ',user)
-            
-            if (!user) {
-                res.status(404).json({ message: 'user is not found..!' })
-            }
-
-            const otpExist = await this.otpservices.checkOTPExists(user)
-
-            if (otpExist) {
-                res.status(500).json(new ApiError(500, "Please Wait 1 Minute. Before Trying to register again"))
-            }
-
-            const Response = await this.otpservices.sendOtp(user as IUser);
-            console.log('completed the send otp', Response);
-            
-            res.status(200).json({ message: "OTP sent successfully!", email: user.email });
-        } catch (error: any) {
-            console.error("Send OTP Error:", error.message || error);
-            res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
+        if (!user) {
+            return res.status(404).json({ message: 'User is not found..!' });
         }
+
+        const otpExist = await this.otpservices.checkOTPExists(user);
+
+        // if (otpExist) {
+        //     return res.status(500).json(new ApiError(500, "Please wait 1 minute before trying to register again"));
+        // }
+
+        const response = await this.otpservices.sendOtp(user as IUser);
+        console.log('Completed the send OTP:', response);
+
+        return res.status(200).json({ message: "OTP sent successfully!", email: user.email });
+    } catch (error: any) {
+        console.error("Send OTP Error:", error.message || error);
+        return res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
     }
+}
+
 
     async verifyOtp(req: Request, res: Response): Promise<void> {
         try {

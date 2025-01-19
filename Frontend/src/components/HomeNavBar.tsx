@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import lightModeLogo from "../assets/laborLink light.jpg";
 import Handman from '../assets/Icons/Handiman.png'
@@ -11,36 +11,31 @@ import repair from '../assets/Icons/repair.png'
 import HomeCleaning from '../assets/Icons/HomeCleaning.png'
 import Landscaling from '../assets/Icons/Landscaling.png'
 import Guttor from '../assets/Icons/Guttor.png'
+import { toast } from "react-toastify"
 import './Auth/userLogin.css'
 import './userHomeNave.css'
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store/store";
+import { toggleTheme } from "../redux/slice/themeSlice";
+import { setisUserAthenticated, setUser, resetUser,setFormData } from '../redux/slice/userSlice'
+import { logout } from "../services/UserAuthServices";
 const HomeNavBar = () => {
-
-  const storedDarkMode = localStorage.getItem("isDarkMode") === "true";
-  console.log("storedDarkMode is this :",storedDarkMode)
-          
-  const [isDarkMode, setIsDarkMode] = useState(storedDarkMode)
   const user = useSelector((state: RootState) => state.user)
   const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
+  // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
-   useEffect(() => {
-      // Add or remove the 'dark' class to the document root based on dark mode state
-      if (isDarkMode) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-  
-      // Store the dark mode preference in localStorage
-      localStorage.setItem("isDarkMode", isDarkMode);
-    }, [isDarkMode]);
-  
+  // console.log('isLaborAuthenticated :',isLaborAuthenticated)
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate()// Get dispatch function
+    const theme = useSelector((state: RootState) => state.theme.mode);  // Get the current theme
+
     const toggleDarkMode = () => {
-      setIsDarkMode((prevMode) => !prevMode);
-  };
-  
+      dispatch(toggleTheme());  // Dispatch toggle action
+    };
+
   const shouldShowUserName = isUserAthenticated 
+  // const shouldShowLaborName = isLaborAuthenticated 
 
 
     // First 4 services (always visible)
@@ -61,6 +56,36 @@ const HomeNavBar = () => {
     { name: "Guttor Service", icon: Guttor, className: "w-7 h-7 sm:w-8 sm:h-8 lg:w-12 lg:h-12" }
   ];
 
+
+  
+    const handleLogout = async () => {
+      try {
+
+        const response = await logout()
+
+        console.log('this is response : ',response)
+
+      if (response?.status === 200) {
+          // Clear local storage
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+
+        dispatch(resetUser())
+        dispatch(setUser({}))
+        dispatch(setFormData({}))
+        dispatch(setisUserAthenticated(false))
+        // Redirect to login page
+        toast('logout successfully....!')
+          navigate('/login');
+        } else {
+          console.error('Logout failed:', response);
+          alert('Failed to logout. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error during logout:', error);
+      }
+  };
+
   
 
   return (
@@ -68,7 +93,7 @@ const HomeNavBar = () => {
       <div className="w-full flex justify-between ">
         <Link to={"/"}>
           <div className="loginNavbarlogo cursor-pointer">
-            {isDarkMode ? (
+            {theme === "dark" ? (
               <svg
                 className="w-24 sm:w-24 md:w-28 lg:w-32 ml-8 sm:ml-12 md:ml-8 lg:ml-16 pt-4 sm:pt-6 lg:pt-4"
                 version="1.0"
@@ -386,47 +411,53 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
             </div>
           </div>
 
-          <div className="rightDarkLighMode lg:pl-0 m-6 lg:m-0  pl-[114px] md:pl-[590px] sm:pl-16 -mr-32 sm:mr-1 md:mr-6 lg:mr-0">
-            <label className="toggle" htmlFor="switch" onClick={toggleDarkMode}>
-              <input
-                id="switch"
-                className="input"
-                type="checkbox"
-                checked={isDarkMode}
-                onChange={toggleDarkMode}
-              />
-              {isDarkMode ? (
-                <div className="icon icon--sun">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 47.5 47.5"
-                    className="w-[20px] h-[20px]"
-                  >
-                    <g fill="#ffac33" transform="matrix(1.25 0 0 -1.25 0 47.5)">
-                      <path d="M17 35s0 2 2 2 2-2 2-2v-2s0-2-2-2-2 2-2 2v2zM35 21s2 0 2-2-2-2-2-2h-2s-2 0-2 2 2 2 2 2h2zM5 21s2 0 2-2-2-2-2-2H3s-2 0-2 2 2 2 2 2h2zM10.121 29.706s1.414-1.414 0-2.828-2.828 0-2.828 0l-1.415 1.414s-1.414 1.414 0 2.829c1.415 1.414 2.829 0 2.829 0l1.414-1.415ZM31.121 8.707s1.414-1.414 0-2.828-2.828 0-2.828 0l-1.414 1.414s-1.414 1.414 0 2.828 2.828 0 2.828 0l1.414-1.414ZM30.708 26.879s-1.414-1.414-2.828 0 0 2.828 0 2.828l1.414 1.414s1.414 1.414 2.828 0 0-2.828 0-2.828l-1.414-1.414ZM9.708 5.879s-1.414-1.414-2.828 0 0 2.828 0 2.828l1.414 1.414s1.414 1.414 2.828 0 0-2.828 0-2.828L9.708 5.879ZM17 5s0 2 2 2 2-2 2-2V3s0-2-2-2-2 2-2 2v2zM29 19c0 5.523-4.478 10-10 10-5.523 0-10-4.477-10-10 0-5.522 4.477-10 10-10 5.522 0 10 4.478 10 10"></path>
-                    </g>
-                  </svg>
-                </div>
-              ) : (
-                <div className="icon icon--moon">
-                  <svg
-                    height="32"
-                    width="32"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-[20px] h-[20px]"
-                  >
-                    <path
-                      clipRule="evenodd"
-                      d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"
-                      fillRule="evenodd"
-                    ></path>
-                  </svg>
-                </div>
-              )}
-            </label>
+           <div
+      className={`rightDarkLighMode lg:pl-0 m-6 lg:m-0 pl-[114px] md:pl-[590px] sm:pl-16 -mr-32 sm:mr-1 md:mr-6 lg:mr-0 ${
+        theme === "dark" ? "bg-darkBg text-darkText" : "bg-lightBg text-lightText"
+      }`}
+    >
+      <label className="toggle" htmlFor="switch" onClick={toggleDarkMode}>
+        <input
+          id="switch"
+          className="input"
+          type="checkbox"
+          checked={theme === "dark"}  // Check if the theme is dark
+          onChange={toggleDarkMode}
+        />
+        {theme === "dark" ? (
+          <div className="icon icon--sun">
+            {/* Sun Icon */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 47.5 47.5"
+              className="w-[20px] h-[20px]"
+            >
+              <g fill="#ffac33" transform="matrix(1.25 0 0 -1.25 0 47.5)">
+                <path d="M17 35s0 2 2 2 2-2 2-2v-2s0-2-2-2-2 2-2 2v2zM35 21s2 0 2-2-2-2-2-2h-2s-2 0-2 2 2 2 2 2h2zM5 21s2 0 2-2-2-2-2-2H3s-2 0-2 2 2 2 2 2h2zM10.121 29.706s1.414-1.414 0-2.828-2.828 0-2.828 0l-1.415 1.414s-1.414 1.414 0 2.829c1.415 1.414 2.829 0 2.829 0l1.414-1.415ZM31.121 8.707s1.414-1.414 0-2.828-2.828 0-2.828 0l-1.414 1.414s-1.414 1.414 0 2.828 2.828 0 2.828 0l1.414-1.414ZM30.708 26.879s-1.414-1.414-2.828 0 0 2.828 0 2.828l1.414 1.414s1.414 1.414 2.828 0 0-2.828 0-2.828l-1.414-1.414ZM9.708 5.879s-1.414-1.414-2.828 0 0 2.828 0 2.828l1.414 1.414s1.414 1.414 2.828 0 0-2.828 0-2.828L9.708 5.879ZM17 5s0 2 2 2 2-2 2-2V3s0-2-2-2-2 2-2 2v2zM29 19c0 5.523-4.478 10-10 10-5.523 0-10-4.477-10-10 0-5.522 4.477-10 10-10 5.522 0 10 4.478 10 10"></path>
+              </g>
+            </svg>
           </div>
+        ) : (
+          <div className="icon icon--moon">
+            {/* Moon Icon */}
+            <svg
+              height="32"
+              width="32"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-[20px] h-[20px]"
+            >
+              <path
+                clipRule="evenodd"
+                d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"
+                fillRule="evenodd"
+              ></path>
+            </svg>
+          </div>
+        )}
+      </label>
+    </div>
 
           <button className="BrowserButton bg-[#21A391] focus:outline-none hidden lg:block md:hidden text-white p-3 w-[220px] rounded-xl">
             Brouse all labors
@@ -440,12 +471,14 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           </div>
         </div>
         {shouldShowUserName ? (
-          <div className="userImage flex items-center  lg:mr-9 mt-4 ">
+          <div className="userImage flex items-center  lg:mr-9 mt-4 cursor-pointer" onClick={handleLogout}>
             <i className="fa fa-user w-12 h-12  text-[28px] "></i>
           </div>
         ) : (
           <button className="ButtonLogin hidden lg:block md:block sm:block lg:pr-14 md:pr-6 sm:pr-7 pr-5">
+            <Link to={'/login'}>
             login
+            </Link>
           </button>
         )}
       </div>
@@ -457,7 +490,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
       <div className="px-2 sm:px-4 md:px-6 lg:px-8 mt-4 sm:mt-5 md:mt-6 lg:mt-1 mb-5">
         <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 sm:gap-3 md:gap-4 lg:gap-1">
           {/* Primary Services - Always Visible */}
-          {isDarkMode ? (
+          {theme === "dark" ? (
             <>
             <div className="flex flex-col items-center justify-center p-1 sm:p-2 transition-all hover:scale-105">
               <div className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20">
@@ -565,7 +598,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
               </div>
 
             {/* nEXT */}
-
+            {/* <div className="hidden lg:block md:block sm:hidden"></div> */}
            <div className="flex flex-col items-center justify-center p-1 sm:p-2 transition-all hover:scale-105">
               <div className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20">
                 <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
@@ -595,7 +628,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
               
             <div className="hidden lg:block md:block sm:hidden">
             <div className=" flex flex-col items-center justify-center p-1 sm:p-2 transition-all hover:scale-105">
-              <div className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 sm:hidden">
+              <div className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 sm">
                 <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
                 width="508.000000pt" height="491.000000pt" viewBox="0 0 508.000000 491.000000"
                 preserveAspectRatio="xMidYMid meet" className="w-7 h-7  sm:w-8 sm:h-8 lg:w-12 lg:h-12">

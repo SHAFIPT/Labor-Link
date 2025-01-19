@@ -271,14 +271,12 @@ const LaborRegisterExperience = () => {
 
         const { accessToken } = response.data.data;
 
-        console.log("thisis seh accessToken page data :", accessToken);
+        console.log("thisis seh response page data :", response);
         // Store access token in localStorage
         localStorage.setItem("LaborAccessToken", accessToken);
 
         console.log("thisis seh exprence page data :", experienceData);
         setSucess(true);
-        dispatch(setIsLaborAuthenticated(true));
-        dispatch(setFormData(experienceData));
         
         dispatch(setLoading(false));
         toast.success("experience Page uploaded sucessfuly....!");
@@ -320,11 +318,13 @@ const LaborRegisterExperience = () => {
       },
       role: "labor",
     };
-    dispatch(setIsLaborAuthenticated(true));
-    dispatch(setFormData(experienceData));
-
-    toast.success("his every one ..");
-    navigate('/labor/ProfilePage')
+    setTimeout(() => {   
+      dispatch(setIsLaborAuthenticated(true));
+      dispatch(setFormData(experienceData));
+  
+      toast.success("his every one ..");
+      navigate('/labor/ProfilePage')
+    },200)
   };
 
   //  console.log('this is the idType : to send ',idType)

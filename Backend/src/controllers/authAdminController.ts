@@ -51,7 +51,7 @@ class adminController {
         next(error);
         return res.status(error.statusCode || 500).json({
             error: error.message || 'Something went wrong.'
-        });
+        });  
     }
     };
 
