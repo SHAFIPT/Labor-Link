@@ -6,12 +6,12 @@
 // import { logout } from "../../services/UserAuthServices"
 // import { setisUserAthenticated, setUser, resetUser ,setFormData} from '../../redux/slice/userSlice'
 // import { setIsLaborAuthenticated, setLaborer  } from '../../redux/slice/laborSlice'
-import React, { lazy, Suspense, useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect , useRef } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 // import { resetLaborer }  from '../../redux/slice/laborSlice'
 
-import HomeImage from '../../assets/Icons/Home image_enhanced.png'
+import HomeImage from '../../assets/Home image compressed.jpg'
 import HomeNavBar from "../HomeNavBar"
 import laborImage from '../../assets/char1.jpeg'
 import './UserHome.css'
@@ -35,7 +35,8 @@ import Arrow5 from '../../assets/3rd_step2-removebg-preview.png'
 import rootMap5  from '../../assets/ThirdImage.png';
 import rootMap6  from '../../assets/4th image.png';
 import rootMap7  from '../../assets/Payment.png';
-import rootMap8  from '../../assets/Rating.png';
+import rootMap8 from '../../assets/Rating.png';
+import smImage from '../../assets/david-cainImageCompressed.jpg'
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
 const ServiceCard = lazy(() => import('./serviceCards'))
@@ -242,14 +243,14 @@ const UserHome = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const duplicatedLabors = [...labors, ...labors];
+  const duplicatedLabors = [...labors, ...labors ,...labors];
   // Auto-scrolling animation
   useEffect(() => {
     const scrollInterval = setInterval(() => {
       setScrollPosition((prevPosition) => {
         const maxScroll = labors.length * 480; // Approximate width of each card + gap
         const newPosition = prevPosition + 1;
-        return newPosition >= maxScroll ? 0 : newPosition;
+        return newPosition >= maxScroll ? 0 : newPosition ;
       });
     }, 30); // Adjust speed by changing interval
 
@@ -259,102 +260,147 @@ const UserHome = () => {
   return (
     <>
       <HomeNavBar />
-      <div className="homePage mb-7 w-full overflow-hidden">
-        <img src={HomeImage} alt="" className="absolute" />
-        <div className="imageOverContents relative p-8">
-          <h1
-            className="styleText text-white  text-[12px] sm:text-[16px] md:text-[16px] lg:text-[26px] md:p-1 lg:p-8 mt-[20px] sm:mt-[30px] md:-mt-[40px] lg:pt-[123px]"
-            style={{ fontFamily: "'Josefin Slab', serif" }}
-          >
-            Connect with Skilled Professionals, Get the Job Done Right.
-          </h1>
-          <div className="FirstTrust p-4 sm:p-6 md:p-8 lg:p-8 pt-[60px] sm:pt-[90px] md:pt-[90px] lg:pt-[63px]">
-            <h1 className="h1Text text-white text-[19px] sm:text-[22px] md:text-[10px] lg:text-[60px] font-bold leading-tight">
-              Find trusted local laborers
-            </h1>
-            <p className="pText text-[#7EDFD2] text-[16px] sm:text-[22px] md:text-[30px] lg:text-[45px] font-bold mt-2">
-              for all your needs, from repairs to renovations.
-            </p>
-          </div>
-          <div className="w-full px-4 sm:px-6 md:px-8">
-            <div className="SearchBoxe relative flex items-center w-full max-w-[346px] sm:max-w-[390px] md:max-w-[490px] lg:max-w-[590px] mt-4 sm:mt-6 md:mt-1">
-              <input
-                type="search"
-                placeholder="Find the labor by the name, category..."
-                className="search w-full h-8 sm:h-12 md:h-[46px] lg:h-[65px] 
-                         pl-4 sm:pl-6 md:pl-9 pr-20 sm:pr-32 md:pr-[150px] 
-                         rounded-full border border-gray-300 
-                         focus:outline-none focus:ring-2 focus:ring-[#21A391] 
-                         text-xs sm:text-sm md:text-base"
-              />
-              <button
-                className="searchbutton absolute right-1 
-                               h-7 sm:h-10 md:h-[39px] lg:h-[59px]
-                               w-20 sm:w-28 md:w-[140px] lg:w-[170px]
-                               px-2 sm:px-4 md:px-9 
-                               bg-[#21A391] text-white rounded-full 
-                               text-xs sm:text-sm md:text-[8px] lg:text-[18px] font
-                               transition-all duration-200"
-              >
-                Find Labors
-              </button>
-            </div>
-          </div>
-          <div className="hidden md:block w-full overflow-hidden px-2 py-6 mt-14">
-            <div
-              className="flex space-x-8 transition-transform duration-300"
-              style={{
-                transform: `translateX(-${scrollPosition}px)`,
-                width: `${duplicatedLabors.length * 400}px`,
-              }}
-            >
-              {duplicatedLabors.map((labor, index) => (
-                <div
-                  key={`${labor.id}-${index}`}
-                  className="flex-shrink-0 w-96 bg-white rounded-lg shadow-md p-6 flex items-start gap-6 hover:shadow-lg transition-shadow duration-300"
-                >
-                  <div className="w-20 h-20 lg:w-24 lg:h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
-                    <img
-                      src={laborImage}
-                      alt={labor.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-base lg:text-xl font-semibold text-gray-800 truncate">
-                        {labor.name}
-                      </h3>
-                      <div className="flex items-center w-[60px] lg:w-[100px]">
-                        {[...Array(labor.rating)].map((_, starIndex) => (
-                          <svg
-                            key={starIndex}
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="#118577"
-                            viewBox="0 0 24 24"
-                            className="w-5 h-5"
-                          >
-                            <path d="M12 2c.38 0 .74.214.93.555l2.33 4.755 5.242.763c.387.056.727.304.902.66.175.356.155.777-.053 1.11l-3.795 4.787.878 5.367c.063.384-.096.775-.409 1.007-.313.233-.732.27-1.084.096l-4.944-2.501-4.945 2.501c-.352.174-.771.137-1.084-.096-.313-.232-.472-.623-.409-1.007l.878-5.367-3.795-4.787c-.208-.333-.228-.754-.053-1.11.175-.356.515-.604.902-.66l5.242-.763L11.07 2.555c.19-.341.55-.555.93-.555z" />
-                          </svg>
-                        ))}
-                      </div>
-                    </div>
-
-                    <p className="text-sm lg:text-lg text-gray-500 mt-2">
-                      {labor.occupation}
-                    </p>
-
-                    <p className="text-xs lg:text-base text-gray-600 mt-3 line-clamp-2">
-                      {labor.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+     <div className="homePage relative w-full min-h-screen overflow-hidden">
+   {/* Desktop/Tablet background image */}
+        <img 
+          src={HomeImage} 
+          alt="" 
+          className="absolute inset-0 w-full h-full object-cover hidden sm:block"
+        />
+        
+      <div className="block sm:hidden absolute inset-0">
+          <img 
+            src={smImage}
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+          {/* Mobile gradient overlay */}
+      {/* <div 
+        className="absolute inset-0 bg-gradient-to-r from-[#2C3333]/65 to-[#2C3333]/65
+          backdrop-blur-[1px] transform will-change-transform pointer-events-none
+          transition-all duration-700 ease-in-out origin-left
+          group-hover:scale-x-0"
+      /> */}
         </div>
+  
+    {/* Content container with responsive padding */}
+    <div className="relative z-10 container mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
+      {/* Hero text with better responsive scaling */}
+      <h1 className="text-white font-['Josefin_Slab'] text-center sm:text-left
+        text-base sm:text-lg md:text-xl lg:text-3xl
+        mt-28 sm:mt-8 md:mt-12 lg:mt-24"
+      >
+        Connect with Skilled Professionals, Get the Job Done Right.
+      </h1>
+
+      {/* Trust section with improved spacing */}
+      <div className="mt-8  ml-4 sm:mt-12 md:mt-16 lg:mt-20">
+        <h1 className="text-white font-bold
+          text-4xl sm:text-3xl md:text-4xl lg:text-6xl
+          leading-tight"
+        >
+          Find trusted local laborers
+        </h1>
+        <p className="text-[#7EDFD2] font-bold
+          text-2xl sm:text-xl md:text-2xl lg:text-4xl
+          mt-2 sm:mt-3 md:mt-4"
+        >
+          for all your needs, from repairs to renovations.
+        </p>
       </div>
+
+    {/* Search section with responsive sizing */}
+    <div className="mt-6 sm:mt-8 md:mt-10 lg:mt-12 w-full">
+      <div className="relative flex items-center w-full max-w-full sm:max-w-[500px] md:max-w-[600px] lg:max-w-[700px]">
+        <input
+          type="search"
+          placeholder="Find the labor by the name, category..."
+          className="w-full rounded-xl border border-gray-300
+            h-[73px] sm:h-12 md:h-14 lg:h-16
+            pl-4 sm:pl-6 md:pl-8 lg:pl-10
+            pr-24 sm:pr-32 md:pr-36 lg:pr-44
+            text-sm sm:text-base md:text-lg
+            focus:outline-none focus:ring-2 focus:ring-[#21A391]"
+        />
+        <button className="absolute right-1 rounded-xl bg-[#21A391] text-white
+          h-[64px] sm:h-10 md:h-12 lg:h-14
+          w-20 sm:w-28 md:w-32 lg:w-40
+          text-xs sm:text-sm md:text-base lg:text-lg
+          transition-all duration-200 hover:bg-[#1a8275]"
+        >
+          Find Labors
+        </button>
+      </div>
+    </div>
+
+    {/* Labor cards section with responsive grid */}
+    <div className=" md:block mt-16 overflow-hidden">
+      <div className="flex space-x-4 sm:space-x-6 md:space-x-8 transition-transform duration-300"
+        style={{
+          transform: `translateX(-${scrollPosition}px)`,
+          width: `${duplicatedLabors.length * 400}px`,
+        }}
+      >
+        {duplicatedLabors.map((labor, index) => (
+          <div
+            key={`${labor.id}-${index}`}
+            className="flex-shrink-0 bg-white rounded-lg shadow-md
+              w-72 sm:w-80 md:w-96
+              p-4 sm:p-5 md:p-6
+              flex items-start gap-4 sm:gap-5 md:gap-6
+              hover:shadow-lg transition-shadow duration-300"
+          >
+            <div className="rounded-lg overflow-hidden
+              w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-24 lg:h-24
+              flex-shrink-0"
+            >
+              <img
+                src={laborImage}
+                alt={labor.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-800 truncate
+                  text-sm sm:text-base md:text-lg lg:text-xl"
+                >
+                  {labor.name}
+                </h3>
+                <div className="flex items-center w-20 sm:w-24 md:w-28 lg:w-32">
+                  {[...Array(labor.rating)].map((_, starIndex) => (
+                    <svg
+                      key={starIndex}
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="#118577"
+                      viewBox="0 0 24 24"
+                      className="w-4 sm:w-5 md:w-6"
+                    >
+                      <path d="M12 2c.38 0 .74.214.93.555l2.33 4.755 5.242.763c.387.056.727.304.902.66.175.356.155.777-.053 1.11l-3.795 4.787.878 5.367c.063.384-.096.775-.409 1.007-.313.233-.732.27-1.084.096l-4.944-2.501-4.945 2.501c-.352.174-.771.137-1.084-.096-.313-.232-.472-.623-.409-1.007l.878-5.367-3.795-4.787c-.208-.333-.228-.754-.053-1.11.175-.356.515-.604.902-.66l5.242-.763L11.07 2.555c.19-.341.55-.555.93-.555z" />
+                    </svg>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-gray-500 mt-2
+                text-xs sm:text-sm md:text-base lg:text-lg"
+              >
+                {labor.occupation}
+              </p>
+
+              <p className="text-gray-600 mt-2 line-clamp-2
+                text-xs sm:text-sm md:text-base"
+              >
+                {labor.description}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* AboutPage */}
 
@@ -507,7 +553,7 @@ const UserHome = () => {
           <div className="button mb-14 flex justify-center sm:justify-center lg:justify-end mr-[95px]">
             <button
               onClick={() => setShowMore(!showMore)}
-              className=" group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] backdrop-blur-lg px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20"
+              className=" relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] backdrop-blur-lg px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20"
             >
               <span className="text-lg">
                 {showMore ? "previous services" : "more services"}

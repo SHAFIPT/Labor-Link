@@ -1,4 +1,4 @@
-const ServiceCard = ({ image, title, description, className = "" }) => {
+const ServiceCard = ({ image, title, description = "", className = "" }) => {
 return (
      <div className={`flex flex-col items-center ${className}`}>
       <div className="relative w-full aspect-square max-w-[300px] rounded-lg shadow-lg overflow-hidden group">
@@ -24,10 +24,14 @@ return (
           {title}
         </h2>
       </div>
-      <p className="mt-4 px-4 text-gray-700 text-sm md:text-base max-w-[300px] 
-        text-start leading-relaxed">
-        {description}
-      </p>
+      {description && (
+        <p
+          className="mt-4 px-4 text-gray-700 text-sm md:text-base max-w-[300px] 
+        text-start leading-relaxed"
+        >
+          {description}
+        </p>
+      )}
     </div>
   );
 };

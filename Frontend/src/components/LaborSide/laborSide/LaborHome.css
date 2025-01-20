@@ -1,11 +1,11 @@
-body{
-     padding: 0px;
-        margin: 0px;
-        box-sizing: border-box;
+body {
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
 }
- 
-.labor-home{
-    margin-top: 17px;
-    height: auto;
-    background: url('../../../assets/laborBg.png');
+
+.labor-home {
+  margin-top: 17px;
+  height: auto;
+  background: linear-gradient(45deg, #74bbcf, #9ce4e8, #7ed7db, #93d4db);
 }

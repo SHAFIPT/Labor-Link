@@ -6,12 +6,43 @@
     /* Adjust bullet size */;
 }
 
-@media (max-width : 1261px) {
-    .CardPage {
+@media (max-width : 1214px) {
+    .underLine {
+        width: 1000px !important;
+    }
+}
+@media (max-width : 1016px) {
+    .underLine {
+        width: 800px !important;
+    }
+}
+@media (max-width : 856px) {
+    .underLine {
+        width: 650px !important;
+    }
+}
+@media (max-width : 685px) {
+    .underLine {
         width: 350px !important;
     }
 }
-@media (max-width : 953px) {
+/* @media (max-width : 1517px) {
+    .aboutMeSection {
+        width: 1400px !important;
+    }
+}
+@media (max-width : 1419px) {
+    .aboutMeSection {
+        width: 1300px !important;
+        padding-right: -703px;
+    }
+}
+@media (max-width : 1300px) {
+    .aboutMeSection {
+        width: 1000px !important;
+    }
+} */
+/* @media (max-width : 953px) {
     .CardPage {
         width: 350px !important;
     }
@@ -45,5 +76,20 @@
     }
     .buttontext{
         font-size: 12px !important;
+    } */
+
+/* @media (max-width : 745px) { */
+    /* .textsies {
+        font-size: 12px !important;
+    } */
+    /* .CardPage {
+        display: flex;
+        flex-direction: column;
+    } */
+    /* .butoonText{
+        width: 200px;
     }
-}
+    .buttontext{
+        font-size: 12px !important;
+    } */
+/* } */
