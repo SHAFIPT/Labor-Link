@@ -8,7 +8,10 @@ const authController = new AuthLaborController()
 laborAuthRoute.post('/login',authController.login.bind(authController))
 laborAuthRoute.post('/registerAboutYou',authController.aboutYou.bind(authController))
 laborAuthRoute.post('/registerProfilePage',authController.profilePage.bind(authController))
-laborAuthRoute.post('/registerExperiencePage',authController.experiencePage.bind(authController))
+laborAuthRoute.post('/registerExperiencePage', authController.experiencePage.bind(authController))
+laborAuthRoute.post('/forgettPassword',authController.forgetPassword.bind(authController))
+laborAuthRoute.post('/ForgetVerify-otp',authController.forgetVerifyOtp.bind(authController))
+laborAuthRoute.post('/forgot-password-reset',authController.resetPassword.bind(authController))
 laborAuthRoute.patch('/logout', decodedLaborRefreshToken,authController.logoutLabor.bind(authController))
 
 export default laborAuthRoute

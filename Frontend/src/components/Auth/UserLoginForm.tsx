@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 import axios from "axios";
 import { googleAuth } from "../../services/UserAuthServices";
 import { Login, forgotPasswordSendOTP, forgetPasswordVerify, forgotPasswordReset ,  } from "../../services/UserAuthServices";
-import { LaborLogin } from '../../services/LaborAuthServices'
+import { laborForgetPasswordVerify, laborForgotPasswordReset, laborForgotPasswordSendOTP, LaborLogin } from '../../services/LaborAuthServices'
 import Forgottpasswod from "../UserSide/Forgottpasswod";
 import AnimatedPage from "../AnimatedPage/Animated";
 import ResetPassword from "../UserSide/ResetPassword";
@@ -31,7 +31,7 @@ const UserLoginForm = () => {
   const [imaUser , setIamUser] = useState(true)
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { loading } = useSelector((state: RootState) => state.user)
+  const loading  = useSelector((state: RootState) => state.user.loading)
   const isLaborAuthenticated = useSelector((state : RootState) => state.labor.isLaborAuthenticated)
   const laborer = useSelector((state : RootState) => state.labor.laborer)
   console.log('this is isLaborAuthenticated :',isLaborAuthenticated)
@@ -84,7 +84,7 @@ const UserLoginForm = () => {
             console.log('THis is the userFound :', userFound)
             console.log('THis is the accessToken :', accessToken)
 
-            localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("UserAccessToken", accessToken);
 
             const message = loginResponse.data.message
             toast.success(message || "User Login successfully...!");
@@ -108,7 +108,7 @@ const UserLoginForm = () => {
                const { LaborFound, accessToken } = loginResponse.data.data;
                
                console.log('Labor Found Data:', LaborFound); 
-            localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("LaborAccessToken", accessToken);
             
             dispatch(setFormData(LaborFound))
             dispatch(setLaborer(LaborFound))
@@ -123,10 +123,6 @@ const UserLoginForm = () => {
           }
 
         }
-        
-        // const message = loginResponse.data.error
-        // console.log('Thsis is the error message :',message)
-        // toast.success(message || `${imaUser ? 'User' : 'Labor'} Login successful!`);
         dispatch(setLoading(false))
           
         } catch (error) {
@@ -149,8 +145,10 @@ const UserLoginForm = () => {
         console.log('this is email',email)
 
         dispatch(setLoading(true))
-        const response = await forgotPasswordSendOTP(email);
-        
+        const response = imaUser
+          ? await forgotPasswordSendOTP(email)
+          : await laborForgotPasswordSendOTP(email)     
+
         if (response.status == 200) {
           toast.success(response.data.message || 'Otp sended successfully')
           dispatch(setLoading(false));
@@ -185,8 +183,10 @@ const UserLoginForm = () => {
         return null;
       }
 
-      const response = await forgetPasswordVerify(otp, email)
-      
+      const response = imaUser
+        ? await forgetPasswordVerify(otp, email)
+        : await laborForgetPasswordVerify(otp, email)
+
        if (response.status == 200) {
           toast.success('Otp verify successfully...!')
       }
@@ -218,8 +218,10 @@ const UserLoginForm = () => {
     try {
       dispatch(setLoading(true))
 
-      const response = await forgotPasswordReset(password, otpToken);
-
+      const response = imaUser
+        ? await forgotPasswordReset(password, otpToken)
+        : await laborForgotPasswordReset(password, otpToken)
+      
       if (response?.data.success) {
         dispatch(setLoading(false));
 
@@ -245,7 +247,7 @@ const UserLoginForm = () => {
     
         if (googleResoponse.status === 200) {
           const { user, accessToken } = googleResoponse.data.data;
-          
+          localStorage.setItem('UserAccessToken',accessToken)
           dispatch(setUser(user));
           dispatch(setAccessToken(accessToken));
           dispatch(setisUserAthenticated(true));

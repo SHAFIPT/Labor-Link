@@ -35,13 +35,15 @@ class adminController {
             });
         }
     }
+  
 
+    
     public fetchLabor = async (req: Request, res: Response, next: NextFunction) => {
         try {
 
             const query = req.query.query as string || '';
             const page = parseInt(req.query.page as string || '1');
-            const perPage = 7;
+            const perPage = 6;
             const skip = (page - 1) * perPage;
 
             const totalCount = await this.adminService.getTotalLaborsCount(query);

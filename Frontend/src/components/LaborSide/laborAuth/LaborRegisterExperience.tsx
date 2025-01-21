@@ -589,13 +589,13 @@ const LaborRegisterExperience = () => {
 
                 {/* First Certificate Upload/Display */}
                 {!certificateImages[0] ? (
-                  <button
-                    type="button"
-                    className="button mt-4"
-                    onClick={() => handleOpenModal("certificate")}
-                  >
-                    <span className="btn__text">Upload First Certificate</span>
-                  </button>
+                 <button
+                type="button"
+                className="mt-4 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 hover:shadow-lg transition duration-300"
+                onClick={() => handleOpenModal("certificate")}
+              >
+                <span className="btn__text">Upload First Certificate</span>
+              </button>
                 ) : (
                   <div className="relative mt-4 flex space-x-4">
                     {/* Certificate 1 */}
@@ -695,12 +695,10 @@ const LaborRegisterExperience = () => {
                     {!certificateImages[1] && (
                       <button
                         type="button"
-                        className="button mt-4"
+                        className="mt-4 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 hover:shadow-lg transition duration-300"
                         onClick={() => handleOpenModal("certificate")}
                       >
-                        <span className="btn__text">
-                          Upload Second Certificate
-                        </span>
+                        <span className="btn__text">Upload Second Certificate</span>
                       </button>
                     )}
                   </div>

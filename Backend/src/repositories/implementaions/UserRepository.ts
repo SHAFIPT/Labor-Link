@@ -20,7 +20,7 @@ export default class UserRepository implements IUserRepository{
 
             return registedUser
             
-        } catch (error) {
+        } catch (error) { 
             
         }
     }
@@ -129,4 +129,14 @@ export default class UserRepository implements IUserRepository{
             throw new ApiError(500, 'Failed to logout');
         }
     }
+
+    async isBlockeduser(userId: string): Promise<IUser | null> {
+    try {
+        const user = await User.findById(userId).select('isBlocked');
+        return user;
+    } catch (error) {
+        console.error('Error in repository while checking block status:', error);
+        throw error;
+    }
+}
 }

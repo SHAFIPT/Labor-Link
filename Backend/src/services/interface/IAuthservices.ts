@@ -8,5 +8,6 @@ export interface IAuthService{
     generateTokenForForgotPassword(user: Partial<IUser>): string;
     decodeAndVerifyToken(token: string): Promise<Partial<IUser | null>>;
     changePassword(password: string, email: string): Promise<IUser | null>;
-    logout(token:string , id: string) : Promise <IUser | null>;
+    logout(token: string, id: string): Promise<IUser | null>;
+    checkIuserBlock(userId: string) : Promise<IUser | null>;
 } 

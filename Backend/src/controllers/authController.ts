@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import OTPservices from "../services/implementaions/OTPservices"; // OTP service class
 import OTPRepository from "../repositories/implementaions/OTPRepository"; // OTP repository
 import { AuthService } from "../services/implementaions/AuthServices";
@@ -30,8 +30,9 @@ class AuthController {
         this.otpservices = new OTPservices(otpRepository, sendEmailOtp);
     }
  
-    public loginUser = async (req: Request, res: Response) => {
-        const user = req.body;
+    public loginUser = async (req: Request, res: Response , next : NextFunction) => {
+        try {
+            const user = req.body;
         console.log("thsi is the user to login :", user)
         
         const loginData = await this.authService.login(user);
@@ -49,9 +50,12 @@ class AuthController {
             .json(new ApiResponse(200, loginData));
         } else {
             console.log('this is the errorr')
-            return res.status(400).json(new ApiError(400, "Invalid Credentials"));
+            return res.status(401).json(new ApiError(401, "Invalid Credentials"));
         }
-}
+        } catch (error) {
+            next(error)
+        }
+}   
  
 
     async register(req: Request, res: Response): Promise<void> {
@@ -152,7 +156,7 @@ class AuthController {
         }
     }
 
-    async googleSignIn(req: Request, res: Response): Promise<void> {
+    public  googleSignIn = async (req: Request, res: Response) =>  {
         try {
             const { displayName, email, photoURL } = req.body;
 
@@ -165,6 +169,11 @@ class AuthController {
                 email: email, 
                 ProfilePic: photoURL,
             }); 
+
+            if (userAfterAuth?.user?.isBlocked) {
+                return res.status(401).json({ message: "Your account has been blocked" });
+            }
+
 
             console.log('====================================');
             console.log(userAfterAuth);
@@ -207,17 +216,7 @@ class AuthController {
 
         const isOtpExist = await this.otpservices.checkOTPExists(req.body)
 
-
-        // If OTP exists, inform the user and exit early
-        // if (isOtpExist) {
-        //     return res.status(500).json(
-        //         new ApiError(500, "Please Wait 1 Minute. Before Trying again")
-        //     );
-        // }
-
         const ResendOTPResponse = await this.otpservices.sendForgetOtp(req.body);
-
-        // console.log('the backend response:', ResendOTPResponse)
 
         if (ResendOTPResponse) {
             return res.status(200).json({ message: "OTP sent successfully" });
@@ -394,7 +393,43 @@ class AuthController {
     });
     return; // End the function execution
   }
+    }
+    
+   public checkIsBlock = async (req: Request & Partial<{ user: Partial<IUser> }>, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.id;
+        console.log('this is the user id ', userId);
+
+        if (!userId) {
+            return res.status(401).json(
+                new ApiResponse(401, null, "User not found in token")
+            );
+        }
+        
+        const user = await this.authService.checkIuserBlock(userId);
+
+        console.log('this is the user :',user)
+        
+        if (!user) {
+            return res.status(404).json(
+                new ApiResponse(404, null, "User not found")
+            );
+        }
+
+        return res.status(200).json(
+            new ApiResponse(200, {
+                isBlocked: user.isBlocked,
+            }, "Block status retrieved successfully")
+        );
+
+    } catch (error) {
+        console.error("Error checking block status:", error);
+        return res.status(500).json(
+            new ApiResponse(500, null, "Internal server error while checking block status")
+        );
+    }
 }
+
 
 }
 export default AuthController;

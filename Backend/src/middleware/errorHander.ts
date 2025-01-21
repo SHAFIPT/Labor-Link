@@ -28,36 +28,23 @@ class ApiError extends Error {
     }
 }
 
-const errorHandler: ErrorRequestHandler = (
-    err: ApiError | Error,
-    req: Request,
-    res: Response,
-    next: NextFunction
-): void => {
-    console.error(`[Error]:`, {
-        message: err.message,
-        stack: err.stack
-    });
 
-    // If the error is an instance of ApiError, use its details
-    if (err instanceof ApiError) {
-        res.status(err.statusCode).json({
-            success: err.success,
-            error: err.error,
-            message: err.message,
-            data: err.data,
-        });
-        return;
+export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction): void => {
+    console.error('Error:', err.message || err);
+
+    const statusCode = err.status || 500; 
+    const message = err.message || 'Internal Server Error';
+    if(message == "Invalid Token"){      
+    res.clearCookie('accessToken', {httpOnly: true,secure: false,});
+    res.clearCookie('refreshToken', {httpOnly: false,secure: false});
     }
 
-    // Default error response
-    res.status(500).json({
+
+
+    res.status(statusCode).json({
         success: false,
-        error: "Internal Server Error",
-        message: err.message || "Something Went Wrong",
-        data: null,
-    });
-    return;
+        message,
+});
 };
 
-export { ApiError, errorHandler };
+export { ApiError };

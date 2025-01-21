@@ -5,6 +5,7 @@ import { IUserRepository } from '../../repositories/interface/IUserRepository';
 import User from '../../models/userModel';
 import { ApiError } from '../../middleware/errorHander';
 import { generateAccessToken, generateRefreshToken ,accessTokenForReset , decodeAndVerifyToken} from '../../utils/tokenUtils';
+import { error } from 'console';
 
 export  class AuthService implements IAuthService{
     private userRepository: IUserRepository
@@ -13,53 +14,49 @@ export  class AuthService implements IAuthService{
         this.userRepository = userRepository
     }
 
-    async login(user: Partial<IUser>): Promise<{ accessToken: string; refreshToken: string; userFound: Omit<IUser, "password">; }> {
-        try {
-             // Remove the try-catch block here since we want to propagate the specific errors
-            const userFound = await this.userRepository.LoginUser(user.email.toString());
+    async login(user: Partial<IUser>): Promise<{ accessToken: string; refreshToken: string; userFound: Omit<IUser, "password">; } | null> {
+    try {
+        const userFound = await this.userRepository.LoginUser(user.email.toString());
 
-            console.log('this is find user :',userFound)
-            console.log('this is find suedr password :',user.password)
-            console.log('this is find userFound :',userFound.password)
-
-            // Handle case when user is not found
-              if (!userFound || !userFound.password) {
-                    console.log('Invalid credentials: User not found or password missing.');
-                    return null;
-                }
-
-            // Check if password matches
-            const isPasswordValid = await bcrypt.compare(user.password, userFound.password);
-            if (!isPasswordValid) {
-                // throw new ApiError(401, 'Invalid Credentials', 'Incorrect password. Please try again.');
-                 return null
-            }
-
-            // Generate tokens if login is successful
-            const accessToken = generateAccessToken({
-                id: userFound.id,
-                role: userFound.role,
-            });
-
-            const refreshToken = generateRefreshToken({
-                id: userFound.id,
-                role: userFound.role,
-            });
-
-            const userWithNewToken = await this.userRepository.saveRefreshToken(userFound.id, refreshToken);
-
-            return {
-                accessToken,
-                refreshToken,
-                userFound: userWithNewToken
-            };
-        } catch (error) {
-            if (!(error instanceof ApiError)) {
-            throw new ApiError(500, 'Server Error', error.message, error.stack);
+        // First check: User exists
+        if (!userFound || !userFound.password) {
+            throw new Error("Invalid Credentials");
         }
-        throw error;
+
+        // Second check: User blocked status
+        if (userFound.isBlocked) {
+            throw new Error("Your account has been blocked");
         }
+
+        // Third check: Password validation
+        const isPasswordValid = await bcrypt.compare(user.password, userFound.password);
+        if (!isPasswordValid) {
+            throw new Error("Incorrect Password..");
+        }
+
+        // Generate tokens only if all checks pass
+        const accessToken = generateAccessToken({
+            id: userFound.id,
+            role: userFound.role,
+        });
+
+        const refreshToken = generateRefreshToken({
+            id: userFound.id,
+            role: userFound.role,
+        });
+
+        const userWithNewToken = await this.userRepository.saveRefreshToken(userFound.id, refreshToken);
+
+        return {
+            accessToken,
+            refreshToken,
+            userFound: userWithNewToken
+        };  
+    } catch (error) {
+        throw error
+        throw new ApiError(500, "Server Error", error.message);
     }
+}
 
     async register(user: Partial<IUser>): Promise<{ user: IUser; accessToken: string; refreshToken: string; } | null> {
         try {
@@ -72,7 +69,7 @@ export  class AuthService implements IAuthService{
             //  console.log('New user object after password hash:', newUser);
             const createUser = await this.userRepository.createUser(newUser)
 
-            // console.log('User created in the database:', createUser); 
+            console.log('User created in the database:', createUser); 
 
             if (!createUser) {
                throw new ApiError(404 , 'Faild to register new user....!')
@@ -193,4 +190,14 @@ export  class AuthService implements IAuthService{
         console.log('htissi user',user)
           return user ? user : null
     }
+
+    async checkIuserBlock(userId: string): Promise<IUser | null> {
+    try {
+        const user = await this.userRepository.isBlockeduser(userId);
+        return user;
+    } catch (error) {
+        console.error('Error in service while checking block status:', error);
+        throw error;
+    }
+}
 }

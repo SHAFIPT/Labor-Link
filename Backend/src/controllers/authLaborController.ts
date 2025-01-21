@@ -6,6 +6,7 @@ import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
 import { ApiError } from "../middleware/errorHander";
 import ApiResponse from "../utils/Apiresponse";
+import { ILaborer } from "../entities/LaborEntity";
 
 
 export class AuthLaborController {
@@ -50,9 +51,6 @@ export class AuthLaborController {
     } catch (error) {
        console.error("Error in labor login:", error);
       next(error);
-      return res
-        .status(500)
-        .json({ error: "Something went wrong. Please try again." });
     }
   }
 
@@ -310,6 +308,154 @@ export class AuthLaborController {
       return res.status(500).json({ error: "Internal server error" });
     }
   }
+  
+   public forgetPassword = async (req: Request, res: Response) => {
+    try {
+        
+      const { email } = req.body
+      console.log('htis is the emialof laboer :',email)
+        
+
+        const isUserExists = await this.laborAuthservice.findUserWithEmail(email)
+
+
+        if (!isUserExists || isUserExists?.isBlocked) {
+            return res
+                .status(400)
+                .json(
+                    new ApiResponse(
+                        400,
+                        null,
+                        isUserExists?.isBlocked
+                            ? "Account is blocked"
+                            : "Check Your Email"
+                    )
+                );
+        }
+
+        const ResendOTPResponse = await this.laborAuthservice.sendForgetOtp(req.body);
+
+        if (ResendOTPResponse) {
+            return res.status(200).json({ message: "OTP sent successfully" });
+        } else {
+            return res.status(500).json({ message: "Error occurred during forgotPasswordSendOTP" });
+        }
+
+    } catch (error) {
+        console.error("Resend OTP Error:", error.message || error);
+        return res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
+    }
+    }
+    
+    public forgetVerifyOtp = async (req: Request, res: Response) => {
+        try {
+
+            const { email, otp } = req.body;
+
+            const isUserExists = await this.laborAuthservice.findUserWithEmail(email)
+
+            if (!isUserExists || isUserExists?.isBlocked) {
+            return res
+                .status(400)
+                .json(
+                    new ApiResponse(
+                        400,
+                        null,
+                        isUserExists?.isBlocked
+                            ? "Account is blocked"
+                            : "Check Your Email"
+                    )
+                );
+            }
+
+            
+            const OTPVerification = await this.laborAuthservice.isVerify(isUserExists , req.body)
+
+            
+            if (!OTPVerification) {
+                return res.status(500).json(new ApiError(500, "Entered Wrong OTP"));
+            } 
+
+            const { password, refreshToken, ...user } = isUserExists;
+
+            const accessToken = this.laborAuthservice.generateTokenForForgotPassword(user);
+
+            return res
+                .status(200)
+                .cookie("userOtpAccessToken", accessToken)
+                .json(
+                new ApiResponse(200, { accessToken }, "OTP Verified Successfully")
+                );
+
+            
+        } catch (error) {
+            console.error("forgetPasswordVerify otp errror:", error.message || error);
+            return res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
+        }
+    }
+
+    public resetPassword = async (req: Request, res: Response) => {
+        try {
+
+            const { password, token } = req.body;
+            
+
+            const decode = await this.laborAuthservice.decodeAndVerifyToken(token);
+            req.body.user = decode;
+
+
+            if (!decode) {
+                return res
+                .status(405)
+                .json(new ApiResponse(405, null, "Session Expired Try Again"));
+            }
+
+            const user = decode as { _doc: Partial<ILaborer> };
+
+            const email = user._doc?.email;
+
+            // console.log('i got the email :',email)
+            // console.log('here the details of user :',req.body.user)
+
+            const isUserExists = await this.laborAuthservice.findUserWithEmail(email)
+            
+
+            if (!isUserExists ) {
+                return res
+                .status(400)
+                .json(
+                    new ApiResponse(
+                    400,
+                    null,
+                    ) 
+                );
+            }
+
+
+             const passwordUpdated = await this.laborAuthservice.changePassword(
+                password,
+                email
+            );
+
+
+
+             if (passwordUpdated) {
+                return res
+                .status(200)
+                .json(new ApiResponse(200, null, "reset success"));
+            }
+
+            return res
+                .status(500)
+                .json(new ApiError(500, "something went wrong", "reset Failed"));
+
+            
+        } catch (error) {
+            console.error("reset new Password  errror:", error.message || error);
+            return res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
+        }
+    }
+
 }
 
 export default AuthLaborController;

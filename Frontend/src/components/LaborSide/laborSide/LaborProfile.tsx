@@ -27,6 +27,7 @@ const LaborProfile = () => {
   //  useEffect(() => {
   //   console.log('Dispatching setIsLaborAuthenticated to false');
   //     dispatch(setFormData({}))
+  //       dispatch(resetLaborer())
   // dispatch(setIsLaborAuthenticated(false));
   // },[]);
   
@@ -38,23 +39,23 @@ const LaborProfile = () => {
       console.log('Is Labor Authenticated:', isLaborAuthenticated);
       // console.log('Labor Role:', laborRole);
 
-    // const handleLogoutLabor = async () => {
-    //   console.log('this is logout going logooiiu :')
-    //   const response = await logout()
-    //   console.log('this is logout response :',response)
+    const handleLogoutLabor = async () => {
+      console.log('this is logout going logooiiu :')
+      const response = await logout()
+      console.log('this is logout response :',response)
       
         
-    //     if (response.status === 200) {
-    //       localStorage.removeItem('LaborAccessToken');
-    //         dispatch(resetUser())
-    //         dispatch(resetLaborer())
-    //         dispatch(setLaborer({}))
-    //         dispatch(setFormData({}))
-    //         dispatch(setIsLaborAuthenticated(false))
-    //         toast('logout successfully....!')
-    //         navigate('/');
-    //     }
-    // }
+        if (response.status === 200) {
+          localStorage.removeItem('LaborAccessToken');
+            dispatch(resetUser())
+            dispatch(resetLaborer())
+            dispatch(setLaborer({}))
+            dispatch(setFormData({}))
+            dispatch(setIsLaborAuthenticated(false))
+            toast('logout successfully....!')
+            navigate('/');
+        }
+    }
 
   return (
     <>
@@ -65,10 +66,7 @@ const LaborProfile = () => {
         <h1>This is Labor profile page....!</h1>
       </div>
       <div className="right">
-        <button
-        onClick={handleLogoutLabor}
-        className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
-        >
+       
         <div
             className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3"
         >
@@ -87,11 +85,15 @@ const LaborProfile = () => {
 
       </div>
     </div> */}
+       <button
+        onClick={handleLogoutLabor}
+        className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
+        ></button>
       <div className="w-full relative">
         {/* Background Image */}
         <div className="relative">
           <img
-            src={BgImage}
+            src={BgImage} 
             alt="Profile"
             className="w-full h-[150px] sm:h-[200px] md:h-[234px] lg:h-[240px] object-cover"
           />

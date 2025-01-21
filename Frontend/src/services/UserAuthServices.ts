@@ -3,13 +3,10 @@ import { signInWithPopup } from "firebase/auth";
 import { googleProvider, auth } from "../utils/firbase";
 import axios, { AxiosError } from "axios";
 import { IUser } from "../@types/user";
+import { userAxiosInstance } from "./instance/userInstance";
 
 
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-});
+const api = userAxiosInstance
 
 console.log('this is my api :', api)
 
@@ -114,7 +111,7 @@ export const googleAuth = async () => {
 export const Login = async (user: Partial<IUser>) => {
     try {
 
-        const loginResponse = await api.post('/api/user/auth/login', user)
+        const loginResponse = await api.post('/api/user/auth/Userlogin', user)
 
         return loginResponse
         
@@ -197,3 +194,18 @@ export const logout = async () => {
         }  
     }
 };
+
+
+export const checkIsBlock = async () => {
+    try {
+
+    return await api.get('/api/user/auth/checkIsBlock')
+        
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            return error.response;
+        } else {
+            return null;
+        }  
+    }
+}

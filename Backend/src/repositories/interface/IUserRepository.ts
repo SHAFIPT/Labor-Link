@@ -8,4 +8,5 @@ export interface IUserRepository{
     findByUserEmil(email: string): Promise<IUser | null>
     changePassword(password: string, email: string): Promise<IUser | null>;
     removeRefreshToken(userId: string, refreshToken: string): Promise<IUser | null>;
+    isBlockeduser(userId: string): Promise<IUser | null>
 }

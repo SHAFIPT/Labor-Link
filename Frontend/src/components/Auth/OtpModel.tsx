@@ -68,7 +68,7 @@ const OtpForm = ({ isVisible, onClose }) => {
         if (registernewUser.data) {
           const { user, accessToken } = registernewUser.data;
 
-          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("UserAccessToken", accessToken);
 
           dispatch(setUser(user));
           dispatch(setAccessToken(accessToken));
