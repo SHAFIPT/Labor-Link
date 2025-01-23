@@ -323,7 +323,7 @@ const LaborRegisterExperience = () => {
       dispatch(setFormData(experienceData));
   
       toast.success("his every one ..");
-      navigate('/labor/ProfilePage')
+      navigate('/labor/laborDashBoard')
     },200)
   };
 

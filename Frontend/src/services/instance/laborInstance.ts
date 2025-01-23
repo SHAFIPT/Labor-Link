@@ -1,6 +1,6 @@
   import axios from "axios";
   import store from "../../redux/store/store";
-  import { resetUser } from "../../redux/slice/userSlice";
+import { resetLaborer } from "../../redux/slice/laborSlice";
 
   // Get the API URL from environment
   const API_URL = import.meta.env.VITE_API_URL;
@@ -25,15 +25,15 @@
   };
 
   // Create axios instance with normalized base URL
-  export const userAxiosInstance = axios.create({
+  export const laborAxiosInstance = axios.create({
     baseURL: normalizeBaseURL(API_URL),
     withCredentials: true,
   });
 
   // Request interceptor
-  userAxiosInstance.interceptors.request.use(
+  laborAxiosInstance.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem("UserAccessToken");
+      const token = localStorage.getItem("LaborAccessToken");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -43,7 +43,7 @@
   );
 
   // Response interceptor
-  userAxiosInstance.interceptors.response.use(
+  laborAxiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
@@ -55,16 +55,16 @@
           
           if (!newAccessToken) {
             // Force logout if no new token
-            store.dispatch(resetUser());
+            store.dispatch(resetLaborer());
             return Promise.reject(error);
           }
 
-          localStorage.setItem("UserAccessToken", newAccessToken);
+          localStorage.setItem("LaborAccessToken", newAccessToken);
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return userAxiosInstance(originalRequest);
+          return laborAxiosInstance(originalRequest);
         } catch (refreshError) {
           console.error('Token Refresh Failed:', refreshError);
-          store.dispatch(resetUser());
+          store.dispatch(resetLaborer());
           return Promise.reject(refreshError);
         }
       }
@@ -76,7 +76,7 @@
   async function getNewAccessToken() {
     try {
       const response = await axios.get(
-        `${normalizeBaseURL(API_URL)}/api/user/auth/refresh-token`,
+        `${normalizeBaseURL(API_URL)}/api/labor/auth/refresh-token`,
         { withCredentials: true }
       );
 

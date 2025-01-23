@@ -9,4 +9,5 @@ export interface IUserRepository{
     changePassword(password: string, email: string): Promise<IUser | null>;
     removeRefreshToken(userId: string, refreshToken: string): Promise<IUser | null>;
     isBlockeduser(userId: string): Promise<IUser | null>
+    findById(userId: string): Promise<IUser | null>;
 }

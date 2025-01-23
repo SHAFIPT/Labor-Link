@@ -1,5 +1,6 @@
 import { IOTP } from "../../entities/OtpEntity";
 import { ILaborer } from "../../entities/LaborEntity"
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 export interface ILaborAuthSerives {
     registerAboutYou(labor: Partial<ILaborer>): Promise<ILaborer | null> 
@@ -13,4 +14,5 @@ export interface ILaborAuthSerives {
     generateTokenForForgotPassword(user: Partial<ILaborer>): string;
     decodeAndVerifyToken(token: string): Promise<Partial<ILaborer | null>>;
     changePassword(password: string, email: string): Promise<ILaborer | null>;
+    refreshAccessToken(labor: string | jwt.JwtPayload) : Promise <string | null>;
 } 

@@ -9,19 +9,23 @@ import LaborResterPages from "../pages/LaborSide/LaborAuth/LaborResterPages";
 import LaborDashboard from "../pages/LaborSide/LaborHomePage";
 import LaborProfilePage from "../pages/LaborSide/LaborProfilePage";
 import PublicRoute from "../components/Authentications/PublicRoute";
-import PrivateRoute from "../components/Authentications/PrivateRoute";
+import LaborPrivateRoute from "../components/Authentications/LaborPrivateRoute"
+import LaborDashBoardPage from '../pages/LaborSide/LaborDashBoard';
+import LaborPublicRoute from '../components/Authentications/LaborPublicRoute';
+
+
 
 const LaborRout = () => {
-  const navigate = useNavigate();
-  const isLaborAuthenticated = useSelector(
-    (state: RootState) => state.labor.isLaborAuthenticated
-  );
+  // const navigate = useNavigate();
+  // const isLaborAuthenticated = useSelector(
+  //   (state: RootState) => state.labor.isLaborAuthenticated
+  // );
 
-  useEffect(() => {
-    if (isLaborAuthenticated) {
-      navigate('/labor/ProfilePage');
-    }
-  }, [isLaborAuthenticated, navigate]);
+  // useEffect(() => {
+  //   if (isLaborAuthenticated) {
+  //     navigate('/labor/ProfilePage');
+  //   }
+  // }, [isLaborAuthenticated, navigate]);
 
   return (
     <Suspense fallback={<div className="text-center mt-20">Loading...</div>}>
@@ -30,7 +34,15 @@ const LaborRout = () => {
         <Route path='/registerPage' element={<LaborResterPages />} />
         <Route path='/Profile' element={<LaborRegisterProfile />} />
         <Route path='/experiencePage' element={<LaborRegisterExperience />} />
-        <Route path='/ProfilePage' element={<LaborProfilePage />} />
+        <Route
+          path="/laborDashBoard"
+          element={
+            <LaborPrivateRoute role="labor">
+              <LaborDashBoardPage />
+            </LaborPrivateRoute>
+          }
+        />;
+        <Route path='/ProfilePage' element={<LaborPublicRoute role='labor'><LaborProfilePage /></LaborPublicRoute>} />
       </Routes>
     </Suspense>
   );

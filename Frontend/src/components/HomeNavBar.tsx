@@ -15,18 +15,30 @@ import { toast } from "react-toastify"
 import './Auth/userLogin.css'
 import './userHomeNave.css'
 import './Auth/LoadingBody.css'
+import { persistor } from '../redux/store/store';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store/store";
 import { toggleTheme } from "../redux/slice/themeSlice";
-import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading } from '../redux/slice/userSlice'
+import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading, setAccessToken } from '../redux/slice/userSlice'
 import { checkIsBlock, logout } from "../services/UserAuthServices";
+import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../redux/slice/laborSlice";
 const HomeNavBar = () => {
+  
+  
   const user = useSelector((state: RootState) => state.user)
   const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
+  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
+  const laborer = useSelector((state: RootState) => state.labor.laborer)
   const loading = useSelector((state: RootState) => state.user.loading)
   // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
-  // console.log('isLaborAuthenticated :',isLaborAuthenticated)
+  useEffect(() => {
+    
+    console.log('isLaborAuthenticated :',isLaborAuthenticated)
+    console.log('isUserAthenticated :',isUserAthenticated)
+    console.log('laborer :',laborer)
+    console.log('user :',user)
+  },[isLaborAuthenticated,isUserAthenticated,laborer,user])
 
   const dispatch = useDispatch();
   const navigate = useNavigate()// Get dispatch function
@@ -41,6 +53,9 @@ const HomeNavBar = () => {
     setIsOpen(!isOpen);
   };
 
+  const handleViewProfile = () => {
+    navigate('/userProfilePage')
+  }
 
 
   const shouldShowUserName = isUserAthenticated 
@@ -69,31 +84,53 @@ const HomeNavBar = () => {
   ];
 
 
-  
-    const handleLogout = useCallback(async () => {
-  try {
-    console.log('this is first logout');
-    const response = await logout();
-    console.log('this is response:', response);
 
-    if (response?.status === 200) {
-      // Clear local storage
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      dispatch(resetUser());
-      dispatch(setUser({}));
-      dispatch(setFormData({}));
-      dispatch(setisUserAthenticated(false));
-      toast('logout successfully....!');
-      navigate('/');
-    } else {
-      console.error('Logout failed:', response);
-      alert('Failed to logout. Please try again.');
+  // useEffect(() => {
+  //   const resetState = async () => {
+  //     dispatch(resetUser());
+  //     await persistor.purge(); // Clears persisted Redux state
+  //   };
+
+  //   resetState();
+  // }, [dispatch]); 
+
+  // console.log('user :', user);
+  
+   
+  const handleLogout = useCallback(async () => {
+    try {
+      const response = await logout();
+      
+      if (response?.status === 200) {
+        // Clear all auth-related data
+        localStorage.removeItem('UserAccessToken');
+        localStorage.removeItem('LaborAccessToken');
+        
+        // Reset User State
+        dispatch(setUser({}));
+        dispatch(setFormData({}));
+        dispatch(resetUser())
+        dispatch(setisUserAthenticated(false));
+        dispatch(setAccessToken(''));
+        
+        // Reset Labor State
+        dispatch(setLaborer({}));
+        dispatch(resetLaborer())
+        dispatch(setIsLaborAuthenticated(false));
+        
+        // Clear persisted state
+        await persistor.purge();
+        
+        toast.success('Logged out successfully');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Error during logout');
     }
-  } catch (error) {
-    console.error('Error during logout:', error);
-  }
-}, [dispatch, navigate]);  // Dependencies: only change if dispatch or navigate changes
+  }, [dispatch, navigate]);
+
+
 
 useEffect(() => {
   const cheakUserIsBlock = async () => {
@@ -526,12 +563,12 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 >
                   Browse all Labors
                 </a>
-                <a
-                  href="/profile"
+                <button
+                  onClick={() =>handleViewProfile}
                   className="text-white text-xl hover:text-gray-300 transition-colors"
                 >
                   View Profile page
-                </a>
+                </button>
                 {shouldShowUserName && (
                 <button
                   className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
@@ -559,7 +596,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
 
               {/* Dropdown */}
               <div className="absolute top-[90px] right-0 w-[130px] hidden flex-col bg-white shadow-md rounded-md p-2 border border-gray-200 group-hover:flex">
-                <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left">
+                <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleViewProfile}>
                   View Profile
                 </button>
                 <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleLogout}>

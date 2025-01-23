@@ -199,5 +199,26 @@ export  class AuthService implements IAuthService{
         console.error('Error in service while checking block status:', error);
         throw error;
     }
-}
+    }
+    
+     async refreshAccessToken(userId:string): Promise <string| null> {
+        
+        const UserFound  = await this.userRepository.findById(userId)
+
+
+        if(UserFound){
+            const id = UserFound._id?.toString();
+            
+            const accessToken = generateAccessToken({
+                id,
+                role: UserFound.role,
+            });
+
+            return accessToken
+        }
+
+
+
+        return null
+    }
 }

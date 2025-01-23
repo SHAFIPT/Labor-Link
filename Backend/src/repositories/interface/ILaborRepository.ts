@@ -11,4 +11,5 @@ export interface ILaborRepository {
     createOtp(user: ILaborer): Promise<IOTP | null>
     findOTP(user: Partial<ILaborer>): Promise<IOTP> | null;
     changePassword(password: string, email: string): Promise<ILaborer | null>;
+    findById(laborId: string): Promise<ILaborer | null>;
 } 

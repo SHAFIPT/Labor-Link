@@ -138,5 +138,11 @@ export default class UserRepository implements IUserRepository{
         console.error('Error in repository while checking block status:', error);
         throw error;
     }
-}
+    }
+    
+    async findById(userId: string): Promise<IUser | null> {
+    const userData = await User.findOne({ _id: userId });
+
+    return userData;
+  }
 }

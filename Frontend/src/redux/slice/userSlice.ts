@@ -17,6 +17,8 @@ interface InitialState {
     accessToken: string;
     modal: boolean;
     formData: Partial<IUser>;
+    isLaborAuthenticated: boolean; // Add this property
+    laborer: object | null; // Add this property
 }
 
 const initialState: InitialState = {
@@ -28,6 +30,8 @@ const initialState: InitialState = {
     accessToken: "",
     modal: false,
     formData: {},
+    isLaborAuthenticated: false, // Default value
+    laborer: null, // Default value
 }
 
 const userSlice = createSlice({
@@ -69,6 +73,8 @@ const userSlice = createSlice({
                 email: "",
                 password: "",
             };
+             state.isLaborAuthenticated = false; // Reset labor authentication
+             state.laborer = null; // Clear laborer data
         }
     }
 })

@@ -53,6 +53,31 @@ const loginSchema = Joi.object({
     }),
 });
 
+const editProfileSchema = Joi.object({
+   firstName: Joi.string()
+    .pattern(new RegExp("^[A-Za-z]+$"))
+    .min(2)
+    .max(30)
+    .required()
+    .messages({
+      "string.pattern.base": "First name should only contain letters",
+      "string.min": "First name should be at least 2 characters long",
+      "string.max": "First name should not exceed 30 characters",
+      "string.empty": "First name is required",
+    }),
+  lastName: Joi.string()
+    .pattern(new RegExp("^[A-Za-z]+$"))
+    .min(2)
+    .max(30)
+    .required()
+    .messages({
+      "string.pattern.base": "Last name should only contain letters",
+      "string.min": "Last name should be at least 2 characters long",
+      "string.max": "Last name should not exceed 30 characters",
+      "string.empty": "Last name is required",
+    }),
+})
+
 const registerSchema = Joi.object({
   firstName: Joi.string()
     .pattern(new RegExp("^[A-Za-z]+$"))
@@ -161,6 +186,17 @@ export const validatePassword = (password: string) => {
 
   return null;
 };
+export const editProfileValidate = async (data: Partial<IUser>) => {
+  const { error } = editProfileSchema.validate(data ,{ abortEarly: false });
 
+  if (error) {
+    const formattedErrors: { [key: string]: string } = {};
+    error.details.forEach((detail) => {
+      formattedErrors[detail.path[0]] = detail.message;
+    });
+      
+    return formattedErrors;
+  }
 
+}
 export default validate;

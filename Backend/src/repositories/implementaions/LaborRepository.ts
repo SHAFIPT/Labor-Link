@@ -94,30 +94,38 @@ export class LaborRepository implements ILaborRepository {
 
     await newOtp.save();
     return newOtp;
+  }
+  async findOTP(user: Partial<ILaborer>): Promise<IOTP | null> {
+    const OTPFound = await otpModel
+      .findOne({ email: user.email })
+      .sort({ createdAt: -1 });
+    if (OTPFound) {
+      return OTPFound;
     }
-    async findOTP(user: Partial<ILaborer>): Promise<IOTP | null> {
-        const OTPFound = await otpModel.findOne({ email: user.email }).sort({ createdAt: -1 });
-        if (OTPFound) {
-            return OTPFound;
-        } 
-        return null;
+    return null;
+  }
+  async changePassword(
+    password: string,
+    email: string
+  ): Promise<ILaborer | null> {
+    try {
+      const updatePassword = await Labor.findOneAndUpdate(
+        { email: email }, // Query by email
+        { $set: { password: password } }, // Update password
+        { new: true } // Return the updated document
+      );
+      return updatePassword;
+    } catch (error) {
+      console.error("Error in resetNew password :", error);
+      throw new ApiError(500, "Failed to forgetPasswordOtp send.");
     }
-     async changePassword(password: string, email: string): Promise<ILaborer | null> {
-        try {
+  }
+  async findById(laborId: string): Promise<ILaborer | null> {
+    const userData = await Labor.findOne({ _id: laborId });
 
-            const updatePassword = await Labor.findOneAndUpdate(
-            { email: email }, // Query by email
-            { $set: { password: password } }, // Update password
-            { new: true } // Return the updated document
-        );
-            return updatePassword
-            
-        } catch (error) {
-            console.error('Error in resetNew password :', error);
-            throw new ApiError(500, 'Failed to forgetPasswordOtp send.');
-        }
-    }
-     private generateOtp(): string{
-        return Math.floor(1000  + Math.random() * 9000).toString()
-    }
+    return userData;
+  }
+  private generateOtp(): string {
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  }
 }

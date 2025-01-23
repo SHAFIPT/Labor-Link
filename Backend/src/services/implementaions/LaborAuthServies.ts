@@ -267,4 +267,25 @@ export class LaborAuthServies implements ILaborAuthSerives {
 
     return userAfterUpdate;
   }
+
+   async refreshAccessToken(userId:string): Promise <string| null> {
+        
+        const UserFound  = await this.laborRepository.findById(userId)
+
+
+        if(UserFound){
+            const id = UserFound._id?.toString();
+            
+            const accessToken = generateAccessToken({
+                id,
+                role: UserFound.role,
+            });
+
+            return accessToken
+        }
+
+
+
+        return null
+    }
 }

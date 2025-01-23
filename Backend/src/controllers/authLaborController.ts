@@ -455,7 +455,27 @@ export class AuthLaborController {
             return res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
         }
     }
+     public refreshAccessToken = async (req:Request & {labor: {rawToken: string, id: string}} ,res:Response)=>{
 
+        const {labor} = req
+
+ 
+
+        const accessToken = await this.laborAuthservice.refreshAccessToken(labor.id)
+
+        if(accessToken){
+          return res.status(200)
+          .json(
+            new ApiResponse(
+              200,
+              {accessToken},
+              "token Created Successfully"
+            )
+          )
+        }
+
+        
+      }
 }
 
 export default AuthLaborController;

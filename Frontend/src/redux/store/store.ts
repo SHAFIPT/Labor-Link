@@ -6,32 +6,62 @@ import themeReducer from '../slice/themeSlice';
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
-const persistConfig = {
-    key: "root", // Key for storage
-    storage,     // Storage to use (localStorage or AsyncStorage)
+// Separate persist configs for each reducer
+const userPersistConfig = {
+    key: "userState",
+    storage,
+    blacklist: ['error', 'loading'] // Optionally exclude certain fields
 };
 
-// Wrap reducers with persistReducer
-const persistedLaborReducer = persistReducer(persistConfig, laborerSlice);
-const persistedAdminReducer = persistReducer(persistConfig, adminSlice);
-const persistedUserReducer = persistReducer(persistConfig, userReducer);
-const persisteddarkModeReducer = persistReducer(persistConfig, themeReducer);
+const laborPersistConfig = {
+    key: "laborState",
+    storage,
+    blacklist: ['error', 'loading']
+};
 
+const adminPersistConfig = {
+    key: "adminState",
+    storage,
+    blacklist: ['error', 'loading']
+};
+
+const themePersistConfig = {
+    key: "themeState",
+    storage
+};
+
+// Wrap each reducer with its own config
+const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
+const persistedLaborReducer = persistReducer(laborPersistConfig, laborerSlice);
+const persistedAdminReducer = persistReducer(adminPersistConfig, adminSlice);
+const persistedThemeReducer = persistReducer(themePersistConfig, themeReducer);
 
 export const store = configureStore({
     reducer: {
         user: persistedUserReducer,
         labor: persistedLaborReducer,
         admin: persistedAdminReducer,
-        theme: persisteddarkModeReducer,
+        theme: persistedThemeReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
-            serializableCheck: false, // Disable checks for non-serializable values
+            serializableCheck: false,
         }),
 });
 
-export const persistor = persistStore(store);
+// Helper function to clear specific states
+export const clearState = (stateKey: 'user' | 'labor' | 'admin') => {
+    localStorage.removeItem(`persist:${stateKey}State`);
+};
 
-export type RootState = ReturnType<typeof store.getState>
+// Helper function to clear all states
+export const clearAllStates = () => {
+    localStorage.removeItem('persist:userState');
+    localStorage.removeItem('persist:laborState');
+    localStorage.removeItem('persist:adminState');
+    // Optionally keep theme: localStorage.removeItem('persist:themeState');
+};
+
+export const persistor = persistStore(store);
+export type RootState = ReturnType<typeof store.getState>;
 export default store;

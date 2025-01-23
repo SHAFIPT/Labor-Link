@@ -12,6 +12,7 @@ import { setLaborer , setIsLaborAuthenticated , setAccessToken ,setFormData} fro
 import { RootState } from "../../redux/store/store";
 import { toast } from 'react-toastify';
 import axios from "axios";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { googleAuth } from "../../services/UserAuthServices";
 import { Login, forgotPasswordSendOTP, forgetPasswordVerify, forgotPasswordReset ,  } from "../../services/UserAuthServices";
 import { laborForgetPasswordVerify, laborForgotPasswordReset, laborForgotPasswordSendOTP, LaborLogin } from '../../services/LaborAuthServices'
@@ -90,6 +91,7 @@ const UserLoginForm = () => {
             toast.success(message || "User Login successfully...!");
             
             dispatch(setUser(userFound))
+            dispatch(setFormData(userFound))
             dispatch(setAccessToken(accessToken))
             dispatch(setisUserAthenticated(true))
             dispatch(setLoading(false))
@@ -107,15 +109,15 @@ const UserLoginForm = () => {
              if (loginResponse.status === 200) {
                const { LaborFound, accessToken } = loginResponse.data.data;
                
-               console.log('Labor Found Data:', LaborFound); 
+            console.log('Labor Found Data:', LaborFound); 
             localStorage.setItem("LaborAccessToken", accessToken);
             
             dispatch(setFormData(LaborFound))
             dispatch(setLaborer(LaborFound))
             dispatch(setAccessToken(accessToken))
             dispatch(setIsLaborAuthenticated(true))
-            // console.log('iman iherer ')
-            // navigate('/labor/ProfilePage')
+            console.log('iman iherer')
+            navigate('/labor/laborDashBoard')
           }else {
             const message = loginResponse.data.error || "Error occurred in user ";
             console.log('This is the error meessage from backend :',message)
@@ -421,10 +423,14 @@ const UserLoginForm = () => {
                     <p className="text-red-500 text-sm mt-1">{error.password}</p>
                   )}
                   <div className="absolute bottom-0 left-0 w-full h-[3px]" style={{ background: `#8dcbdd 50%` }}></div>
-                  <i
-                    className="fas fa-eye absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700"
+                              {/* Password Visibility Toggle */}
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                     onClick={() => setvisiblePasswod((prev) => !prev)}
-                  ></i>
+                  >
+                    {visiblePassword  ? <FaEye /> : <FaEyeSlash />}
+                  </button>
                 </div>
               </div>
             <div className="flex justify-center mt-4">

@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "../../../redux/store/store"
-import { useEffect } from "react"
-import { setFormData, setIsLaborAuthenticated, setLaborer, resetLaborer } from "../../../redux/slice/laborSlice"
+import { useEffect, useState } from "react"
+import { setFormData, setIsLaborAuthenticated, setLaborer, resetLaborer ,setError, setLoading} from "../../../redux/slice/laborSlice"
 import { resetUser } from '../../../redux/slice/userSlice'
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
@@ -11,153 +11,911 @@ import LoginNav from "../../Auth/LoginNav"
 import BgImage from '../../../assets/image 6.png'
 import HomeImage from '../../../assets/HomeIcon.png'
 import char from '../../../assets/happy-female-electrician.avif'
-import { Phone, Mail, MapPin, Clock, Globe, Heart, Star, Edit, Wallet , ChevronRight, Home, User } from 'lucide-react';
+import { persistor } from '../../../redux/store/store';
+import { CalendarDaysIcon } from "@heroicons/react/24/solid";
+import '../../Auth/LoadingBody.css'
+import { Phone, Mail, MapPin, Clock, Date ,Globe, Heart, Star, Edit, Wallet , ChevronRight, Home, User ,
+  Calendar, 
+  CheckSquare, 
+  Lock } from 'lucide-react';
 import './LaborProfile.css'
 import { Link } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import LaborDashBoardNav from "./LaborDashBoardNav"
+import { editPassword, laborFetch, updateProfile } from "../../../services/LaborServices"
+import { validateAddress, validateAvailability, validateEndTime, validateFirstName, validateLanguage, validateLastName, validatePassword, validatePhoneNumber, validateSkill, validateStartTime } from "../../../utils/laborRegisterValidators"
 const LaborProfile = () => {
-    const formdata = useSelector((state: RootState) => state.labor.formData)
-    const formdatarole = useSelector((state: RootState) => state.labor?.formData?.role)
-    const Oldrole = useSelector((state: RootState) => state.labor?.laborer?.role)
-    const theam = useSelector((state: RootState) => state.theme.mode)
-    console.log('formdata :',formdata)
-    console.log('formdata :',formdatarole)
-    console.log('formdata :',Oldrole)
     const dispatch = useDispatch()
     const navigate = useNavigate()
-  //  useEffect(() => {
-  //   console.log('Dispatching setIsLaborAuthenticated to false');
-  //     dispatch(setFormData({}))
-  //       dispatch(resetLaborer())
-  // dispatch(setIsLaborAuthenticated(false));
-  // },[]);
   
-   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
-    const laborRole = useSelector((state: RootState) => state.labor);
+  //   const formdata = useSelector((state: RootState) => state.labor.formData)
+  //   const formdatarole = useSelector((state: RootState) => state.labor?.formData?.role)
+  //   const Oldrole = useSelector((state: RootState) => state.labor?.laborer?.role)
+  const theam = useSelector((state: RootState) => state.theme.mode)
+   const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated); 
+  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
+  const email = useSelector((state : RootState) => state.labor.laborer)
+  const loading = useSelector((state : RootState) => state.labor.loading)
+  const currentUser = useSelector((state: RootState) => state.labor.laborer._id)
   
+  console.log('Thsi is eth current user id :',currentUser)
+  console.log('Thsi is eth current user email :',email)
+  console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
+  const [openEditProfile, setOpenEditProfile] = useState(false)
+  const [laborData, setLaborData] = useState(null)
+  const [openAbout, setOpenAbout] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [openChangePassword , setOpenChangePasswod] = useState(false)
+  const [AboutFromData, setAboutFromData] = useState({
+    name: "",
+    experience: "",
+    description: "",
+  })
+  const [submittedData, setSubmittedData] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+   const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    address: '',
+    language: '',
+    availability: {
+      Monday: false,
+      Tuesday: false,
+      Wednesday: false,
+      Thursday: false,
+      Friday: false,
+      Saturday: false,
+      Sunday: false,
+      All: false
+    },
+     skills: '',
+     startTime: '', // Added startTime
+      endTime: '',
+    responsibilities: '',
+    image : null
+   });
   
-      console.log('Role required')
-      console.log('Is Labor Authenticated:', isLaborAuthenticated);
-      // console.log('Labor Role:', laborRole);
+const error: {
+     firstName?: string;
+    lastName?: string;
+    phone?: string;
+    address?: string;
+    language?: string;
+    skills?: string;
+    startTime?: string;
+    endTime?: string;
+    availability?: string; 
+    password? : string
+  } = useSelector((state: RootState) => state.labor.error);
+  // const [availablityFormData, setAvailablityFormData] = useState({
+  // availability: {
+  //   Monday: false,
+  //   Tuesday: false,
+  //   Wednesday: false,
+  //   Thursday: false,
+  //   Friday: false,
+  //   Saturday: false,
+  //   Sunday: false,
+  //   All: false
+  // }
+  // });
+  // When initially loading dat
+  console.log('Theis is the console.log(error)-----++++-----',error);
 
-    const handleLogoutLabor = async () => {
-      console.log('this is logout going logooiiu :')
-      const response = await logout()
-      console.log('this is logout response :',response)
+    const handleEditProfile = () => {
+  // Parse the availability from the string array
+  const availableDays = laborData?.availability
+  
+  // Reset formData with actual labor data
+  setFormData({
+    firstName: laborData?.firstName || "",
+    lastName: laborData?.lastName || "",
+    phone: laborData?.phone || "", // Note: changed from phoneNumber to phone
+    address: laborData?.address || "",
+    language: laborData?.language || "",
+    skills: laborData?.skill || "", // Note: changed from skills to skill
+    responsibilities: laborData?.responsibility || "", // Note: changed from responsibilities to responsibility
+    availability: {
+      Monday: availableDays.includes('monday'),
+      Tuesday: availableDays.includes('tuesday'),
+      Wednesday: availableDays.includes('wednesday'),
+      Thursday: availableDays.includes('thursday'),
+      Friday: availableDays.includes('friday'),
+      Saturday: availableDays.includes('saturday'),
+      Sunday: availableDays.includes('sunday'),
+      All: false
+    },
+    image: null,
+    startTime: laborData?.startTime || "", // Added startTime
+    endTime: laborData?.endTime || "",  
+  });
+  setOpenEditProfile(true);
+};
+
+
+useEffect(() => {
+  // Parse the availability from the string array
+  const availableDays = laborData?.availability || [];
+  
+  // Create a new availability object
+  const initialAvailability = {
+    Monday: availableDays.includes('monday'),
+    Tuesday: availableDays.includes('tuesday'),
+    Wednesday: availableDays.includes('wednesday'),
+    Thursday: availableDays.includes('thursday'),
+    Friday: availableDays.includes('friday'),
+    Saturday: availableDays.includes('saturday'),
+    Sunday: availableDays.includes('sunday'),
+    All: false
+  };
+
+  setFormData(prev => ({
+    ...prev,
+    availability: initialAvailability
+  }));
+}, [laborData]);
+
+
+  
+
+  useEffect(() => {
+  if (!isUserAuthenticated && !isLaborAuthenticated) {
+    navigate('/login');
+  }
+}, [isUserAuthenticated, navigate ,isLaborAuthenticated]); 
+
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+   // Handle image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    setFormData((prev) => ({ ...prev, image: file }));
+  };
+
+ // Handle individual day change
+const handleAvailabilityChange = (day) => {
+  setFormData(prev => {
+    const newAvailability = {
+      ...prev.availability,
+      [day]: !prev.availability[day],
+      All: false // Uncheck All when individual day is changed
+    };
+
+    return {
+      ...prev,
+      availability: newAvailability
+    };
+  });
+  };
+
+
+  // Handle All Days checkbox
+const handleAllDaysChange = () => {
+  setFormData(prev => {
+    const isCurrentlyAll = prev.availability.All;
+    const newAvailability = {
+      Monday: !isCurrentlyAll,
+      Tuesday: !isCurrentlyAll,
+      Wednesday: !isCurrentlyAll,
+      Thursday: !isCurrentlyAll,
+      Friday: !isCurrentlyAll,
+      Saturday: !isCurrentlyAll,
+      Sunday: !isCurrentlyAll,
+      All: !isCurrentlyAll
+    };
+
+    return {
+      ...prev,
+      availability: newAvailability
+    };
+  });
+  };
+  
+
+const prepareAvailabilityForSubmission = () => {
+  const days = Object.keys(formData.availability)
+    .filter(day => day !== 'All' && formData.availability[day])
+    .map(day => day.toLowerCase());
+
+  // Validate availability
+  const availabilityError = validateAvailability(days);
+  if (availabilityError) {
+    dispatch(setError({ availability: availabilityError }));
+  }
+
+  return days;
+};
+  
+
+ const fetchLabor = async () => {
+  try {
+    const response = await laborFetch();
+    if (response.fetchUserResponse) {
+      setLaborData(response.fetchUserResponse);
+    }
+    console.log("This is the response:", response);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+  }
+};
+
+// useEffect remains as it is to call fetchLabor when email changes
+useEffect(() => {
+  if (email) {
+    fetchLabor();
+  }
+}, [email]);
+
+  const handleInputChangeAbout = (e) => {
+    const { name, value } = e.target;
+    setAboutFromData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      const savedData = localStorage.getItem(`aboutData_${currentUser}`);
+      if (savedData) {
+        setSubmittedData(JSON.parse(savedData));
+      }
+    }
+  }, [currentUser]);
+
+    const handleSubmit = () => {
+    if (!currentUser) return;
+
+    const newData = {
+      name: AboutFromData.name,
+      experience: AboutFromData.experience,
+      description: AboutFromData.description
+    };
+
+    // Save to user-specific localStorage
+    localStorage.setItem(`aboutData_${currentUser}`, JSON.stringify(newData));
+    
+    setSubmittedData(newData);
+    setOpenAbout(false);
+    setIsEditing(false);
+  };
+
+
+
+  const handleEdit = () => {
+    // Pre-fill the form with existing data
+    setAboutFromData({
+      name: submittedData.name,
+      experience: submittedData.experience,
+      description: submittedData.description
+    });
+    setOpenAbout(true);
+    setIsEditing(true);
+  };
+
+  const handleSubmitEditProfile = async () => {
+    dispatch(setLoading(true))
+
+    const availabilityDays = prepareAvailabilityForSubmission();
+
+    const ValidateError = {
+      firstName: validateFirstName(formData.firstName),
+      lastName: validateLastName(formData.lastName),
+      phone : validatePhoneNumber(formData.phone),
+      address: validateAddress(formData.address),
+      language: validateLanguage(formData.language),
+      skill: validateSkill(formData.skills),
+      startTime: validateStartTime(formData.startTime),
+      endTime : validateEndTime(formData.endTime),
+      availability : validateAvailability(availabilityDays)
+    }
+    console.log("Therse are teh errros occurd :",ValidateError)
+    // Check if any errors exist
+    const hasErrors = Object.values(ValidateError).some(error => error !== null);
+    if (hasErrors) {
+      dispatch(setLoading(false))
+      dispatch(setError(ValidateError))
+      return
+    } 
+
+    try {
+      const formDataToSubmit = new FormData();
+    
+      formDataToSubmit.append('firstName', formData.firstName);
+      formDataToSubmit.append('lastName', formData.lastName);
+      formDataToSubmit.append('phone', formData.phone);
+      formDataToSubmit.append('address', formData.address);
+      formDataToSubmit.append('language', formData.language);
+      formDataToSubmit.append('availability', JSON.stringify(availabilityDays));
+      formDataToSubmit.append('skills', formData.skills);
+      formDataToSubmit.append('responsibilities', formData.responsibilities);
+      formDataToSubmit.append('startTime', formData.startTime);
+      formDataToSubmit.append('endTime', formData.endTime);
+      
+      // Append email safely (assuming email is a string)
+      formDataToSubmit.append('email', email?.email || '');
+
+      if (formData.image) {
+        formDataToSubmit.append('profilePicture', formData.image, formData.image.name);
+      }
+
+      console.log('thde formDatat to submit....______++++++-0------')
+
+      // Log FormData contents
+      for (let [key, value] of formDataToSubmit.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      const response = await updateProfile(formDataToSubmit);
+
+      console.log("Profile updated: succefully.....+++++ =======", response);
+
+      if (response.status === 200) {
+        fetchLabor()
+        setAboutFromData(response.data.updatedLabor)
+        toast.success('The profile updated succefully')
+        setOpenEditProfile(false)
+        dispatch(setLoading(false))
+      } else {
+        toast.error('faild to update profile...!')
+      }
+      
+    } catch (error) {
+       console.error('Error updating profile:', error);
+    } finally {
+      dispatch(setLoading(false))
+    }
+  }
+  
+
+  const handleConfirm = async () => {
+      const PasswordErrror = validatePassword(password);
+      dispatch(setLoading(true))
+      if (PasswordErrror) {
+        dispatch(setLoading(false))
+        dispatch(setError(PasswordErrror));
+        return; // Stop further execution
+      }
+  
+      if (password !== confirmPassword) {
+        
+        dispatch(setLoading(false))
+        dispatch(setError({ password: "Passwords do not match" }));
+        return toast.error("Passwords do not match");
+      }
+  
+      const PasswodData = {
+        password,
+        email : email.email
+      }
+  
+      try {
+        dispatch(setError({}));
+        console.log('this sthe the PasswodDatat ------+++++-------:',PasswodData)
+        const response = await editPassword(PasswodData)
+  
+        if (response.status === 200) {
+          setOpenChangePasswod(false)
+          dispatch(setLoading(false))
+          toast.success('Password updated successfully..')
+        } else {
+          toast.error('errro in passord update...>!')
+        }
+      } catch (error) {
+        console.error("Error Password change:", error);
+        toast.error("An error occurred. Please try again.");
+      } finally {
+        dispatch(setLoading(false))
+      }
+    };
+
+  // const handleAllDaysToggle = () => {
+  //   const newAllStatus = !formData.availability.All;
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     availability: Object.keys(prev.availability).reduce((acc, day) => {
+  //       acc[day] = day !== 'All' ? newAllStatus : newAllStatus;
+  //       return acc;
+  //     }, {})
+  //   }));
+  // };
+
+  
+  //  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
+  //   const laborRole = useSelector((state: RootState) => state.labor.laborer.role);
+  //   const userRole = useSelector((state: RootState) => state.user);
+  
+  
+  //     console.log('Role required')
+  //     console.log('Is Labor Authenticated:', isLaborAuthenticated);
+  //     console.log('Labor Role:', laborRole);
+  //     console.log('user Role:', userRole);
+
+    // const handleLogoutLabor = async () => {
+    //   console.log('this is logout going logooiiu :')
+    //   const response = await logout()
+    //   console.log('this is logout response :',response)
       
         
-        if (response.status === 200) {
-          localStorage.removeItem('LaborAccessToken');
-            dispatch(resetUser())
-            dispatch(resetLaborer())
-            dispatch(setLaborer({}))
-            dispatch(setFormData({}))
-            dispatch(setIsLaborAuthenticated(false))
-            toast('logout successfully....!')
-            navigate('/');
-        }
-    }
+    //     if (response.status === 200) {
+    //       localStorage.removeItem('LaborAccessToken');
+    //         dispatch(resetUser())
+    //         dispatch(resetLaborer())
+    //         dispatch(setLaborer({}))
+    //         dispatch(setFormData({}))
+    //       dispatch(setIsLaborAuthenticated(false))
+    //       await persistor.purge();
+    //         toast('logout successfully....!')
+    //         navigate('/');
+    //     }
+  // }
+  
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <>
-      {/* <LoginNav /> */}
-      {/* <HomeNavBar/> */}
-      {/* <div className="flex justify-between p-6">
-      <div className="text">
-        <h1>This is Labor profile page....!</h1>
-      </div>
-      <div className="right">
-       
+      {loading && <div className="loader"></div>}
+      {openChangePassword && (
         <div
-            className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3"
+          className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 `}
         >
-            <svg className="w-4 h-4" viewBox="0 0 512 512" fill="white">
-            <path
-                d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"
-            ></path>
-            </svg>
-        </div>
-        <div
-            className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
-        >
-            Logout
-        </div>
-        </button>
+          <div
+            className={`bg-white rounded-lg shadow-lg max-w-md w-full p-6 transform transition-all duration-300 `}
+          >
+            <h2 className="text-lg font-semibold text-center text-gray-800">
+              Update password
+            </h2>
+            <p className="text-gray-600 mt-2">Enter your new Password</p>
 
-      </div>
-    </div> */}
-       <button
-        onClick={handleLogoutLabor}
-        className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
-        ></button>
+            <div className="flex flex-col justify-center mt-4">
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  id="password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  className="w-full px-3 bg-white text-black py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-2 text-gray-500"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              {error?.password && (
+                <p className="text-red-500 text-sm mt-1">{error.password}</p>
+              )}
+            </div>
+
+            <div className="flex flex-col justify-center mt-4">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="confirmPassword"
+                id="confirmPassword"
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+                className="w-full px-3 bg-white text-black py-2 border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                onClick={() => setOpenChangePasswod(false)}
+                className="px-4 py-2 w-full bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition ease-in-out"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                className="px-4 py-2 w-full bg-orange-500 text-white rounded hover:bg-orange-600 transition ease-in-out"
+              >
+                confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {openEditProfile && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                <Edit className="mr-2 text-[#5560A8]" /> Edit Profile
+              </h2>
+              <button
+                onClick={() => setOpenEditProfile(false)}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Personal Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
+                  Personal Information
+                </h3>
+                <div className="flex space-x-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      <User className="mr-2 text-[#5560A8]" /> First Name
+                    </label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    />
+                    {error?.firstName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {error.firstName}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      <User className="mr-2 text-[#5560A8]" /> Last Name
+                    </label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    />
+                    {error?.lastName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {error.lastName}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Mail className="mr-2 text-[#5560A8]" /> Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={laborData?.email}
+                    readOnly
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none cursor-default focus:ring-2 focus:ring-[#5560A8]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Phone className="mr-2 text-[#5560A8]" /> Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  />
+                  {error?.phone && (
+                    <p className="text-red-500 text-sm mt-1">{error.phone}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <span className="mr-2 text-[#5560A8]">Start Time</span>
+                  </label>
+                  <input
+                    type="time"
+                    name="startTime"
+                    value={formData.startTime}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  />
+                  {error?.startTime && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {error.startTime}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <span className="mr-2 text-[#5560A8]">End Time</span>
+                  </label>
+                  <input
+                    type="time"
+                    name="endTime"
+                    value={formData.endTime}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  />
+                  {error?.endTime && (
+                    <p className="text-red-500 text-sm mt-1">{error.endTime}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Profile Image and Additional Details */}
+              <div className="space-y-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-32 h-32 bg-gray-200 rounded-full mb-4 flex items-center justify-center">
+                    <img
+                      src={
+                        formData.image
+                          ? URL.createObjectURL(formData.image)
+                          : laborData?.profilePicture || ""
+                      }
+                      alt="Profile"
+                      className="rounded-full border w-full h-full object-cover"
+                    />
+                  </div>
+                  <label
+                    htmlFor="imageUpload"
+                    className="bg-[#5560A8] text-white px-4 py-2 rounded-full text-sm cursor-pointer"
+                  >
+                    Upload Profile Picture
+                  </label>
+                  <input
+                    id="imageUpload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <MapPin className="mr-2 text-[#5560A8]" /> Address
+                  </label>
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    rows="3"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Globe className="mr-2 text-[#5560A8]" /> Language
+                  </label>
+                  <select
+                    name="language"
+                    value={formData.language}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  >
+                    <option value="">Select Language</option>
+                    <option value="English">English</option>
+                    <option value="Spanish">Spanish</option>
+                    <option value="French">French</option>
+                    <option value="German">German</option>
+                    <option value="Chinese">Chinese</option>
+                    <option value="Japanese">Japanese</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Arabic">Arabic</option>
+                    <option value="Russian">Russian</option>
+                    <option value="Portuguese">Portuguese</option>
+                    {/* Add more languages as needed */}
+                  </select>
+                  {error?.language && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {error.language}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Availability */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 flex items-center">
+                <Calendar className="mr-2 text-[#5560A8]" /> Availability
+              </h3>
+              <div className="grid grid-cols-3 gap-4 mt-4">
+                {[
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday",
+                ].map((day) => (
+                  <label key={day} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.availability[day]}
+                      onChange={() => handleAvailabilityChange(day)}
+                      className="form-checkbox text-[#5560A8]"
+                    />
+                    <span>{day}</span>
+                  </label>
+                ))}
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.availability.All}
+                    onChange={handleAllDaysChange}
+                    className="form-checkbox text-[#5560A8]"
+                  />
+                  <span>All Days</span>
+                </label>
+                {error?.availability && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {error.availability}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Additional Details */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Categories
+                </label>
+                <input
+                  type="text"
+                  name="categories"
+                  value={laborData?.categories}
+                  readOnly
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Skills
+                </label>
+                <input
+                  type="text"
+                  name="skills"
+                  value={formData.skills}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                />
+                {error?.skills && (
+                  <p className="text-red-500 text-sm mt-1">{error.skills}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Responsibilities
+                </label>
+                <input
+                  type="text"
+                  name="responsibilities"
+                  value={formData.responsibilities}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                />
+              </div>
+            </div>
+
+            {/* Change Password */}
+            <div className="mt-6 flex justify-center">
+              <button
+                className="flex items-center bg-[#5560A8] text-white px-4 py-2 rounded-full"
+                onClick={() => setOpenChangePasswod(true)}
+              >
+                <Lock className="mr-2" /> Change Password
+              </button>
+            </div>
+
+            {/* Save Changes */}
+            <div className="mt-6 flex justify-center space-x-4">
+              <button
+                onClick={() => setOpenEditProfile(false)}
+                className="px-6 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-[#5560A8] text-white rounded-full hover:bg-opacity-90"
+                onClick={handleSubmitEditProfile}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="w-full relative">
         {/* Background Image */}
         <div className="relative">
           <img
-            src={BgImage} 
+            src={BgImage}
             alt="Profile"
             className="w-full h-[150px] sm:h-[200px] md:h-[234px] lg:h-[240px] object-cover"
           />
 
-          {theam === 'light' ? (
+          {theam === "light" ? (
             <>
-              
-          <div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4">
-             <nav className=" py-3 px-4 sm:px-6 md:px-8 "> {/* chnge the px ------------------------*/}
-                <div className="max-w-7xl mx-auto">
-                  <ol className="flex items-center space-x-2 text-sm sm:text-base">
-                    <li className="flex items-center">
-                      <Link to='/labor/dashboard' className="transition-colors duration-200 flex items-center">
-                          <Home 
-                          className="md:w-6 md:h-6 w-4 h-4 sm:w-5 sm:h-5 text-white" 
-                          strokeWidth={2} // Increase this value to make the icon thicker
-                        />
-                        <span className="ml-1 hidden sm:inline text-white">Home</span>
-                      </Link>
-                    </li>
-                    
-                    <li className="flex items-center text-white">
-                        <ChevronRight className="md:w-6 md:h-6 w-4 h-4 sm:w-5 sm:h-5"
-                      strokeWidth={2}
-                        />
-                    </li>
-                    
-                    <li className="flex items-center text-white">
-                      <a 
-                        href="/profile" 
-                        className="  transition-colors duration-200 flex items-center"
-                      >
-                        <User className="md:w-6 md:h-6 w-4 h-4 sm:w-5 sm:h-5"  strokeWidth={3}/>
-                        <span className="ml-1">Profile</span>
-                      </a>
-                    </li>
-                  </ol>
-                </div>
-              </nav>
-          </div>
-          </>
+              <div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4">
+                <nav className=" py-3 px-4 sm:px-6 md:px-8 ">
+                  {" "}
+                  {/* chnge the px ------------------------*/}
+                  <div className="max-w-7xl mx-auto">
+                    <ol className="flex items-center space-x-2 text-sm sm:text-base">
+                      <li className="flex items-center">
+                        <Link
+                          to="/labor/laborDashBoard"
+                          className="transition-colors duration-200 flex items-center"
+                        >
+                          <Home
+                            className="md:w-6 md:h-6 w-4 h-4 sm:w-5 sm:h-5 text-white"
+                            strokeWidth={2} // Increase this value to make the icon thicker
+                          />
+                          <span className="ml-1 hidden sm:inline text-white">
+                            Home
+                          </span>
+                        </Link>
+                      </li>
 
-          ): (
+                      <li className="flex items-center text-white">
+                        <ChevronRight
+                          className="md:w-6 md:h-6 w-4 h-4 sm:w-5 sm:h-5"
+                          strokeWidth={2}
+                        />
+                      </li>
+
+                      <li className="flex items-center text-white">
+                        <a
+                          href="/profile"
+                          className="  transition-colors duration-200 flex items-center"
+                        >
+                          <User
+                            className="md:w-6 md:h-6 w-4 h-4 sm:w-5 sm:h-5"
+                            strokeWidth={3}
+                          />
+                          <span className="ml-1">Profile</span>
+                        </a>
+                      </li>
+                    </ol>
+                  </div>
+                </nav>
+              </div>
+            </>
+          ) : (
             <div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4">
-             <nav className=" py-3 px-4 sm:px-6 md:px-8 ">
+              <nav className=" py-3 px-4 sm:px-6 md:px-8 ">
                 <div className="max-w-7xl mx-auto">
                   <ol className="flex items-center space-x-2 text-sm sm:text-base">
                     <li className="flex items-center">
-                      <a 
-                        href="/" 
+                      <a
+                        href="/"
                         className=" transition-colors duration-200 flex items-center"
                       >
-                        <Home className="w-4 h-4 sm:w-5 sm:h-5 "  />
+                        <Home className="w-4 h-4 sm:w-5 sm:h-5 " />
                         <span className="ml-1 hidden sm:inline">Home</span>
                       </a>
                     </li>
-                    
+
                     <li className="flex items-center ">
                       <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </li>
-                    
+
                     <li className="flex items-center">
-                      <a 
-                        href="/profile" 
+                      <a
+                        href="/profile"
                         className="  transition-colors duration-200 flex items-center"
                       >
                         <User className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -167,11 +925,10 @@ const LaborProfile = () => {
                   </ol>
                 </div>
               </nav>
-          </div>
+            </div>
           )}
 
           {/* Breadcrumb */}
-          
         </div>
 
         {/* Main Content Container */}
@@ -186,7 +943,7 @@ const LaborProfile = () => {
                 {/* Profile Image */}
                 <div className="flex justify-center lg:justify-start lg:ml-6 md:-mt-4">
                   <img
-                    src={char}
+                    src={laborData?.profilePicture}
                     alt="Profile"
                     className="w-[150px] h-[150px] sm:w-[160px] sm:h-[160px] md:w-[190px] md:h-[190px] lg:w-[220px] lg:h-[220px] rounded-full border-4 shadow-lg object-cover"
                   />
@@ -210,7 +967,10 @@ const LaborProfile = () => {
 
                   {/* Action Buttons */}
                   <div className="flex flex-col gap-4">
-                    <button className="flex w-[200px]  items-center gap-2 px-4 py-2 text-sm font-medium  text-white bg-[#5560A8]  rounded-full  transition-colors">
+                    <button
+                      className="flex w-[200px]  items-center gap-2 px-4 py-2 text-sm font-medium  text-white bg-[#5560A8]  rounded-full  transition-colors"
+                      onClick={handleEditProfile}
+                    >
                       <Edit className="w-4 h-4" />
                       Edit Profile
                     </button>
@@ -229,11 +989,11 @@ const LaborProfile = () => {
                     {/* Name Section */}
                     <div className="text-center lg:text-left">
                       <div className="font-semibold font-[Rockwell] lg:ml-14  text-[33px] md:text-[43px]">
-                        Merry
+                        {laborData?.firstName} {laborData?.lastName}
                       </div>
-                      <div className="font-semibold font-[Rockwell] lg:ml-20  text-[23px]  md:text-[23px]">
-                        Susan
-                      </div>
+                      {/* <div className="font-semibold font-[Rockwell] lg:ml-20  text-[23px]  md:text-[23px]">
+                        
+                      </div> */}
                     </div>
 
                     {/* Divider */}
@@ -241,27 +1001,58 @@ const LaborProfile = () => {
 
                     {/* Contact Information */}
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3">
+                      {/* <div className="flex items-center gap-3">
                         <Phone className="w-5 h-5 text-gray-600" />
-                        <span className="text-gray-800">+91 9876543210</span>
-                      </div>
+                        <span className="text-gray-800">{laborData?.phone}</span>
+                      </div> */}
                       <div className="flex items-center gap-3">
                         <Mail className="w-5 h-5 text-gray-600" />
                         <span className="text-gray-800">
-                          johndoe@example.com
+                          {laborData?.email}
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
                         <MapPin className="w-5 h-5 text-gray-600" />
-                        <span className="text-gray-800">India</span>
+                        <span className="text-gray-800">
+                          {laborData?.address}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-gray-600" />
-                        <span className="text-gray-800">Full Day</span>
+                      <div className="flex flex-wrap items-center gap-4 md:gap-6">
+                        {/* Availability */}
+                        <div className="flex flex-wrap items-center gap-4 md:gap-6">
+                          <div className="flex items-center gap-2 w-full md:w-auto">
+                            <CalendarDaysIcon className="w-5 h-5 text-gray-600" />
+                            <span className="text-gray-800">
+                              {laborData?.availability &&
+                              Array.isArray(laborData.availability)
+                                ? laborData.availability.join(", ")
+                                : "No availability"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Start Time */}
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                          <Clock className="w-5 h-5 text-blue-600" />
+                          <span className="text-gray-800">
+                            Start: {laborData?.startTime || "N/A"}
+                          </span>
+                        </div>
+
+                        {/* End Time */}
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                          <Clock className="w-5 h-5 text-red-600" />
+                          <span className="text-gray-800">
+                            End: {laborData?.endTime || "N/A"}
+                          </span>
+                        </div>
                       </div>
+
                       <div className="flex items-center gap-3">
                         <Globe className="w-5 h-5 text-gray-600" />
-                        <span className="text-gray-800">Malayalam</span>
+                        <span className="text-gray-800">
+                          {laborData?.language}
+                        </span>
                       </div>
                     </div>
 
@@ -328,7 +1119,7 @@ const LaborProfile = () => {
                 <div className="border bg-white rounded-xl p-4 sm:p-6 shadow-lg">
                   <div className="space-y-7">
                     <h2 className="text-center font-[Rockwell] lg:text-[25px] md:text-[16px] sm:text-[12px] font-semibold border-b-2  pb-2">
-                      Expert Electrician
+                      Expert {laborData?.categories[0]}
                     </h2>
 
                     <div>
@@ -430,38 +1221,89 @@ const LaborProfile = () => {
             About Me
           </h2>
 
-          {/* About Me Content */}
-          <div className="space-y-4 lg:space-y-0 ">
-            <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
-              I am Jone, a highly skilled and experienced electrician with over
-              10 years of experience in the field. I specialize in both
-              residential and commercial electrical systems, offering
-              top-quality services for installations, repairs, and more.
-            </p>
+          {submittedData ? (
+            <>
+              <div className="space-y-4 lg:space-y-0">
+                <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
+                  I am {submittedData.name}, a highly skilled and experienced
+                  professional with over {submittedData.experience} of
+                  experience in the field.
+                </p>
+                <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
+                  {submittedData.description}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="text-center">
+              <button
+                onClick={() => setOpenAbout(true)}
+                className="bg-[#21A391] text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
+              >
+                Add About You
+              </button>
+            </div>
+          )}
 
-            <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
-              Electrical systems, providing top-notch installation, maintenance,
-              and repair services. I am dedicated to ensuring the safety and
-              satisfaction of my clients, adhering to the highest standards of
-              electrical safety and compliance. With a keen eye for detail and a
-              commitment to excellence, I have built a reputation for
-              reliability and professionalism in the industry.
-            </p>
-
-            <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
-              My passion is to ensure safety and efficiency in every project I
-              undertake, and I am committed to providing the best solutions for
-              my clients.
-            </p>
-          </div>
+          {/* Modal */}
+          {openAbout && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 sm:w-96">
+                <h3 className="text-xl font-semibold mb-4">Add About You</h3>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Name"
+                  value={AboutFromData.name}
+                  onChange={handleInputChangeAbout}
+                  className="w-full p-2 mb-3 border rounded-lg"
+                />
+                <input
+                  type="number"
+                  name="experience"
+                  placeholder="Experience (e.g., 10 years)"
+                  value={AboutFromData.experience}
+                  onChange={handleInputChangeAbout}
+                  className="w-full p-2 mb-3 border rounded-lg"
+                />
+                <textarea
+                  name="description"
+                  placeholder="Description"
+                  value={AboutFromData.description}
+                  onChange={handleInputChangeAbout}
+                  className="w-full p-2 mb-3 border rounded-lg"
+                />
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => setOpenAbout(false)}
+                    className="px-4 py-2 text-gray-600"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    className="bg-[#21A391] text-white px-4 py-2 rounded-lg"
+                  >
+                    {isEditing ? "Update" : "Submit"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Read More Button */}
-          <div className="mt-8">
-            <button className="group relative inline-block text-[#21A391] text-sm sm:text-base md:text-lg lg:text-[17px] font-semibold transition-colors duration-300 hover:text-[#1a8275]">
-              Read More
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#21A391] transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
-            </button>
-          </div>
+
+          {submittedData && (
+            <div className="mt-8">
+              <button
+                className="group relative inline-block text-[#21A391] text-sm sm:text-base md:text-lg lg:text-[17px] font-semibold transition-colors duration-300 hover:text-[#1a8275]"
+                onClick={handleEdit}
+              >
+                EDIT
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#21A391] transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -490,9 +1332,7 @@ const LaborProfile = () => {
 
                 {/* User Info Container */}
                 <div className="ml-4 flex-grow">
-                  <h3 className="text-lg font-semibold ">
-                    Alexander
-                  </h3>
+                  <h3 className="text-lg font-semibold ">Alexander</h3>
                   <div className="flex items-center space-x-3 mb-2">
                     {/* Star Rating */}
                     <div className="flex items-center space-x-1">
@@ -548,9 +1388,7 @@ const LaborProfile = () => {
 
                 {/* User Info Container */}
                 <div className="ml-4 flex-grow">
-                  <h3 className="text-lg font-semibold ">
-                    Alexander
-                  </h3>
+                  <h3 className="text-lg font-semibold ">Alexander</h3>
                   <div className="flex items-center space-x-3 mb-2">
                     {/* Star Rating */}
                     <div className="flex items-center space-x-1">
@@ -615,9 +1453,7 @@ const LaborProfile = () => {
 
                 {/* User Info Container */}
                 <div className="ml-4 flex-grow">
-                  <h3 className="text-lg font-semibold ">
-                    Alexander
-                  </h3>
+                  <h3 className="text-lg font-semibold ">Alexander</h3>
                   <div className="flex items-center space-x-3 mb-2">
                     {/* Star Rating */}
                     <div className="flex items-center space-x-1">
@@ -640,20 +1476,19 @@ const LaborProfile = () => {
                     </div>
                     <span className="text-sm ">May 08, 2024</span>
                   </div>
-                   <h3 className="text-[12px] font-semibold ">
-                    Electrician
-                  </h3>
+                  <h3 className="text-[12px] font-semibold ">Electrician</h3>
                 </div>
               </div>
             </div>
             <p className="text-sm sm:text-base md:text-lg lg:text-[12px] ">
-              <span className="font-semibold">Expertise :</span> Residential Electrical Systems , Wiring and Circuit Design
+              <span className="font-semibold">Expertise :</span> Residential
+              Electrical Systems , Wiring and Circuit Design
             </p>
           </div>
         </div>
       </div>
 
-   {/* <div className="underLine h-[3px] bg-gray-200 flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1100px] my-4"></div>    */}
+      {/* <div className="underLine h-[3px] bg-gray-200 flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1100px] my-4"></div>    */}
 
       <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-1">
         <div className="sm:max-w-3xl md:max-w-[1200px] mx-auto">
@@ -672,9 +1507,7 @@ const LaborProfile = () => {
 
                 {/* User Info Container */}
                 <div className="ml-4 flex-grow">
-                  <h3 className="text-lg font-semibold ">
-                    Alexander
-                  </h3>
+                  <h3 className="text-lg font-semibold ">Alexander</h3>
                   <div className="flex items-center space-x-3 mb-2">
                     {/* Star Rating */}
                     <div className="flex items-center space-x-1">
@@ -697,14 +1530,13 @@ const LaborProfile = () => {
                     </div>
                     <span className="text-sm ">May 08, 2024</span>
                   </div>
-                   <h3 className="text-[12px] font-semibold ">
-                    Electrician
-                  </h3>
+                  <h3 className="text-[12px] font-semibold ">Electrician</h3>
                 </div>
               </div>
             </div>
             <p className="text-sm sm:text-base md:text-lg lg:text-[12px] ">
-              <span className="font-semibold">Expertise :</span> Residential Electrical Systems , Wiring and Circuit Design
+              <span className="font-semibold">Expertise :</span> Residential
+              Electrical Systems , Wiring and Circuit Design
             </p>
           </div>
         </div>

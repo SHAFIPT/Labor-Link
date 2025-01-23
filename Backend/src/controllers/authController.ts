@@ -33,11 +33,11 @@ class AuthController {
     public loginUser = async (req: Request, res: Response , next : NextFunction) => {
         try {
             const user = req.body;
-        console.log("thsi is the user to login :", user)
+        // console.log("thsi is the user to login :", user)
         
         const loginData = await this.authService.login(user);
 
-        console.log('this is loginData :',loginData)
+        // console.log('this is loginData :',loginData)
 
         if (loginData?.userFound?.isBlocked) {
            return res.status(401).json({message :"Your account has been blocked"})
@@ -156,7 +156,7 @@ class AuthController {
         }
     }
 
-    public  googleSignIn = async (req: Request, res: Response) =>  {
+    public  googleSignIn = async (req: Request, res: Response , next : NextFunction) =>  {
         try {
             const { displayName, email, photoURL } = req.body;
 
@@ -171,7 +171,7 @@ class AuthController {
             }); 
 
             if (userAfterAuth?.user?.isBlocked) {
-                return res.status(401).json({ message: "Your account has been blocked" });
+                throw new Error ("Your account has been blocked")
             }
 
 
@@ -186,8 +186,7 @@ class AuthController {
                     new ApiResponse(200, userAfterAuth, "User authentication success")
                 );
         } catch (error) {
-            console.error("Resend OTP Error:", error.message || error);
-            res.status(error.statusCode || 500).json({ message: error.message || "Internal Server Error" });
+           next(error)
         }
     }
 
@@ -428,8 +427,29 @@ class AuthController {
             new ApiResponse(500, null, "Internal server error while checking block status")
         );
     }
-}
+    }
+    
+    public refreshAccessToken = async (req:Request & {user: {rawToken: string, id: string}} ,res:Response)=>{
 
+        const {user} = req
+
+ 
+
+        const accessToken = await this.authService.refreshAccessToken(user.id)
+
+        if(accessToken){
+          return res.status(200)
+          .json(
+            new ApiResponse(
+              200,
+              {accessToken},
+              "token Created Successfully"
+            )
+          )
+        }
+
+        
+      }
 
 }
 export default AuthController;

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store/store";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import {
   setLoading,
   setFormData,
@@ -303,10 +304,13 @@ const UserRegisterPage = () => {
                   className="absolute bottom-0 left-0 w-full h-[3px]"
                   style={{ background: `#8dcbdd 50%` }}
                 ></div>
-                <i
-                  className="fas fa-eye absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700"
-                  onClick={() => togglePasswordVisibility()}
-                ></i>
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}
+                </button>
               </div>
             </div>
             <div className="mt-2 text-md ">
@@ -388,8 +392,12 @@ const UserRegisterPage = () => {
             <div className="text-sm mt-[26px]">
               Looking to join us as a Labor ?
               <span>
-                <Link to={'/labor/dashboard'} className="hover:underline text-[#23c7b1]">Apply as a labor</Link>
-                
+                <Link
+                  to={"/labor/dashboard"}
+                  className="hover:underline text-[#23c7b1]"
+                >
+                  Apply as a labor
+                </Link>
               </span>
             </div>
           </div>

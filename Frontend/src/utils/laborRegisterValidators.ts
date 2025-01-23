@@ -289,8 +289,10 @@ export const validateEndTime = (endTime: string) => {
 
 // Validate Availability
 export const validateAvailability = (availability: string[]) => {
-  const { error } = availabilitySchema.validate(availability);
-  return error ? error.details[0].message : null;
+  if (availability.length === 0) {
+    return 'Please select at least one availability day';
+  }
+  return null;
 };
 
 

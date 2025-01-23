@@ -7,8 +7,54 @@ import { verifyAccessToken } from '../utils/tokenUtils';  // Replace with your r
 
 
 interface DecodedToken extends JwtPayload {
+  id: string;
   role: string;
+  iat: number;
+  exp: number;
 }
+
+
+export const authenticateLabor = (
+  req: Request & Partial<{ labor: string | jwt.JwtPayload }>,
+  res: Response,
+  next: NextFunction
+): void => {
+
+  // console.log('Hi iiii imaa here ......!!!!!!-----------')
+  
+  const publicRoutes = [
+    '/api/labor/auth/login',
+    '/api/labor/auth/register',
+    '/api/labor/auth/google-sign-in',
+  ];
+  if (publicRoutes.includes(req.path)) {
+    return next();
+  }
+
+  const token = req.headers['authorization']?.split(' ')[1] || req.header('authorization');
+
+  if (!token) {
+    res.status(401).send('Access denied');
+    return;
+  }
+
+  try {
+    const decoded = verifyAccessToken(token) as DecodedToken; // Ensure DecodedToken includes `userId` type definition
+    req.labor = decoded;
+      // console.log("Decoded Token: --------++++------", decoded);
+      // console.log("Decoded Token  and rolee........!: --------++++------", decoded.role);
+    // Check role
+    if (decoded.role !== 'labor') {
+      res.status(401).json(new ApiResponse(401, null, 'You are not authorized'));
+      return;
+    }
+
+    next();
+  } catch (err) {
+    res.status(401).json(new ApiResponse(401, null, 'Invalid Token or Expired'));
+  }
+};
+
 
 
 export const authenticateUser = (
@@ -16,39 +62,41 @@ export const authenticateUser = (
   res: Response,
   next: NextFunction
 ): void => {
-  // Skip token check for login-related routes
-  const publicRoutes = ['/api/user/auth/login', '/api/user/auth/register', '/api/user/auth/google-sign-in'];
+
+  // console.log('Hi iiii imaa here ......!!!!!!-----------')
+  
+  const publicRoutes = [
+    '/api/user/auth/login',
+    '/api/user/auth/register',
+    '/api/user/auth/google-sign-in',
+  ];
   if (publicRoutes.includes(req.path)) {
     return next();
   }
 
-  const token = req.headers["authorization"]?.split(" ")[1] || req.header("authorization");
+  const token = req.headers['authorization']?.split(' ')[1] || req.header('authorization');
 
   if (!token) {
-    res.status(401).send("Access denied");
+    res.status(401).send('Access denied');
     return;
   }
 
   try {
-    const decoded = verifyAccessToken(token) as DecodedToken;
+    const decoded = verifyAccessToken(token) as DecodedToken; // Ensure DecodedToken includes `userId` type definition
     req.user = decoded;
-
-    // Check if the user has the required role
-    if (decoded.role !== "user") {
-      res.status(401).json(
-        new ApiResponse(401, null, "You are not authorized")
-      );
+      // console.log("Decoded Token: --------++++------", decoded);
+      // console.log("Decoded Token  and rolee........!: --------++++------", decoded.role);
+    // Check role
+    if (decoded.role !== 'user') {
+      res.status(401).json(new ApiResponse(401, null, 'You are not authorized'));
       return;
     }
 
     next();
   } catch (err) {
-    res.status(401).json(
-      new ApiResponse(401, null, "Invalid Token or Expired")
-    );
+    res.status(401).json(new ApiResponse(401, null, 'Invalid Token or Expired'));
   }
 };
-
 
 
 export const authenticate = (

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validateRegistration } from "../../validator/userValidator"; 
 import AuthController from "../../controllers/authController";
-import {authenticateUser, decodedUserRefreshToken } from "../../middleware/authMiddleware";
+import {authenticateUser, decodedUserRefreshToken, verifyRefreshTokenMiddleware } from "../../middleware/authMiddleware";
 
 const userAuthRoute = Router()
 const authController = new AuthController()
@@ -16,7 +16,7 @@ userAuthRoute.post('/forgettPassword',authController.forgetPassword.bind(authCon
 userAuthRoute.post('/ForgetVerify-otp',authController.forgetVerifyOtp.bind(authController))
 userAuthRoute.post('/forgot-password-reset',authController.resetPassword.bind(authController))
 userAuthRoute.get('/checkIsBlock',authenticateUser ,authController.checkIsBlock.bind(authController))
-userAuthRoute.get('/refresh-token', decodedUserRefreshToken, authController.checkIsBlock.bind(authController));
+userAuthRoute.get('/refresh-token', verifyRefreshTokenMiddleware, authController.refreshAccessToken.bind(authController));
 userAuthRoute.patch('/log_out',decodedUserRefreshToken,authController.logout.bind(authController))
 
 export default userAuthRoute 

@@ -8,5 +8,6 @@ const router = Router()
 router.use('/api/user',userRouter)
 router.use('/api/labor',laborRoute)
 router.use('/api/admin',adminRoute)
-
+// /api/user/labors/fetchLabor
 export default router
+
