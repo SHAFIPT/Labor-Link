@@ -154,20 +154,20 @@ const HomeNavBar = () => {
 
 
 
-useEffect(() => {
-  const cheakUserIsBlock = async () => {
-    const response = await checkIsBlock();
-    const isBlocked = response.data.data.isBlocked;
-    console.log('User is blocked:', isBlocked);
-    if (isBlocked) {
-      handleLogout();  // This will now use the memoized handleLogout
-    }
-  };
+// useEffect(() => {
+//   const cheakUserIsBlock = async () => {
+//     const response = await checkIsBlock();
+//     const isBlocked = response.data.data.isBlocked;
+//     console.log('User is blocked:', isBlocked);
+//     if (isBlocked) {
+//       handleLogout();  // This will now use the memoized handleLogout
+//     }
+//   };
 
-  const interval = setInterval(cheakUserIsBlock, 10000);
+//   const interval = setInterval(cheakUserIsBlock, 10000);
 
-  return () => clearInterval(interval);
-}, [handleLogout]);
+//   return () => clearInterval(interval);
+// }, [handleLogout]);
 
 
   // const handleLaborList = () => {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { setFormData, setIsLaborAuthenticated, setLaborer, resetLaborer ,setError, setLoading} from "../../../redux/slice/laborSlice"
 import { resetUser } from '../../../redux/slice/userSlice'
 import { toast } from "react-toastify"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { logout } from "../../../services/LaborAuthServices"
 import HomeNavBar from "../../HomeNavBar"
 import LoginNav from "../../Auth/LoginNav"
@@ -17,13 +17,15 @@ import '../../Auth/LoadingBody.css'
 import { Phone, Mail, MapPin, Clock, Date ,Globe, Heart, Star, Edit, Wallet , ChevronRight, Home, User ,
   Calendar, 
   CheckSquare, 
-  Lock } from 'lucide-react';
+  Lock,
+    X  } from 'lucide-react';
 import './LaborProfile.css'
 import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import LaborDashBoardNav from "./LaborDashBoardNav"
-import { editPassword, laborFetch, updateProfile } from "../../../services/LaborServices"
+import { aboutMe, editPassword, laborFetch, updateProfile } from "../../../services/LaborServices"
 import { validateAddress, validateAvailability, validateEndTime, validateFirstName, validateLanguage, validateLastName, validatePassword, validatePhoneNumber, validateSkill, validateStartTime } from "../../../utils/laborRegisterValidators"
+import { ILaborer } from "../../../@types/labor"
 const LaborProfile = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -34,11 +36,13 @@ const LaborProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode)
    const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated); 
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-  const email = useSelector((state : RootState) => state.labor.laborer)
+  const Laborer = useSelector((state : RootState) => state.labor.laborer)
+  const email = useSelector((state : RootState) => state.labor.laborer.email)
   const loading = useSelector((state : RootState) => state.labor.loading)
   const currentUser = useSelector((state: RootState) => state.labor.laborer._id)
+  const { state: user } = useLocation();
   
-  // console.log('Thsi is eth current user id :',currentUser)
+ 
   // console.log('Thsi is eth current user email :',email.email)
   // console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
   const [openEditProfile, setOpenEditProfile] = useState(false)
@@ -54,29 +58,51 @@ const LaborProfile = () => {
     description: "",
   })
   const [submittedData, setSubmittedData] = useState(null);
+   const [newSkill, setNewSkill] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    address: '',
-    language: '',
-    availability: {
-      Monday: false,
-      Tuesday: false,
-      Wednesday: false,
-      Thursday: false,
-      Friday: false,
-      Saturday: false,
-      Sunday: false,
-      All: false
-    },
-     skills: [],
-     startTime: '', // Added startTime
-      endTime: '',
-    responsibilities: '',
-    image : null
-   });
+  const [formData, setFormData] = useState<{
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  language: string;
+  availability: {
+    Monday: boolean;
+    Tuesday: boolean;
+    Wednesday: boolean;
+    Thursday: boolean;
+    Friday: boolean;
+    Saturday: boolean;
+    Sunday: boolean;
+    All: boolean;
+  };
+  skills: string | string[];
+  startTime: string;
+  endTime: string;
+  responsibilities: string;
+  image: null;
+}>({
+  firstName: '',
+  lastName: '',
+  phone: '',
+  address: '',
+  language: '',
+  availability: {
+    Monday: false,
+    Tuesday: false,
+    Wednesday: false,
+    Thursday: false,
+    Friday: false,
+    Saturday: false,
+    Sunday: false,
+    All: false
+  },
+  skills: [], // Initialize as an array
+  startTime: '',
+  endTime: '',
+  responsibilities: '',
+  image: null
+});
    
   useEffect(() => {
     
@@ -112,7 +138,16 @@ const error: {
 
     const handleEditProfile = () => {
   // Parse the availability from the string array
-  const availableDays = laborData?.availability
+   const availableDays = laborData?.availability 
+  ? laborData.availability.join(", ")
+  : "No availability"
+     const parsedSkills = Array.isArray(laborData?.skill) 
+    ? JSON.parse(laborData.skill[0]) 
+    : typeof laborData?.skill === 'string'
+      ? JSON.parse(laborData.skill)
+      : [];
+      
+      console.log("This is partsed Skills ........ +++++ ========= ",parsedSkills)
   
   // Reset formData with actual labor data
   setFormData({
@@ -121,7 +156,7 @@ const error: {
     phone: laborData?.phone || "", // Note: changed from phoneNumber to phone
     address: laborData?.address || "",
     language: laborData?.language || "",
-    skills: laborData?.skill || "", // Note: changed from skills to skill
+    skills: parsedSkills, // Note: changed from skills to skill
     responsibilities: laborData?.responsibility || "", // Note: changed from responsibilities to responsibility
     availability: {
       Monday: availableDays.includes('monday'),
@@ -143,7 +178,9 @@ const error: {
 
 useEffect(() => {
   // Parse the availability from the string array
-  const availableDays = laborData?.availability || [];
+   const availableDays =laborData?.availability 
+  ? laborData.availability.join(", ")
+  : "No availability"
   
   // Create a new availability object
   const initialAvailability = {
@@ -239,40 +276,42 @@ const prepareAvailabilityForSubmission = () => {
   }
 
   return days;
-};
+  };
   
+  console.log('Thsi is eth current user:', user)
+  console.log('Thsi is eth current Laborer :', Laborer)
 
-const fetchLabor = async () => {
-  try {
-    const response = await laborFetch();
-    console.log('This is the response : ',response)
-    if (response.fetchUserResponse) {
-      const laborResponse = response.fetchUserResponse;
-      
-      // Flatten address into a string
-      const fullAddress = laborResponse.address 
-        ? `${laborResponse.address.street || ''}, ${laborResponse.address.city}, ${laborResponse.address.state}, ${laborResponse.address.postalCode}, ${laborResponse.address.country}`
-        : '';
 
-      setLaborData({
-        ...laborResponse,
-        address: fullAddress
-      });
-      
-      dispatch(setLaborer({
-        ...laborResponse,
-        address: fullAddress
-      }));
-    }
-  } catch (error) {
-    console.error("Error fetching user:", error);
+   
+   
+  useEffect(() => {
+  if (Laborer && Object.keys(Laborer).length > 0) {  // Check if Laborer is not empty
+    console.log("Hi I am here++++++-----");
+    const LaborfullAddress = Laborer?.address 
+      ? `${Laborer.address}` 
+      : '';
+    
+    setLaborData({
+      ...Laborer,
+      address: LaborfullAddress,
+    });
+  } else if (user) {
+    console.log("kkkkkk kkkiiiii mmmmmmmmmm++++++-----");
+    // Ensure user address is handled similarly to Laborer
+    const UserLaborfullAddress = user?.address 
+      ? typeof user.address === 'string'
+        ? user.address
+        : `${user.address.street || ''}, ${user.address.city}, ${user.address.state}, ${user.address.postalCode}, ${user.address.country}`
+      : '';
+    
+    setLaborData({
+      ...user,
+      address: UserLaborfullAddress,
+    });
+    console.log('This is the Labor laborData +++++____+++++++++++ ;', laborData);
   }
-};
-
-// useEffect remains as it is to call fetchLabor when email changes
-useEffect(() => {
-    fetchLabor();
-}, []);
+}, [Laborer, user]);
+  
 
   const handleInputChangeAbout = (e) => {
     const { name, value } = e.target;
@@ -283,30 +322,64 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    if (currentUser) {
-      const savedData = localStorage.getItem(`aboutData_${currentUser}`);
-      if (savedData) {
-        setSubmittedData(JSON.parse(savedData));
-      }
+    const userId = currentUser || user?._id;
+    console.log("This is the current user:", user); // Ensure the user object is present
+    console.log("This is the userId:", userId);
+    if (userId) {
+    console.log("Ho iam enter here :: seeeee ------------------------")
+      const savedData = localStorage.getItem(`aboutData_${userId}`);
+        console.log("Thsi my shabeel savedDatat ",savedData)
+    if (savedData) {
+      setSubmittedData(JSON.parse(savedData));
+       console.log("Thsi se th userId savedData  ++++ hasdfdsfojdf ",savedData)
     }
-  }, [currentUser]);
+  }
+  }, [currentUser, user]);
+  
+//   const userId = currentUser || user?._id;
+// console.log("This is the userId:", userId);
 
-    const handleSubmit = () => {
-    if (!currentUser) return;
+const handleSubmit = async () => {
+  const userId = currentUser || user?._id;
 
-    const newData = {
-      name: AboutFromData.name,
-      experience: AboutFromData.experience,
-      description: AboutFromData.description
-    };
 
-    // Save to user-specific localStorage
-    localStorage.setItem(`aboutData_${currentUser}`, JSON.stringify(newData));
-    
-    setSubmittedData(newData);
-    setOpenAbout(false);
-    setIsEditing(false);
+  // console.log("This is the current user:", currentUser);
+    console.log("This is the userId:", userId);
+  
+  if (!userId) return;
+
+  const newData = {
+    userId,
+    name: AboutFromData.name,
+    experience: AboutFromData.experience,
+    description: AboutFromData.description
   };
+
+  // Save to user-specific localStorage
+  localStorage.setItem(`aboutData_${userId}`, JSON.stringify(newData));
+  
+  setSubmittedData(newData);
+  setOpenAbout(false);
+  setIsEditing(false);
+
+
+  try {
+
+      console.log("This is the newData:", newData);
+
+    const response = await aboutMe(newData)
+
+    if (response.status === 200) {
+      toast.success('about page uploaded succefully.....')
+    } else {
+      toast.error('Errro in about me')
+    }
+    
+  } catch (error) {
+    console.error("Network error:", error);
+    toast.error("about udpataing error")
+  }
+};
 
 
 
@@ -361,10 +434,10 @@ useEffect(() => {
       formDataToSubmit.append('endTime', formData.endTime);
       
       // Append email safely (assuming email is a string)
-      formDataToSubmit.append('email', email?.email || '');
+      formDataToSubmit.append('email', email || '');
 
       if (formData.image) {
-        formDataToSubmit.append('profilePicture', formData.image, formData.image.name);
+        formDataToSubmit.append('profilePicture', formData.image, formData.image);
       }
 
       console.log('thde formDatat to submit....______++++++-0------')
@@ -379,7 +452,7 @@ useEffect(() => {
       console.log("Profile updated: succefully.....+++++ =======", response);
 
       if (response.status === 200) {
-        fetchLabor()
+        // fetchLabor()
         setAboutFromData(response.data.updatedLabor)
         toast.success('The profile updated succefully')
         setOpenEditProfile(false)
@@ -415,12 +488,12 @@ useEffect(() => {
   
       const PasswodData = {
         password,
-        email : email.email
+        email : email
       }
   
       try {
         dispatch(setError({}));
-        console.log('this sthe the PasswodDatat ------+++++-------:',PasswodData)
+        // console.log('this sthe the PasswodDatat ------+++++-------:',PasswodData)
         const response = await editPassword(PasswodData)
   
         if (response.status === 200) {
@@ -436,8 +509,35 @@ useEffect(() => {
       } finally {
         dispatch(setLoading(false))
       }
-    };
+  };
+  
 
+  const handleAddSkill = (e) => {
+    if (e.key === 'Enter' && newSkill.trim()) {
+      e.preventDefault();
+      setFormData(prev => ({
+        ...prev,
+        skills: Array.isArray(prev.skills) 
+          ? [...prev.skills, newSkill.trim()]
+          : [newSkill.trim()]
+      }));
+      setNewSkill(''); // Clear input after adding
+    }
+  };
+
+  const handleRemoveSkill = (indexToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
+
+  // console.log('This labor daata . skills and dispal  ++++ 8888888 *(****)', JSON.parse(laborData?.skill?.[0]))
+   const parsedSkillsData = Array.isArray(laborData?.skill) ? JSON.parse(laborData.skill[0])  : typeof laborData?.skill === 'string'
+      ? JSON.parse(laborData.skill)
+      : [];
+  console.log('Role   ++++ &&%%%parsedSkillsData',parsedSkillsData)
   // const handleAllDaysToggle = () => {
   //   const newAllStatus = !formData.availability.All;
   //   setFormData(prev => ({
@@ -478,10 +578,12 @@ useEffect(() => {
     //         navigate('/');
     //     }
   // }
+
+  console.log("Thsi sieth laborData +++++{{{{{{{}}}}}}} :",formData) 
   
-  if (!currentUser) {
-    return null;
-  }
+  if (!currentUser && !user?._id) {
+  return null;
+}
 
   return (
     <>
@@ -549,7 +651,9 @@ useEffect(() => {
           </div>
         </div>
       )}
-      {openEditProfile && (
+      {theam === 'light' ? (
+        <>
+        {openEditProfile && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
             <div className="flex justify-between items-center mb-6">
@@ -724,15 +828,11 @@ useEffect(() => {
                   >
                     <option value="">Select Language</option>
                     <option value="English">English</option>
-                    <option value="Spanish">Spanish</option>
-                    <option value="French">French</option>
-                    <option value="German">German</option>
-                    <option value="Chinese">Chinese</option>
-                    <option value="Japanese">Japanese</option>
+                    <option value="Kannada">Kannada</option>
+                    <option value="Tamil">Tamil</option>
+                    <option value="Malayalam">Malayalam</option>
                     <option value="Hindi">Hindi</option>
                     <option value="Arabic">Arabic</option>
-                    <option value="Russian">Russian</option>
-                    <option value="Portuguese">Portuguese</option>
                     {/* Add more languages as needed */}
                   </select>
                   {error?.language && (
@@ -800,29 +900,7 @@ useEffect(() => {
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Skills (comma-separated)
-                </label>
-                <input
-                  type="text"
-                  name="skills"
-                  value={formData.skills.flat().join(', ')} // Flatten and convert array to string
-                  onChange={(e) => {
-                    const skillsArray = e.target.value
-                      .split(',')
-                      .map((skill) => skill.trim());
-                    setFormData((prev) => ({
-                      ...prev,
-                      skills: [skillsArray], // Wrap the updated skills in an array
-                    }));
-                  }}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                />
-                {error?.skills && (
-                  <p className="text-red-500 text-sm mt-1">{error.skills}</p>
-                )}
-              </div>
+             
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Responsibilities
@@ -836,6 +914,44 @@ useEffect(() => {
                 />
               </div>
             </div>
+
+             <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Skills</h3>
+                
+                {/* Skills List */}
+                <div className="space-y-2">
+              {Array.isArray(formData.skills) && formData.skills.map((skill, index) => (
+                <div 
+                  key={index} 
+                  className="flex justify-between items-center bg-gray-100 p-2 rounded-md"
+                >
+                  <span>{skill}</span>
+                  <button 
+                    type="button"
+                    onClick={() => handleRemoveSkill(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+                {/* Add Skill Input */}
+                <input
+                  type="text"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyDown={handleAddSkill}
+                  placeholder="Add a new skill (press Enter to add)"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                />
+
+                {/* Error Display */}
+                {error?.skills && (
+                  <p className="text-red-500 text-sm">{error.skills}</p>
+                )}
+              </div>
 
             {/* Change Password */}
             <div className="mt-6 flex justify-center">
@@ -865,6 +981,342 @@ useEffect(() => {
           </div>
         </div>
       )}
+        
+        </>
+      ) : (
+          <>
+          {openEditProfile && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-[#74c5c6] rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                <Edit className="mr-2 text-[#5560A8]" /> Edit Profile
+              </h2>
+              <button
+                onClick={() => setOpenEditProfile(false)}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Personal Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
+                  Personal Information
+                </h3>
+                <div className="flex space-x-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      <User className="mr-2 text-[#5560A8]" /> First Name
+                    </label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      className="w-full px-3 bg-[#0e5962] py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    />
+                    {error?.firstName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {error.firstName}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      <User className="mr-2 text-[#5560A8]" /> Last Name
+                    </label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    />
+                    {error?.lastName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {error.lastName}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Mail className="mr-2 text-[#5560A8]" /> Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={laborData?.email}
+                    readOnly
+                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none cursor-default focus:ring-2 focus:ring-[#5560A8]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Phone className="mr-2 text-[#5560A8]" /> Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  />
+                  {error?.phone && (
+                    <p className="text-red-500 text-sm mt-1">{error.phone}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <span className="mr-2 text-[#5560A8]">Start Time</span>
+                  </label>
+                  <input
+                    type="time"
+                    name="startTime"
+                    value={formData.startTime}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  />
+                  {error?.startTime && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {error.startTime}
+                    </p>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <span className="mr-2 text-[#5560A8]">End Time</span>
+                  </label>
+                  <input
+                    type="time"
+                    name="endTime"
+                    value={formData.endTime}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  />
+                  {error?.endTime && (
+                    <p className="text-red-500 text-sm mt-1">{error.endTime}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Profile Image and Additional Details */}
+              <div className="space-y-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-32 h-32 bg-gray-200 rounded-full mb-4 flex items-center justify-center">
+                    <img
+                      src={
+                        formData.image
+                          ? URL.createObjectURL(formData.image)
+                          : laborData?.profilePicture || ""
+                      }
+                      alt="Profile"
+                      className="rounded-full bg-[#0e5962] w-full h-full object-cover"
+                    />
+                  </div>
+                  <label
+                    htmlFor="imageUpload"
+                    className="bg-[#5560A8] text-white px-4 py-2 rounded-full text-sm cursor-pointer"
+                  >
+                    Upload Profile Picture
+                  </label>
+                  <input
+                    id="imageUpload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <MapPin className="mr-2 text-[#5560A8]" /> Address
+                  </label>
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    readOnly
+                    className="w-full px-3 py-2 bg-[#0e5962] cursor-not-allowed rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    rows="3"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                    <Globe className="mr-2 text-[#5560A8]" /> Language
+                  </label>
+                  <select
+                    name="language"
+                    value={formData.language}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  >
+                    <option value="">Select Language</option>
+                    <option value="English">English</option>
+                    <option value="Kannada">Kannada</option>
+                    <option value="Tamil">Tamil</option>
+                    <option value="Malayalam">Malayalam</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Arabic">Arabic</option>
+                    {/* Add more languages as needed */}
+                  </select>
+                  {error?.language && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {error.language}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {  /* Availability */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 flex items-center">
+                <Calendar className="mr-2 text-[#5560A8]" /> Availability
+              </h3>
+              <div className="grid grid-cols-3 gap-4 mt-4 text-black">
+                {[
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday",
+                ].map((day) => (
+                  <label key={day} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.availability[day]}
+                      onChange={() => handleAvailabilityChange(day)}
+                      className="form-checkbox text-[#5560A8]"
+                    />
+                    <span>{day}</span>
+                  </label>
+                ))}
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.availability.All}
+                    onChange={handleAllDaysChange}
+                    className="form-checkbox text-[#5560A8]"
+                  />
+                  <span>All Days</span>
+                </label>
+                {error?.availability && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {error.availability}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Additional Details */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Categories
+                </label>
+                <input
+                  type="text"
+                  name="categories"
+                  value={laborData?.categories}
+                  readOnly
+                  className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                />
+              </div>
+             
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Responsibilities
+                </label>
+                <input
+                  type="text"
+                  name="responsibilities"
+                  value={formData.responsibilities}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                />
+              </div>
+            </div>
+
+             <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-gray-700">Skills</h3>
+                
+                {/* Skills List */}
+                <div className="space-y-2">
+              {Array.isArray(formData.skills) && formData.skills.map((skill, index) => (
+                <div 
+                  key={index} 
+                  className="flex justify-between items-center bg-[#0e5962] p-2 rounded-md"
+                >
+                  <span>{skill}</span>
+                  <button 
+                    type="button"
+                    onClick={() => handleRemoveSkill(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+                {/* Add Skill Input */}
+                <input
+                  type="text"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyDown={handleAddSkill}
+                  placeholder="Add a new skill (press Enter to add)"
+                  className="w-full px-3  py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                />
+
+                {/* Error Display */}
+                {error?.skills && (
+                  <p className="text-red-500 text-sm">{error.skills}</p>
+                )}
+              </div>
+
+            {/* Change Password */}
+            <div className="mt-6 flex justify-center">
+              <button
+                className="flex items-center bg-[#5560A8] text-white px-4 py-2 rounded-full"
+                onClick={() => setOpenChangePasswod(true)}
+              >
+                <Lock className="mr-2" /> Change Password
+              </button>
+            </div>
+
+            {/* Save Changes */}
+            <div className="mt-6 flex justify-center space-x-4">
+              <button
+                onClick={() => setOpenEditProfile(false)}
+                className="px-6 py-2 border  bg-[#99362d] border-gray-300 rounded-full  "
+              >
+                Cancel
+              </button>
+              <button
+                className="px-6 py-2 bg-[#5560A8] text-white rounded-full hover:bg-opacity-90"
+                onClick={handleSubmitEditProfile}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+          
+          </>
+      )}
+      
       <div className="w-full relative">
         {/* Background Image */}
         <div className="relative">
@@ -991,7 +1443,8 @@ useEffect(() => {
                     <span className="text-lg font-semibold">5.0</span>
                     <span className="">(23 reviews)</span>
                   </div>
-
+                  {Laborer && Object.keys(Laborer).length > 0 && (
+                    <>   
                   {/* Action Buttons */}
                   <div className="flex flex-col gap-4">
                     <button
@@ -1006,6 +1459,8 @@ useEffect(() => {
                       My Wallet
                     </button>
                   </div>
+                    </>
+                  )}    
                 </div>
               </div>
 
@@ -1015,7 +1470,7 @@ useEffect(() => {
                   <div className="space-y-4">
                     {/* Name Section */}
                     <div className="text-center lg:text-left">
-                      <div className="font-semibold font-[Rockwell] lg:ml-14  text-[33px] md:text-[43px]">
+                      <div className="font-semibold font-[Rockwell] lg:ml-0  text-[33px] md:text-[43px]">
                         {laborData?.firstName} {laborData?.lastName}
                       </div>
                       {/* <div className="font-semibold font-[Rockwell] lg:ml-20  text-[23px]  md:text-[23px]">
@@ -1043,20 +1498,19 @@ useEffect(() => {
                         <span className="text-gray-800">
                           {laborData?.address}
                         </span>
-                      </div>
+                      </div>    
                       <div className="flex flex-wrap items-center gap-4 md:gap-6">
                         {/* Availability */}
                         <div className="flex flex-wrap items-center gap-4 md:gap-6">
-                          <div className="flex items-center gap-2 w-full md:w-auto">
-                            <CalendarDaysIcon className="w-5 h-5 text-gray-600" />
-                            <span className="text-gray-800">
-                              {laborData?.availability &&
-                              Array.isArray(laborData.availability)
-                                ? laborData.availability.join(", ")
-                                : "No availability"}
-                            </span>
-                          </div>
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                          <CalendarDaysIcon className="w-5 h-5 text-gray-600" />
+                          <span className="text-gray-800">
+                            {laborData?.availability 
+                            ? laborData.availability.join(", ")
+                            : "No availability"}
+                          </span>
                         </div>
+                      </div>
 
                         {/* Start Time */}
                         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -1095,11 +1549,8 @@ useEffect(() => {
                   <div className="space-y-4">
                     {/* Name Section */}
                     <div className="text-center lg:text-left">
-                      <div className="font-semibold font-[Rockwell] lg:ml-16  text-[33px] md:text-[43px]">
-                        John
-                      </div>
-                      <div className="font-semibold font-[Rockwell] lg:ml-20  text-[23px]  md:text-[23px]">
-                        Doe
+                      <div className="font-semibold font-[Rockwell] lg:ml-0  text-[33px] md:text-[43px]">
+                         {laborData?.firstName} {laborData?.lastName}
                       </div>
                     </div>
 
@@ -1114,19 +1565,48 @@ useEffect(() => {
                       </div>
                       <div className="flex items-center gap-3">
                         <Mail className="w-5 h-5 " />
-                        <span className="">johndoe@example.com</span>
+                        <span className=""> {laborData?.email}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <MapPin className="w-5 h-5" />
-                        <span className="">India</span>
+                        <MapPin className="w-5 h-5 " />
+                        <span className="">
+                          {laborData?.address}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 " />
-                        <span className="">Full Day</span>
+                       <div className="flex flex-wrap items-center gap-4 md:gap-6">
+                        {/* Availability */}
+                        <div className="flex flex-wrap items-center gap-4 md:gap-6">
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                          <CalendarDaysIcon className="w-5 h-5" />
+                          <span className="">
+                            {laborData?.availability 
+                            ? laborData.availability.join(", ")
+                            : "No availability"}
+                          </span>
+                        </div>
+                      </div>
+
+                        {/* Start Time */}
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                          <Clock className="w-5 h-5 text-blue-600" />
+                          <span className="">
+                            Start: {laborData?.startTime || "N/A"}
+                          </span>
+                        </div>
+
+                        {/* End Time */}
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                          <Clock className="w-5 h-5 text-red-600" />
+                          <span className=" ">
+                            End: {laborData?.endTime || "N/A"}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <Globe className="w-5 h-5 " />
-                        <span className="">Malayalam</span>
+                        <span className="">
+                          {laborData?.language}
+                        </span>
                       </div>
                     </div>
 
@@ -1149,23 +1629,18 @@ useEffect(() => {
                       Expert {laborData?.categories[0]}
                     </h2>
 
-                    <div>
-                      <h4 className="font-semibold mb-3">Expertise:</h4>
-                      <ul className="list-disc pl-5 font-[roboto] space-y-2 marker:text-[#21A391]">
-                        <li className="md:text-base lg:text-lg font-medium">
-                          Residential Electrical Systems
+                   <div>
+                    <h4 className="font-semibold mb-3">Expertise:</h4>
+                    <ul className="list-disc pl-5 font-[roboto] space-y-2 marker:text-[#21A391]">
+                      {parsedSkillsData.map((skill, index) => (
+                        <li key={index} className="md:text-base lg:text-lg font-medium">
+                          {skill}
                         </li>
-                        <li className="md:text-base lg:text-lg font-medium">
-                          Commercial Electrical Installations
-                        </li>
-                        <li className="md:text-base lg:text-lg font-medium">
-                          Wiring and Circuit Design
-                        </li>
-                        <li className="md:text-base lg:text-lg font-medium">
-                          Lighting Installation and Repair
-                        </li>
-                      </ul>
+                      ))}
+                    </ul>
                     </div>
+                    
+                    {(!Laborer || Object.keys(Laborer).length === 0) && (
 
                     <div className="flex justify-center pt-4">
                       <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20">
@@ -1177,16 +1652,20 @@ useEffect(() => {
                         </div>
                       </button>
                     </div>
+                    )}
+
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:space-x-9 space-y-4 sm:space-y-0 lg:mt-[195px] md:mt-[34px] sm:mt-[34px] mt-[45px]">
-                  <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
-                    Total Works and Earnings
-                  </button>
-                  <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
-                    View Current Status
-                  </button>
-                </div>
+                {Laborer && Object.keys(Laborer).length > 0 && (
+                  <div className="flex flex-col sm:flex-row sm:space-x-9 space-y-4 sm:space-y-0 lg:mt-[195px] md:mt-[34px] sm:mt-[34px] mt-[45px]">
+                    <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
+                      Total Works and Earnings
+                    </button>
+                    <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
+                      View Current Status
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="lg:w-[400px] lg:ml-36 sm:w-full">
@@ -1213,7 +1692,8 @@ useEffect(() => {
                         </li>
                       </ul>
                     </div>
-
+                      {(!Laborer || Object.keys(Laborer).length === 0) && (
+                        
                     <div className="flex justify-center pt-4">
                       <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20">
                         <span className="md:text-base lg:text-lg font-[Roboto]">
@@ -1224,8 +1704,12 @@ useEffect(() => {
                         </div>
                       </button>
                     </div>
+                      )}
+                        
                   </div>
                 </div>
+                {Laborer && Object.keys(Laborer).length > 0 && (
+                  
                 <div className="flex flex-col sm:flex-row sm:space-x-9 space-y-4 sm:space-y-0 lg:mt-[195px] md:mt-[34px] sm:mt-[34px] mt-[45px]">
                   <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
                     Total Works and Earnings
@@ -1234,6 +1718,7 @@ useEffect(() => {
                     View Current Status
                   </button>
                 </div>
+                )}
               </div>
             )}
           </div>
@@ -1244,9 +1729,58 @@ useEffect(() => {
       <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12">
         <div className="sm:max-w-3xl md:max-w-[1200px] mx-auto">
           {/* About Me Header */}
-          <h2 className="font-sans text-xl sm:text-2xl md:text-3xl lg:text-[19px] font-semibold  mb-6">
+           <h2 className="font-sans text-xl sm:text-2xl md:text-3xl lg:text-[19px] font-semibold  mb-6">
             About Me
           </h2>
+         
+
+          
+
+          {Laborer && Object.keys(Laborer).length > 0 ? (
+            <>
+            
+            </>
+          ) : (
+              <div className="space-y-4 lg:space-y-0">
+                <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
+                  I am {laborData?.aboutMe?.name}, a highly skilled and experienced
+                  professional with over {laborData?.aboutMe?.experience} of
+                  experience in the field.
+                </p>
+                <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
+                  {laborData?.aboutMe?.description}
+                </p>
+              </div> 
+          )}
+{/*           
+          {laborData?.aboutMe ? (
+            <>
+              <div className="space-y-4 lg:space-y-0">
+                <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
+                  I am {laborData.aboutMe.name}, a highly skilled and experienced
+                  professional with over {laborData.aboutMe.experience} of
+                  experience in the field.
+                </p>
+                <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
+                  {laborData.aboutMe.description}
+                </p>
+              </div>
+            </>
+          ) : (
+              <div className="text-center">
+              {Laborer && Object.keys(Laborer).length > 0 && (
+            
+              <button
+                onClick={() => setOpenAbout(true)}
+                className="bg-[#21A391] text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
+              >
+                Add About You
+              </button>
+               )}
+            </div>
+          )} */}
+          
+
 
           {submittedData ? (
             <>
@@ -1263,12 +1797,15 @@ useEffect(() => {
             </>
           ) : (
             <div className="text-center">
+              {Laborer && Object.keys(Laborer).length > 0 && (
+            
               <button
                 onClick={() => setOpenAbout(true)}
                 className="bg-[#21A391] text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
               >
                 Add About You
               </button>
+               )}
             </div>
           )}
 

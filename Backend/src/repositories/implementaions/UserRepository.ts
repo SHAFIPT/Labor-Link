@@ -123,11 +123,11 @@ export default class UserRepository implements IUserRepository{
         
             
             return resoponce
-
+    
         } catch (error) {
             console.error('Error in Logout :', error);
             throw new ApiError(500, 'Failed to logout');
-        }
+        }     
     }
 
     async isBlockeduser(userId: string): Promise<IUser | null> {

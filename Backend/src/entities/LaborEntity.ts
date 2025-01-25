@@ -1,5 +1,19 @@
 import { Schema, Document } from 'mongoose';
 
+export interface IReview {
+  reviewerName: string;
+  reviewText: string;
+  rating: number;  // Rating score (e.g., 1 to 5)
+  createdAt: Date;
+}
+
+interface IAboutMe {
+  name?: string;
+  experience?: string;
+  description?: string;
+}
+
+
 export interface ILaborer extends Document {
     _id?: string;
   firstName: string;
@@ -40,10 +54,12 @@ export interface ILaborer extends Document {
     status: string;
     lastUpdated: Date; 
   }[];
-  rating: number;
+  rating: number;  // Average rating
+  reviews: IReview[];  // List of reviews
   createdAt: Date;
   walletBalance: number;
   updatedAt: Date;
+  aboutMe: IAboutMe;
   isActive: boolean;
   isApproved: boolean;
   lastLogin: Date | null;

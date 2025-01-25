@@ -358,7 +358,7 @@ export const validateCategory = (category: string) => {
 };
 
 // Validate Skill
-export const validateSkill = (skills: string[]) => {
+export const validateSkill = (skills: string | string[]) => {
   if (!skills || skills.length === 0) {
     return "At least one skill is required";
   }

@@ -148,9 +148,9 @@ export class AuthLaborController {
             console.log('this is availability :', availability)
             console.log('this is email :', email)
 
-            const parsedAvailability = JSON.parse(availability[0]);
+            const parsedAvailability = JSON.parse(field.availability[0]);
 
-            console.log('this is parsedAvailability :', parsedAvailability)
+            console.log('this is parsedAvailability :  ++++++======&&&&&^^^#####3333', parsedAvailability)
 
             const response = await this.laborAuthservice.registerProfile({
                 profilePicture: imageUrl,
@@ -158,7 +158,7 @@ export class AuthLaborController {
                 skill : skill,
                 startTime : startTime[0],
                 endTime : endTime[0],
-                availability,
+                availability: parsedAvailability,
                 email : email[0]
             })
             console.log('resoponse from backend :', response)

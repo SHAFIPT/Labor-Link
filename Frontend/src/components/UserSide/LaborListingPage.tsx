@@ -4,18 +4,55 @@ import char from '../../assets/elecricianSmiling.jpg'
 import plumber from '../../assets/plumberSmiling.jpg'
 import carpenter from '../../assets/carpentersmiling.jpg'
 import painter from '../../assets/Paint.jpg'
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store/store";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { fetchLaborsByLocation } from "../../services/LaborServices";
+import { setLoading } from "../../redux/slice/userSlice";
 const LaborListingPage = () => {
     const theme = useSelector((state: RootState) => state.theme.mode)
+  const locationOfUser = useSelector((state: RootState) => state.user.locationOfUser)
+  const loading = useSelector((state: RootState) => state.user.loading)
+  
+  // console.log("Thsi si the locationOfUser :",locationOfUser)
     const [showFilters, setShowFilters] = useState(false);
-    const navigate = useNavigate()
+  const [laborsList, setLaborsList] = useState([])
+
+  console.log("Thsi sis the laborsList :  ++++++ ====-- --- -- ",laborsList)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
     const toggleFilters = () => {
         setShowFilters((prev) => !prev);
-    };
+  };
+  
+  const fetchLabors = useCallback(async () => {
+  dispatch(setLoading(true));
+  try {
+    const response = await fetchLaborsByLocation(locationOfUser);
+    console.log("This is the response: ", response);
+    if (response.status === 200) {
+      dispatch(setLoading(false));
+      setLaborsList(response.data.laborers)
+      toast.success('Fetched labors successfully..');
+    } else {
+      toast.error("Error in labor fetching");
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Error in labor fetching");
+  } finally {
+    dispatch(setLoading(false));
+  }
+}, [locationOfUser, dispatch]); // Now fetchLabors doesn't need to be added to the effect dependencies
+
+useEffect(() => {
+  if (locationOfUser?.latitude && locationOfUser?.longitude) {
+    fetchLabors();
+  }
+}, [locationOfUser, fetchLabors]);
 
 
     const users = [
@@ -72,9 +109,9 @@ const LaborListingPage = () => {
     ];
     
 
-    const handleNavigeProfilePage = () => {
-        navigate('/labor/ProfilePage')
-    }
+    const handleNavigeProfilePage = (user) => {
+      navigate('/labor/ProfilePage', { state: user });
+    };
 
 
 
@@ -400,7 +437,7 @@ const LaborListingPage = () => {
               <div className="flex-1">
                 {theme === "light" ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
-                    {users.map((user) => (
+                    {laborsList.map((user) => (
                       <div
                         key={user.id}
                         className="p-6 rounded-lg shadow-lg flex flex-col h-full"
@@ -408,17 +445,17 @@ const LaborListingPage = () => {
                             
                         <div className="w-full  h-96 mb-4">
                           <img
-                            src={user.image}
-                            alt={`${user.name} profile`}
+                            src={user.profilePicture}
+                            alt={`${user.firstName} profile`}
                             className="w-full h-full object-cover rounded-lg"
                           />
                         </div>
 
                             
                         <div className="flex flex-col flex-1 space-y-2">
-                          <h2 className="text-xl font-semibold">{user.name}</h2>
+                          <h2 className="text-xl font-semibold">{user.firstName} {user.lastName} </h2>
                           <span className="text-lg text-gray-600">
-                            {user.role}
+                            {user.categories[0]}
                           </span>
                           <div className="flex items-center gap-1">
                             {[...Array(5)].map((_, i) => (
@@ -442,7 +479,7 @@ const LaborListingPage = () => {
 
                             
                         <div className="mt-4  self-end">
-                            <button className="bg-[#3ab3bc] w-[200px] h-[34px] text-white py-1.5 px-4 rounded-md hover:bg-[#2d919a] transition-colors text-sm" onClick={handleNavigeProfilePage}>
+                            <button className="bg-[#3ab3bc] w-[200px] h-[34px] text-white py-1.5 px-4 rounded-md hover:bg-[#2d919a] transition-colors text-sm" onClick={() => handleNavigeProfilePage(user)}>
                               View Profile
                             </button>
                         </div>
@@ -486,11 +523,11 @@ const LaborListingPage = () => {
                         </div>
 
                         <div className="mt-4 self-end">
-                          <Link to={"/labor/ProfilePage"}>
-                            <button className="bg-[#16a4c0f6] w-[200px] h-[34px] text-white py-1.5 px-4 rounded-md hover:bg-[#397c89f6] transition-colors text-sm" onClick={handleNavigeProfilePage}>
+                          {/* <Link to={"/labor/ProfilePage"}> */}
+                            <button className="bg-[#16a4c0f6] w-[200px] h-[34px] text-white py-1.5 px-4 rounded-md hover:bg-[#397c89f6] transition-colors text-sm" onClick={() => handleNavigeProfilePage(user)}>
                               View Profile
                             </button>
-                          </Link>
+                          {/* </Link> */}
                         </div>
                       </div>
                     ))}

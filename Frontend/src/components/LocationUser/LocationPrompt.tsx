@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useDispatch } from 'react-redux';
 import { setLocationOfUser } from '../../redux/slice/userSlice'
 import locationImage from '../../assets/locationImage2.jpg'
+import { useNavigate } from "react-router-dom";
 const LocationPrompt = ({ setShowLocationModal}) => {
     const [error, setError] = useState('');
-    const dispatch = useDispatch()
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const getUserLocation = () => {
     if (navigator.geolocation) {
@@ -14,6 +16,7 @@ const LocationPrompt = ({ setShowLocationModal}) => {
           dispatch(setLocationOfUser({ latitude, longitude }));
           setShowLocationModal(false); // Close the modal after location is granted
           setError(''); // Clear any previous error
+          navigate('/laborListing');
         },
         (err) => {
           setError('Unable to access location. Please enable location services.');

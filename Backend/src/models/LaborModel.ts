@@ -46,7 +46,6 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
     status: { type: String },
     lastUpdated: { type: Date, default: Date.now },
   }],
-  rating: { type: Number, required: false },
   role: { type: String, default: 'labor' },
   createdAt: { type: Date, default: Date.now },
   walletBalance: { type: Number },
@@ -76,9 +75,22 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
     default: 'aboutYou', // Default to 'aboutYou'
   },
   refreshToken: { type: [String], default: [] }, 
-  canReapply : {type : Boolean , default : false}
+  canReapply: { type: Boolean, default: false },
+  aboutMe: {
+    name: { type: String, required: false },
+    experience: { type: String, required: false },
+    description: { type: String, required: false },
+  },
+  rating: { type: Number, default: 0 },  // Average rating (e.g., 4.5)
+  reviews: [{
+    reviewerName: { type: String},  // Reviewer's name
+    reviewText: { type: String },   // Review text
+    rating: { type: Number},       // Rating score (e.g., 1-5)
+    createdAt: { type: Date, default: Date.now },   // Date of review
+  }],
 });
 
+LaborersSchema.index({ location: '2dsphere' });
 // LaborersSchema.index({ name: 'text', email: 'text' });
 
 const Labor = mongoose.model<ILaborer>('Labor', LaborersSchema);

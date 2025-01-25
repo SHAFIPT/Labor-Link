@@ -153,7 +153,65 @@ class laborSideController {
         console.error("Error updating profile:", error);
          next(error);
        }
-   }
+  }
+  
+  public fetchLaborsByLocation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { latitude, longitude } = req.body;
+
+      console.log("This is the latitude and logitude :",{latitude, longitude})
+
+       if (!latitude || !longitude) {
+          return res.status(400).json({ message: 'Latitude and Longitude are required.' });
+      }
+      
+        
+      const laborers = await this.laborService.fetchLabor({ latitude, longitude });
+
+      console.log("thsi si the laboresers :: ",laborers)
+      
+      return res.status(200).json({ laborers });
+
+       
+    } catch (error) {
+          console.error("Error fetch labors :", error);
+         next(error);
+    }
+  }
+  public abouteMe = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { userId, name, experience, description } = req.body;
+
+      console.log("Thie is body data :", {
+        userId,
+        name,
+        experience,
+        description
+      })
+
+
+      const AboutData = {
+        userId,
+        name, 
+        experience,
+        description
+      } 
+
+      console.log("Thsis ie the response of AboutDat" , AboutData)
+
+      const response = await this.laborService.aboutMe(AboutData)
+
+      console.log("This sie the reponse :",response)
+
+      return res.status(200).json({message : 'Abbout udpated successfully....'})
+      
+    } catch (error) {
+       console.error("Error about me:", error);
+         next(error);
+    }
+  }
 }
 
 export default laborSideController

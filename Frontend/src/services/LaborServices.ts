@@ -38,3 +38,27 @@ export const editPassword = async (PasswodData: { email: string; password: strin
     throw error;
     }
 }
+
+
+export const fetchLaborsByLocation = async (locationOfUser) => {
+  try {
+
+    const response = await api.post('/api/labor/labors/fetchLaborsByLocation',locationOfUser)
+    return response
+  } catch (error) {
+    console.error("Error in labor locaiong searching :", error);
+    throw error;
+  }
+}
+
+
+export const aboutMe = async (data) => {
+  try {
+    
+    const response = await api.post('/api/labor/labors/abouteMe',data)
+    return response
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}

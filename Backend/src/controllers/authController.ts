@@ -363,7 +363,7 @@ class AuthController {
         .clearCookie("UserRefreshToken")
         .json(
           new ApiResponse(
-            200,
+            200,    
             { message: "successfully cleared the token" },
             "logout success"
           )

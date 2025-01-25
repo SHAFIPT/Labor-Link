@@ -40,7 +40,6 @@ const LaborRegisterExperience = () => {
   const [certificateImages, setCertificateImages] = useState<File[]>([]);
   const [certificateText, setCertificateText] = useState<string[]>([]);
   const [showSecondCertificate, setShowSecondCertificate] = useState(false);
-  const [showLaborLocationModal , setShowLaborLocationModal] = useState(false)
   const [startDate, setStartDate] = useState<string>("");
   const [responsiblity, setResponsiblity] = useState<string>("");
   const [currentlyWorking, setCurrentlyWorking] = useState(false);
@@ -285,10 +284,7 @@ const LaborRegisterExperience = () => {
         localStorage.setItem("LaborAccessToken", accessToken);
 
         console.log("thisis seh exprence page data :", experienceData);
-        setShowLaborLocationModal(true)
-        if (showLaborLocationModal) {
           setSucess(true);
-        }
         
         dispatch(setLoading(false));
         toast.success("experience Page uploaded sucessfuly....!");

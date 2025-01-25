@@ -168,8 +168,8 @@ const LaborRegister = () => {
     }));
 
     // Re-trigger geocoding when address fields are updated
-    if (field === "street" || field === "city" || field === "state" || field === "postalCode" || field === "country") {
-      const fullAddress = `${address.street.trim()}, ${address.city.trim()}, ${address.state.trim()}, ${address.postalCode.trim()}, ${address.country.trim()}`;
+    if ( field === "city" || field === "state" || field === "postalCode" || field === "country") {
+      const fullAddress = `${address.city.trim()}, ${address.state.trim()}, ${address.postalCode.trim()}, ${address.country.trim()}`;
       console.log("This is the fullAddress ++++++++++++++++ :", fullAddress);
       
       // Call OpenCage geocoding API
