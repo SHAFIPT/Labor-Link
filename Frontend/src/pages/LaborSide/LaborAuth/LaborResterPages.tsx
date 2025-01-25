@@ -4,7 +4,7 @@ import LaborRegister from "../../../components/LaborSide/laborAuth/LaborRegister
 const LaborResterPages = () => {
   return (
       <div>
-      <HomeNavBar/>
+      {/* <HomeNavBar/> */}
       <LaborRegister/>
     </div>
   )

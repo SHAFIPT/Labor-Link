@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link,  useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import lightModeLogo from "../assets/laborLink light.jpg";
 import Handman from '../assets/Icons/Handiman.png'
@@ -22,6 +22,7 @@ import { toggleTheme } from "../redux/slice/themeSlice";
 import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading, setAccessToken } from '../redux/slice/userSlice'
 import { checkIsBlock, logout } from "../services/UserAuthServices";
 import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../redux/slice/laborSlice";
+import LocationPrompt from "./LocationUser/LocationPrompt";
 const HomeNavBar = () => {
   
   
@@ -32,8 +33,28 @@ const HomeNavBar = () => {
   const loading = useSelector((state: RootState) => state.user.loading)
   // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
+
+  // const [userLocation, setUserLocation] = useState(null);
+  const locationOfUser = useSelector((state: RootState) => state.user.locationOfUser);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
   useEffect(() => {
     
+    console.log("This is the locaiton fo the userLocation :",locationOfUser)
+  },[locationOfUser])
+
+   const handleLaborList = () => {
+    // Check if either latitude or longitude is null
+    if (locationOfUser.latitude === null || locationOfUser.longitude === null) {
+      setShowLocationModal(true); // Show location modal if location is not enabled
+    } else {
+      dispatch(setLoading(false)); // Set loading to false
+      navigate('/laborListing'); // Navigate to labor listing page if location is enabled
+    }
+};
+
+
+  useEffect(() => {
     console.log('isLaborAuthenticated :',isLaborAuthenticated)
     console.log('isUserAthenticated :',isUserAthenticated)
     console.log('laborer :',laborer)
@@ -42,6 +63,7 @@ const HomeNavBar = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate()// Get dispatch function
+  // const history = useHistory();
   const theme = useSelector((state: RootState) => state.theme.mode);
   const [isOpen, setIsOpen] = useState(false);// Get the current theme
 
@@ -148,14 +170,15 @@ useEffect(() => {
 }, [handleLogout]);
 
 
-  const handleLaborList = () => {
-    dispatch(setLoading(false))
-    navigate('/laborListing')
-  }
+  // const handleLaborList = () => {
+    
+  // }
   
 
   return (
     <div>
+      {showLocationModal &&  <LocationPrompt setShowLocationModal={setShowLocationModal} />}
+     
       {loading && <div className="loader"></div>}
       <div className="w-full flex justify-between ">
         <Link to={"/"}>
@@ -557,12 +580,13 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
               }`}
             >
               <nav className="flex flex-col items-center justify-center h-full space-y-6">
-                <a
-                  href="/browse-labors"
+                <button
+                  
                   className="text-white text-xl hover:text-gray-300 transition-colors "
+                  onClick={handleLaborList}
                 >
                   Browse all Labors
-                </a>
+                </button>
                 <button
                   onClick={() =>handleViewProfile}
                   className="text-white text-xl hover:text-gray-300 transition-colors"

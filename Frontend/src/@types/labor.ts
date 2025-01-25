@@ -5,7 +5,17 @@ export interface ILaborer {
   email: string;
   phoneNumber?: string;
   language: string;
-  address: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+  location: {
+    type: 'Point'; // GeoJSON type
+    coordinates: [number, number]; // [longitude, latitude]
+  };
   password: string;
   role: 'labor';
   image: string;
@@ -37,7 +47,7 @@ export interface ILaborer {
   isApproved: boolean;
   profileCompletion: boolean;
   currentStage: 'aboutYou' | 'profile' | 'experience';
-  skill: string; // Skill or expertise of the laborer
+  skills: string[]; // Skill or expertise of the laborer
   startTime: string; // Start time (could be a timestamp or ISO string)
   endTime: string; // End time (could be a timestamp or ISO string)
   availability: string[]; // Array of availability slots or statuses

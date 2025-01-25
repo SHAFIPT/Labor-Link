@@ -11,16 +11,18 @@ import {
   PenSquare,
   Calendar,
 } from "lucide-react";
+import '../Auth/LoadingBody.css'
 import { Link } from "react-router-dom";
 import char from "../../assets/happy-female-electrician.avif";
 import { useEffect, useState } from "react";
 import { editPassword, updateUser, userFetch } from "../../services/UserSurvice";
 import { editProfileValidate, validatePassword } from "../../utils/userRegisterValidators";
-import { setError } from "../../redux/slice/userSlice";
+import { setError ,setLoading } from "../../redux/slice/userSlice";
 import { toast } from "react-toastify";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email)
+  const loading  = useSelector((state: RootState) => state.user.loading)
   const dispatch = useDispatch()
   console.log('Thsi siw eht email :',email)
   const [openEditProfile, setOpenEditProfile] = useState(false)
@@ -83,7 +85,7 @@ const UserProfile = () => {
   };
 
   const handleSave = async () => {
-    
+    dispatch(setLoading(true))
      const profileData = {
       firstName: formData?.firstName, // Replace with your state variables
       lastName: formData?.lastName,  // Replace with your state variables
@@ -91,7 +93,8 @@ const UserProfile = () => {
 
     const validationErrors = await editProfileValidate(profileData);
     
-     if (validationErrors) {
+    if (validationErrors) {
+        dispatch(setLoading(false))
     // If there are validation errors, dispatch them to the Redux store
       dispatch(setError(validationErrors));
       return; // Stop further execution
@@ -99,6 +102,7 @@ const UserProfile = () => {
   
     try {
       dispatch(setError({}))
+       dispatch(setLoading(true))
      const formDataObj = new FormData();
       formDataObj.append("firstName", formData.firstName);
       formDataObj.append("lastName", formData.lastName);
@@ -116,24 +120,30 @@ const UserProfile = () => {
         setUserData(response.data.updatedUser);
         toast.success("Profile updated successfully!");
         setOpenEditProfile(false);
+         dispatch(setLoading(false))
       }
       
     } catch (error) {
       console.error("Error updating profile:", error);
     toast.error("An error occurred. Please try again.");
+    } finally {
+       dispatch(setLoading(false))
     }
 
   }
 
   const handleConfirm = async () => {
+     dispatch(setLoading(true))
     const PasswordErrror = validatePassword(password);
 
     if (PasswordErrror) {
+       dispatch(setLoading(false))
       dispatch(setError(PasswordErrror));
       return; // Stop further execution
     }
 
     if (password !== confirmPassword) {
+       dispatch(setLoading(false))
       dispatch(setError({ password: "Passwords do not match" }));
       return toast.error("Passwords do not match");
     }
@@ -150,18 +160,23 @@ const UserProfile = () => {
 
       if (response.status === 200) {
         setOpenChangePasswod(false)
+         dispatch(setLoading(false))
         toast.success('Password updated successfully..')
       } else {
         toast.error('errro in passord update...>!')
+         dispatch(setLoading(false))
       }
     } catch (error) {
       console.error("Error Password change:", error);
       toast.error("An error occurred. Please try again.");
+    } finally {
+       dispatch(setLoading(false))
     }
   };
 
   return (
     <>
+      {loading && <div className="loader"></div>}
       {openChangePassword && (
          <div
               className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 `}

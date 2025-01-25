@@ -40,12 +40,15 @@ const LaborRegisterExperience = () => {
   const [certificateImages, setCertificateImages] = useState<File[]>([]);
   const [certificateText, setCertificateText] = useState<string[]>([]);
   const [showSecondCertificate, setShowSecondCertificate] = useState(false);
+  const [showLaborLocationModal , setShowLaborLocationModal] = useState(false)
   const [startDate, setStartDate] = useState<string>("");
   const [responsiblity, setResponsiblity] = useState<string>("");
   const [currentlyWorking, setCurrentlyWorking] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [idType, setIdType] = useState<string>("");
   const [sucess, setSucess] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const unsavedChanges = useSelector(
     (state: RootState) => state.labor.unsavedChanges
   );
@@ -53,6 +56,13 @@ const LaborRegisterExperience = () => {
   // const navigateBack = useSelector((state: RootState) => state.labor.navigateBack)
   const email = useSelector((state: RootState) => state.labor.formData.email);
   const formData = useSelector((state: RootState) => state.labor.formData);
+  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
+
+  useEffect(() => {
+    if (isLaborAuthenticated) {
+      navigate('/labor/laborDashBoard')
+    }
+  },[isLaborAuthenticated , navigate])
 
 
   useEffect(() => {
@@ -67,8 +77,7 @@ const LaborRegisterExperience = () => {
     idProof?: string;
   } = useSelector((state: RootState) => state.labor.error);
 
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+
 
   //  useEffect(() => {
   //   if (formData) {  // Only set data if formData exists
@@ -269,14 +278,17 @@ const LaborRegisterExperience = () => {
           role: "labor",
         };
 
-        const { accessToken } = response.data.data;
+        const { accessToken , } = response.data.data;
 
         console.log("thisis seh response page data :", response);
         // Store access token in localStorage
         localStorage.setItem("LaborAccessToken", accessToken);
 
         console.log("thisis seh exprence page data :", experienceData);
-        setSucess(true);
+        setShowLaborLocationModal(true)
+        if (showLaborLocationModal) {
+          setSucess(true);
+        }
         
         dispatch(setLoading(false));
         toast.success("experience Page uploaded sucessfuly....!");
@@ -321,7 +333,7 @@ const LaborRegisterExperience = () => {
     setTimeout(() => {   
       dispatch(setIsLaborAuthenticated(true));
       dispatch(setFormData(experienceData));
-  
+      dispatch(setError({}))
       toast.success("his every one ..");
       navigate('/labor/laborDashBoard')
     },200)

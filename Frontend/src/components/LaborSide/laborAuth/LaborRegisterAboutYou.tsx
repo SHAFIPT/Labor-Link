@@ -3,14 +3,18 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import {
   validateFirstName,
-  validateAddress,
   validateDateOfBirth,
   validateEmail,
   validateGender,
   validateLanguage,
   validateLastName,
   validatePassword,
-  validatePhoneNumber
+  validatePhoneNumber,
+  validateStreet,
+  validateCity,
+  validateState,
+  validatePostalCode,
+  validateCountry
 } from "../../../utils/laborRegisterValidators"
 import { setError , setLoading ,setFormData , setUnsavedChanges} from '../../../redux/slice/laborSlice'
 import { useDispatch, useSelector } from "react-redux"
@@ -18,6 +22,7 @@ import { RootState } from "../../../redux/store/store"
 import '../../Auth/LoadingBody.css'
 import { toast } from 'react-toastify';
 import { registerAboutYou } from "../../../services/LaborAuthServices"
+import { ILaborer } from "../../../@types/labor"
 
 const LaborRegister = () => {
 
@@ -26,7 +31,15 @@ const LaborRegister = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
-  const [address, setAddress] = useState('')
+  const [address, setAddress] = useState({
+    street: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: '',
+    longitude: 0, // Add longitude
+    latitude: 0,  // Add latitude
+  });
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [gender, setGender] = useState('')
   const [language, setLanguage] = useState('')
@@ -35,7 +48,7 @@ const LaborRegister = () => {
   const formData = useSelector((state: RootState) => state.labor.formData)
   const unsavedChanges = useSelector((state: RootState) => state.labor.unsavedChanges)
   // console.log('this is loading :',loading)
-      //  console.log('Thsi is previous formdat : ',formData)
+       console.log('Thsi is showErrors showErrors : ',showErrors)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const error: {
@@ -44,13 +57,31 @@ const LaborRegister = () => {
     email?: string;
     password?: string;
     phoneNumber?: string;
-    address?: string;
+     address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      postalCode?: string;
+      country?: string;
+    };
     dateOfBirth?: string;
     gender?: string;
     language?: string;
   } = useSelector((state: RootState) => state.labor.error);
 
+
+    const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
+  
+    useEffect(() => {
+      if (isLaborAuthenticated) {
+        navigate('/labor/laborDashBoard')
+      }
+    },[isLaborAuthenticated , navigate])
+
+
+
   console.log('this is Abut page redex fomrdada' , formData)
+  console.log('this is Abut error error error &&&&&&&' , error)
 
 // console.log('thsi is phoneNumber',formData.phoneNumber)
   useEffect(() => {
@@ -60,7 +91,15 @@ const LaborRegister = () => {
     setFirstName(formData.firstName);
     setLastName(formData.lastName);
     setPhoneNumber(formData.phoneNumber || '+91-')     
-    setAddress(formData.address);
+    setAddress({
+      street: formData.address?.street || '',
+      city: formData.address?.city || '',
+      state: formData.address?.state || '',
+      postalCode: formData.address?.postalCode || '',
+      country: formData.address?.country || '',
+      longitude: formData.location?.coordinates[0] || 0,
+      latitude: formData.location?.coordinates[1] || 0
+    });
     setEmail(formData.email);
     setPassword(formData.password);
     setDateOfBirth(formData.dateOfBirth);
@@ -103,8 +142,79 @@ const LaborRegister = () => {
       }
 
       dispatch(setUnsavedChanges(true)) // Mark the form as dirty
-    };
+  };
 
+      useEffect(() => {
+    setAddress({
+      street: formData.address?.street || '',
+      city: formData.address?.city || '',
+      state: formData.address?.state || '',
+      postalCode: formData.address?.postalCode || '',
+      country: formData.address?.country || '',
+      longitude: formData.location?.coordinates[0] || 0, // Add longitude from location
+      latitude: formData.location?.coordinates[1] || 0,  // Add latitude from location
+    });
+  }, [formData]);
+  
+     const handleAddressChange = (field: keyof typeof address) => async (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const value = event.target.value;
+
+    // Update address state
+    setAddress((prevAddress) => ({
+      ...prevAddress,
+      [field]: value,
+    }));
+
+    // Re-trigger geocoding when address fields are updated
+    if (field === "street" || field === "city" || field === "state" || field === "postalCode" || field === "country") {
+      const fullAddress = `${address.street.trim()}, ${address.city.trim()}, ${address.state.trim()}, ${address.postalCode.trim()}, ${address.country.trim()}`;
+      console.log("This is the fullAddress ++++++++++++++++ :", fullAddress);
+      
+      // Call OpenCage geocoding API
+      const coordinates = await geocodeAddress(fullAddress);
+      if (coordinates) {
+        console.log("Geocoded Coordinates:   +++++ ------- ++++++++", coordinates);
+        setAddress((prevAddress) => ({
+          ...prevAddress,
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+        }));
+      }
+    }
+};
+  
+
+    const geocodeAddress = async (addressString: string) => {
+  // Clean the address string to remove extra spaces
+      const cleanedAddress = addressString
+        .replace(/\s+/g, ' ')
+        .replace(/,\s*-\s*,/g, ',')
+        .trim();
+
+      const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(cleanedAddress)}&key=60bfe0788a374f8b935bde6458180da9`; // Use your OpenCage API key here
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Check if we have results
+        if (data.results.length > 0) {
+          const { lat, lng } = data.results[0].geometry;
+          return {
+            latitude: parseFloat(lat),
+            longitude: parseFloat(lng),
+          };
+        } else {
+          console.warn(`Geocoding failed for address: ${cleanedAddress}`);
+          return null;
+        }
+      } catch (error) {
+        console.error("Geocoding error:", error);
+        return null;
+      }
+};
   
   const handleOnsubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -118,7 +228,25 @@ const LaborRegister = () => {
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password);
     const phoneNumberError = validatePhoneNumber(phoneNumber);
-    const addressError = validateAddress(address);
+
+
+      // Validate address fields individually
+    const streetError = validateStreet(address.street);
+    const cityError = validateCity(address.city);
+    const stateError = validateState(address.state);
+    const postalCodeError = validatePostalCode(address.postalCode);
+    const countryError = validateCountry(address.country);
+
+    const addressError = {
+    street: streetError,
+    city: cityError,
+    state: stateError,
+    postalCode: postalCodeError,
+    country: countryError,
+  };
+
+
+
     const dateOfBirthError = validateDateOfBirth(dateOfBirth);
     const genderError = validateGender(gender);
     const languageError = validateLanguage(language);
@@ -134,16 +262,18 @@ const LaborRegister = () => {
       gender: genderError,
       language: languageError,
     };
+
+    console.log("Thsi is the from errror:",formDataError)
     
-    // console.log(firstNameError)
-    // console.log(lastNameError)
-    // console.log(emailError)
-    // console.log(passwordError)
-    // console.log(phoneNumberError)
-    // console.log(addressError)
-    // console.log(dateOfBirthError)
-    // console.log(genderError)
-    // console.log(languageError)
+    console.log(firstNameError)
+    console.log(lastNameError)
+    console.log(emailError)
+    console.log(passwordError)
+    console.log(phoneNumberError)
+    console.log('This si the address Errorr +++======',addressError)
+    console.log(dateOfBirthError)
+    console.log(genderError)
+    console.log(languageError)
 
     
     if (
@@ -152,7 +282,7 @@ const LaborRegister = () => {
       emailError ||
       passwordError ||
       phoneNumberError ||
-      addressError ||
+      Object.values(addressError).some((error) => error) ||
       dateOfBirthError ||
       genderError ||
       languageError
@@ -160,12 +290,13 @@ const LaborRegister = () => {
       setTimeout(() => {
         dispatch(setLoading(false));
         dispatch(setError(formDataError));
+        console.log("Thei sseie formDatate errorr ====++++++======",formDataError)
         toast.error("Please correct the highlighted errors.");
       }, 1000);
       return;
     } else {
 
-      const dataTOStore = {
+      const dataTOStore : Partial<ILaborer>  = {
         ...formData,
         firstName,
         lastName,
@@ -173,6 +304,10 @@ const LaborRegister = () => {
         password,
         phoneNumber,
         address,
+        location: {
+          type: 'Point' , // Use 'as const' to match the literal type
+          coordinates: [address.longitude, address.latitude]
+        },
         dateOfBirth,
         gender,
         language,
@@ -180,14 +315,15 @@ const LaborRegister = () => {
 
       try {
 
-        console.log('this is data is this dfdfdfdfd :', dataTOStore)
+        console.log('this is data is this dfdfdfdfd :  ++++++____++++++)))))+++++', dataTOStore)
       
         const Response = await registerAboutYou(dataTOStore)
 
-        // console.log('This si the repsonse in backend :',Response)
+        console.log('This si the repsonse in backend :',Response)
 
         if (Response.status === 200) {
           toast.success('About page completed ')
+          dispatch(setError({}))
           dispatch(setFormData(dataTOStore))
           dispatch(setLoading(false))
           navigate('/labor/Profile')
@@ -207,10 +343,25 @@ const LaborRegister = () => {
         }
       } finally {
         dispatch(setLoading(false));
+        dispatch(setError({}))
       }
 
     }
   }
+
+
+      const countries = [
+      'India', 'United States', 'Canada', 'United Kingdom', 'Australia'
+      // Add more countries as needed
+    ];
+
+    // Indian states dropdown
+    const indianStates = [
+      'Andhra Pradesh', 'Karnataka', 'Maharashtra', 'Tamil Nadu', 
+      'Delhi', 'Gujarat', 'Kerala', 'Rajasthan'
+      // Add more states
+    ];
+
 
 
   return (
@@ -291,19 +442,82 @@ const LaborRegister = () => {
                     <p className="text-red-500 text-sm mt-1">{error.phoneNumber}</p>
                   )}
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-sans text-[14px] my-1">Address</span>
-                  <textarea
-                    placeholder="Enter your Address..."
-                    className="px-3 h-28 w-[340px] p-4 text-black text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500 resize-none overflow-auto"
-                    value={address}
-                    onChange={handleInputChange(setAddress)}
-                  ></textarea>
-                  {showErrors && error?.address && (
-                    <p className="text-red-500 text-sm mt-1">{error.address}</p>
+                  <div className="flex flex-col">
+                    <span className="font-sans text-[14px] my-1">Address</span>
+
+                    {/* Street Address */}
+                    <textarea
+                      placeholder="Enter your Address (Street, Building, etc.)..."
+                      className="px-3 h-20 w-[340px] p-4 text-black text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500 resize-none overflow-auto"
+                      value={address.street || ''}
+                      onChange={handleAddressChange('street')}
+                    ></textarea>
+                     {showErrors && error?.address?.street&& (
+                          <p className="text-red-500 text-sm">{error.address.street}</p>
+                        )}
+
+                    {/* City */}
+                    <input
+                      type="text"
+                      placeholder="City"
+                      className="px-3 h-10 w-[340px] text-black text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500 my-2"
+                      value={address.city || ''}
+                      onChange={ handleAddressChange('city')}
+                    />
+                    {error?.address?.city && (
+                      <p className="text-red-500 text-sm">{error.address.city}</p>
+                    )}
+
+                    {/* State Dropdown (conditionally rendered based on country) */}
+                    <select
+                      className="px-3 h-10 w-[340px] text-black text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500 my-2"
+                      value={address.state || ''}
+                      onChange={handleAddressChange('state')}
+                    >
+                      <option value="">Select State</option>
+                      {indianStates.map(country => (
+                        <option key={country} value={country}>{country}</option>
+                      ))}
+                    </select>
+                        {error?.address?.state && (
+                          <p className="text-red-500 text-sm">{error.address.state}</p>
+                        )}
+
+
+                     {/* Postal Code (numbers only) */}
+                      <input
+                        type="text"
+                        placeholder="Postal Code"
+                        className="px-3 h-10 w-[340px] text-black text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500 my-2"
+                        value={address.postalCode || ''}
+                        onChange={(e) => {
+                          // Allow only numbers
+                          const numericValue = e.target.value.replace(/\D/g, '');
+                          setAddress(prev => ({...prev, postalCode: numericValue}));
+                        }}
+                        maxLength={6} // Typical postal code length
+                      />
+                      {error?.address?.postalCode && (
+                          <p className="text-red-500 text-sm">{error.address.postalCode}</p>
+                        )}
+
+                    {/* Country */}
+                    <select
+                      className="px-3 h-10 w-[340px] text-black text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500 my-2"
+                      value={address.country || ''}
+                      onChange={handleAddressChange('country')}
+                    >
+                      <option value="">Select Country</option>
+                      {countries.map(country => (
+                        <option key={country} value={country}>{country}</option>
+                      ))}
+                    </select>
+
+                  {error?.address?.country && (
+                    <p className="text-red-500 text-sm">{error.address.country}</p>
                   )}
+                  </div>
                 </div>
-              </div>
               <div className="rightDive space-y-7">
                 <div className="flex flex-col">
                   <span className="font-sans text-[14px] my-1">Email</span>

@@ -7,12 +7,21 @@ export interface ILaborer extends Document {
   email: string;
   password: string;
     phone: string;
-  address: string;
+  address: {
+    city: string,
+    state: string,
+    postalCode: string,
+    country: string,
+  },
+  location: {
+    type: { type: string, enum: ['Point'] },
+    coordinates: { type: [number] }, // [longitude, latitude]
+  },
   responsibility: string;
   profilePicture: string;
     language: string;
   personalDetails: {
-    dateOfBirth: string;
+    dateOfBirth: string;   
     gender: string;
     lastUpdated?: Date;
   };
@@ -25,11 +34,11 @@ export interface ILaborer extends Document {
    DurationofEmployment: {
     startDate: string,
     currentlyWorking : boolean
-  }
+  } 
   workHistory: {
     bookingId: Schema.Types.ObjectId;
     status: string;
-    lastUpdated: Date;
+    lastUpdated: Date; 
   }[];
   rating: number;
   createdAt: Date;
@@ -45,7 +54,7 @@ export interface ILaborer extends Document {
   chats: Schema.Types.ObjectId;
   profileCompletion: boolean;
   currentStage: 'aboutYou' | 'profile' | 'experience';
-  skill: string; // Skill or expertise of the laborer
+  skill: string[]; // Skill or expertise of the laborer
   startTime: string; // Start time (could be a timestamp or ISO string)
   endTime: string; // End time (could be a timestamp or ISO string)
   availability: string[]; // Array of availability slots or statuses

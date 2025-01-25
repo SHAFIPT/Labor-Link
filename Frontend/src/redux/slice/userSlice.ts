@@ -19,6 +19,7 @@ interface InitialState {
     formData: Partial<IUser>;
     isLaborAuthenticated: boolean; // Add this property
     laborer: object | null; // Add this property
+    locationOfUser: { latitude: number | null; longitude: number | null }; 
 }
 
 const initialState: InitialState = {
@@ -32,6 +33,7 @@ const initialState: InitialState = {
     formData: {},
     isLaborAuthenticated: false, // Default value
     laborer: null, // Default value
+    locationOfUser: { latitude: null, longitude: null },
 }
 
 const userSlice = createSlice({
@@ -60,6 +62,9 @@ const userSlice = createSlice({
         setFormData(state, action) {
             state.formData = action.payload;
         },
+        setLocationOfUser(state, action) {
+            state.locationOfUser = action.payload; // Update the user's location
+        },
         resetUser(state) {
             state.user = {} as IUser;
             state.loading = false;
@@ -74,13 +79,14 @@ const userSlice = createSlice({
                 password: "",
             };
              state.isLaborAuthenticated = false; // Reset labor authentication
-             state.laborer = null; // Clear laborer data
+            state.laborer = null; // Clear laborer data
+            state.locationOfUser = { latitude: null, longitude: null }; 
         }
     }
 })
 
 
-export const { setUser, setAccessToken, resetUser, setError, setFormData, setisUserAthenticated, setLoading, setModal } = userSlice.actions
+export const { setUser, setAccessToken, resetUser, setError, setFormData, setisUserAthenticated,setLocationOfUser , setLoading, setModal } = userSlice.actions
 
 export default userSlice.reducer
 export type { InitialState }; 

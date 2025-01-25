@@ -41,7 +41,7 @@ export class AuthLaborController {
       
       if (response) {
         res.status(200)
-          .cookie("refreshToken", response.refreshToken, this.options)
+          .cookie("LaborRefreshToken", response.refreshToken, this.options)
           .json(new ApiResponse(200, response))
       } else {
          console.log('this is the errorr')
@@ -64,6 +64,7 @@ export class AuthLaborController {
         password,
         phoneNumber,
         address,
+        location,
         dateOfBirth,
         gender,
         language,
@@ -76,6 +77,7 @@ export class AuthLaborController {
         password,
         phoneNumber,
         address,
+        location,
         dateOfBirth,
         gender,
         language,
@@ -88,6 +90,7 @@ export class AuthLaborController {
         password,
         phone: phoneNumber,
         address,
+        location,
         personalDetails: {
           dateOfBirth, // Nest dateOfBirth inside personalDetails
           gender,
@@ -152,7 +155,7 @@ export class AuthLaborController {
             const response = await this.laborAuthservice.registerProfile({
                 profilePicture: imageUrl,
                 categories : category,
-                skill : skill[0],
+                skill : skill,
                 startTime : startTime[0],
                 endTime : endTime[0],
                 availability,
@@ -259,7 +262,7 @@ export class AuthLaborController {
 
       if (response) {
         return res.status(200)
-          .cookie("refreshToken", response.refreshToken, this.options) // HTTP-only cookie for refresh token
+          .cookie("LaborRefreshToken", response.refreshToken, this.options) // HTTP-only cookie for refresh token
           .json({
             success: true,
             message: "Experience data saved successfully",
@@ -299,7 +302,7 @@ export class AuthLaborController {
       const logoutLabor = await this.laborAuthservice.logout(labor.rawToken, labor.id)
       
       if (logoutLabor) {
-        res.status(200).clearCookie("refreshToken").json({message : 'Labor Logout successfully....!'})
+        res.status(200).clearCookie("LaborRefreshToken").json({message : 'Labor Logout successfully....!'})
       }
       
     } catch (error) {

@@ -46,7 +46,7 @@ class AuthController {
       
         if (loginData) {
             return res.status(200)
-            .cookie("refreshToken", loginData.refreshToken, this.options)
+            .cookie("UserRefreshToken", loginData.refreshToken, this.options)
             .json(new ApiResponse(200, loginData));
         } else {
             console.log('this is the errorr')
@@ -65,7 +65,7 @@ class AuthController {
             const result = await this.authService.register(user);
 
             if (result) {
-                res.status(201).cookie("refreshToken", result.refreshToken, this.options).json({
+                res.status(201).cookie("UserRefreshToken", result.refreshToken, this.options).json({
                     message: "User registered successfully!",
                     user: result.user,
                     accessToken: result.accessToken,
@@ -357,10 +357,10 @@ class AuthController {
 
     console.log('this is logoutData :', logoutData);
 
-    if (logoutData) {
+    if (logoutData) {  
       return res
         .status(200)
-        .clearCookie("refreshToken")
+        .clearCookie("UserRefreshToken")
         .json(
           new ApiResponse(
             200,

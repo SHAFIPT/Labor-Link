@@ -1,6 +1,6 @@
 import { Router } from "express";
 import AuthLaborController from '../../controllers/authLaborController';
-import { decodedLaborRefreshToken, verifyRefreshTokenMiddleware } from "../../middleware/authMiddleware";
+import { decodedLaborRefreshToken, verifyRefreshLaborTokenMiddleware } from "../../middleware/authMiddleware";
 
 const laborAuthRoute = Router()
 const authController = new AuthLaborController()
@@ -13,6 +13,6 @@ laborAuthRoute.post('/forgettPassword',authController.forgetPassword.bind(authCo
 laborAuthRoute.post('/ForgetVerify-otp',authController.forgetVerifyOtp.bind(authController))
 laborAuthRoute.post('/forgot-password-reset',authController.resetPassword.bind(authController))
 laborAuthRoute.patch('/logout', decodedLaborRefreshToken, authController.logoutLabor.bind(authController))
-laborAuthRoute.get('/refresh-token', verifyRefreshTokenMiddleware, authController.refreshAccessToken.bind(authController));
+laborAuthRoute.get('/refresh-token', verifyRefreshLaborTokenMiddleware, authController.refreshAccessToken.bind(authController));
 
 export default laborAuthRoute

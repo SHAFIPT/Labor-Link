@@ -38,9 +38,9 @@ const LaborProfile = () => {
   const loading = useSelector((state : RootState) => state.labor.loading)
   const currentUser = useSelector((state: RootState) => state.labor.laborer._id)
   
-  console.log('Thsi is eth current user id :',currentUser)
-  console.log('Thsi is eth current user email :',email)
-  console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
+  // console.log('Thsi is eth current user id :',currentUser)
+  // console.log('Thsi is eth current user email :',email.email)
+  // console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
   const [openEditProfile, setOpenEditProfile] = useState(false)
   const [laborData, setLaborData] = useState(null)
   const [openAbout, setOpenAbout] = useState(false)
@@ -71,12 +71,17 @@ const LaborProfile = () => {
       Sunday: false,
       All: false
     },
-     skills: '',
+     skills: [],
      startTime: '', // Added startTime
       endTime: '',
     responsibilities: '',
     image : null
    });
+   
+  useEffect(() => {
+    
+    console.log('This is the formData :',email)
+  },[])
   
 const error: {
      firstName?: string;
@@ -103,7 +108,7 @@ const error: {
   // }
   // });
   // When initially loading dat
-  console.log('Theis is the console.log(error)-----++++-----',error);
+  // console.log('Theis is the console.log(error)-----++++-----',error);
 
     const handleEditProfile = () => {
   // Parse the availability from the string array
@@ -237,13 +242,28 @@ const prepareAvailabilityForSubmission = () => {
 };
   
 
- const fetchLabor = async () => {
+const fetchLabor = async () => {
   try {
     const response = await laborFetch();
+    console.log('This is the response : ',response)
     if (response.fetchUserResponse) {
-      setLaborData(response.fetchUserResponse);
+      const laborResponse = response.fetchUserResponse;
+      
+      // Flatten address into a string
+      const fullAddress = laborResponse.address 
+        ? `${laborResponse.address.street || ''}, ${laborResponse.address.city}, ${laborResponse.address.state}, ${laborResponse.address.postalCode}, ${laborResponse.address.country}`
+        : '';
+
+      setLaborData({
+        ...laborResponse,
+        address: fullAddress
+      });
+      
+      dispatch(setLaborer({
+        ...laborResponse,
+        address: fullAddress
+      }));
     }
-    console.log("This is the response:", response);
   } catch (error) {
     console.error("Error fetching user:", error);
   }
@@ -251,10 +271,8 @@ const prepareAvailabilityForSubmission = () => {
 
 // useEffect remains as it is to call fetchLabor when email changes
 useEffect(() => {
-  if (email) {
     fetchLabor();
-  }
-}, [email]);
+}, []);
 
   const handleInputChangeAbout = (e) => {
     const { name, value } = e.target;
@@ -312,7 +330,7 @@ useEffect(() => {
       firstName: validateFirstName(formData.firstName),
       lastName: validateLastName(formData.lastName),
       phone : validatePhoneNumber(formData.phone),
-      address: validateAddress(formData.address),
+      // address: validateAddress(formData.address),
       language: validateLanguage(formData.language),
       skill: validateSkill(formData.skills),
       startTime: validateStartTime(formData.startTime),
@@ -337,7 +355,7 @@ useEffect(() => {
       formDataToSubmit.append('address', formData.address);
       formDataToSubmit.append('language', formData.language);
       formDataToSubmit.append('availability', JSON.stringify(availabilityDays));
-      formDataToSubmit.append('skills', formData.skills);
+      formDataToSubmit.append('skills', JSON.stringify(formData.skills));
       formDataToSubmit.append('responsibilities', formData.responsibilities);
       formDataToSubmit.append('startTime', formData.startTime);
       formDataToSubmit.append('endTime', formData.endTime);
@@ -373,6 +391,7 @@ useEffect(() => {
     } catch (error) {
        console.error('Error updating profile:', error);
     } finally {
+      dispatch(setError({}))
       dispatch(setLoading(false))
     }
   }
@@ -687,8 +706,8 @@ useEffect(() => {
                   <textarea
                     name="address"
                     value={formData.address}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    readOnly
+                    className="w-full px-3 py-2 border cursor-not-allowed rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
                     rows="3"
                   />
                 </div>
@@ -725,7 +744,7 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* Availability */}
+            {  /* Availability */}
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 flex items-center">
                 <Calendar className="mr-2 text-[#5560A8]" /> Availability
@@ -783,13 +802,21 @@ useEffect(() => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Skills
+                  Skills (comma-separated)
                 </label>
                 <input
                   type="text"
                   name="skills"
-                  value={formData.skills}
-                  onChange={handleInputChange}
+                  value={formData.skills.flat().join(', ')} // Flatten and convert array to string
+                  onChange={(e) => {
+                    const skillsArray = e.target.value
+                      .split(',')
+                      .map((skill) => skill.trim());
+                    setFormData((prev) => ({
+                      ...prev,
+                      skills: [skillsArray], // Wrap the updated skills in an array
+                    }));
+                  }}
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
                 />
                 {error?.skills && (

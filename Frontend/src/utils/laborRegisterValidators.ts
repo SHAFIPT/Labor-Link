@@ -68,15 +68,36 @@ const phoneNumberSchema = Joi.string()
   });
 
 // Address Validation Schema
-const addressSchema = Joi.string()
-  .min(5)
-  .max(200)
-  .required()
-  .messages({
-    "string.min": "Address should be at least 5 characters",
-    "string.max": "Address should be less than 200 characters",
-    "string.empty": "Address is required",
-  });
+// Validation for each individual address field
+// const addressSchema = Joi.object({
+//   street: Joi.string().min(5).max(200).required().messages({
+//     "string.min": "Street address should be at least 5 characters",
+//     "string.max": "Street address should be less than 200 characters",
+//     "string.empty": "Street address is required",
+//   }),
+//   city: Joi.string().min(2).max(100).required().messages({
+//     "string.min": "City name should be at least 2 characters",
+//     "string.max": "City name should be less than 100 characters",
+//     "string.empty": "City is required",
+//   }),
+//   state: Joi.string().min(2).max(100).required().messages({
+//     "string.min": "State name should be at least 2 characters",
+//     "string.max": "State name should be less than 100 characters",
+//     "string.empty": "State is required",
+//   }),
+//   postalCode: Joi.string().min(5).max(10).required().messages({
+//     "string.min": "Postal code should be at least 5 characters",
+//     "string.max": "Postal code should be less than 10 characters",
+//     "string.empty": "Postal code is required",
+//   }),
+//   country: Joi.string().min(2).max(100).required().messages({
+//     "string.min": "Country name should be at least 2 characters",
+//     "string.max": "Country name should be less than 100 characters",
+//     "string.empty": "Country is required",
+//   }),
+// })
+
+
 
 // Date of Birth Validation Schema
 const dateOfBirthSchema = Joi.date()
@@ -127,17 +148,22 @@ const categorySchema = Joi.string()
     "string.empty": "Category is required",
   });
 
-// Skill Validation Schema
-const skillSchema = Joi.string()
-  .min(2)
-  .max(50)
-  .required()
-  .messages({
-    "string.min": "Skill should be at least 2 characters",
-    "string.max": "Skill should be less than 50 characters",
-    "string.empty": "Skill is required",
-  });
+export const skillSchema = (skills: string[]) => {
+  if (!skills || skills.length === 0) {
+    return "At least one skill is required";
+  }
 
+  // // Optional: Additional validation for each skill
+  // const invalidSkills = skills.filter(skill => 
+  //   skill.length < 2 || skill.length > 50
+  // );
+
+  // if (invalidSkills.length > 0) {
+  //   return "Some skills do not meet the length requirements";
+  // }
+
+  return null;
+};
 // Time Schema (Start and End Time)
 const timeSchema = Joi.string()
   .required()
@@ -201,6 +227,22 @@ const availabilitySchema = Joi.array() // Adjust with your valid options
     'string.empty': 'Responsibilities and achievements are required.',
   });
 
+  const addressSchema = Joi.string()
+  .min(10)
+  .max(500)
+  .required()
+  .messages({
+    "string.min": "Address should be at least 10 characters",
+    "string.max": "Address should be less than 500 characters",
+    "string.empty": "Address is required",
+  });
+
+
+  export const validateAddress = (address: string) => {
+  const { error } = addressSchema.validate(address);
+  return error ? error.details[0].message : null;
+};
+
 export const validateIdType = (idType) => {
   const { error } = idTypeSchema.validate(idType);
   return error ? error.details[0].message : null;
@@ -233,8 +275,54 @@ export const validatePhoneNumber = (phoneNumber: string) => {
   return error ? error.details[0].message : null;
 };
 
-export const validateAddress = (address: string) => {
-  const { error } = addressSchema.validate(address);
+// Validation functions for individual address fields
+export const validateStreet = (street: string) => {
+  const streetSchema = Joi.string().min(5).max(200).required().messages({
+    "string.min": "Street address should be at least 5 characters",
+    "string.max": "Street address should be less than 200 characters",
+    "string.empty": "Street address is required",
+  });
+  const { error } = streetSchema.validate(street);
+  return error ? error.details[0].message : null;
+};
+
+export const validateCity = (city: string) => {
+  const citySchema = Joi.string().min(2).max(100).required().messages({
+    "string.min": "City name should be at least 2 characters",
+    "string.max": "City name should be less than 100 characters",
+    "string.empty": "City is required",
+  });
+  const { error } = citySchema.validate(city);
+  return error ? error.details[0].message : null;
+};
+
+export const validateState = (state: string) => {
+  const stateSchema = Joi.string().min(2).max(100).required().messages({
+    "string.min": "State name should be at least 2 characters",
+    "string.max": "State name should be less than 100 characters",
+    "string.empty": "State is required",
+  });
+  const { error } = stateSchema.validate(state);
+  return error ? error.details[0].message : null;
+};
+
+export const validatePostalCode = (postalCode: string) => {
+  const postalCodeSchema = Joi.string().min(5).max(10).required().messages({
+    "string.min": "Postal code should be at least 5 characters",
+    "string.max": "Postal code should be less than 10 characters",
+    "string.empty": "Postal code is required",
+  });
+  const { error } = postalCodeSchema.validate(postalCode);
+  return error ? error.details[0].message : null;
+};
+
+export const validateCountry = (country: string) => {
+  const countrySchema = Joi.string().min(2).max(100).required().messages({
+    "string.min": "Country name should be at least 2 characters",
+    "string.max": "Country name should be less than 100 characters",
+    "string.empty": "Country is required",
+  });
+  const { error } = countrySchema.validate(country);
   return error ? error.details[0].message : null;
 };
 
@@ -270,9 +358,21 @@ export const validateCategory = (category: string) => {
 };
 
 // Validate Skill
-export const validateSkill = (skill: string) => {
-  const { error } = skillSchema.validate(skill);
-  return error ? error.details[0].message : null;
+export const validateSkill = (skills: string[]) => {
+  if (!skills || skills.length === 0) {
+    return "At least one skill is required";
+  }
+
+  // // Optional: Additional validation for each skill
+  // const invalidSkills = skills.filter(skill => 
+  //   skill.length < 2 || skill.length > 50
+  // );
+
+  // if (invalidSkills.length > 0) {
+  //   return "Some skills do not meet the length requirements";
+  // }
+
+  return null;
 };
 
 // Validate Start Time

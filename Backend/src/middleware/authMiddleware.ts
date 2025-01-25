@@ -145,7 +145,7 @@ export const decodedUserRefreshToken = (
   res: Response, 
   next: NextFunction
 ): void => {  // Return type should be void, not Response
-  const refreshToken = req.cookies['refreshToken'] || req.header('refreshToken');
+  const refreshToken = req.cookies['UserRefreshToken'] || req.header('UserRefreshToken');
 
   if (!refreshToken) {
     // Sending response and ending the request-response cycle here
@@ -184,7 +184,7 @@ export const decodedLaborRefreshToken = (
   next: NextFunction
 ): void => {  // Return type should be void, not Response
   console.log('Iam arraive here')
-  const refreshToken = req.cookies['refreshToken'] || req.header('refreshToken');
+  const refreshToken = req.cookies['LaborRefreshToken'] || req.header('LaborRefreshToken');
 
   if (!refreshToken) {
     // Sending response and ending the request-response cycle here
@@ -259,12 +259,77 @@ export const decodedAdminRefreshToken = (
 
 
 
-export const verifyRefreshTokenMiddleware = (
+export const verifyRefreshAdminTokenMiddleware = (
   req: Request & Partial<{ user: string | jwt.JwtPayload }>,
   res: Response,
   next: NextFunction
 ): void => {
   const refreshToken = req.cookies['adminRefreshToken'] || req.header('adminRefreshToken');
+
+  if (!refreshToken) {
+    res.status(401).json(
+      new ApiResponse(401, null, "Access Denied")
+    );
+    return;
+  }
+
+  try {
+    const decoded = verifyRefreshToken(refreshToken);
+    // Check if decoded is an object before spreading
+    req.user = typeof decoded === 'object' 
+      ? { ...decoded, rawToken: refreshToken }
+      : { token: decoded, rawToken: refreshToken };
+    next();
+  } catch (err) {
+    res.status(401).json(
+      new ApiResponse(401, null, "Invalid Token or Expired")
+    );
+    return;
+  }
+};
+
+// LaborRefreshToken
+
+
+export const verifyRefreshLaborTokenMiddleware = (
+  req: Request & Partial<{ user: string | jwt.JwtPayload }>,
+  res: Response,
+  next: NextFunction
+): void => {
+  const refreshToken = req.cookies['LaborRefreshToken'] || req.header('LaborRefreshToken');
+
+  if (!refreshToken) {
+    res.status(401).json(
+      new ApiResponse(401, null, "Access Denied")
+    );
+    return;
+  }
+
+  try {
+    const decoded = verifyRefreshToken(refreshToken);
+    // Check if decoded is an object before spreading
+    req.user = typeof decoded === 'object' 
+      ? { ...decoded, rawToken: refreshToken }
+      : { token: decoded, rawToken: refreshToken };
+    next();
+  } catch (err) {
+    res.status(401).json(
+      new ApiResponse(401, null, "Invalid Token or Expired")
+    );
+    return;
+  }
+};
+
+
+// user RefreshToken
+
+
+export const verifyRefreshUserTokenMiddleware = (
+  req: Request & Partial<{ user: string | jwt.JwtPayload }>,
+  res: Response,
+  next: NextFunction
+): void => {
+  const refreshToken = req.cookies['UserRefreshToken'] || req.header('UserRefreshToken');
 
   if (!refreshToken) {
     res.status(401).json(

@@ -9,7 +9,16 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
   email: { type: String, required: true, unique: true }, // Field name updated to match interface
   password: { type: String, required: true },   // Field name updated to match interface
   phone: { type: String, required: true },      // Field name updated to match interface
-   address : {type : String , required :true}, 
+   address: {
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    postalCode: { type: String, required: true },
+    country: { type: String, required: true },
+  },
+  location: {
+    type: { type: String, enum: ['Point'] },
+    coordinates: { type: [Number]}, // [longitude, latitude]
+  },
   profilePicture: { type: String, required: false }, // Field name updated to match interface
     language: { type : String },
   personalDetails: {
@@ -21,7 +30,7 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
     startDate: {type : String},
     currentlyWorking : {type : Boolean}
   },
-   skill: { type: String, required: false }, // Skill or expertise of the laborer
+   skill: [{ type: String, required: false }], // Skill or expertise of the laborer
   startTime: { type: String, required: false }, // Start time (ISO string or timestamp)
   endTime: { type: String, required: false }, // End time (ISO string or timestamp)
   responsibility: { type : String },
