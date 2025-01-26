@@ -1,5 +1,5 @@
 import  bycript  from 'bcrypt';
-import { ILaborer } from "entities/LaborEntity";
+import { IAboutMe, ILaborer } from "entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import { ILaborService } from "../../services/interface/ILaborServices";
 
@@ -30,7 +30,7 @@ export class LaborServices implements ILaborService{
     }
     }
 
-    async aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<void> {
+    async aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<IAboutMe> {
         try {
 
             return await this.laborRepsitory.aboutMe(data)

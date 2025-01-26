@@ -20,7 +20,7 @@ const LocationPrompt = ({ setShowLocationModal}) => {
         },
         (err) => {
           setError('Unable to access location. Please enable location services.');
-        }
+        },
       );
     } else {
       setError('Geolocation is not supported by your browser.');

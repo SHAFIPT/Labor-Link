@@ -7,7 +7,7 @@ export interface IReview {
   createdAt: Date;
 }
 
-interface IAboutMe {
+export interface IAboutMe {
   name?: string;
   experience?: string;
   description?: string;

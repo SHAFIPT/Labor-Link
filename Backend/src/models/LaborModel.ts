@@ -63,8 +63,8 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
   profileCompletion: { 
     type: Boolean, 
     default: false, // Set to false until all steps are completed
-  },     
-  status: {
+  },            
+  status: {   
     type: String,
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending',

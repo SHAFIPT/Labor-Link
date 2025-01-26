@@ -262,6 +262,8 @@ const handleAllDaysChange = () => {
     };
   });
   };
+
+  console.log("This is the form datat ... !!!h000000003030303003",submittedData)
   
 
 const prepareAvailabilityForSubmission = () => {
@@ -287,8 +289,8 @@ const prepareAvailabilityForSubmission = () => {
   useEffect(() => {
   if (Laborer && Object.keys(Laborer).length > 0) {  // Check if Laborer is not empty
     console.log("Hi I am here++++++-----");
-    const LaborfullAddress = Laborer?.address 
-      ? `${Laborer.address}` 
+   const LaborfullAddress = Laborer?.address 
+      ? `${Laborer.address.city || ''}, ${Laborer.address.state || ''}, ${Laborer.address.postalCode || ''}, ${Laborer.address.country || ''}`.trim()
       : '';
     
     setLaborData({
@@ -321,31 +323,31 @@ const prepareAvailabilityForSubmission = () => {
     }));
   };
 
-  useEffect(() => {
-    const userId = currentUser || user?._id;
-    console.log("This is the current user:", user); // Ensure the user object is present
-    console.log("This is the userId:", userId);
-    if (userId) {
-    console.log("Ho iam enter here :: seeeee ------------------------")
-      const savedData = localStorage.getItem(`aboutData_${userId}`);
-        console.log("Thsi my shabeel savedDatat ",savedData)
-    if (savedData) {
-      setSubmittedData(JSON.parse(savedData));
-       console.log("Thsi se th userId savedData  ++++ hasdfdsfojdf ",savedData)
-    }
-  }
-  }, [currentUser, user]);
+  // useEffect(() => {
+  //   const userId = currentUser || user?._id;
+  //   console.log("This is the current user:", user); // Ensure the user object is present
+  //   console.log("This is the userId:", userId);
+  //   if (userId) {
+  //   console.log("Ho iam enter here :: seeeee ------------------------")
+  //     const savedData = localStorage.getItem(`aboutData_${userId}`);
+  //       console.log("Thsi my shabeel savedDatat ",savedData)
+  //   if (savedData) {
+  //     setSubmittedData(JSON.parse(savedData));
+  //      console.log("Thsi se th userId savedData  ++++ hasdfdsfojdf ",savedData)
+  //   }
+  // }
+  // }, [currentUser, user]);
   
 //   const userId = currentUser || user?._id;
-// console.log("This is the userId:", userId);
+console.log("This is the currentUser:", currentUser);
 
 const handleSubmit = async () => {
   const userId = currentUser || user?._id;
 
 
-  // console.log("This is the current user:", currentUser);
+  console.log("This is the current user:", currentUser);
     console.log("This is the userId:", userId);
-  
+   
   if (!userId) return;
 
   const newData = {
@@ -356,9 +358,8 @@ const handleSubmit = async () => {
   };
 
   // Save to user-specific localStorage
-  localStorage.setItem(`aboutData_${userId}`, JSON.stringify(newData));
-  
-  setSubmittedData(newData);
+  // localStorage.setItem(`aboutData_${userId}`, JSON.stringify(newData));
+  // setSubmittedData(newData);
   setOpenAbout(false);
   setIsEditing(false);
 
@@ -369,7 +370,16 @@ const handleSubmit = async () => {
 
     const response = await aboutMe(newData)
 
+    const { AboutMe } = response.data
+
+    console.log("Thsi sie About me ;;;;;kkkkkk ++++++ __))(((())))",AboutMe)
+
     if (response.status === 200) {
+
+       dispatch(setLaborer({
+      ...Laborer,
+      aboutMe: AboutMe, // Update only the aboutMe field
+    }));
       toast.success('about page uploaded succefully.....')
     } else {
       toast.error('Errro in about me')
@@ -384,12 +394,7 @@ const handleSubmit = async () => {
 
 
   const handleEdit = () => {
-    // Pre-fill the form with existing data
-    setAboutFromData({
-      name: submittedData.name,
-      experience: submittedData.experience,
-      description: submittedData.description
-    });
+   
     setOpenAbout(true);
     setIsEditing(true);
   };
@@ -583,7 +588,12 @@ const handleSubmit = async () => {
   
   if (!currentUser && !user?._id) {
   return null;
-}
+  }
+  
+
+  // console.log("This is the user object length ++___))((((()))))::", Object.keys(Laborer).length === 0)
+  console.log("This is the user object length ++___))((((()))))::", submittedData == null)
+  
 
   return (
     <>
@@ -1303,6 +1313,7 @@ const handleSubmit = async () => {
               >
                 Cancel
               </button>
+              
               <button
                 className="px-6 py-2 bg-[#5560A8] text-white rounded-full hover:bg-opacity-90"
                 onClick={handleSubmitEditProfile}
@@ -1538,10 +1549,13 @@ const handleSubmit = async () => {
                     </div>
 
                     {/* Save Button */}
-                    <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                      {(Object.keys(Laborer).length === 0 && (user || Object.keys(user).length !== 0)) && (
+                       <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                       <Heart className="w-5 h-5 text-gray-600" />
                       <span>Save</span>
                     </button>
+                    )}
+                   
                   </div>
                 </div>
               ) : (
@@ -1736,7 +1750,7 @@ const handleSubmit = async () => {
 
           
 
-          {Laborer && Object.keys(Laborer).length > 0 ? (
+          {/* {Laborer && Object.keys(Laborer).length > 0 ? (
             <>
             
             </>
@@ -1751,7 +1765,7 @@ const handleSubmit = async () => {
                   {laborData?.aboutMe?.description}
                 </p>
               </div> 
-          )}
+          )} */}
 {/*           
           {laborData?.aboutMe ? (
             <>
@@ -1779,10 +1793,30 @@ const handleSubmit = async () => {
                )}
             </div>
           )} */}
+
+          <div className="space-y-4 lg:space-y-0">
+            <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
+              I am { Laborer?.aboutMe?.name ||  user?.aboutMe?.name}, a highly skilled and experienced
+              professional with over {Laborer?.aboutMe?.experience || user?.aboutMe?.experience} of
+              experience in the field.
+            </p>
+            <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
+              { Laborer?.aboutMe?.description || user?.aboutMe?.description}
+            </p>
+          </div>
           
 
+          {(!submittedData && (!Laborer?.aboutMe || Object.keys(Laborer?.aboutMe).length === 0) && (!user || Object.keys(user).length === 0)) && (
+            <button
+              onClick={() => setOpenAbout(true)}
+              className="bg-[#21A391] text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
+            >
+              Add About You
+            </button>
+          )}
 
-          {submittedData ? (
+
+          {/* {submittedData  ? (
             <>
               <div className="space-y-4 lg:space-y-0">
                 <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
@@ -1807,7 +1841,7 @@ const handleSubmit = async () => {
               </button>
                )}
             </div>
-          )}
+          )} */}
 
           {/* Modal */}
           {openAbout && (
@@ -1856,9 +1890,10 @@ const handleSubmit = async () => {
           )}
 
           {/* Read More Button */}
-
-          {submittedData && (
-            <div className="mt-8">
+  {/* console.log("This is the user object length ++___))((((()))))::", )
+  console.log("This is the user object length ++___))((((()))))::", ) */}
+          {Object.keys(Laborer).length !== 0 && (
+              <div className="mt-8">
               <button
                 className="group relative inline-block text-[#21A391] text-sm sm:text-base md:text-lg lg:text-[17px] font-semibold transition-colors duration-300 hover:text-[#1a8275]"
                 onClick={handleEdit}
@@ -1868,6 +1903,12 @@ const handleSubmit = async () => {
               </button>
             </div>
           )}
+
+
+          {/* {(submittedData && (!Laborer?.aboutMe || Object.keys(Laborer?.aboutMe).length > 0) && (Object.keys(user).length === 0)) && (
+             
+          )} */}
+
         </div>
       </div>
 

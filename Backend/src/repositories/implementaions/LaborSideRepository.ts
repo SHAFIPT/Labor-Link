@@ -1,4 +1,4 @@
-import { ILaborer } from "entities/LaborEntity";
+import { IAboutMe, ILaborer } from "entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import Labor from "../../models/LaborModel";
 
@@ -55,24 +55,43 @@ export class LaborSideRepository implements ILaborSidRepository {
     }
   }
   
-  async aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<void> {
-    try {
+ async aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<IAboutMe>  {
+  try {
+    const { userId, name, experience, description } = data;
 
-      const { userId, name, experience, description } = data;
+    console.log("Thsi sthe user detials : ", {
+      userId,
+      name,
+      description,
+      experience
+    })
 
-      const labor = await Labor.findById(userId)
+    const labor = await Labor.findById(userId);
 
-      if (!labor) {
-        throw new Error('Laborer not found');
-      }
+    console.log("Thsis itehlagbor in db : ",labor)
 
-      labor.aboutMe = { name, experience, description }
-      await labor.save()
-    
-      
-    } catch (error) {
-      console.error(error)
-      throw new Error('errror in aboutme profile update ');
+    if (!labor) { 
+      throw new Error('Laborer not found');
     }
+
+    // Check if 'aboutMe' already exists, then update or add new
+    if (labor.aboutMe) {
+      // Update existing aboutMe
+      labor.aboutMe.name = name;
+      labor.aboutMe.experience = experience;
+      labor.aboutMe.description = description;
+    } else {
+      // Add new aboutMe
+      labor.aboutMe = { name, experience, description };
+    }
+
+    await labor.save();
+    
+
+    return labor.aboutMe;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error in aboutMe profile update');
   }
+}
 }

@@ -201,11 +201,11 @@ class laborSideController {
 
       console.log("Thsis ie the response of AboutDat" , AboutData)
 
-      const response = await this.laborService.aboutMe(AboutData)
+      const AboutMe = await this.laborService.aboutMe(AboutData)
 
-      console.log("This sie the reponse :",response)
+      console.log("This sie the reponse :",AboutMe)
 
-      return res.status(200).json({message : 'Abbout udpated successfully....'})
+      return res.status(200).json({message : 'Abbout udpated successfully....', AboutMe})
       
     } catch (error) {
        console.error("Error about me:", error);

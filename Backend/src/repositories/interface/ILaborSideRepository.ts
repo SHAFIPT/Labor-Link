@@ -1,4 +1,4 @@
-import { ILaborer } from "../../entities/LaborEntity";
+import { IAboutMe, ILaborer } from "../../entities/LaborEntity";
 
 
 export interface ILaborSidRepository{
@@ -6,5 +6,5 @@ export interface ILaborSidRepository{
     updateProfile(labor: Partial<ILaborer>): Promise<ILaborer | null>
     updatePassword(email: string, NewPassword: string): Promise<ILaborer | null>
     fetchLabors(userLatandLog: { latitude: number; longitude: number }): Promise<ILaborer[]>;
-    aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<void>
+    aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<IAboutMe> 
 }
