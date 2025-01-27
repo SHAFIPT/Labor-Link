@@ -3,6 +3,8 @@ import LoginImage from "../../assets/upsacelLoginpageimage.jpeg";
 import './userLoginBody.css'
 import './LoadingBody.css'
 import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from '../../utils/firbase';
 import React, { useEffect, useState } from "react";
 import validate from "../../utils/userRegisterValidators";
 import { useDispatch, useSelector } from "react-redux";
@@ -50,97 +52,119 @@ const UserLoginForm = () => {
   // console.log(dispatch(setError({})))
   console.log('this is errors :',error)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    dispatch(setLoading(true))
+  dispatch(setLoading(true));
 
-    const formDataError = validate({ email, password })
+  const formDataError = validate({ email, password });
+  console.log('This is formDataError:', formDataError);
 
-    console.log('Thsi sis formData Errror :',formDataError)
-    
-    if (formDataError) {
-      setTimeout(() => {
-        dispatch(setLoading(false))
-        dispatch(setError(formDataError))
-        toast.error("Please correct the highlighted errors.");
-      }, 1000)
-      return
-    } else {
-      dispatch(setError({}))
+  if (formDataError) {
+    setTimeout(() => {
+      dispatch(setLoading(false));
+      dispatch(setError(formDataError));
+      toast.error("Please correct the highlighted errors.");
+    }, 1000);
+    return;
+  } else {
+    dispatch(setError({}));
 
-      try {
-        let loginResponse
+    try {
+      let loginResponse;
 
-        if (imaUser) {
-          
-           loginResponse = await Login({ email, password })
+      if (imaUser) {
+        // Standard login
+        loginResponse = await Login({ email, password });
+        console.log('This is LoginResponse:', loginResponse);
 
-        console.log('this is LoginResponse :',loginResponse)
-        
-          if (loginResponse.status === 200) {
+        if (loginResponse.status === 200) {
+          const { userFound, accessToken } = loginResponse.data.data;
 
-            const { userFound, accessToken } = loginResponse.data.data;
+          // Firebase Authentication (Re-authenticate)
+          try {
+            const firebaseUserCredential = await signInWithEmailAndPassword(
+              auth, // Your initialized Firebase auth object
+              email,
+              password
+            );
 
-            console.log('THis is the userFound :', userFound)
-            console.log('THis is the accessToken :', accessToken)
+            console.log('Firebase Login Successful:', firebaseUserCredential);
 
+            // Once authenticated with Firebase, proceed with your normal flow
             localStorage.setItem("UserAccessToken", accessToken);
-
-            const message = loginResponse.data.message
+            const message = loginResponse.data.message;
             toast.success(message || "User Login successfully...!");
-            
-            dispatch(setUser(userFound))
-            dispatch(setFormData(userFound))
-            dispatch(setAccessToken(accessToken))
-            dispatch(setisUserAthenticated(true))
-            dispatch(setLoading(false))
-            navigate('/')
-          } else {
-            const message = loginResponse.data.message
-            toast.error(message || "Error occurred in user Login");
-          }
-        } else if (imaLabor) {
-            
-            loginResponse = await LaborLogin({ email, password })
-            
-            console.log('this is LoginResponse :', loginResponse)
-            
-             if (loginResponse.status === 200) {
-               const { LaborFound, accessToken } = loginResponse.data.data;
-               
-            console.log('Labor Found Data:', LaborFound); 
-            localStorage.setItem("LaborAccessToken", accessToken);
-            
-            dispatch(setFormData(LaborFound))
-            dispatch(setLaborer(LaborFound))
-            dispatch(setAccessToken(accessToken))
-            dispatch(setIsLaborAuthenticated(true))
-            console.log('iman iherer')
-            navigate('/labor/laborDashBoard')
-          }else {
-            const message = loginResponse.data.error || "Error occurred in user ";
-            console.log('This is the error meessage from backend :',message)
-            toast.error(message || "Error occurred in user ");
+
+            dispatch(setUser(userFound));
+            dispatch(setFormData(userFound));
+            dispatch(setAccessToken(accessToken));
+            dispatch(setisUserAthenticated(true));
+            dispatch(setLoading(false));
+            navigate('/');
+          } catch (firebaseError) {
+            console.error('Firebase Authentication failed:', firebaseError);
+            toast.error(firebaseError.message || 'Error during Firebase authentication.');
+            dispatch(setLoading(false));
           }
 
-        }
-        dispatch(setLoading(false))
-          
-        } catch (error) {
-        if (axios.isAxiosError(error)) {
-          const message = error.response?.data?.message || error.message;
-          console.error("Axios error:", message);
-          toast.error(message);
         } else {
-          console.error("Unexpected error:", error);
-          toast.error("An unexpected error occurred.");
+          const message = loginResponse.data.message;
+          toast.error(message || "Error occurred during user login.");
         }
-      } finally {
+      } else if (imaLabor) {
+        // Labor login
+        loginResponse = await LaborLogin({ email, password });
+        console.log('This is Labor LoginResponse:', loginResponse);
+
+        if (loginResponse.status === 200) {
+          const { LaborFound, accessToken } = loginResponse.data.data;
+          console.log('Labor Found Data:', LaborFound);
+
+          // Firebase Authentication (if applicable for labor as well)
+          try {
+            const firebaseUserCredential = await signInWithEmailAndPassword(
+              auth, // Your Firebase auth object
+              email,
+              password
+            );
+
+            console.log('Labor Firebase Authentication successful:', firebaseUserCredential);
+
+            localStorage.setItem("LaborAccessToken", accessToken);
+            dispatch(setFormData(LaborFound));
+            dispatch(setLaborer(LaborFound));
+            dispatch(setAccessToken(accessToken));
+            dispatch(setIsLaborAuthenticated(true));
+            navigate('/labor/laborDashBoard');
+          } catch (firebaseError) {
+            console.error('Firebase Authentication failed for labor:', firebaseError);
+            toast.error(firebaseError.message || 'Error during Firebase authentication for labor.');
+            dispatch(setLoading(false));
+          }
+        } else {
+          const message = loginResponse.data.error || "Error occurred in user login.";
+          console.log('Error message from backend:', message);
+          toast.error(message || "Error occurred during labor login.");
+        }
+      }
+
+      dispatch(setLoading(false));
+
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.message || error.message;
+        console.error("Axios error:", message);
+        toast.error(message);
+      } else {
+        console.error("Unexpected error:", error);
+        toast.error("An unexpected error occurred.");
+      }
+    }finally {
         dispatch(setLoading(false));
       }
-    };
   }
+};
     const handleForgetPassword = async ( email : string) => {
       try {
 

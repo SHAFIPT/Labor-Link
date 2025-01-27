@@ -2,6 +2,9 @@ import { useDispatch, useSelector } from "react-redux";
 import BgImage from "../../assets/userProfielBg.png";
 import { RootState } from "../../redux/store/store";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db  , auth} from '../../utils/firbase'; // Adjust path as needed
 import {
   Mail ,
   Heart,
@@ -17,11 +20,13 @@ import char from "../../assets/happy-female-electrician.avif";
 import { useEffect, useState } from "react";
 import { editPassword, updateUser, userFetch } from "../../services/UserSurvice";
 import { editProfileValidate, validatePassword } from "../../utils/userRegisterValidators";
-import { setError ,setLoading } from "../../redux/slice/userSlice";
+import { setError ,setLoading, setUser } from "../../redux/slice/userSlice";
 import { toast } from "react-toastify";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email)
+  const user = useSelector((state: RootState) => state.user.user)
+  console.log("This is the user ....... ",user)
   const loading  = useSelector((state: RootState) => state.user.loading)
   const dispatch = useDispatch()
   console.log('Thsi siw eht email :',email)
@@ -84,54 +89,87 @@ const UserProfile = () => {
     setFormData((prev) => ({ ...prev, image: file }));
   };
 
-  const handleSave = async () => {
-    dispatch(setLoading(true))
-     const profileData = {
-      firstName: formData?.firstName, // Replace with your state variables
-      lastName: formData?.lastName,  // Replace with your state variables
+
+  const uploadImageToFirebase = async (imageFile, userId) => {
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, `profile_images/${userId}`);
+    
+    // Upload the image
+    const snapshot = await uploadBytes(storageRef, imageFile);
+    
+    // Get the download URL
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    
+    // Update the user document in Firestore
+    const userRef = doc(db, "Users", userId);
+    await updateDoc(userRef, {
+      profilePicture: downloadURL
+    });
+    
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    throw error;
+  }
+};
+
+ const handleSave = async () => {
+  dispatch(setLoading(true));
+  
+  try {
+    const profileData = {
+      firstName: formData?.firstName,
+      lastName: formData?.lastName,
     };
 
     const validationErrors = await editProfileValidate(profileData);
     
     if (validationErrors) {
-        dispatch(setLoading(false))
-    // If there are validation errors, dispatch them to the Redux store
+      dispatch(setLoading(false));
       dispatch(setError(validationErrors));
-      return; // Stop further execution
+      return;
     }
-  
-    try {
-      dispatch(setError({}))
-       dispatch(setLoading(true))
-     const formDataObj = new FormData();
-      formDataObj.append("firstName", formData.firstName);
-      formDataObj.append("lastName", formData.lastName);
-      formDataObj.append("email", userData.email);
-      if (formData.image) {
-        formDataObj.append("image", formData.image);
-      }
-      
-      const response = await updateUser(formDataObj); // Backend function to update user
-      console.log("Profile updated:", response.data.updatedUser);
-      
 
-      if (response.data.updatedUser) {
-        // Update local state with new user data
-        setUserData(response.data.updatedUser);
-        toast.success("Profile updated successfully!");
-        setOpenEditProfile(false);
-         dispatch(setLoading(false))
-      }
+    dispatch(setError({}));
+    
+    const formDataObj = new FormData();
+    formDataObj.append("firstName", formData.firstName);
+    formDataObj.append("lastName", formData.lastName);
+    formDataObj.append("email", userData.email);
+
+    // If there's a new image, upload it to Firebase first
+    let profilePictureURL = userData?.profilePicture; // Keep existing URL by default
+    
+    if (formData.image) {
+      // Get current user ID from Firebase Auth
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("No authenticated user found");
       
-    } catch (error) {
-      console.error("Error updating profile:", error);
+      // Upload image and get URL
+      profilePictureURL = await uploadImageToFirebase(formData.image, currentUser.uid);
+      formDataObj.append("profilePicture", profilePictureURL);
+    }
+
+    // Update user in your backend
+    const response = await updateUser(formDataObj);
+    
+    if (response.data.updatedUser) {
+      const { updatedUser } = response.data;
+      dispatch(setUser(updatedUser));
+      setUserData(response.data.updatedUser);
+      toast.success("Profile updated successfully!");
+      setOpenEditProfile(false);
+    }
+    
+  } catch (error) {
+    console.error("Error updating profile:", error);
     toast.error("An error occurred. Please try again.");
-    } finally {
-       dispatch(setLoading(false))
-    }
-
+  } finally {
+    dispatch(setLoading(false));
   }
-
+  };
+  
   const handleConfirm = async () => {
      dispatch(setLoading(true))
     const PasswordErrror = validatePassword(password);

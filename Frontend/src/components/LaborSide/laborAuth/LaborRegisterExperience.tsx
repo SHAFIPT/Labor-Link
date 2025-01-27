@@ -5,6 +5,7 @@ import UploadModal from "./uploadModal";
 import "./LaborExperience.css";
 import { toast } from "react-toastify";
 import axios from "axios";
+
 import {
   validateIdType,
   validateStartDate,
@@ -19,6 +20,7 @@ import {
   setUnsavedChanges,
   setNavigateBack,
   setIsLaborAuthenticated,
+  setLaborer,
 } from "../../../redux/slice/laborSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
@@ -42,7 +44,7 @@ const LaborRegisterExperience = () => {
   const [showSecondCertificate, setShowSecondCertificate] = useState(false);
   const [startDate, setStartDate] = useState<string>("");
   const [responsiblity, setResponsiblity] = useState<string>("");
-  const [currentlyWorking, setCurrentlyWorking] = useState(false);
+  const [currentlyWorking, setCurrentlyWorking] = useState(false)
   const [showErrors, setShowErrors] = useState(false);
   const [idType, setIdType] = useState<string>("");
   const [sucess, setSucess] = useState(false);
@@ -277,7 +279,9 @@ const LaborRegisterExperience = () => {
           role: "labor",
         };
 
-        const { accessToken , } = response.data.data;
+        const { accessToken, laborData } = response.data.data;
+        console.log("laborData __++++++++ ",laborData)
+        dispatch(setLaborer(laborData))
 
         console.log("thisis seh response page data :", response);
         // Store access token in localStorage

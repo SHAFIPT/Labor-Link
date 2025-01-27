@@ -4,11 +4,13 @@ import { useEffect, useState } from "react"
 import { setFormData, setIsLaborAuthenticated, setLaborer, resetLaborer ,setError, setLoading} from "../../../redux/slice/laborSlice"
 import { resetUser } from '../../../redux/slice/userSlice'
 import { toast } from "react-toastify"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation, useNavigate , useHistory } from "react-router-dom"
 import { logout } from "../../../services/LaborAuthServices"
 import HomeNavBar from "../../HomeNavBar"
 import LoginNav from "../../Auth/LoginNav"
-import BgImage from '../../../assets/image 6.png'
+import BgImage from '../../../assets/image 6.png'// Assuming you're using React Router for navigation
+import firebase from 'firebase/app';
+import {auth} from '../../../utils/firbase';
 import HomeImage from '../../../assets/HomeIcon.png'
 import char from '../../../assets/happy-female-electrician.avif'
 import { persistor } from '../../../redux/store/store';
@@ -26,6 +28,9 @@ import LaborDashBoardNav from "./LaborDashBoardNav"
 import { aboutMe, editPassword, laborFetch, updateProfile } from "../../../services/LaborServices"
 import { validateAddress, validateAvailability, validateEndTime, validateFirstName, validateLanguage, validateLastName, validatePassword, validatePhoneNumber, validateSkill, validateStartTime } from "../../../utils/laborRegisterValidators"
 import { ILaborer } from "../../../@types/labor"
+import ChatComponets from "../../ChatPage/ChatComponets"
+import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'; 
+import { app } from "../../../utils/firbase"; 
 const LaborProfile = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -43,7 +48,7 @@ const LaborProfile = () => {
   const { state: user } = useLocation();
   
  
-  // console.log('Thsi is eth current user email :',email.email)
+  console.log('Thsi is eth current Laborer Laborer  +++++++++++++++ :',Laborer)
   // console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
   const [openEditProfile, setOpenEditProfile] = useState(false)
   const [laborData, setLaborData] = useState(null)
@@ -592,7 +597,94 @@ const handleSubmit = async () => {
   
 
   // console.log("This is the user object length ++___))((((()))))::", Object.keys(Laborer).length === 0)
-  console.log("This is the user object length ++___))((((()))))::", submittedData == null)
+  console.log("This is the leabor emeaillll+___))((((()))))::", user?.email)
+
+// Updated chat creation function
+const handleChatPage = async () => {
+  const laborEmail = user?.email;
+  if (!laborEmail) {
+    console.log("Labor email is undefined");
+    return;
+  }
+
+  try {
+    const userId = auth.currentUser?.uid;
+    if (!userId) {
+      console.log("User not authenticated");
+      return;
+    }
+
+    const laborId = await findLaborIdByEmail(laborEmail);
+    if (!laborId) {
+      console.log("Labor not found");
+      return;
+    }
+
+    console.log("Firebase labor email:", laborEmail);
+    console.log("Firebase userId:", userId);
+    console.log("Firebase laborId:", laborId);
+
+    const db = getFirestore(app);
+    
+    // Create a new chat document with timestamp
+    const newChat = {
+      userId: userId,
+      laborId: laborId,
+      lastMessage: "",
+      lastUpdated: serverTimestamp(),
+      quoteSent: false
+    };
+
+    // First check if chat already exists
+    const chatRef = query(
+      collection(db, 'Chats'),
+      where('userId', '==', userId),
+      where('laborId', '==', laborId)
+    );
+
+    const chatSnapshot = await getDocs(chatRef);
+    let chatId;
+
+    if (chatSnapshot.empty) {
+      // Create new chat
+      const newChatRef = await addDoc(collection(db, 'Chats'), newChat);
+      chatId = newChatRef.id;
+      console.log("New chat created with ID:", chatId);
+    } else {
+      // Use existing chat
+      chatId = chatSnapshot.docs[0].id;
+      console.log("Existing chat found with ID:", chatId);
+    }
+
+    // Navigate to chat page (uncomment when ready)
+    navigate(`/chatingPage/${chatId}`);
+    
+  } catch (error) {
+    console.error("Error in handleChatPage:", error);
+    throw error; // Re-throw to handle in the component
+  }
+};
+
+// Function to find labor ID by email
+const findLaborIdByEmail = async (email) => {
+  if (!email) {
+    console.log("Invalid email value");
+    return null;
+  }
+
+  const db = getFirestore(app); // Ensure you are using the correct Firestore instance
+
+  const laborRef = collection(db, 'Labors');
+  const q = query(laborRef, where('email', '==', email));
+  const querySnapshot = await getDocs(q);
+
+  if (!querySnapshot.empty) {
+    const doc = querySnapshot.docs[0];  // Assuming one labor matches the email
+    return doc.id; // Return the labor document ID (laborId)
+  } else {
+    return null;  // Return null if no labor is found
+  }
+};
   
 
   return (
@@ -1658,7 +1750,7 @@ const handleSubmit = async () => {
 
                     <div className="flex justify-center pt-4">
                       <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20">
-                        <span className="md:text-base lg:text-lg font-[Roboto]">
+                        <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" onClick={handleChatPage}>
                           Booking & Start Chating
                         </span>
                         <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">
@@ -1666,7 +1758,7 @@ const handleSubmit = async () => {
                         </div>
                       </button>
                     </div>
-                    )}
+                    )} 
 
                   </div>
                 </div>
@@ -1710,7 +1802,7 @@ const handleSubmit = async () => {
                         
                     <div className="flex justify-center pt-4">
                       <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20">
-                        <span className="md:text-base lg:text-lg font-[Roboto]">
+                        <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" onClick={handleChatPage}>
                           Booking & Start Chating
                         </span>
                         <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">

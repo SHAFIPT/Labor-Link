@@ -10,7 +10,7 @@ import { IUser } from '../../@types/user';
 
 interface InitialState {
     user: IUser;
-    role: 'admin' | 'labor' | 'user' | null;
+    role:  'user' 
     loading: boolean;
     error: object;
     isUserAthenticated: boolean;

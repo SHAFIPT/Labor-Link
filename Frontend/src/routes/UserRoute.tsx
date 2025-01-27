@@ -10,6 +10,7 @@ import UserPublicRoute from '../components/Authentications/UserPublicRoute';
 import UserProfilePage from '../pages/userSide/UserProfilePage';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store/store';
+import ChatPage from '../pages/Chat/ChatPage';
 
 // Loading components
 const PageLoadingFallback = () => (
@@ -79,6 +80,7 @@ const UserRoute = () => {
             </UserPublicRoute>
           }
         />
+        <Route path="/chatingPage/:chatId" element={<ChatPage />} />
         ;
       </Routes>
     </Suspense>

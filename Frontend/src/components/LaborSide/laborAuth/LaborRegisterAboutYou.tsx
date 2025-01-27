@@ -1,6 +1,11 @@
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import axios from "axios"
+import { createUserWithEmailAndPassword } from "firebase/auth";
+
+import { setDoc, doc } from "firebase/firestore";
+import { auth , db } from "../../../utils/firbase"; // Import your Firestore instance
+
 import {
   validateFirstName,
   validateDateOfBirth,
@@ -81,7 +86,9 @@ const LaborRegister = () => {
 
 
   console.log('this is Abut page redex fomrdada' , formData)
-  console.log('this is Abut error error error &&&&&&&' , error)
+  console.log('this is Abut error error error &&&&&&&', error)
+  
+
 
 // console.log('thsi is phoneNumber',formData.phoneNumber)
   useEffect(() => {
@@ -314,6 +321,21 @@ const LaborRegister = () => {
       };
 
       try {
+         const firebaseUser = await createUserWithEmailAndPassword(auth, email, password);
+      
+        if (firebaseUser) {
+          console.log("User registered in Firebase: ", firebaseUser.user);
+
+          const fullName = `${firstName} ${lastName}`;
+
+          // Store the full name in Firestore
+          await setDoc(doc(db, "Labors", firebaseUser.user.uid), {
+            name: fullName, // Use full name here
+            email,
+            role: "labor", // Add role if needed
+          });
+          
+        }
 
         console.log('this is data is this dfdfdfdfd :  ++++++____++++++)))))+++++', dataTOStore)
       

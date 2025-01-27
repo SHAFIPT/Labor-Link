@@ -3,6 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { RootState } from '../../redux/store/store';
 import { registUser, verifyOtp, resendOtp } from '../../services/UserAuthServices';
+import { createUserWithEmailAndPassword  ,fetchSignInMethodsForEmail  } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore"; // Firestore functions for saving data
+import {auth , db} from '../../utils/firbase'
 import {
   setLoading,
   setAccessToken,
@@ -22,6 +25,7 @@ const OtpForm = ({ isVisible, onClose }) => {
   const [timer, setTimer] = useState(60)
   const [otp, setOtp] = useState(['', '', '', '']); 
   const { formData, loading } = useSelector((state: RootState) => state.user);
+  console.log("This is formDat (((((++++++)))))(((())))",formData)
   const [message, setMessage] = useState({ type: '', content: '', description: '' });
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -42,13 +46,12 @@ const OtpForm = ({ isVisible, onClose }) => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
   const otpCode = otp.join('');
-
-    console.log('This is otpCode :', otpCode);
-    console.log('this is the user formData :',formData)
+  console.log('This is otpCode :', otpCode);
+  console.log('this is the user formData :', formData);
 
   try {
     const VerifyOtpResponse = await verifyOtp(formData.email, otpCode);
@@ -61,28 +64,81 @@ const OtpForm = ({ isVisible, onClose }) => {
 
       setTimeout(async () => {
         dispatch(setLoading(true));
-        // Register the new user after the delay
-        const registernewUser = await registUser(formData);
-        console.log('User Registered Successfully:', registernewUser);
 
-        if (registernewUser.data) {
-          const { user, accessToken } = registernewUser.data;
+        // Before creating a user, check if the email is already in use
+        try {
+          const signInMethods = await fetchSignInMethodsForEmail(auth, formData.email);
+          
+          // If the email is already in use, Firebase will return an array with sign-in methods
+          if (signInMethods.length > 0) {
+            toast.error('Email is already in use. Please try logging in or use a different email.', {
+              position: 'top-right',
+              autoClose: 3000,
+            });
+            dispatch(setLoading(false)); // Stop loading
+            return; // Exit the function early
+          }
 
-          localStorage.setItem("UserAccessToken", accessToken);
+          // Firebase Email/Password Sign-Up if email is not in use
+          const firebaseUserCredential = await createUserWithEmailAndPassword(
+            auth,
+            formData.email,
+            formData.password
+          );
 
-          dispatch(setUser(user));
-          dispatch(setAccessToken(accessToken));
-          dispatch(setisUserAthenticated(true));
-          dispatch(setFormData({}));
-          navigate('/');
+          const { user } = firebaseUserCredential;
 
-          toast.success('Registration Successful!', {
-            position: 'top-right',
-            autoClose: 3000,
-          });
-        } else {
-          dispatch(setError(registernewUser));
-          toast.error('Error during registration.', {
+          console.log("This is the firebase user:", user);
+
+          // Save user data to Firestore
+          const userData = {
+            email: formData.email,
+            name: formData.name || '', // Default name if not provided
+            profilePicture: formData.profilePicture || '', // Default empty string if no profile picture
+            role: "user", // Default role for chat users
+          };
+
+          try {
+            await setDoc(doc(db, "Users", user.uid), userData);
+            console.log("User data saved to Firestore successfully");
+
+            // Save user data in MongoDB (if required)
+            const registernewUser = await registUser(formData);
+            console.log('User Registered Successfully:', registernewUser);
+
+            if (registernewUser.data) {
+              const { user, accessToken } = registernewUser.data;
+
+              localStorage.setItem("UserAccessToken", accessToken);
+
+              dispatch(setUser(user));
+              dispatch(setAccessToken(accessToken));
+              dispatch(setisUserAthenticated(true));
+              dispatch(setFormData({}));
+              navigate('/');
+
+              toast.success('Registration Successful!', {
+                position: 'top-right',
+                autoClose: 3000,
+              });
+            } else {
+              dispatch(setError(registernewUser));
+              toast.error('Error during registration.', {
+                position: 'top-right',
+                autoClose: 3000,
+              });
+            }
+          } catch (error) {
+            console.error('Error saving user data to Firestore:', error);
+            toast.error('Error occurred while saving user data.', {
+              position: 'top-right',
+              autoClose: 3000,
+            });
+          }
+
+        } catch (firebaseError) {
+          console.error('Firebase Error:', firebaseError);
+          toast.error(firebaseError.message || 'Firebase error occurred during registration.', {
             position: 'top-right',
             autoClose: 3000,
           });
@@ -112,7 +168,6 @@ const OtpForm = ({ isVisible, onClose }) => {
     );
   }
 };
-
 
   useEffect(() => {
     if (isVisible && timer > 0) {

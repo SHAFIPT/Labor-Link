@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store/store";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import {
   setLoading,
   setFormData,
@@ -56,9 +57,9 @@ const UserRegisterPage = () => {
 
   const { loading } = useSelector((state: RootState) => state.user);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  // const togglePasswordVisibility = () => {
+  //   setShowPassword(!showPassword);
+  // };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;

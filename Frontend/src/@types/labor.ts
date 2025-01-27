@@ -22,6 +22,7 @@ export interface ILaborer {
     postalCode: string;
     country: string;
   };
+  profilePicture : string
   location: {
     type: 'Point'; // GeoJSON type
     coordinates: [number, number]; // [longitude, latitude]

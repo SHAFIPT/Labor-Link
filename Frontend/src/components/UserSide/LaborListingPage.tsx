@@ -15,12 +15,14 @@ import { setLoading } from "../../redux/slice/userSlice";
 import notFound from '../../assets/not Found labor.webp'
 const LaborListingPage = () => {
     const theme = useSelector((state: RootState) => state.theme.mode)
-  // const locationOfUser = useSelector((state: RootState) => state.user.locationOfUser)
+  const locationOfUser = useSelector((state: RootState) => state.user.locationOfUser)
 
-   const locationOfUser = useMemo(() => ({
-    latitude: 11.151827,
-    longitude:  75.894107
-   }), []);
+
+
+  //  const locationOfUse = useMemo(() => ({
+  //   latitude: 11.151827,
+  //   longitude:  75.894107
+  //  }), []);
   
   const loading = useSelector((state: RootState) => state.user.loading)
   

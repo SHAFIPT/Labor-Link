@@ -258,9 +258,18 @@ export class AuthLaborController {
 
       console.log('Experience Data:', experienceData);
 
-      const response = await this.laborAuthservice.registerExperience(experienceData);
+         const response = await this.laborAuthservice.registerExperience(experienceData);
 
       if (response) {
+        const laborData = { ...response.labor.toObject() }; // Convert to plain object
+
+        // Remove sensitive fields
+        delete laborData.password;
+        delete laborData.refreshToken;
+
+
+        console.log("Thsi sithe labordeata ++++_________++++++++",laborData)
+
         return res.status(200)
           .cookie("LaborRefreshToken", response.refreshToken, this.options) // HTTP-only cookie for refresh token
           .json({
@@ -270,6 +279,7 @@ export class AuthLaborController {
               ...experienceData,
               certificateUrls,
               accessToken: response.accessToken, // Include access token here
+              laborData, // Include the labor data
             },
           });
       } else {
@@ -283,7 +293,7 @@ export class AuthLaborController {
     next(error);
     return res.status(500).json({ error: "Internal server error" });
   }
-  };
+};
   
   public logoutLabor = async ( req: Request & { labor: { rawToken: string; id: string } }, res: Response , next : NextFunction) => {
     try {
