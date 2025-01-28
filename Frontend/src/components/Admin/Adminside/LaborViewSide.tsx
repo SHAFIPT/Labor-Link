@@ -334,7 +334,7 @@ const LaborViewSide = () => {
                     d="M12 2C8.1 2 5 5.1 5 8.5c0 4.3 7 11.5 7 11.5s7-7.2 7-11.5C19 5.1 15.9 2 12 2zM12 11c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3z"
                   ></path>
                 </svg>
-                <p>{labor && labor.address}</p>
+               <p>{labor && labor.address.city}</p>
               </li>
               <li>
                 {categoryIcons[category] || (

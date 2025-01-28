@@ -531,15 +531,17 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           </div>
           {isLaborAuthenticated ? (
             <>
-              <div className=" relative userImage flex items-center lg:mr-9 mt-4 cursor-pointer group">
+              <div className=" relative userImage flex items-center lg:mr-20 mt-4 cursor-pointer group">
                 {/* User Icon */}
                 <i className="fa fa-user w-12 h-12 text-[28px] hidden md:block lg:block"></i>
 
                 {/* Dropdown */}
                 <div className="absolute top-[90px] right-0 w-[130px] hidden flex-col bg-white shadow-md rounded-md p-2 border border-gray-200 group-hover:flex">
+                  <Link to='/labor/ProfilePage'>
                   <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left">
                     View Profile
-                  </button>
+                    </button>
+                    </Link>
                   <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleLogoutLabor}>
                     Logout
                   </button>
@@ -554,9 +556,9 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           )}
         </div>
         {/* Divider Line */}
-        <div className="w-full flex justify-center mt-4 sm:mt-5 md:mt-6 lg:ml-28 lg:mt-0 lg:mb-3">
-          <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[72%] h-[2px] bg-[#ECECEC]" />
-        </div>
+          <div className="w-full flex justify-center mt-4 sm:mt-5 md:mt-6 lg:mt-0 lg:mb-3">
+            <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[72%] h-[2px] bg-[#ECECEC] mx-auto" />
+          </div>
       </div>
     </div>
   );

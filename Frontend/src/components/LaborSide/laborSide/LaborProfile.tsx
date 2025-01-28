@@ -29,8 +29,9 @@ import { aboutMe, editPassword, laborFetch, updateProfile } from "../../../servi
 import { validateAddress, validateAvailability, validateEndTime, validateFirstName, validateLanguage, validateLastName, validatePassword, validatePhoneNumber, validateSkill, validateStartTime } from "../../../utils/laborRegisterValidators"
 import { ILaborer } from "../../../@types/labor"
 import ChatComponets from "../../ChatPage/ChatComponets"
-import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore'; 
-import { app } from "../../../utils/firbase"; 
+import { getDocs, query, collection, where, updateDoc, doc, getFirestore, serverTimestamp, addDoc } from "firebase/firestore";
+import { db , app } from '../../../utils/firbase';
+
 const LaborProfile = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -48,7 +49,7 @@ const LaborProfile = () => {
   const { state: user } = useLocation();
   
  
-  console.log('Thsi is eth current Laborer Laborer  +++++++++++++++ :',Laborer)
+  // console.log('Thsi is eth current Laborer Laborer  +++++++++++++++ :',user.email)
   // console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
   const [openEditProfile, setOpenEditProfile] = useState(false)
   const [laborData, setLaborData] = useState(null)
@@ -394,7 +395,49 @@ const handleSubmit = async () => {
     console.error("Network error:", error);
     toast.error("about udpataing error")
   }
-};
+  };
+  
+
+  const updateFirebaseLaborProfilePicture = async (email, profilePictureUrl, name) => {
+  try {
+    console.log("Starting Firebase labor profile update...");
+    console.log("Email:", email);
+    console.log("Profile Picture URL:", profilePictureUrl);
+    console.log("Name:", name);
+
+    // Query the labor by email
+    const usersRef = collection(db, "Labors");
+    const q = query(usersRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // Loop through matching documents and update
+      const updatePromises = querySnapshot.docs.map(async (docSnapshot) => {
+        const userDocRef = doc(db, "Labors", docSnapshot.id);
+        
+        // Log the data being updated
+        console.log("Updating document ID:", docSnapshot.id);
+        console.log("Data being updated:", {
+          profilePicture: profilePictureUrl || "",
+          name: name || "",
+        });
+
+        // Ensure no undefined values are passed
+        await updateDoc(userDocRef, {
+          profilePicture: profilePictureUrl || "",
+          name: name || "",
+        });
+      });
+
+      await Promise.all(updatePromises);
+      console.log("Labor profile picture and name updated successfully in Firebase.");
+    } else {
+      console.error("No labor found with the provided email.");
+    }
+  } catch (error) {
+    console.error("Error updating labor profile picture in Firebase:", error);
+  }
+}
 
 
 
@@ -462,7 +505,19 @@ const handleSubmit = async () => {
       console.log("Profile updated: succefully.....+++++ =======", response);
 
       if (response.status === 200) {
+
+
+        console.log('Thsi sie the labor profile update page data ::::::::::::',response.data)
+
+        const { profilePicture, firstName, lastName } = response.data.updatedLabor
+
+           const fullName = `${firstName} ${lastName}`.trim();
+          
+          console.log('About to update Firebase'); // Add this before Firebase update
+          await updateFirebaseLaborProfilePicture(email, profilePicture, fullName);
+            
         // fetchLabor()
+        dispatch(setLaborer(response.data.updatedLabor))
         setAboutFromData(response.data.updatedLabor)
         toast.success('The profile updated succefully')
         setOpenEditProfile(false)
@@ -600,7 +655,8 @@ const handleSubmit = async () => {
   console.log("This is the leabor emeaillll+___))((((()))))::", user?.email)
 
 // Updated chat creation function
-const handleChatPage = async () => {
+  const handleChatPage = async () => {
+  console.log("The chating page is trigerring ;;;")
   const laborEmail = user?.email;
   if (!laborEmail) {
     console.log("Labor email is undefined");
@@ -1749,8 +1805,8 @@ const findLaborIdByEmail = async (email) => {
                     {(!Laborer || Object.keys(Laborer).length === 0) && (
 
                     <div className="flex justify-center pt-4">
-                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20">
-                        <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" onClick={handleChatPage}>
+                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20" onClick={handleChatPage}>
+                        <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" >
                           Booking & Start Chating
                         </span>
                         <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">
@@ -1801,8 +1857,8 @@ const findLaborIdByEmail = async (email) => {
                       {(!Laborer || Object.keys(Laborer).length === 0) && (
                         
                     <div className="flex justify-center pt-4">
-                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20">
-                        <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" onClick={handleChatPage}>
+                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20" onClick={handleChatPage}>
+                        <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" >
                           Booking & Start Chating
                         </span>
                         <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">

@@ -21,6 +21,8 @@ import {
 import { toast } from 'react-toastify';
 import '../../Auth/LoadingBody.css'
 import { profilePage } from "../../../services/LaborAuthServices"
+import { getDocs, query, collection, where, updateDoc, doc } from "firebase/firestore";
+import { db } from '../../../utils/firbase';
 
 const LaborRegisterProfile = () => {
 
@@ -128,7 +130,49 @@ const navigate = useNavigate()
       ? prev.filter(skill => skill !== skillOption)
       : [...prev, skillOption]
   );
-};
+  };
+  
+
+  const updateFirebaseLaborProfilePicture = async (email, profilePictureUrl) => {
+  try {
+    console.log("Starting Firebase labor profile update...");
+    console.log("Email:", email);
+    console.log("Profile Picture URL:", profilePictureUrl);
+    // console.log("Name:", name);
+
+    // Query the labor by email
+    const usersRef = collection(db, "Labors");
+    const q = query(usersRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // Loop through matching documents and update
+      const updatePromises = querySnapshot.docs.map(async (docSnapshot) => {
+        const userDocRef = doc(db, "Labors", docSnapshot.id);
+        
+        // Log the data being updated
+        console.log("Updating document ID:", docSnapshot.id);
+        console.log("Data being updated:", {
+          profilePicture: profilePictureUrl || ""
+        });
+
+        // Ensure no undefined values are passed
+        await updateDoc(userDocRef, {
+          profilePicture: profilePictureUrl || ""
+        });
+      });
+
+      await Promise.all(updatePromises);
+      console.log("Labor profile picture and name updated successfully in Firebase.");
+    } else {
+      console.error("No labor found with the provided email.");
+    }
+  } catch (error) {
+    console.error("Error updating labor profile picture in Firebase:", error);
+  }
+}
+
+
 
 
   const handleFormsubmit = async (e: React.FormEvent) => {
@@ -199,8 +243,13 @@ const navigate = useNavigate()
 
           const response = await profilePage(formDataForAPI)
 
-          console.log('thsi is response :',response)
-
+        console.log('thsi is response of the labor page update :::::::::::::::', response)
+        
+        const { profilePicture, email } = response.data.data
+        
+        await updateFirebaseLaborProfilePicture(email, profilePicture);
+        
+        console.log('thsi is response of profilePicture:::::::::::::::', profilePicture)
           if (response.status === 200) {
 
             const reduxData = {

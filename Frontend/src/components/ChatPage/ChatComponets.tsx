@@ -1,31 +1,215 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Star, Smile, Paperclip, Mic, Send, Info } from 'lucide-react';
+import { ArrowLeft, Star, Smile, Paperclip, Mic, Send, Info , X } from 'lucide-react';
 import char from '../../assets/char1.jpeg';
 import user from '../../assets/girl1.jpeg';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc , where, getDocs, documentId  } from 'firebase/firestore';
 // import { getAuth } from 'firebase/auth';
 import { auth , db } from '../../utils/firbase';
 import { useParams } from 'react-router-dom';
-
+import QuoteMessage from './QuoteMessage';
+import { uploadToCloudinary } from "../../utils/cloudineryConfig";
+import MediaPreview from './MediaPreview';
 
 const ChatComponents = () => {
-    const { chatId } = useParams();
-    console.log("This is the chatId ::: ",chatId)
+  const { chatId } = useParams();
+  console.log("This is the chatId ::: ", chatId);
 
   const userLogin = useSelector((state: RootState) => state.user.user);
   const LaborLogin = useSelector((state: RootState) => state.labor.laborer);
+
+  console.log("Thsi is the labor :", LaborLogin);
+  console.log("Thsi is the user :", userLogin);
+
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [mediaFile, setMediaFile] = useState(null);
   const [newMessage, setNewMessage] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const fileInputRef = useRef(null);
   const [chatDetails, setChatDetails] = useState(null);
-//   const [laborData , setLaborData] = useState('')
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [currentUserData, setCurrentUserData] = useState({
+    profilePicture: "",
+    name: "",
+  });
+  const [participants, setParticipants] = useState({
+    user: {
+      profilePicture: "",
+      name: "",
+    },
+    labor: {
+      profilePicture: "",
+      name: "",
+    },
+  });
+  const [quoteData, setQuoteData] = useState({
+    description: "",
+    estimatedCost: "",
+  });
+  console.log("Thsi sie the participants ;;;;;;;;;;;;;;;", participants);
+
+  const fetchParticipantsData = async () => {
+    try {
+      if (!chatDetails) {
+        console.log("No chat details available");
+        return;
+      }
+
+      // Debug logging
+      console.log("Fetching data for:", {
+        userId: chatDetails.userId,
+        laborId: chatDetails.laborId,
+      });
+
+      // Fetch user data
+      const userRef = collection(db, "Users");
+      // First, let's log a sample document to verify the field name
+      const userSample = await getDocs(userRef);
+      if (!userSample.empty) {
+        console.log(
+          "Sample User document structure:",
+          userSample.docs[0].data()
+        );
+      }
+
+      // Try both "uid" and "id" fields
+      const userQuery = query(
+        userRef,
+        where(documentId(), "==", chatDetails.userId)
+      );
+      const userSnapshot = await getDocs(userQuery);
+      console.log("User query results:", {
+        empty: userSnapshot.empty,
+        count: userSnapshot.size,
+      });
+
+      // Fetch labor data
+      const laborRef = collection(db, "Labors");
+      // Log sample labor document
+      const laborSample = await getDocs(laborRef);
+      if (!laborSample.empty) {
+        console.log(
+          "Sample Labor document structure:",
+          laborSample.docs[0].data()
+        );
+      }
+
+      const laborQuery = query(
+        laborRef,
+        where(documentId(), "==", chatDetails.laborId)
+      );
+      const laborSnapshot = await getDocs(laborQuery);
+      console.log("Labor query results:", {
+        empty: laborSnapshot.empty,
+        count: laborSnapshot.size,
+      });
+
+      // Process user data if found
+      if (!userSnapshot.empty) {
+        const userData = userSnapshot.docs[0].data();
+        console.log("Found user data:", userData);
+        setParticipants((prev) => ({
+          ...prev,
+          user: {
+            profilePicture: userData.profilePicture || "",
+            name: userData.name || "",
+          },
+        }));
+      } else {
+        console.log("No user document found with ID:", chatDetails.userId);
+      }
+
+      // Process labor data if found
+      if (!laborSnapshot.empty) {
+        const laborData = laborSnapshot.docs[0].data();
+        console.log("Found labor data:", laborData);
+        setParticipants((prev) => ({
+          ...prev,
+          labor: {
+            profilePicture: laborData.profilePicture || "",
+            name: laborData.name || "",
+          },
+        }));
+      } else {
+        console.log("No labor document found with ID:", chatDetails.laborId);
+      }
+    } catch (error) {
+      console.error("Error fetching participants data:", error);
+      // Add more detailed error logging
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          message: error.message,
+          stack: error.stack,
+        });
+      }
+    }
+  };
+
+  // Add cleanup to useEffect
+  useEffect(() => {
+    let mounted = true;
+
+    if (chatDetails) {
+      fetchParticipantsData().catch((error) => {
+        if (mounted) {
+          console.error("Failed to fetch participants:", error);
+        }
+      });
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [chatDetails]);
+
+  console.log("Thsi si ethe currentUserData :::::::::::", currentUserData);
+
+  // Add this useEffect to fetch user data from Firebase
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Get the email of the currently logged in user
+        const email = userLogin?.email || LaborLogin?.email;
+
+        if (!email) {
+          console.log("No email found");
+          return;
+        }
+
+        // Query Firebase for user data
+        const usersRef = collection(db, "Users");
+        const q = query(usersRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          // Get the first matching document
+          const userData = querySnapshot.docs[0].data();
+          setCurrentUserData({
+            profilePicture: userData.profilePicture || "",
+            name: userData.name || "",
+          });
+        } else {
+          console.log("No user found with this email");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [userLogin?.email, LaborLogin?.email]);
+
+  //   const [laborData , setLaborData] = useState('')
   const messagesEndRef = useRef(null);
 
   console.log("Thsi sie userLogin : ", userLogin.ProfilePic);
-    console.log("Thsi sie LaborLogin : ", LaborLogin);
-    // setLaborData(La)
+  console.log("Thsi sie LaborLogin : ", LaborLogin);
+  // setLaborData(La)
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -60,80 +244,81 @@ const ChatComponents = () => {
     fetchChatDetails();
     return () => unsubscribe();
   }, [chatId, db]);
-    
-    
 
   // Send message function
+  // Modify your handleSendMessage function to handle both text and media
   const handleSendMessage = async (e) => {
-  e.preventDefault();
-  
-  // Add validation checks
-  if (!chatId) {
-    console.error("Chat ID is missing");
-    return;
-  }
-  
-  if (!newMessage.trim()) {
-    return;
-  }
-
-  const currentUser = auth.currentUser;
-  if (!currentUser) {
-    console.error("No user is signed in");
-    return;
-  }
-
-  try {
-    // Create message data
-    const messageData = {
-      content: newMessage,
-      senderId: currentUser.uid,
-      timestamp: serverTimestamp(),
-      type: "text",
-      mediaType: "",
-      mediaUrl: "",
-    };
-
-    // Create references
-    const chatRef = doc(db, "Chats", chatId);
-    const messagesRef = collection(chatRef, "messages");
-
-    // Add the message
-    await addDoc(messagesRef, messageData);
-
-    // Update the chat document
-    await updateDoc(chatRef, {
-      lastMessage: newMessage,
-      lastUpdated: serverTimestamp(),
-    });
-
-    setNewMessage("");
-  } catch (error) {
-    console.error("Error sending message:", error.message);
-  }
-};
-
-  // Send quote function
-  const handleSendQuote = async () => {
-    if (!LaborLogin) return;
+    e.preventDefault();
 
     try {
-      const quoteData = {
-        type: "quote",
+      if (mediaFile) {
+        // Handle media message
+        const mediaUrl = await uploadToCloudinary(mediaFile);
+
+        const messageData = {
+          content: mediaFile.type.startsWith("image/") ? "Image" : "Video",
+          mediaUrl: mediaUrl,
+          type: mediaFile.type.startsWith("image/") ? "image" : "video",
+          senderId: auth.currentUser.uid,
+          timestamp: serverTimestamp(),
+        };
+
+        await addDoc(collection(db, "Chats", chatId, "messages"), messageData);
+
+        // Clean up media preview
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+        }
+        setMediaFile(null);
+        setPreviewUrl(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      } else if (newMessage.trim()) {
+        // Handle text message
+        const messageData = {
+          content: newMessage,
+          type: "text",
+          senderId: auth.currentUser.uid,
+          timestamp: serverTimestamp(),
+        };
+
+        await addDoc(collection(db, "Chats", chatId, "messages"), messageData);
+        setNewMessage("");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
+  // Send quote function
+  const handleSubmitQuote = async () => {
+    try {
+      // Construct the quote message
+      const quoteMessage = {
+        type: "quote", // This is crucial
         content: {
-          description: "",
-          estimatedCost: 0,
+          description: quoteData.description,
+          estimatedCost: quoteData.estimatedCost,
           status: "pending",
         },
         senderId: auth.currentUser.uid,
         timestamp: serverTimestamp(),
       };
 
-      await addDoc(collection(db, "Chats", chatId, "messages"), quoteData);
+      console.log("Sending quote message:", quoteMessage); // Debug log
+
+      // Add to Firestore
+      await addDoc(collection(db, "Chats", chatId, "messages"), quoteMessage);
+
+      // Update chat document
       await updateDoc(doc(db, "Chats", chatId), {
         quoteSent: true,
         lastUpdated: serverTimestamp(),
       });
+
+      // Reset form and close modal
+      setShowModal(false);
+      setQuoteData({ description: "", estimatedCost: "" });
     } catch (error) {
       console.error("Error sending quote:", error);
     }
@@ -145,30 +330,152 @@ const ChatComponents = () => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setQuoteData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
+  const handleAcceptQuote = async (messageId) => {
+    try {
+      // Update the quote status in the message
+      const messageRef = doc(db, "Chats", chatId, "messages", messageId);
+      await updateDoc(messageRef, {
+        "content.status": "accepted",
+      });
+
+      // Get the quote details
+      const messageSnap = await getDoc(messageRef);
+      const quoteData = messageSnap.data();
+
+      // Update the chat document with the accepted quote
+      await updateDoc(doc(db, "Chats", chatId), {
+        quoteAccepted: true,
+        acceptedQuoteAmount: quoteData.content.estimatedCost,
+        quoteAcceptedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error accepting quote:", error);
+    }
+  };
+
+  const onEmojiSelect = (emoji) => {
+    setNewMessage((prevMessage) => prevMessage + emoji.native); // Append selected emoji
+    setShowEmojiPicker(false); // Close picker after selection
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type.startsWith("image/") || file.type.startsWith("video/")) {
+        setMediaFile(file);
+        const objectUrl = URL.createObjectURL(file);
+        setPreviewUrl(objectUrl);
+      } else {
+        alert("Please select an image or video file");
+      }
+    }
+  };
+
+  const cancelMediaUpload = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl); // Clean up the preview URL
+    }
+    setMediaFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-xl font-semibold">Quote Details</h2>
+
+            {/* Description Input */}
+            <div className="mt-4">
+              <label htmlFor="description" className="block text-sm">
+                Description:
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={quoteData.description}
+                onChange={handleChange}
+                rows="4"
+                className="w-full mt-2 p-2 border border-gray-300 rounded-lg"
+                placeholder="Enter a description of the work..."
+              />
+            </div>
+
+            {/* Estimated Cost Input */}
+            <div className="mt-4">
+              <label htmlFor="estimatedCost" className="block text-sm">
+                Estimated Cost:
+              </label>
+              <input
+                type="number"
+                id="estimatedCost"
+                name="estimatedCost"
+                value={quoteData.estimatedCost}
+                onChange={handleChange}
+                className="w-full mt-2 p-2 border border-gray-300 rounded-lg"
+                placeholder="Enter the estimated cost..."
+                min="0"
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="mt-4 flex justify-end">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
+                onClick={() => setShowModal(false)}
+              >
+                Close
+              </button>
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                onClick={handleSubmitQuote}
+              >
+                Submit Quote
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center p-2 sm:p-4 bg-[#21a391] text-white">
-        <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-4 cursor-pointer" />
+        <ArrowLeft
+          className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-4 cursor-pointer"
+          onClick={() => window.history.back()}
+        />
         <div className="flex items-center flex-1">
           <img
             src={
-              userLogin.profilePic
-                ? userLogin?.ProfilePic
-                : LaborLogin?.profilePicture
+              currentUserData.profilePicture || // First try Firebase profile picture
+              userLogin?.ProfilePic || // Fallback to existing profile pics
+              LaborLogin?.profilePicture ||
+              "/default-avatar.png" // Fallback to default image
             }
             alt="Labor Profile"
             className="w-8 h-8 sm:w-12 sm:h-12 rounded-full mr-2 sm:mr-4"
           />
           <div className="min-w-0 flex-1">
             <h1 className="text-base sm:text-lg font-semibold truncate">
-              {userLogin?.firstName && userLogin?.lastName
-                ? `${userLogin.firstName} ${userLogin.lastName}`
-                : `${LaborLogin?.firstName} ${LaborLogin?.lastName}`}
+              {Object.keys(LaborLogin).length > 0 ? (
+                LaborLogin.firstName
+              ) : (
+                  userLogin.firstName
+               )}
             </h1>
-            {!userLogin && (
+            {Object.keys(userLogin).length === 0 && (
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -182,82 +489,97 @@ const ChatComponents = () => {
         </div>
       </div>
 
-      {/* Chat Section */}
       <div className="flex-grow p-2 sm:p-4 overflow-y-auto space-y-4 sm:space-y-6">
         {messages.map((message) => {
           const isCurrentUser = message.senderId === auth.currentUser?.uid;
+          const isLabor = message.senderId === chatDetails?.laborId;
+
+          console.log("Message data:", {
+            type: message.type,
+            content: message.content,
+            isCurrentUser,
+          });
 
           if (message.type === "quote") {
             return (
-              <div key={message.id} className="flex justify-center">
-                <div className="bg-yellow-100 p-4 rounded-lg max-w-sm">
-                  <p className="font-semibold">Quote Details</p>
-                  <p>Status: {message.content.status}</p>
-                  <p>Cost: ${message.content.estimatedCost}</p>
-                  {message.content.description && (
-                    <p>Description: {message.content.description}</p>
-                  )}
-                </div>
-              </div>
+              <QuoteMessage
+                key={message.id}
+                message={message}
+                isCurrentUser={isCurrentUser}
+                formatTimestamp={formatTimestamp}
+                isLabor={isLabor}
+                participants={participants}
+                onAcceptQuote={handleAcceptQuote}
+              />
             );
           }
+
+          // Get the correct profile picture based on sender
+          const senderProfilePic = isLabor
+            ? participants.labor.profilePicture
+            : participants.user.profilePicture;
+
+          console.log("Tis is the labor :", isLabor);
 
           return (
             <div
               key={message.id}
-              className={`flex items-start space-x-2 sm:space-x-4 ${
-                isCurrentUser ? "justify-end space-x-reverse" : ""
+              className={`flex items-start gap-2 sm:gap-4 ${
+                isCurrentUser ? "flex-row-reverse" : "flex-row"
               }`}
             >
-              {/* Profile Picture - Receiver side */}
-              {!isCurrentUser && (
-                <img
-                  src={
-                    userLogin.profilePic
-                      ? userLogin?.ProfilePic
-                      : LaborLogin?.profilePicture
-                  }
-                  alt="Profile"
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
-                />
-              )}
+              {/* Profile Picture */}
+              <img
+                src={senderProfilePic || "/default-avatar.png"}
+                alt="Profile"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
+              />
 
-              {/* Time stamp - Left side for receiver, Right side for sender */}
-              {isCurrentUser && (
-                <span className="text-xs sm:text-sm text-gray-500 self-end whitespace-nowrap">
-                  {formatTimestamp(message.timestamp)}
-                </span>
-              )}
+              {/* Message Content and Timestamp Container */}
+              <div className={`flex flex-col gap-1 ${
+                  isCurrentUser ? "items-end" : "items-start"
+                }`}>
+                  {/* Message Bubble */}
+                  <div
+                    className={`p-2 sm:p-3 rounded-lg max-w-[75%] sm:max-w-xs md:max-w-md ${
+                      isCurrentUser ? "bg-blue-500 text-white" : "bg-gray-200"
+                    }`}
+                  >
+                    {message.type === "text" ? (
+                      <p className="text-sm sm:text-base">{message.content}</p>
+                    ) : message.type === "image" ? (
+                      <img 
+                        src={message.mediaUrl} 
+                        alt="Shared image" 
+                        className="rounded-lg max-w-full h-auto"
+                      />
+                    ) : message.type === "video" ? (
+                      <video 
+                        src={message.mediaUrl} 
+                        controls 
+                        className="rounded-lg max-w-full"
+                      />
+                    ) : (
+                      <p className="text-sm sm:text-base">{message.content}</p>
+                    )}
+                  </div>
 
-              {/* Message content */}
-              <div
-                className={`p-2 sm:p-3 rounded-lg max-w-[75%] sm:max-w-xs md:max-w-md ${
-                  isCurrentUser ? "bg-blue-500 text-white" : "bg-gray-200"
-                }`}
-              >
-                <p className="text-sm sm:text-base">{message.content}</p>
-              </div>
-
-              {/* Time stamp - Right side for receiver, Left side for sender */}
-              {!isCurrentUser && (
-                <span className="text-xs sm:text-sm text-gray-500 self-end whitespace-nowrap">
-                  {formatTimestamp(message.timestamp)}
-                </span>
-              )}
-
-              {/* Profile Picture - Sender side */}
-              {isCurrentUser && (
-                <img
-                  src={userLogin?.ProfilePic || LaborLogin?.profilePicture}
-                  alt="Profile"
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
-                />
-              )}
+                  {/* Timestamp */}
+                  <span className="text-xs sm:text-sm text-gray-500">
+                    {formatTimestamp(message.timestamp)}
+                  </span>
+                </div>
             </div>
           );
         })}
         <div ref={messagesEndRef} />
       </div>
+
+      <MediaPreview
+        previewUrl={previewUrl}
+        mediaFile={mediaFile}
+        onCancel={cancelMediaUpload}
+      />
 
       {/* Input Section */}
       <div className="p-2 sm:p-4 bg-white border-t border-gray-300">
@@ -273,19 +595,44 @@ const ChatComponents = () => {
             className="flex-grow p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-            <Smile className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 cursor-pointer" />
-            <Paperclip className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 cursor-pointer" />
-            <Mic className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 cursor-pointer hidden sm:block" />
-            <button className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-              <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
+            <div className="relative">
+              <Smile
+                className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 cursor-pointer"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              />
+              {showEmojiPicker && (
+                <div className="absolute bottom-full right-0 mb-2">
+                  <Picker data={data} onEmojiSelect={onEmojiSelect} />
+                </div>
+              )}
+            </div>
           </div>
+          <div className="input-container">
+            {/* File Input */}
+            <input
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleFileChange}
+              className="hidden"
+              id="mediaUpload"
+            />
+            <label htmlFor="mediaUpload" className="cursor-pointer">
+              <Paperclip className="icon" />
+            </label>
+            {/* <button  className="send-button">
+              <Send className="icon" />
+            </button> */}
+          </div>
+          <Mic className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 cursor-pointer hidden sm:block" />
+          <button className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+            <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
         </form>
         {Object.keys(userLogin).length === 0 && (
           <div className="flex items-center mt-2 sm:mt-4 relative">
             <button
               className="w-[140px] sm:w-[174px] p-2 sm:p-3 text-sm sm:text-base bg-[#21a391] text-white rounded-lg hover:bg-green-600"
-              onClick={handleSendQuote}
+              onClick={() => setShowModal(true)}
             >
               Send Quote
             </button>

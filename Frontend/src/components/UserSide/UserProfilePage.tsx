@@ -20,16 +20,17 @@ import char from "../../assets/happy-female-electrician.avif";
 import { useEffect, useState } from "react";
 import { editPassword, updateUser, userFetch } from "../../services/UserSurvice";
 import { editProfileValidate, validatePassword } from "../../utils/userRegisterValidators";
-import { setError ,setLoading, setUser } from "../../redux/slice/userSlice";
+import { setError, setLoading, setUser } from "../../redux/slice/userSlice";
+import { getDocs, query, collection, where} from "firebase/firestore";
 import { toast } from "react-toastify";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email)
   const user = useSelector((state: RootState) => state.user.user)
-  console.log("This is the user ....... ",user)
+  // console.log("This is the user ....... ",user)
   const loading  = useSelector((state: RootState) => state.user.loading)
   const dispatch = useDispatch()
-  console.log('Thsi siw eht email :',email)
+  // console.log('Thsi siw eht email :',email)
   const [openEditProfile, setOpenEditProfile] = useState(false)
   const [openChangePassword , setOpenChangePasswod] = useState(false)
   const [userData, setUserData] = useState(null);
@@ -90,31 +91,51 @@ const UserProfile = () => {
   };
 
 
-  const uploadImageToFirebase = async (imageFile, userId) => {
+const updateFirebaseProfilePicture = async (email, profilePictureUrl, name) => {
   try {
-    const storage = getStorage();
-    const storageRef = ref(storage, `profile_images/${userId}`);
-    
-    // Upload the image
-    const snapshot = await uploadBytes(storageRef, imageFile);
-    
-    // Get the download URL
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    
-    // Update the user document in Firestore
-    const userRef = doc(db, "Users", userId);
-    await updateDoc(userRef, {
-      profilePicture: downloadURL
-    });
-    
-    return downloadURL;
-  } catch (error) {
-    console.error("Error uploading image:", error);
-    throw error;
-  }
-};
+    console.log("Starting Firebase profile update...");
+    console.log("Email:", email);
+    console.log("Profile Picture URL:", profilePictureUrl);
+    console.log("Name:", name);
 
- const handleSave = async () => {
+    // Query the user by email
+    const usersRef = collection(db, "Users");
+    const q = query(usersRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // Loop through matching documents and update
+      const updatePromises = querySnapshot.docs.map(async (docSnapshot) => {
+        const userDocRef = doc(db, "Users", docSnapshot.id);
+        
+        // Log the data being updated
+        console.log("Updating document ID:", docSnapshot.id);
+        console.log("Data being updated:", {
+          profilePicture: profilePictureUrl || "",
+          name: name || "",
+        });
+
+        // Ensure no undefined values are passed
+        await updateDoc(userDocRef, {
+          profilePicture: profilePictureUrl || "",
+          name: name || "",
+        });
+      });
+
+      await Promise.all(updatePromises);
+      console.log("Profile picture and name updated successfully in Firebase.");
+    } else {
+      console.error("No user found with the provided email.");
+    }
+  } catch (error) {
+    console.error("Error updating profile picture in Firebase:", error);
+  }
+}
+
+
+
+const handleSave = async () => {
+  console.log('Starting handleSave function'); // Add this to verify function is called
   dispatch(setLoading(true));
   
   try {
@@ -122,8 +143,10 @@ const UserProfile = () => {
       firstName: formData?.firstName,
       lastName: formData?.lastName,
     };
+    console.log('Profile data:', profileData); // Log profile data
 
     const validationErrors = await editProfileValidate(profileData);
+    console.log('Validation errors:', validationErrors); // Check validation results
     
     if (validationErrors) {
       dispatch(setLoading(false));
@@ -132,44 +155,48 @@ const UserProfile = () => {
     }
 
     dispatch(setError({}));
-    
+
     const formDataObj = new FormData();
     formDataObj.append("firstName", formData.firstName);
     formDataObj.append("lastName", formData.lastName);
     formDataObj.append("email", userData.email);
+    formDataObj.append("image", formData.image);
 
-    // If there's a new image, upload it to Firebase first
-    let profilePictureURL = userData?.profilePicture; // Keep existing URL by default
-    
-    if (formData.image) {
-      // Get current user ID from Firebase Auth
-      const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("No authenticated user found");
-      
-      // Upload image and get URL
-      profilePictureURL = await uploadImageToFirebase(formData.image, currentUser.uid);
-      formDataObj.append("profilePicture", profilePictureURL);
-    }
+    console.log("FormData contents:", {
+      firstName: formDataObj.get("firstName"),
+      lastName: formDataObj.get("lastName"),
+      email: formDataObj.get("email"),
+      image: formDataObj.get("image"),
+    });
 
-    // Update user in your backend
+    console.log('About to call updateUser'); // Add this before API call
     const response = await updateUser(formDataObj);
-    
-    if (response.data.updatedUser) {
+    console.log('Response from updateUser:', response); // Log full response
+
+    if (response.status === 200) {
       const { updatedUser } = response.data;
+      console.log('Updated user data:', updatedUser); // Log updated user data
+
+      const { ProfilePic, email, firstName, lastName } = updatedUser;
+      const fullName = `${firstName} ${lastName}`.trim();
+      
+      console.log('About to update Firebase'); // Add this before Firebase update
+      await updateFirebaseProfilePicture(email, ProfilePic, fullName);
+      console.log('Firebase update completed'); // Add this after Firebase update
+
       dispatch(setUser(updatedUser));
-      setUserData(response.data.updatedUser);
+      setUserData(updatedUser);
       toast.success("Profile updated successfully!");
       setOpenEditProfile(false);
     }
-    
   } catch (error) {
-    console.error("Error updating profile:", error);
+    console.error("Error in handleSave:", error); // Modified error log
     toast.error("An error occurred. Please try again.");
   } finally {
+    console.log('HandleSave completed'); // Add this to verify function completion
     dispatch(setLoading(false));
   }
-  };
-  
+};
   const handleConfirm = async () => {
      dispatch(setLoading(true))
     const PasswordErrror = validatePassword(password);
