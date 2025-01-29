@@ -3,6 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 import ApiResponse from "../utils/Apiresponse";
 import { decodeToken, verifyRefreshToken } from "../utils/tokenUtils";
 import { verifyAccessToken } from '../utils/tokenUtils';  // Replace with your response class
+import User from "../models/userModel";
+import Labor from "../models/LaborModel";
 // import { JwtPayload } from 'jsonwebtoken'; 
 
 
@@ -14,11 +16,11 @@ interface DecodedToken extends JwtPayload {
 }
 
 
-export const authenticateLabor = (
+export const authenticateLabor = async (
   req: Request & Partial<{ labor: string | jwt.JwtPayload }>,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
 
   // console.log('Hi iiii imaa here ......!!!!!!-----------')
   
@@ -42,7 +44,25 @@ export const authenticateLabor = (
     const decoded = verifyAccessToken(token) as DecodedToken; // Ensure DecodedToken includes `userId` type definition
     req.labor = decoded;
       // console.log("Decoded Token: --------++++------", decoded);
-      // console.log("Decoded Token  and rolee........!: --------++++------", decoded.role);
+    // console.log("Decoded Token  and rolee........!: --------++++------", decoded.role);
+    
+
+    const {id } = req.labor
+
+    const labor = await Labor.findById(id);
+
+    console.log("This is the laborr;;;;;;;;;;;;;;;;;;;;;;;;;;;;",labor)
+
+     if (labor.isBlocked) {
+      res.status(403).json(new ApiResponse(403, null, "Your account has been blocked. Please contact support."));
+      return;
+    }
+     if (labor.status === 'rejected') {
+      res.status(403).json(new ApiResponse(404, null, "Your are rejected by the Autherized team. Please contact support."));
+      return;
+    }
+
+
     // Check role
     if (decoded.role !== 'labor') {
       res.status(401).json(new ApiResponse(401, null, 'You are not authorized'));
@@ -57,11 +77,11 @@ export const authenticateLabor = (
 
 
 
-export const authenticateUser = (
+export const authenticateUser = async (
   req: Request & Partial<{ user: string | jwt.JwtPayload }>,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void>=> {
 
   // console.log('Hi iiii imaa here ......!!!!!!-----------')
   
@@ -84,11 +104,24 @@ export const authenticateUser = (
   try {
     const decoded = verifyAccessToken(token) as DecodedToken; // Ensure DecodedToken includes `userId` type definition
     req.user = decoded;
-      // console.log("Decoded Token: --------++++------", decoded);
+      console.log('Iam heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
       // console.log("Decoded Token  and rolee........!: --------++++------", decoded.role);
+    
     // Check role
+    
+    const {id } = req.user
+
+    const user = await User.findById(id);
+
+      console.log("This is The user ..................................",user)
+
     if (decoded.role !== 'user') {
       res.status(401).json(new ApiResponse(401, null, 'You are not authorized'));
+      return;
+    }
+
+    if (user.isBlocked) {
+      res.status(403).json(new ApiResponse(403, null, "Your account has been blocked. Please contact support."));
       return;
     }
 

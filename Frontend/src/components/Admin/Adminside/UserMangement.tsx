@@ -5,34 +5,55 @@ import { toast } from "react-toastify"
 import { Link, useNavigate } from "react-router-dom"
 import { UserPlus , Eye, Trash2} from 'lucide-react';
 import { fetchUser } from '../../../services/AdminAuthServices'
+import UseDebounce from '../../../Hooks/useDebounce'
 const UserMangement = () => {
   const navigate = useNavigate()
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const debouncedSearchTerm = UseDebounce(searchTerm, 500);
 
 
-  const fetchUsers = async () => {  
-    
-    const resoponse = await fetchUser()
+ const fetchUsers = async (query = "", pageNumber = 1) => {
+    try {
+      const response = await fetchUser(query, pageNumber);
 
-    console.log('This is the resonse of the user fetch :',resoponse)
-
-    if (resoponse.status === 200) {
-      setUsers(resoponse.data.data)
-      console.log('thhi is the response :',resoponse)
-    } else {
-      toast.error("Error occurd during fetchUser....!")
+      if (response.status === 200) {
+        const { totalPage, usersFound } = response.data.data;
+        setUsers(usersFound);
+        setTotalPages(totalPage);
+      } else {
+        toast.error("Error occurred during fetchUser!");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Error occurred while fetching users!");
     }
-  }
+  };
 
     useEffect(() => {
-    fetchUsers()
-  },[])
+    fetchUsers(debouncedSearchTerm, page);
+  }, [debouncedSearchTerm, page]);
 
 
   const handleViewPage = (user) => {
     navigate('/admin/userView',{state : {user}})
   }
+
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      setPage(prev => prev - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(prev => prev + 1);
+    }
+  };
 
   return (
     <div className="flex h-screen">
@@ -47,7 +68,7 @@ const UserMangement = () => {
           </div>
 
           {/* Button section */}
-          <div className="flex justify-center sm:justify-end">
+          {/* <div className="flex justify-center sm:justify-end">
             <button className="group relative w-32 bg-gradient-to-b from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 shadow-md px-4 py-2 rounded-xl border border-gray-400 text-white font-medium transition-all duration-300">
               <div className="relative overflow-hidden h-6">
                 <span className="block group-hover:-translate-y-full transition-transform duration-300 ease-in-out">
@@ -58,7 +79,7 @@ const UserMangement = () => {
                 </span>
               </div>
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="w-full">
@@ -86,10 +107,12 @@ const UserMangement = () => {
                 <input
                   type="search"
                   placeholder="Search the users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 rounded-full text-white border 
-                        bg-[#ABA0A0] border-gray-300 shadow-sm 
-                        focus:outline-none focus:ring-2 focus:ring-blue-500 
-                        focus:border-blue-500 placeholder-white"
+                  bg-[#ABA0A0] border-gray-300 shadow-sm 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 
+                focus:border-blue-500 placeholder-white"
                 />
               </div>
             </div>
@@ -206,7 +229,11 @@ const UserMangement = () => {
 
                   {/* User Status */}
                   <div className="col-span-2 lg:text-center">
-                    <span className="px-2 py-1 lg:text-center text-xs rounded-full bg-green-500 text-white">
+                    <span
+                      className={`px-2 py-1 lg:text-center text-xs rounded-full text-white ${
+                        user.isBlocked ? "bg-red-500" : "bg-green-500"
+                      }`}
+                    >
                       {user.isBlocked ? "Blocked" : "Active"}
                     </span>
                   </div>
@@ -236,6 +263,26 @@ const UserMangement = () => {
             </div>
           </div>
         </div>
+          {/* Pagination controls */}
+          <div className="flex justify-center gap-4 p-4">
+            <button
+              onClick={handlePreviousPage}
+              disabled={page === 1}
+              className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="px-4 py-2">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
       </div>
     </div>
   );

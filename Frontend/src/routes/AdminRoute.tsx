@@ -7,6 +7,7 @@ import AdminUserManagement from '../pages/adminSide/AdminUserManagement';
 import AdminLaborManagement from '../pages/adminSide/AdminLaborManagement';
 import UserViewPage from '../pages/adminSide/UserViewPage';
 import LaborViewPage from '../pages/adminSide/LaborViewPage';
+import LaborViewAllDetials from '../pages/adminSide/LaborViewAllDetials';
 
 const AdminRoute = () => {
   return (
@@ -17,6 +18,7 @@ const AdminRoute = () => {
       <Route path='/laborManagement' element={<AdminPrivateRoute><AdminLaborManagement/></AdminPrivateRoute>}/>
       <Route path='/userView' element={<AdminPrivateRoute><UserViewPage/></AdminPrivateRoute>}/>
       <Route path='/laborView' element={<AdminPrivateRoute><LaborViewPage/></AdminPrivateRoute>}/>
+      <Route path='/viewAllDetails' element={<AdminPrivateRoute><LaborViewAllDetials/></AdminPrivateRoute>}/>
     </Routes>
   )
 }

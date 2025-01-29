@@ -15,8 +15,10 @@ export const logout = async () => {
   return response
 }
 
-export const fetchUser = async () => {
-  const resonse = await api.get('/api/admin/user/usersFetch')
+export const fetchUser = async (query, pageNumber) => {
+  const resonse = await api.get('/api/admin/user/usersFetch', {
+    params: { query, page: pageNumber },
+  })
   return resonse
 }
 

@@ -12,9 +12,9 @@ export class AdminService implements IAdminService {
     this.adminRepositery = adminRepositery;
   }
 
-  async fetchUsers(): Promise<IUser[]> {
+  async fetchUsers(query: string = '', skip: number, perPage: number): Promise<IUser[]> {
     try {
-      const userFouned = await this.adminRepositery.fetch();
+      const userFouned = await this.adminRepositery.fetch(query, skip, perPage);
       if (!userFouned) {
         throw new ApiError(404, "User not found for fetch ...!");
       }
@@ -99,6 +99,15 @@ export class AdminService implements IAdminService {
    async getTotalLaborsCount(query: string): Promise<number> {
         try {
             const count = await this.adminRepositery.getLabourTotalCount(query);
+            return count;
+        } catch (error) {
+            console.error('Error getting total labor count:', error);
+            throw new Error('Failed to get total labor count');
+      }
+  }
+   async getTotalUsersCount(query: string): Promise<number> {
+        try {
+            const count = await this.adminRepositery.getTotalUsersCount(query);
             return count;
         } catch (error) {
             console.error('Error getting total labor count:', error);

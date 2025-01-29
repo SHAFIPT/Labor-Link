@@ -39,6 +39,7 @@ export class LaborSideRepository implements ILaborSidRepository {
 
     try {
       return await Labor.find({
+        isApproved: true,
         location: {
           $near: {
             $geometry: {

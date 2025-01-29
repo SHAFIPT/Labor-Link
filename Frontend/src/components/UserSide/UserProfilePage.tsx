@@ -15,14 +15,15 @@ import {
   Calendar,
 } from "lucide-react";
 import '../Auth/LoadingBody.css'
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import char from "../../assets/happy-female-electrician.avif";
 import { useEffect, useState } from "react";
 import { editPassword, updateUser, userFetch } from "../../services/UserSurvice";
 import { editProfileValidate, validatePassword } from "../../utils/userRegisterValidators";
-import { setError, setLoading, setUser } from "../../redux/slice/userSlice";
+import { resetUser, setError, setisUserAthenticated, setFormData, setLoading, setUser, setAccessToken } from "../../redux/slice/userSlice";
 import { getDocs, query, collection, where} from "firebase/firestore";
 import { toast } from "react-toastify";
+import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../../redux/slice/laborSlice";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email)
@@ -37,6 +38,7 @@ const UserProfile = () => {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('')
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -52,20 +54,34 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await userFetch();
-        if (response.fetchUserResponse) {
-          setUserData(response.fetchUserResponse);
+        const data = await userFetch();
+
+        const {fetchUserResponse} = data
+
+        console.log("This is the data:::::::::::::",fetchUserResponse)
+        setUser(fetchUserResponse);
+        setUserData(fetchUserResponse);
+      } catch (error: any) {
+        if (error.response && error.response.status === 403) {
+          toast.error("Your account has been blocked.");
+          localStorage.removeItem("UserAccessToken");
+          // Reset User State
+          dispatch(setUser({}));
+          dispatch(resetUser());
+          dispatch(setisUserAthenticated(false));
+          dispatch(setAccessToken(""));
+
+          // Reset Labor State
+          dispatch(setLaborer({}));
+          dispatch(resetLaborer());
+          dispatch(setIsLaborAuthenticated(false));
+          navigate("/"); // Redirect to login page
         }
-        console.log("This is the response:", response);
-      } catch (error) {
-        console.error("Error fetching user:", error);
       }
     };
 
-    if (email) {
-      fetchUser();
-    }
-  }, [email]);
+    fetchUser();
+  }, [navigate,dispatch]);
 
     const handleEditProfile = () => {
     // Reset formData to initial state when opening edit modal
@@ -79,10 +95,10 @@ const UserProfile = () => {
 
 
     // Handle input changes
- const handleChange = (e) => {
-  const { id, value } = e.target;
-  setFormData((prev) => ({ ...prev, [id]: value }));
-};
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
 
   // Handle image upload
   const handleImageUpload = (e) => {
@@ -197,6 +213,7 @@ const handleSave = async () => {
     dispatch(setLoading(false));
   }
 };
+  
   const handleConfirm = async () => {
      dispatch(setLoading(true))
     const PasswordErrror = validatePassword(password);
@@ -532,6 +549,61 @@ const handleSave = async () => {
           </div>
         </div>
       </div>
+
+      <div className="currentStatus">
+          <div className="max-w-2xl mx-auto p-6">
+      <h2 className="text-2xl font-semibold text-center mb-6">Current Status</h2>
+      
+      {/* Outer border */}
+      <div className="border-2 border-gray-300 rounded-lg p-6 mb-4">
+        {/* Inner border */}
+        <div className="border-2 border-gray-200 rounded-lg p-6 mb-6">
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-semibold">Job Details:</h3>
+              <p className="ml-8 text-gray-700">Fixing the leaking sink</p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold">Estimated Cost:</h3>
+              <p className="ml-8 text-gray-700">₹150 (One Hundred and Fifty only)</p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold">Status:</h3>
+              <p className="ml-8 text-gray-700">Confirmed</p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold">Scheduled Date and Time:</h3>
+              <p className="ml-8 text-gray-700">2024-12-25 10:00 AM</p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold">Laborer contact:</h3>
+              <p className="ml-8 text-gray-700">John Doe, 123-456-7890</p>
+            </div>
+
+            <div className="flex justify-between pt-4">
+              <button className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 transition-colors">
+                Cancel Booking
+              </button>
+              <button className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors">
+                Reschedule
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Work completed status */}
+        <div className="text-center">
+          <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+            Work Completed
+          </span>
+        </div>
+      </div>
+    </div>
+    </div>
     </>
   );
 };

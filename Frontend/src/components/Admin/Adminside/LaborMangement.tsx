@@ -78,6 +78,18 @@ const LaborMangement = () => {
     navigate("/admin/laborView", { state: { labor } });
   };
 
+   const handlePreviousPage = () => {
+    if (page > 1) {
+      setPage(prev => prev - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(prev => prev + 1);
+    }
+  };
+
   return (
     <div className="flex h-screen">
       <AdminSideRow />
@@ -91,7 +103,7 @@ const LaborMangement = () => {
           </div>
 
           {/* Button section */}
-          <div className="flex justify-center sm:justify-end">
+          {/* <div className="flex justify-center sm:justify-end">
             <button className="group relative w-32 bg-gradient-to-b from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 shadow-md px-4 py-2 rounded-xl border border-gray-400 text-white font-medium transition-all duration-300">
               <div className="relative overflow-hidden h-6">
                 <span className="block group-hover:-translate-y-full transition-transform duration-300 ease-in-out">
@@ -102,7 +114,7 @@ const LaborMangement = () => {
                 </span>
               </div>
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="w-full">
@@ -301,29 +313,26 @@ const LaborMangement = () => {
             </div>
           </div>
         </div>
-        <div className="flex justify-center items-center space-x-4 mt-4">
-            {page > 1 && (  // Only show Previous when not on first page
-                <button
-                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
-                >
-                    Previous
-                </button>
-            )}
-
-            <span className="text-gray-600">
-                Page {page} of {totalPages}
+        {/* Pagination controls */}
+          <div className="flex justify-center gap-4 p-4">
+            <button
+              onClick={handlePreviousPage}
+              disabled={page === 1}
+              className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="px-4 py-2">
+              Page {page} of {totalPages}
             </span>
-
-            {page < totalPages && (  // Show Next button only if there are more pages
-                <button
-                    onClick={() => setPage((prev) => prev + 1)}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
-                >
-                    Next
-                </button>
-            )}
-        </div>
+            <button
+              onClick={handleNextPage}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
       </div>
     </div>
   );

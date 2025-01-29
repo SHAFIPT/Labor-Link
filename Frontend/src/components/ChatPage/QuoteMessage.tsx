@@ -1,5 +1,3 @@
-import React from 'react';
-
 const QuoteMessage = ({ message, isCurrentUser, formatTimestamp, participants, onAcceptQuote, isLabor }) => {
   const senderProfilePic = isLabor 
     ? participants.labor.profilePicture 
@@ -53,9 +51,36 @@ const QuoteMessage = ({ message, isCurrentUser, formatTimestamp, participants, o
               <p className="text-gray-600">₹{message.content.estimatedCost}</p>
             </div>
 
+            <div className="space-y-1">
+            <span className="font-semibold">Available Time:</span>
+            <div className="flex flex-col text-gray-600">
+              <p>
+                <span className="inline-block w-5">
+                  <i className="far fa-calendar" />
+                </span>
+                {new Date(message.content.arrivalTime).toLocaleDateString('en-IN', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+              <p>
+                <span className="inline-block w-5">
+                  <i className="far fa-clock" />
+                </span>
+                {new Date(message.content.arrivalTime).toLocaleTimeString('en-IN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                })}
+              </p>
+            </div>
+          </div>
+
             {!isCurrentUser && message.content.status === "pending" && (
               <button
-                onClick={() => onAcceptQuote(message.id)}
+                onClick={() => onAcceptQuote(message.id, message.content)}
                 className="mt-2 w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-colors"
               >
                 Accept Quote
@@ -72,4 +97,4 @@ const QuoteMessage = ({ message, isCurrentUser, formatTimestamp, participants, o
   );
 };
 
-export default QuoteMessage;
+export default QuoteMessage

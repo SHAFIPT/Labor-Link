@@ -9,27 +9,44 @@ import { RootState } from '../../redux/store/store';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc , where, getDocs, documentId  } from 'firebase/firestore';
 // import { getAuth } from 'firebase/auth';
 import { auth , db } from '../../utils/firbase';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import QuoteMessage from './QuoteMessage';
 import { uploadToCloudinary } from "../../utils/cloudineryConfig";
 import MediaPreview from './MediaPreview';
+import QuoteConfirmationModal from './QuoteConfirmationModal';
+import { bookTheLabor } from '../../services/UserSurvice';
+import { toast } from 'react-toastify';
+import SuccessModal from './SuccessModal';
 
 const ChatComponents = () => {
-  const { chatId } = useParams();
-  console.log("This is the chatId ::: ", chatId);
 
   const userLogin = useSelector((state: RootState) => state.user.user);
   const LaborLogin = useSelector((state: RootState) => state.labor.laborer);
+  const { chatId } = useParams();
+  const { state: user } = useLocation();
 
-  console.log("Thsi is the labor :", LaborLogin);
-  console.log("Thsi is the user :", userLogin);
+  const laborId = user?.user._id
+  const userId = userLogin?._id
 
+  console.log("This is the chatId ::: ", chatId);
+  // console.log("This is the laobrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr ::: ", laborId);
+  // console.log("This is the userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr ::: ", userId);
+
+
+
+  // console.log("Thsi is the labor lllllllllllllllllllllllllllllllll:", LaborLogin);
+  // console.log("Thsi is the user ||||||||||||||||||||||||||||||||||:", userLogin);
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [selectedQuoteId, setSelectedQuoteId] = useState(null);
+  const [selectedQuoteDetails, setSelectedQuoteDetails] = useState(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [messages, setMessages] = useState([]);
   const [mediaFile, setMediaFile] = useState(null);
   const [newMessage, setNewMessage] = useState("");
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [successModal, setSuccessModal] = useState(false);
   const fileInputRef = useRef(null);
   const [chatDetails, setChatDetails] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -50,6 +67,7 @@ const ChatComponents = () => {
   const [quoteData, setQuoteData] = useState({
     description: "",
     estimatedCost: "",
+    arrivalTime : ''
   });
   console.log("Thsi sie the participants ;;;;;;;;;;;;;;;", participants);
 
@@ -251,19 +269,21 @@ const ChatComponents = () => {
     e.preventDefault();
 
     try {
+      let messageData;
+      let lastMessageContent;
+
       if (mediaFile) {
         // Handle media message
         const mediaUrl = await uploadToCloudinary(mediaFile);
-
-        const messageData = {
-          content: mediaFile.type.startsWith("image/") ? "Image" : "Video",
+        lastMessageContent = mediaFile.type.startsWith("image/") ? "Sent an image" : "Sent a video";
+        
+        messageData = {
+          content: lastMessageContent,
           mediaUrl: mediaUrl,
           type: mediaFile.type.startsWith("image/") ? "image" : "video",
           senderId: auth.currentUser.uid,
           timestamp: serverTimestamp(),
         };
-
-        await addDoc(collection(db, "Chats", chatId, "messages"), messageData);
 
         // Clean up media preview
         if (previewUrl) {
@@ -276,53 +296,63 @@ const ChatComponents = () => {
         }
       } else if (newMessage.trim()) {
         // Handle text message
-        const messageData = {
+        lastMessageContent = newMessage;
+        
+        messageData = {
           content: newMessage,
           type: "text",
           senderId: auth.currentUser.uid,
           timestamp: serverTimestamp(),
         };
 
-        await addDoc(collection(db, "Chats", chatId, "messages"), messageData);
         setNewMessage("");
+      }
+
+      if (messageData) {
+        // Add the message to the messages subcollection
+        await addDoc(collection(db, "Chats", chatId, "messages"), messageData);
+
+        // Update the main chat document with the last message
+        await updateDoc(doc(db, "Chats", chatId), {
+          lastMessage: lastMessageContent,
+          lastUpdated: serverTimestamp(),
+        });
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      // Optionally add error handling UI feedback here
     }
-  };
+};
   // Send quote function
   const handleSubmitQuote = async () => {
-    try {
-      // Construct the quote message
-      const quoteMessage = {
-        type: "quote", // This is crucial
-        content: {
-          description: quoteData.description,
-          estimatedCost: quoteData.estimatedCost,
-          status: "pending",
-        },
-        senderId: auth.currentUser.uid,
-        timestamp: serverTimestamp(),
-      };
+  try {
+    const quoteMessage = {
+      type: "quote",
+      content: {
+        description: quoteData.description,
+        estimatedCost: quoteData.estimatedCost,
+        arrivalTime: quoteData.arrivalTime, // New field
+        status: "pending",
+      },
+      senderId: auth.currentUser.uid,
+      timestamp: serverTimestamp(),
+    };
 
-      console.log("Sending quote message:", quoteMessage); // Debug log
+    console.log("Sending quote message:", quoteMessage);
 
-      // Add to Firestore
-      await addDoc(collection(db, "Chats", chatId, "messages"), quoteMessage);
+    await addDoc(collection(db, "Chats", chatId, "messages"), quoteMessage);
 
-      // Update chat document
-      await updateDoc(doc(db, "Chats", chatId), {
-        quoteSent: true,
-        lastUpdated: serverTimestamp(),
-      });
+    await updateDoc(doc(db, "Chats", chatId), {
+      quoteSent: true,
+      lastUpdated: serverTimestamp(),
+    });
 
-      // Reset form and close modal
-      setShowModal(false);
-      setQuoteData({ description: "", estimatedCost: "" });
-    } catch (error) {
-      console.error("Error sending quote:", error);
-    }
-  };
+    setShowModal(false);
+    setQuoteData({ description: "", estimatedCost: "", arrivalTime: "" });
+  } catch (error) {
+    console.error("Error sending quote:", error);
+  }
+};
 
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "";
@@ -338,28 +368,51 @@ const ChatComponents = () => {
     }));
   };
 
-  const handleAcceptQuote = async (messageId) => {
-    try {
-      // Update the quote status in the message
-      const messageRef = doc(db, "Chats", chatId, "messages", messageId);
-      await updateDoc(messageRef, {
-        "content.status": "accepted",
-      });
-
-      // Get the quote details
-      const messageSnap = await getDoc(messageRef);
-      const quoteData = messageSnap.data();
-
-      // Update the chat document with the accepted quote
-      await updateDoc(doc(db, "Chats", chatId), {
-        quoteAccepted: true,
-        acceptedQuoteAmount: quoteData.content.estimatedCost,
-        quoteAcceptedAt: serverTimestamp(),
-      });
-    } catch (error) {
-      console.error("Error accepting quote:", error);
-    }
+  const handleAcceptQuote = (messageId, quoteDetails) => {
+  console.log("Thsi sie messageId dddddddddddddddd",messageId)
+  console.log("Thsi sie quoteDetailsssssssssssss",quoteDetails)
+  setSelectedQuoteId(messageId);
+  setSelectedQuoteDetails(quoteDetails);
+  setIsConfirmModalOpen(true);
   };
+  
+  // Add new function to handle final confirmation
+const handleConfirmQuoteAcceptance = async () => {
+  try {
+
+
+    console.log("Thsis is the selected quoteeeeeeeeeeeeeeeee",selectedQuoteDetails)
+
+    // Update the quote status in the message
+    const messageRef = doc(db, "Chats", chatId, "messages", selectedQuoteId);
+    await updateDoc(messageRef, {
+      "content.status": "accepted",
+    });
+
+    // Update the chat document with the accepted quote
+    await updateDoc(doc(db, "Chats", chatId), {
+      quoteAccepted: true,
+      acceptedQuoteAmount: selectedQuoteDetails.estimatedCost,
+      quoteAcceptedAt: serverTimestamp(),
+    });
+
+    const response = await bookTheLabor(userId, laborId, selectedQuoteDetails)
+    if (response.status === 201) {
+      toast.success('booking successfully..........')
+      // Close the modal
+
+
+      setSuccessModal(true)
+      setIsConfirmModalOpen(false);
+      setSelectedQuoteId(null);
+      setSelectedQuoteDetails(null);
+
+    }
+
+  } catch (error) {
+    console.error("Error accepting quote:", error);
+  }
+};
 
   const onEmojiSelect = (emoji) => {
     setNewMessage((prevMessage) => prevMessage + emoji.native); // Append selected emoji
@@ -390,9 +443,25 @@ const ChatComponents = () => {
     }
   };
 
+  console.log("This is the selected Queet4e in chat page leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",)
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Modal */}
+
+    {isConfirmModalOpen && (
+        <QuoteConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmQuoteAcceptance}
+        quoteDetails={selectedQuoteDetails}
+      />
+      )}
+      
+      {successModal && <SuccessModal successModal={successModal} setSuccessModal={setSuccessModal} />
+}
+
+
       {showModal && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg w-96">
@@ -414,6 +483,17 @@ const ChatComponents = () => {
               />
             </div>
 
+            <div>
+            <label className="block text-sm font-medium text-gray-700">Arrival Time</label>
+            <input
+              type="datetime-local"
+              value={quoteData.arrivalTime}
+              onChange={(e) => setQuoteData({ ...quoteData, arrivalTime: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+
+
             {/* Estimated Cost Input */}
             <div className="mt-4">
               <label htmlFor="estimatedCost" className="block text-sm">
@@ -430,6 +510,8 @@ const ChatComponents = () => {
                 min="0"
               />
             </div>
+
+
 
             {/* Buttons */}
             <div className="mt-4 flex justify-end">

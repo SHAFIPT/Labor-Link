@@ -4,6 +4,7 @@ import { IUserServices } from "../services/interface/IUserServices";
 import { Request, Response, NextFunction } from "express"
 import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
+import { IBooking } from "../entities/bookingEntity";
 interface DecodedToken {
   id: string;
   role: string;
@@ -126,6 +127,49 @@ export class userController {
         console.error("Error updating profile:", error);
          next(error);
        }
+   }
+  public bookingLabor = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+       
+      const { userId, laborId, quote } = req.body;
+
+      console.log("This is the Boooking data ", {
+        userId,
+        laborId,
+        quote
+      })
+
+
+      if (!quote?.description || !quote?.estimatedCost || !quote?.arrivalTime) {
+            return res.status(400).json({ message: "Missing required quote fields" });
+      }
+
+      const bookingDetails: Partial<IBooking> = {
+            userId,
+            laborId,
+            quote: {
+                description: quote.description,
+                estimatedCost: quote.estimatedCost,
+                arrivalTime: quote.arrivalTime
+            }
+      };
+      
+      console.log("This si erhe boooikingDetails...................",bookingDetails)
+
+        if (!userId || !laborId || !quote) {
+            return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const BookingResponse = await this.userService.bookingLabor(bookingDetails)
+      
+      if (BookingResponse) {
+        res.status(201).json({ message: "Booking created successfully", booking: BookingResponse });
+      }
+
+     } catch (error) {
+      console.error("Error in booking labor:", error);
+         next(error);
+     }
    }
 }
 

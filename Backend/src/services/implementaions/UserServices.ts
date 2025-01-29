@@ -2,6 +2,7 @@ import bycript  from 'bcrypt';
 import { IUserSideRepository } from "../../repositories/interface/IUserSideRepository";
 import { IUserServices } from "../../services/interface/IUserServices";
 import { IUser } from "../../entities/UserEntity";
+import { IBooking } from '../../entities/bookingEntity';
 
 
 export default class UserServices implements IUserServices{
@@ -20,5 +21,15 @@ export default class UserServices implements IUserServices{
     async updatePassword(email: string, password: string): Promise<IUser | null> {
         const bycriptPassword = await  bycript.hash(password, 10)
         return await this.userRepository.updatePassword(email, bycriptPassword)
+    }
+
+     async bookingLabor(bookingDetails: IBooking): Promise<IBooking | null> {
+        try {
+            const booking = await this.userRepository.createBooking(bookingDetails);
+            return booking;
+        } catch (error) {
+            console.error("Error in booking labor:", error);
+            throw new Error("Failed to book labor");
+        }
     }
 }

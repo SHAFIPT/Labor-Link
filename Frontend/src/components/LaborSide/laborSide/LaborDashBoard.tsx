@@ -6,12 +6,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
 import { auth, db } from "../../../utils/firbase";
 import {  collection, getDocs, query, where, getDoc, doc, getCountFromServer, onSnapshot, Timestamp, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { setLoading } from "../../../redux/slice/laborSlice";
+import { resetLaborer, setIsLaborAuthenticated, setLaborer, setLoading } from "../../../redux/slice/laborSlice";
 import '../../Auth/LoadingBody.css'
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-toastify";
 import { format } from 'date-fns';
 import { useNavigate } from "react-router-dom";
+import { laborFetch } from "../../../services/LaborServices";
+import { resetUser, setAccessToken, setisUserAthenticated, setUser } from "../../../redux/slice/userSlice";
 
 interface ChatDocument {
   laborId: string;
@@ -56,7 +58,7 @@ const LaborDashBoard = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const dispatch = useDispatch()
   const navigate = useNavigate()
-
+  
 
   console.log("Gthis si the chats :::::",chats)
 
@@ -82,6 +84,44 @@ const LaborDashBoard = () => {
     { title: "Pending Tasks", value: "6", icon: MessageSquare },
   ];
 
+ useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const data = await laborFetch();
+      // console.log("This is the Data LLLLLLLLLLLLLLLLLLLLLLLLLL", data);
+
+      const { fetchUserResponse } = data
+      
+      //  console.log("This is the laborData LLLLLLLLLLLLLLLLlaborData", fetchUserResponse);
+
+      dispatch(setLaborer(fetchUserResponse))
+    } catch (error: any) {
+      if (error.response && error.response.status === 403) {
+        const errorMessage = error.response.data?.message || "Your account has been blocked.";
+        toast.error(errorMessage); // Show dynamic error message
+
+        localStorage.removeItem("LaborAccessToken");
+
+        // Reset User State
+        dispatch(setUser({}));
+        dispatch(resetUser());
+        dispatch(setisUserAthenticated(false));
+        dispatch(setAccessToken(""));
+
+        // Reset Labor State
+        dispatch(setLaborer({}));
+        dispatch(resetLaborer());
+        dispatch(setIsLaborAuthenticated(false));
+
+        navigate("/"); // Redirect to login page
+      }
+    }
+  };
+
+  fetchUser();
+ }, [navigate, dispatch]);
+  
+  
   useEffect(() => {
     // Get the saved stage from localStorage or default to "Dashboard"
     const savedStage = localStorage.getItem("currentStage") || "Dashboard";
@@ -93,15 +133,16 @@ const LaborDashBoard = () => {
     localStorage.setItem("currentStage", currentStage);
   }, [currentStage]);
 
-  useEffect(() => {
-    const initialUnreadState = chats.reduce((acc, chat) => {
-      acc[chat.id] = chat.messagesCount > 0;
-      return acc;
-    }, {});
-    setUnreadChats(initialUnreadState);
-  }, [chats]);
+useEffect(() => {
+  const initialUnreadState = chats.reduce((acc, chat) => {
+    // Compare the last message timestamp with lastReadTimestamp
+    acc[chat.id] = chat.lastUpdated && chat.lastUpdated > chat.lastReadTimestamp;
+    return acc;
+  }, {});
+  setUnreadChats(initialUnreadState);
+}, [chats]);
 
-const fetchChats = (userUid: string) => {
+const fetchChats = (userUid) => {
   if (!userUid) {
     throw new Error("Missing user credentials");
   }
@@ -114,6 +155,7 @@ const fetchChats = (userUid: string) => {
   }
 
   const laborUid = currentLabor.uid;
+
   const chatCollection = collection(db, "Chats");
   const chatQuery = query(chatCollection, where("laborId", "==", laborUid));
 
@@ -121,8 +163,7 @@ const fetchChats = (userUid: string) => {
     const chatData = await Promise.all(
       chatSnapshot.docs.map(async (doc) => {
         const chatData = doc.data() as ChatDocument;
-
-        // Get messages subcollection with timestamp filter
+        
         const messagesCollection = collection(db, "Chats", doc.id, "messages");
         const unreadQuery = query(
           messagesCollection,
@@ -140,14 +181,11 @@ const fetchChats = (userUid: string) => {
       })
     );
 
-    // Rest of the user data fetching code remains the same
     const userPromises = chatData.map(async (chat) => {
       try {
         const userDocRef = doc(db, "Users", chat.userId);
         const userSnapshot = await getDoc(userDocRef);
-        const userData = userSnapshot.exists()
-          ? (userSnapshot.data() as UserData)
-          : null;
+        const userData = userSnapshot.exists() ? userSnapshot.data() : null;
 
         return {
           ...chat,
@@ -182,20 +220,20 @@ const fetchChats = (userUid: string) => {
     }, []);
 
    // Add a function to update the last read timestamp
-const markChatAsRead = async (chatId: string) => {
-  const chatRef = doc(db, "Chats", chatId);
-  await updateDoc(chatRef, {
-    lastReadTimestamp: serverTimestamp()
-  });
-};
+    const markChatAsRead = async (chatId) => {
+      const chatRef = doc(db, "Chats", chatId);
+      await updateDoc(chatRef, {
+        lastReadTimestamp: serverTimestamp()
+      });
+    };
 
-// Modify the navigation handler to mark messages as read
-const handleNavigateChatpage = async (chatId) => {
-  await markChatAsRead(chatId);
-  navigate(`/chatingPage/${chatId}`);
-};
+    // Modify the navigation handler to mark messages as read
+    const handleNavigateChatpage = async (chatId) => {
+      await markChatAsRead(chatId);
+      navigate(`/chatingPage/${chatId}`);
+    };
 
-  console.log('this is the chat coutn :;;;;;;;;;;;;',unreadChats)
+    console.log('this is the chat coutn :;;;;;;;;;;;;',unreadChats)
 
 
   return (

@@ -14,28 +14,31 @@ class adminController {
     }
 
     public fetchUser = async (req: Request, res: Response, next: NextFunction) => {
-        try {
+    try {
+        const query = req.query.query as string || '';
+        const page = parseInt(req.query.page as string || '1');
+        const perPage = 6;
+        const skip = (page - 1) * perPage;
 
-            const userFound = await this.adminService.fetchUsers()
+        const totalCount = await this.adminService.getTotalUsersCount(query);
+        const usersFound = await this.adminService.fetchUsers(query, skip, perPage);
 
-
-            if (userFound) {
-                res.status(200)
-                .json(new ApiResponse(200, userFound , 'userFound succeffuly...!'))
-            } else {
-                console.log('this is the errorr')
-                 return res.status(400).json(new ApiError(400, "Faiald to fetch users..."));
-            }
-            
-        } catch (error) {
-            console.error('Error in admin login:', error);
-            next(error);
-            return res.status(error.statusCode || 500).json({
-                error: error.message || 'Something went wrong.'
-            });
+        if (usersFound) {
+            const totalPages = Math.ceil(totalCount / perPage);
+            const userDetails = {
+                usersFound,
+                totalPage: totalPages,
+            };
+            res.status(200)
+                .json(new ApiResponse(200, userDetails, 'Users found successfully!'));
+        } else {
+            return res.status(400).json(new ApiError(400, "Failed to fetch users"));
         }
+    } catch (error) {
+        console.error('Error in fetchUser:', error);
+        return next(error);
     }
-  
+}
 
     
     public fetchLabor = async (req: Request, res: Response, next: NextFunction) => {

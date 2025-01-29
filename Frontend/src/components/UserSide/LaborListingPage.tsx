@@ -11,8 +11,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { fetchLaborsByLocation } from "../../services/LaborServices";
-import { setLoading } from "../../redux/slice/userSlice";
+import { resetUser, setAccessToken, setisUserAthenticated, setLoading, setUser } from "../../redux/slice/userSlice";
 import notFound from '../../assets/not Found labor.webp'
+import { collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
+import { db, auth } from '../../utils/firbase';
+import { userFetch } from "../../services/UserSurvice";
+import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../../redux/slice/laborSlice";
 const LaborListingPage = () => {
     const theme = useSelector((state: RootState) => state.theme.mode)
   const locationOfUser = useSelector((state: RootState) => state.user.locationOfUser)
@@ -44,10 +48,53 @@ const LaborListingPage = () => {
   const [state, setState] = useState([])
   const [cities, setCities] = useState([]);
   const [zipCodes, setZipCodes] = useState([]);
+  const [chats, setChats] = useState({});
+  const [unreadMessages, setUnreadMessages] = useState({});
+  const [activeLaborId, setActiveLaborId] = useState(null);
+  const [laborEmailToUid, setLaborEmailToUid] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  // const itemsPerPage = 4;
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
-   
+  console.log("This is the Chats of the user :::::::::::", chats)
+  
+{/* Define pagination variables */}
+const itemsPerPage = 4;
+const startIndex = (currentPage - 1) * itemsPerPage;
+const endIndex = startIndex + itemsPerPage;
+const currentLabors = (filteredLabors.length > 0 ? filteredLabors : laborsList).slice(startIndex, endIndex);
+const totalPages = Math.ceil(((filteredLabors.length > 0 ? filteredLabors : laborsList).length) / itemsPerPage);
+
+  
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        await userFetch();
+      } catch (error: any) {
+        if (error.response && error.response.status === 403) {
+          toast.error("Your account has been blocked.");
+          localStorage.removeItem("UserAccessToken");
+          // Reset User State
+          dispatch(setUser({}));
+          dispatch(resetUser());
+          dispatch(setisUserAthenticated(false));
+          dispatch(setAccessToken(""));
+
+          // Reset Labor State
+          dispatch(setLaborer({}));
+          dispatch(resetLaborer());
+          dispatch(setIsLaborAuthenticated(false));
+          navigate("/"); // Redirect to login page
+        }
+      }
+    };
+
+    fetchUser();
+  }, [navigate,dispatch]);
+  
+  
+  
 useEffect(() => {
   const uniqueCountry = Array.from(
     new Set(laborsList.map((labor) => labor.address.country.trim()))
@@ -104,11 +151,24 @@ useEffect(() => {
 useEffect(() => {
   if (locationOfUser?.latitude && locationOfUser?.longitude) {
     fetchLabors();
+    
   }
 }, [locationOfUser, fetchLabors]);
 
 
-    const handleNavigeProfilePage = (user) => {
+  const handleNavigeProfilePage = (user) => {
+      
+    setActiveLaborId(user._id);
+  
+    // Clear the unread messages for this user
+    setUnreadMessages((prev) => {
+      const updatedUnreadMessages = { ...prev };
+      delete updatedUnreadMessages[user._id];
+      return updatedUnreadMessages;
+    });
+
+
+
       navigate('/labor/ProfilePage', { state: user });
   };
   
@@ -150,6 +210,75 @@ useEffect(() => {
 useEffect(() => {
   handleFiltersUpdate();
 }, [selectedCountry, selectedState, selectedCity, selectedZipCode, selectedCategory, selectedRating, laborsList]);
+
+
+  
+    // First, fetch Firebase users to create email to UID mapping
+  useEffect(() => {
+    const fetchFirebaseUsers = async () => {
+      try {
+       const usersRef = collection(db, "Labors");
+      console.log("Users Collection Reference:", usersRef);
+      const querySnapshot = await getDocs(usersRef);
+      console.log("Users Data:", querySnapshot.docs.map((doc) => doc.data()));
+        const emailMapping = {};
+        
+        querySnapshot.forEach((doc) => {
+          const userData = doc.data();
+          console.log("Users userData userData:", userData);
+          if (userData.email && userData.role === "labor") {
+            emailMapping[userData.email.toLowerCase()] = doc.id;
+          }
+        });
+        
+        setLaborEmailToUid(emailMapping);
+      } catch (error) {
+        console.error("Error fetching Firebase users:", error);
+      }
+    };
+
+    fetchFirebaseUsers();
+  }, []);
+
+  // Then fetch and monitor chats
+useEffect(() => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return;
+
+  const chatsQuery = query(
+    collection(db, "Chats"),
+    where("userId", "==", currentUser.uid)
+  );
+
+  const unsubscribe = onSnapshot(chatsQuery, (snapshot) => {
+    const chatData = {};
+    const unreadData = {};
+
+    snapshot.forEach((doc) => {
+      const chat = doc.data();
+      const laborId = chat.laborId;
+
+      // Check if the chat has new unread messages
+      const hasUnread = chat.lastUpdated.seconds > chat.lastReadTimestamp.seconds || 
+        (chat.lastUpdated.seconds === chat.lastReadTimestamp.seconds && 
+        chat.lastUpdated.nanoseconds > chat.lastReadTimestamp.nanoseconds);
+
+      if (hasUnread) {
+        unreadData[laborId] = {
+          hasUnread: true,
+          lastMessage: chat.lastMessage
+        };
+      }
+
+      chatData[laborId] = chat;
+    });
+
+    setChats(chatData);
+    setUnreadMessages(unreadData);
+  });
+
+  return () => unsubscribe();
+}, []);
 
 
 
@@ -391,26 +520,6 @@ useEffect(() => {
                         ))}
                       </div>
                     </div>
-{/* 
-                      <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-gray-800">
-                          Certifications
-                        </h2>
-                        <div className="space-y-2">
-                          {[
-                            "Certified Electrician",
-                            "Licensed Plumber",
-                            "HVAC Certification",
-                            "Other relevant certifications",
-                          ].map((cert) => (
-                            <div key={cert} className="flex items-center gap-2">
-                              <input type="checkbox" className="w-4 h-4" />
-                              <label className="text-gray-600">{cert}</label>
-                            </div>
-                          ))}
-                        </div>
-                      </div> */}
-
                       <button className="w-full bg-[#16a4c0f6] text-white py-2 px-4 rounded-full hover:bg-[#16a4c0f6] transition-colors" onClick={handleResetFilters}>
                     Reset Filters
                       </button>
@@ -662,6 +771,7 @@ useEffect(() => {
               {/* Right Content - Grid Layout */}
               <div className="flex-1">
                 {theme === "light" ? (
+                  <div className="flex flex-col">
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
 
                     {laborsList.length === 0 ? (
@@ -714,64 +824,111 @@ useEffect(() => {
                             : "Select filters to find laborers"}
                         </div>
                     ) : (
-                      (filteredLabors.length > 0 ? filteredLabors : laborsList).map((user) => (
-                      <div
-                        key={user.id}
-                        className="p-6 rounded-lg shadow-lg flex flex-col h-full"
-                        >
-                            
-                        <div className="w-full  h-96 mb-4">
-                          <img
-                            src={user.profilePicture}
-                            alt={`${user.firstName} profile`}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        </div>
+                       currentLabors.map((user) => {
+                          // Declare variables here, before the JSX
+                          const laborFirebaseUid = laborEmailToUid[user.email?.toLowerCase()];
+                         const hasUnread = laborFirebaseUid && unreadMessages[laborFirebaseUid];
+                         const hasChat = laborFirebaseUid && chats[laborFirebaseUid];
+                          return (
+                            <div
+                              key={user._id}
+                              className="p-6 rounded-lg shadow-lg flex flex-col h-full relative"
+                            >
+                          {/* Notification Badge */}
+                           {/* Notification Badge - Only show when there are unread messages */}
+                            {hasUnread && (
+                              <div className="absolute top-0 right-2 z-20">
+                                <div className="relative">
+                                  {/* Notification Circle */}
+                                  <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center absolute -top-0 -right-5">
+                                    <i className="fas fa-bell text-white text-xs"></i>
+                                  </div>
+                                  {/* Notification Ping Animation */}
+                                  <div className="w-5 h-5 bg-red-500 rounded-full absolute animate-ping opacity-75"></div>
+                                </div>
+                              </div>
+                            )}
 
-                            
-                        <div className="flex flex-col flex-1 space-y-2">
-                          <h2 className="text-xl font-semibold">{user.firstName} {user.lastName} </h2>
-                          <span className="text-lg text-gray-600">
-                            {user.categories[0]}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < user.rating
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                            <span className="text-sm text-gray-600 ml-1">
-                              {user.rating}.0 ({user.reviews} reviews)
-                            </span>
-                          </div>
-                          <div className="text-sm sm:text-base md:text-lg lg:text-[12px]">
-                          <p className="text-gray-600 mt-2 ">
-                            I am {user?.firstName},<br></br> a highly skilled and experienced professional with over {user?.aboutMe?.experience} years of experience.
-                            <p className="text-gray-600 truncate max-h-24 overflow-hidden">
-                            {user?.aboutMe?.description}
-                          </p>
-                          </p>
-                        </div>
-                        </div>
 
-                            
-                        <div className="mt-4  self-end">
-                            <button className="bg-[#3ab3bc] w-[200px] h-[34px] text-white py-1.5 px-4 rounded-md hover:bg-[#2d919a] transition-colors text-sm" onClick={() => handleNavigeProfilePage(user)}>
-                              View Profile
-                            </button>
-                        </div>
-                      </div>
-                    ))
+                              <div className="w-full h-96 mb-4">
+                                <img
+                                  src={user.profilePicture}
+                                  alt={`${user.firstName} profile`}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              </div>
+
+                              <div className="flex flex-col flex-1 space-y-2">
+                                <h2 className="text-xl font-semibold">{user.firstName} {user.lastName}</h2>
+                                <span className="text-lg text-gray-600">
+                                  {user.categories[0]}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`w-4 h-4 ${
+                                        i < user.rating
+                                          ? "fill-yellow-400 text-yellow-400"
+                                          : "text-gray-300"
+                                      }`}
+                                    />
+                                  ))}
+                                  <span className="text-sm text-gray-600 ml-1">
+                                    {user.rating}.0 ({user.reviews} reviews)
+                                  </span>
+                                </div>
+                                <div className="text-sm sm:text-base md:text-lg lg:text-[12px]">
+                                  <p className="text-gray-600 mt-2">
+                                    I am {user?.firstName},<br /> 
+                                    a highly skilled and experienced professional with over {user?.aboutMe?.experience} years of experience.
+                                    <p className="text-gray-600 truncate max-h-24 overflow-hidden">
+                                      {user?.aboutMe?.description}
+                                    </p>
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="mt-4 self-end">
+                                <button 
+                                  className="bg-[#3ab3bc] w-[200px] h-[34px] text-white py-1.5 px-4 rounded-md hover:bg-[#2d919a] transition-colors text-sm" 
+                                  onClick={() => handleNavigeProfilePage(user)}
+                                >
+                                  View Profile
+                                </button>
+                              </div>
+                            </div>
+                          );
+                       })
+                          
+                         
                     )}
-
-
-                    {}
+                     
+                    </div>
+                     {(filteredLabors.length > 0 || laborsList.length > 0) && (
+                        <div className="flex justify-center gap-4 mt-6">
+                          <button 
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Previous
+                          </button>
+                          <span className="px-4 py-2">
+                            Page {currentPage} of {totalPages}
+                          </span>
+                          <button 
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage >= totalPages}
+                            className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      )}
                   </div>
+                  
+                  
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
 
@@ -786,18 +943,54 @@ useEffect(() => {
                         : "Select filters to find laborers"}
                     </div>
                   ) : (
-                    (filteredLabors.length > 0 ? filteredLabors : laborsList).map((user) => (
+                    (filteredLabors.length > 0 ? filteredLabors : laborsList).map((user) => {
+                          // Declare variables here, before the JSX
+                          const laborFirebaseUid = laborEmailToUid[user.email?.toLowerCase()];
+                          const hasUnread = laborFirebaseUid && unreadMessages[laborFirebaseUid];
+                      return( 
                       <div
                         key={user.id}
                         className="p-6 rounded-lg shadow-lg border border-gray-700 flex flex-col h-full"
-                      >
+                        >
+                          
+
+                           {/* Notification Badge */}
+                             {hasUnread && (
+                              <div className="relative z-20">
+                                <div className="relative">
+                                  {/* Notification Circle */}
+                                  <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0 -mt-1 -mr-1">
+                                    <i className="fas fa-bell text-white text-xs"></i> {/* Bell icon */}
+                                  </div>
+                                  {/* Notification Ping Animation */}
+                                  <div className="w-5 h-5 bg-red-500 rounded-full absolute animate-ping opacity-75 top-0 right-0 -mt-1 -mr-1"></div>
+                                </div>
+                              </div>
+                            )}
+
+                              {/* Chat Status Indicator */}
+                              {/* {hasChat && (
+                                <div className="absolute top-4 left-4 z-10 max-w-[200px]">
+                                  <div className="bg-blue-500 text-white text-xs px-3 py-2 rounded-lg">
+                                    <div className="font-semibold mb-1">Active Chat</div>
+                                    {hasUnread && (
+                                      <div className="text-xs truncate">
+                                        Last: {unreadMessages[laborFirebaseUid].lastMessage}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )} */}
+
+
                         <div className="w-full  h-96 mb-4">
                           <img
                             src={user.profilePicture}
                             alt={`${user.name} profile`}
                             className="w-full h-full object-cover rounded-lg"
                           />
-                        </div>
+                          </div>
+                          
 
                         <div className="flex flex-col flex-1 space-y-2">
                           <h2 className="text-xl font-semibold">{user.firstName} {user.lastName}</h2>
@@ -835,7 +1028,8 @@ useEffect(() => {
                           {/* </Link> */}
                         </div>
                       </div>
-                    ))
+                     );
+                        })
                   )} 
 
 

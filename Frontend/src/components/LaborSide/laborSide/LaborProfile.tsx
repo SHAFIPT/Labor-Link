@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "../../../redux/store/store"
 import { useEffect, useState } from "react"
 import { setFormData, setIsLaborAuthenticated, setLaborer, resetLaborer ,setError, setLoading} from "../../../redux/slice/laborSlice"
-import { resetUser } from '../../../redux/slice/userSlice'
+import { resetUser, setAccessToken, setisUserAthenticated, setUser } from '../../../redux/slice/userSlice'
 import { toast } from "react-toastify"
 import { useLocation, useNavigate , useHistory } from "react-router-dom"
 import { logout } from "../../../services/LaborAuthServices"
@@ -49,7 +49,7 @@ const LaborProfile = () => {
   const { state: user } = useLocation();
   
  
-  // console.log('Thsi is eth current Laborer Laborer  +++++++++++++++ :',user.email)
+  console.log('Thsi is eth current Laborer Laborer  +++++++++++++++ :',user)
   // console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
   const [openEditProfile, setOpenEditProfile] = useState(false)
   const [laborData, setLaborData] = useState(null)
@@ -179,7 +179,47 @@ const error: {
     endTime: laborData?.endTime || "",  
   });
   setOpenEditProfile(true);
-};
+  };
+  
+
+   useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const data = await laborFetch();
+        // console.log("This is the Data LLLLLLLLLLLLLLLLLLLLLLLLLL", data);
+  
+        const { fetchUserResponse } = data
+        
+        //  console.log("This is the laborData LLLLLLLLLLLLLLLLlaborData", fetchUserResponse);
+  
+        dispatch(setLaborer(fetchUserResponse))
+      } catch (error: any) {
+        if (error.response && error.response.status === 403) {
+          const errorMessage = error.response.data?.message || "Your account has been blocked.";
+          toast.error(errorMessage); // Show dynamic error message
+  
+          localStorage.removeItem("LaborAccessToken");
+  
+          // Reset User State
+          dispatch(setUser({}));
+          dispatch(resetUser());
+          dispatch(setisUserAthenticated(false));
+          dispatch(setAccessToken(""));
+  
+          // Reset Labor State
+          dispatch(setLaborer({}));
+          dispatch(resetLaborer());
+          dispatch(setIsLaborAuthenticated(false));
+  
+          navigate("/"); // Redirect to login page
+        }
+      }
+    };
+  
+    fetchUser();
+   }, [navigate, dispatch]);
+    
+    
 
 
 useEffect(() => {
@@ -655,8 +695,8 @@ const handleSubmit = async () => {
   console.log("This is the leabor emeaillll+___))((((()))))::", user?.email)
 
 // Updated chat creation function
-  const handleChatPage = async () => {
-  console.log("The chating page is trigerring ;;;")
+const handleChatPage = async (user) => {
+  console.log("The chatting page is triggering ;;;");
   const laborEmail = user?.email;
   if (!laborEmail) {
     console.log("Labor email is undefined");
@@ -682,16 +722,7 @@ const handleSubmit = async () => {
 
     const db = getFirestore(app);
     
-    // Create a new chat document with timestamp
-    const newChat = {
-      userId: userId,
-      laborId: laborId,
-      lastMessage: "",
-      lastUpdated: serverTimestamp(),
-      quoteSent: false
-    };
-
-    // First check if chat already exists
+    // Create or get chat document
     const chatRef = query(
       collection(db, 'Chats'),
       where('userId', '==', userId),
@@ -702,7 +733,15 @@ const handleSubmit = async () => {
     let chatId;
 
     if (chatSnapshot.empty) {
-      // Create new chat
+      // Create new chat if it doesn't exist
+      const newChat = {
+        userId: userId,
+        laborId: laborId,
+        lastMessage: "",
+        lastUpdated: serverTimestamp(),
+        quoteSent: false,
+        lastReadTimestamp: serverTimestamp(),  // Mark the time when chat was first created
+      };
       const newChatRef = await addDoc(collection(db, 'Chats'), newChat);
       chatId = newChatRef.id;
       console.log("New chat created with ID:", chatId);
@@ -710,14 +749,21 @@ const handleSubmit = async () => {
       // Use existing chat
       chatId = chatSnapshot.docs[0].id;
       console.log("Existing chat found with ID:", chatId);
+
+      // Mark as read by updating lastReadTimestamp
+      const chatDocRef = doc(db, 'Chats', chatId);
+      await updateDoc(chatDocRef, {
+        lastReadTimestamp: serverTimestamp()  // Update the lastReadTimestamp to the current time
+      });
+      console.log("Chat marked as read");
     }
 
-    // Navigate to chat page (uncomment when ready)
-    navigate(`/chatingPage/${chatId}`);
+    // Navigate to chat page
+    navigate(`/chatingPage/${chatId}`, {state : {user}});
     
   } catch (error) {
     console.error("Error in handleChatPage:", error);
-    throw error; // Re-throw to handle in the component
+    throw error;
   }
 };
 
@@ -1805,7 +1851,8 @@ const findLaborIdByEmail = async (email) => {
                     {(!Laborer || Object.keys(Laborer).length === 0) && (
 
                     <div className="flex justify-center pt-4">
-                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20" onClick={handleChatPage}>
+                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20" 
+                      onClick={() =>  handleChatPage(user)}>
                         <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" >
                           Booking & Start Chating
                         </span>
@@ -1857,7 +1904,8 @@ const findLaborIdByEmail = async (email) => {
                       {(!Laborer || Object.keys(Laborer).length === 0) && (
                         
                     <div className="flex justify-center pt-4">
-                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20" onClick={handleChatPage}>
+                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20" 
+                      onClick={() =>  handleChatPage(user)}>
                         <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" >
                           Booking & Start Chating
                         </span>

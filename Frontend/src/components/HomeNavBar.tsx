@@ -48,6 +48,7 @@ const HomeNavBar = () => {
     if (locationOfUser.latitude === null || locationOfUser.longitude === null) {
       setShowLocationModal(true); // Show location modal if location is not enabled
     } else {
+      console.log("Iaaaaam herer..............................")
       dispatch(setLoading(false)); // Set loading to false
       navigate('/laborListing'); // Navigate to labor listing page if location is enabled
     }

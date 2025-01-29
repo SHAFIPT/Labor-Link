@@ -6,9 +6,20 @@ import { ILaborer } from "../../entities/LaborEntity";
 import Labor from "../../models/LaborModel";
 
 export class AdminRepositooy implements IAdminRepository {
-  async fetch(): Promise<IUser[]> {
+  async fetch(query: string = '', skip: number, perPage: number): Promise<IUser[]> {
     try {
-      const users = await User.find().select("-password -refreshToken -__v");
+      const filter = query ? {
+            $or: [
+                { firstName : { $regex: query, $options: 'i' } },
+                { email: { $regex: query, $options: 'i' } }
+            ]
+        } : {};
+
+      const users = await User.find(filter)
+            .sort({ createdAt: -1 }) 
+            .skip(skip)
+            .limit(perPage)
+            .select("-password -refreshToken -__v");
       if (!users) {
         throw new ApiError(404, "User find errror occuded ");
       }
@@ -34,6 +45,7 @@ async laborFound(query: string = '', skip: number, perPage: number): Promise<ILa
         } : {};
 
         const labors = await Labor.find(filter)
+            .sort({ createdAt: -1 }) 
             .skip(skip)
             .limit(perPage)
             .select("-password -refreshToken -__v");
@@ -205,6 +217,24 @@ async laborFound(query: string = '', skip: number, perPage: number): Promise<ILa
         } catch (error) {
             console.error('Repository error getting labor count:', error);
             throw new Error('Failed to get labor count from database');
+        }
+    }
+  async getTotalUsersCount(query: string): Promise<number> {
+        try {
+            const searchQuery = query
+                ? {
+                    $or: [
+                        { firstName: { $regex: query, $options: 'i' } },
+                        { email: { $regex: query, $options: 'i' } },
+                    ]
+                }
+                : {};
+
+            const count = await User.countDocuments(searchQuery);
+            return count;
+        } catch (error) {
+            console.error('Repository error getting user count:', error);
+            throw new Error('Failed to get user count from database');
         }
     }
     async deleteLabor(email: string): Promise<ILaborer | null> {

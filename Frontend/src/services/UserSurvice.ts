@@ -35,3 +35,16 @@ export const editPassword = async (PasswodData: { email: string; password: strin
     throw error;
     }
 }
+export const bookTheLabor = async (userId : string , laborId : string , quote : { description: string; estimatedCost: number; arrivalTime: Date }) => {
+    try {
+      const response = await api.post('/api/user/users/bookingLabor', {
+        userId,
+        laborId,
+        quote
+        })  
+        return response
+    } catch (error) {
+        console.error("Error Paasword change:", error);
+    throw error;
+    }
+}

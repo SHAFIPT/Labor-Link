@@ -2,7 +2,7 @@ import { ILaborer } from "../../entities/LaborEntity";
 import { IUser } from "../../entities/UserEntity";
 
 export interface IAdminRepository{
-    fetch(): Promise<IUser[]>
+    fetch(query: string, skip: number, perPage: number): Promise<IUser[]>
     laborFound(query: string, skip: number, perPage: number): Promise<ILaborer[]>
     blockUser(email : string ) : Promise<IUser | null>
     blockLabor(email : string ) : Promise<ILaborer | null>
@@ -12,6 +12,7 @@ export interface IAdminRepository{
     UnApproveLabor(email : string ) : Promise<ILaborer | null>
     existLabor(email : string ) : Promise<ILaborer | null>
     getLabourTotalCount(query: string): Promise<number>;
+    getTotalUsersCount(query: string): Promise<number>;
     updateStatus(email: string): Promise<ILaborer | null>
     deleteLabor(email: string): Promise<ILaborer | null>
 }    

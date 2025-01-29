@@ -3,7 +3,7 @@ import { IUser } from "../../entities/UserEntity";
 
 
 export interface IAdminService {
-    fetchUsers(): Promise<IUser[]>;
+    fetchUsers(query: string , skip: number, perPage: number): Promise<IUser[]>;
     fetchLabors(query: string , skip: number, perPage: number): Promise<ILaborer[]>;
     blockUser(email: string): Promise<IUser | null>;
     unblockUser(email: string): Promise<IUser | null>;
@@ -13,5 +13,6 @@ export interface IAdminService {
     UnApproveLabor(email: string): Promise<ILaborer | null>;
     existLaborAndSendMail(email: string, reason: string): Promise<ILaborer | null>;
     getTotalLaborsCount(query: string): Promise<number>;
+    getTotalUsersCount(query: string): Promise<number>;
     deleteLabor(email: string): Promise<ILaborer | null>;
 }
