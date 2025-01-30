@@ -7,4 +7,4 @@ const adminRoute = Router()
 adminRoute.use('/auth',adminAuthRoute)
 adminRoute.use('/user',adminUserRoute)
 
-export default adminRoute
+export default adminRoute          

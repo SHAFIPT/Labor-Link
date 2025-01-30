@@ -4,7 +4,7 @@
 
     interface PublicRouteProps {
       children: React.ReactNode;
-    }
+    }           
 
     const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
 

@@ -28,7 +28,7 @@ const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email)
   const user = useSelector((state: RootState) => state.user.user)
-  // console.log("This is the user ....... ",user)
+  console.log("This is the user .......dddddddddddddddddddddddddddddddd ",user)
   const loading  = useSelector((state: RootState) => state.user.loading)
   const dispatch = useDispatch()
   // console.log('Thsi siw eht email :',email)
@@ -529,7 +529,7 @@ const handleSave = async () => {
                     </button>
                   </div>
 
-                  <div className="flex flex-col gap-3 w-full lg:pl-36 sm:w-1/2">
+                  <div className="flex flex-col   gap-3 w-full lg:pl-36 sm:w-1/2">
                     <button
                       className="flex items-center lg:w-[700px] justify-center gap-2 px-4 py-2 bg-[#A2906A] text-white rounded-full hover:bg-[#7d6e4d] transition-colors"
                       onClick={handleEditProfile}
@@ -550,9 +550,19 @@ const handleSave = async () => {
         </div>
       </div>
 
-      <div className="currentStatus">
-          <div className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold text-center mb-6">Current Status</h2>
+
+    <div className="w-full flex justify-center mt-4 sm:mt-5 md:mt-6 lg:mt-8 lg:mb-3">
+        <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[72%] h-[2px] bg-[#ECECEC] mx-auto" />
+    </div>
+
+      <div className="currentStatus ">
+        <div className="max-w-6xl mx-auto border rounded-md p-6 mt-7">
+
+          <div className="flex justify-center">
+      <h2 className="text-2xl font-semibold text-center mb-6 border rounded-full w-[300px]">Current Status</h2>
+
+          </div>
+         
       
       {/* Outer border */}
       <div className="border-2 border-gray-300 rounded-lg p-6 mb-4">
@@ -560,35 +570,35 @@ const handleSave = async () => {
         <div className="border-2 border-gray-200 rounded-lg p-6 mb-6">
           <div className="space-y-4">
             <div>
-              <h3 className="font-semibold">Job Details:</h3>
-              <p className="ml-8 text-gray-700">Fixing the leaking sink</p>
+              <h3 className="font-semibold text-[18px]  font-[rokkitt] text-[#21A391]  mb-2">Job Details:</h3>
+              <p className=" text-gray-700 border p-2 rounded-full font-[RobotoMono] px-4 py-3">Fixing the leaking sink</p>
             </div>
 
             <div>
-              <h3 className="font-semibold">Estimated Cost:</h3>
-              <p className="ml-8 text-gray-700">₹150 (One Hundred and Fifty only)</p>
+              <h3 className="font-semibold text-[18px]  font-[rokkitt] text-[#21A391] mb-2">Estimated Cost:</h3>
+              <p className=" text-gray-700  border p-2 rounded-full font-[RobotoMono]  px-4 py-3">₹150 (One Hundred and Fifty only)</p>
             </div>
 
             <div>
-              <h3 className="font-semibold">Status:</h3>
-              <p className="ml-8 text-gray-700">Confirmed</p>
+              <h3 className="font-semibold text-[18px]  font-[rokkitt] text-[#21A391] mb-2">Status:</h3>
+              <p className=" text-gray-700  border p-2 rounded-full font-[RobotoMono] px-4 py-3">Confirmed</p>
             </div>
 
             <div>
-              <h3 className="font-semibold">Scheduled Date and Time:</h3>
-              <p className="ml-8 text-gray-700">2024-12-25 10:00 AM</p>
+              <h3 className="font-semibold text-[18px]  font-[rokkitt] text-[#21A391] mb-2">Scheduled Date and Time:</h3>
+              <p className=" text-gray-700  border p-2 rounded-full font-[RobotoMono] px-4 py-3">2024-12-25 10:00 AM</p>
             </div>
 
             <div>
-              <h3 className="font-semibold">Laborer contact:</h3>
-              <p className="ml-8 text-gray-700">John Doe, 123-456-7890</p>
+              <h3 className="font-semibold  text-[18px]  font-[rokkitt] text-[#21A391] mb-2">Laborer contact:</h3>
+              <p className=" text-gray-700  border p-2 rounded-full font-[RobotoMono] px-4 py-3">John Doe, 123-456-7890</p>
             </div>
 
-            <div className="flex justify-between pt-4">
-              <button className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 transition-colors">
+            <div className="flex md:justify-between md:space-y-0 space-y-3 md:flex-row flex-col pt-4">
+              <button className="bg-[#A32121] rounded-full text-white px-6 py-4 md:w-[300px] hover:bg-red-600 transition-colors">
                 Cancel Booking
               </button>
-              <button className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors">
+              <button className="bg-[#9CA321] text-white px-6 md:w-[300px] py-4 rounded-full hover:bg-[#707418] transition-colors">
                 Reschedule
               </button>
             </div>
@@ -597,10 +607,10 @@ const handleSave = async () => {
 
         {/* Work completed status */}
         <div className="text-center">
-          <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-            Work Completed
-          </span>
-        </div>
+            <span className="bg-[#21A391] cursor-pointer text-white px-4 py-4 rounded-full text-lg font-medium md:w-[300px] inline-block">
+              Work Completed
+            </span>
+          </div>
       </div>
     </div>
     </div>

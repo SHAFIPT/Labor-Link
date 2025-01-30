@@ -12,4 +12,4 @@ export interface IUser extends Document{
     Chat: ObjectId | null;
     refreshToken: string[];
     lastLogin: Date | null;
-}
+}               

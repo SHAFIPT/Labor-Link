@@ -34,8 +34,8 @@ const ChatComponents = () => {
 
 
 
-  // console.log("Thsi is the labor lllllllllllllllllllllllllllllllll:", LaborLogin);
-  // console.log("Thsi is the user ||||||||||||||||||||||||||||||||||:", userLogin);
+  console.log("Thsi is the labor lllllllllllllllllllllllllllllllll:", LaborLogin);
+  console.log("Thsi is the user ||||||||||||||||||||||||||||||||||:", userLogin);
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = useState(null);
@@ -186,6 +186,7 @@ const ChatComponents = () => {
   }, [chatDetails]);
 
   console.log("Thsi si ethe currentUserData :::::::::::", currentUserData);
+  console.log("Thsi si ethe userLogin?.email :::::::::::", userLogin?.ProfilePic);
 
   // Add this useEffect to fetch user data from Firebase
   useEffect(() => {
@@ -193,6 +194,10 @@ const ChatComponents = () => {
       try {
         // Get the email of the currently logged in user
         const email = userLogin?.email || LaborLogin?.email;
+
+
+        console.log("This is the emilof chated user................kkkkkkkkkkkkffffffffkkkkkkkkkkkkk......",email)
+
 
         if (!email) {
           console.log("No email found");
@@ -203,6 +208,7 @@ const ChatComponents = () => {
         const usersRef = collection(db, "Users");
         const q = query(usersRef, where("email", "==", email));
         const querySnapshot = await getDocs(q);
+        console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",querySnapshot.docs)
 
         if (!querySnapshot.empty) {
           // Get the first matching document
@@ -211,6 +217,8 @@ const ChatComponents = () => {
             profilePicture: userData.profilePicture || "",
             name: userData.name || "",
           });
+
+          console.log("This is the mmmmmmmmmmyyyyyyyyyyyyyyyyymmmmmmmmmmmmmmmmmm",setCurrentUserData)
         } else {
           console.log("No user found with this email");
         }
@@ -398,6 +406,8 @@ const handleConfirmQuoteAcceptance = async () => {
 
     const response = await bookTheLabor(userId, laborId, selectedQuoteDetails)
     if (response.status === 201) {
+
+      // console.log("This is the reponseDataa ::::::::::",response)
       toast.success('booking successfully..........')
       // Close the modal
 

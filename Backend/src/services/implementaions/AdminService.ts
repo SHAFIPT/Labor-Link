@@ -94,7 +94,7 @@ export class AdminService implements IAdminService {
       }
     } else {    
       throw new ApiError(404, "Labor not found...!");
-    }
+    }                       
   }
    async getTotalLaborsCount(query: string): Promise<number> {
         try {

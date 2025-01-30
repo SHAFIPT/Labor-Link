@@ -287,7 +287,7 @@ const UserHome = () => {
           <h1
             className="text-white font-['Josefin_Slab'] text-center sm:text-left
         text-base sm:text-lg md:text-xl lg:text-3xl
-        mt-28 sm:mt-8 md:mt-12 lg:mt-24"
+        mt-28 sm:mt-8 md:mt-12 lg:mt-24 lg:ml-5"
           >
             Connect with Skilled Professionals, Get the Job Done Right.
           </h1>
