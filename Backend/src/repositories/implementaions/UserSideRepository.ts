@@ -5,6 +5,8 @@ import { ApiError } from "../../middleware/errorHander";
 import { IBooking } from "entities/bookingEntity";
 import { v4 as uuidv4 } from 'uuid';
 import Booking from "../../models/BookingModal";
+import { ILaborer } from "entities/LaborEntity";
+import Labor from "../../models/LaborModel";
 
 
 export default class UserSideRepository implements IUserSideRepository{
@@ -64,6 +66,15 @@ export default class UserSideRepository implements IUserSideRepository{
         console.error('Error creating booking:', error);
         throw new Error('Failed to create booking');
     }
+    }
+    
+    async fetchLaborId(email: string): Promise<string | null> { // Assuming _id is a string
+    try {
+        const labor = await Labor.findOne({ email }).select('_id');
+        return labor ? labor._id.toString() : null; // Return the ID or null
+    } catch (error) {
+        console.error('Error labor id fetch:', error);
+        throw new Error('Failed to fetch labor ID');
+    }
 }
-
 }

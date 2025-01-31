@@ -4,7 +4,7 @@ import char from '../../assets/char1.jpeg';
 import user from '../../assets/girl1.jpeg';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc , where, getDocs, documentId  } from 'firebase/firestore';
 // import { getAuth } from 'firebase/auth';
@@ -17,6 +17,8 @@ import QuoteConfirmationModal from './QuoteConfirmationModal';
 import { bookTheLabor } from '../../services/UserSurvice';
 import { toast } from 'react-toastify';
 import SuccessModal from './SuccessModal';
+import { fetchlaborId } from '../../services/UserSurvice';
+import { setBookingDetails } from '../../redux/slice/bookingSlice';
 
 const ChatComponents = () => {
 
@@ -24,19 +26,6 @@ const ChatComponents = () => {
   const LaborLogin = useSelector((state: RootState) => state.labor.laborer);
   const { chatId } = useParams();
   const { state: user } = useLocation();
-
-  const laborId = user?.user._id
-  const userId = userLogin?._id
-
-  console.log("This is the chatId ::: ", chatId);
-  // console.log("This is the laobrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr ::: ", laborId);
-  // console.log("This is the userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr ::: ", userId);
-
-
-
-  console.log("Thsi is the labor lllllllllllllllllllllllllllllllll:", LaborLogin);
-  console.log("Thsi is the user ||||||||||||||||||||||||||||||||||:", userLogin);
-
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = useState(null);
   const [selectedQuoteDetails, setSelectedQuoteDetails] = useState(null);
@@ -50,10 +39,15 @@ const ChatComponents = () => {
   const fileInputRef = useRef(null);
   const [chatDetails, setChatDetails] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [fetchedLaborId, setFetchedLaborId] = useState(null);
+  const [chatData, setChatData] = useState(null);
   const [currentUserData, setCurrentUserData] = useState({
     profilePicture: "",
     name: "",
+    email: ""
   });
+  
+  
   const [participants, setParticipants] = useState({
     user: {
       profilePicture: "",
@@ -62,6 +56,7 @@ const ChatComponents = () => {
     labor: {
       profilePicture: "",
       name: "",
+      email: ""
     },
   });
   const [quoteData, setQuoteData] = useState({
@@ -69,7 +64,75 @@ const ChatComponents = () => {
     estimatedCost: "",
     arrivalTime : ''
   });
-  console.log("Thsi sie the participants ;;;;;;;;;;;;;;;", participants);
+  const dispatch = useDispatch()
+
+
+
+useEffect(() => {
+  const fetchChatData = async () => {
+    if (!chatId) return;
+    const chatRef = doc(db, "Chats", chatId);
+    const chatSnap = await getDoc(chatRef);
+
+    if (chatSnap.exists()) {
+      setChatData(chatSnap.data());
+    }
+  };
+
+  fetchChatData();
+}, [chatId]);
+  
+  
+  // console.log("This is the chatDAAAAAADDDAAAATTTTAAA",chatData?.quoteAccepted)
+  console.log("This is the chatDAAAAAADDDAAAATTTTAAA",LaborLogin)
+  
+
+useEffect(() => {
+  const fetchLaborId = async () => {
+    const laborEmail = participants.labor.email;
+    if (!laborEmail) {
+      console.log("Labor email is missing, skipping fetchLaborId.");
+      return;  // If there's no labor email, skip the fetch
+    }
+
+    try {
+      const response = await fetchlaborId(laborEmail);
+
+      if (response.status === 200) {
+        const { laborId } = response.data;
+        setFetchedLaborId(laborId);  // Store the fetched labor ID in state
+        console.log("Fetched labor ID:", laborId);
+      }
+    } catch (error) {
+      console.error("Error fetching labor ID:", error);
+    }
+  };
+
+  if (participants.labor.email) {
+    fetchLaborId();  // Only call fetchLaborId if labor email is available
+  }
+}, [participants.labor.email]);  // Dependency array to re-run if labor email changes
+
+
+  // console.log("TTTTTTTTTJIIIIIIIIIIIIIIIIIIII ussssssssserrrrrrrrrr:::", user)
+  
+  // console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv',fetchedLaborId)
+
+  const laborId = fetchedLaborId || user?.user._id;
+  const userId = userLogin?._id
+
+  // console.log("This is the chatId ::: ", chatId);
+  // console.log("This is the laobrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr ::: ", laborId);
+  // console.log("This is the userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr ::: ", userId);
+
+
+
+  // console.log("Thsi is the labor lllllllllllllllllllllllllllllllll:", LaborLogin);
+  // console.log("Thsi is the user ||||||||||||||||||||||||||||||||||:", userLogin);
+
+
+// console.log("Thsi sit eh current labor is herrrrrrrrrrrrrrrrrrrrrrrrrr::::::::::",currentUserData)
+  // console.log("Thsi sie the participants ;;;;;;;;;;;;;;;", participants);
 
   const fetchParticipantsData = async () => {
     try {
@@ -151,6 +214,7 @@ const ChatComponents = () => {
           labor: {
             profilePicture: laborData.profilePicture || "",
             name: laborData.name || "",
+            email: laborData.email
           },
         }));
       } else {
@@ -185,8 +249,8 @@ const ChatComponents = () => {
     };
   }, [chatDetails]);
 
-  console.log("Thsi si ethe currentUserData :::::::::::", currentUserData);
-  console.log("Thsi si ethe userLogin?.email :::::::::::", userLogin?.ProfilePic);
+  // console.log("Thsi si ethe currentUserData :::::::::::", currentUserData);
+  // console.log("Thsi si ethe userLogin?.email :::::::::::", userLogin?.ProfilePic);
 
   // Add this useEffect to fetch user data from Firebase
   useEffect(() => {
@@ -196,7 +260,7 @@ const ChatComponents = () => {
         const email = userLogin?.email || LaborLogin?.email;
 
 
-        console.log("This is the emilof chated user................kkkkkkkkkkkkffffffffkkkkkkkkkkkkk......",email)
+        // console.log("This is the emilof chated user................kkkkkkkkkkkkffffffffkkkkkkkkkkkkk......",email)
 
 
         if (!email) {
@@ -208,7 +272,7 @@ const ChatComponents = () => {
         const usersRef = collection(db, "Users");
         const q = query(usersRef, where("email", "==", email));
         const querySnapshot = await getDocs(q);
-        console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",querySnapshot.docs)
+        // console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",querySnapshot.docs)
 
         if (!querySnapshot.empty) {
           // Get the first matching document
@@ -216,9 +280,10 @@ const ChatComponents = () => {
           setCurrentUserData({
             profilePicture: userData.profilePicture || "",
             name: userData.name || "",
+            email: userData.email || "",
           });
 
-          console.log("This is the mmmmmmmmmmyyyyyyyyyyyyyyyyymmmmmmmmmmmmmmmmmm",setCurrentUserData)
+          // console.log("This is the mmmmmmmmmmyyyyyyyyyyyyyyyyymmmmmmmmmmmmmmmmmm",setCurrentUserData)
         } else {
           console.log("No user found with this email");
         }
@@ -273,12 +338,39 @@ const ChatComponents = () => {
 
   // Send message function
   // Modify your handleSendMessage function to handle both text and media
+
+
+
+
+
+
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
     try {
       let messageData;
       let lastMessageContent;
+      const senderId = auth.currentUser.uid
+
+      const chatDocRef = doc(db, 'Chats', chatId);
+      const chatSnap = await getDoc(chatDocRef)
+
+      if (!chatSnap) {
+        console.log("Chat is not found");
+        return
+      }
+
+      const ChatData = chatSnap.data()
+      const { laborId, userId } = ChatData
+      
+      // console.log("Thsi is the Loabor id from chat lllllllllllllkkkkkkkkkkkkkkkkkkk",laborId)
+      // console.log("Thsi is the User id from chat lllllllllllllkkkkkkkkkkkkkkkkkkkk", userId)
+      
+      const isLabor = senderId === laborId
+      const lastMessageSender = isLabor ? 'labor' : 'user'
+
+      // const 
 
       if (mediaFile) {
         // Handle media message
@@ -324,6 +416,7 @@ const ChatComponents = () => {
         await updateDoc(doc(db, "Chats", chatId), {
           lastMessage: lastMessageContent,
           lastUpdated: serverTimestamp(),
+          lastMessageSender
         });
       }
     } catch (error) {
@@ -377,8 +470,8 @@ const ChatComponents = () => {
   };
 
   const handleAcceptQuote = (messageId, quoteDetails) => {
-  console.log("Thsi sie messageId dddddddddddddddd",messageId)
-  console.log("Thsi sie quoteDetailsssssssssssss",quoteDetails)
+  // console.log("Thsi sie messageId dddddddddddddddd",messageId)
+  // console.log("Thsi sie quoteDetailsssssssssssss",quoteDetails)
   setSelectedQuoteId(messageId);
   setSelectedQuoteDetails(quoteDetails);
   setIsConfirmModalOpen(true);
@@ -389,7 +482,7 @@ const handleConfirmQuoteAcceptance = async () => {
   try {
 
 
-    console.log("Thsis is the selected quoteeeeeeeeeeeeeeeee",selectedQuoteDetails)
+    // console.log("Thsis is the selected quoteeeeeeeeeeeeeeeee",selectedQuoteDetails)
 
     // Update the quote status in the message
     const messageRef = doc(db, "Chats", chatId, "messages", selectedQuoteId);
@@ -410,8 +503,9 @@ const handleConfirmQuoteAcceptance = async () => {
       // console.log("This is the reponseDataa ::::::::::",response)
       toast.success('booking successfully..........')
       // Close the modal
-
-
+      const { booking } = response.data
+      dispatch(setBookingDetails(booking))
+      console.log("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii respnse :",response)
       setSuccessModal(true)
       setIsConfirmModalOpen(false);
       setSelectedQuoteId(null);
@@ -453,7 +547,7 @@ const handleConfirmQuoteAcceptance = async () => {
     }
   };
 
-  console.log("This is the selected Queet4e in chat page leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",)
+  // console.log("This is the selected Queet4e in chat page leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",)
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -720,7 +814,8 @@ const handleConfirmQuoteAcceptance = async () => {
             <Send className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </form>
-        {Object.keys(userLogin).length === 0 && (
+        {/* !chatData?.quoteAccepted && */}
+        {Object.keys(userLogin).length === 0 &&  (
           <div className="flex items-center mt-2 sm:mt-4 relative">
             <button
               className="w-[140px] sm:w-[174px] p-2 sm:p-3 text-sm sm:text-base bg-[#21a391] text-white rounded-lg hover:bg-green-600"

@@ -4,7 +4,8 @@ import { RootState } from "../../redux/store/store";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db  , auth} from '../../utils/firbase'; // Adjust path as needed
+import { db, auth } from '../../utils/firbase'; // Adjust path as needed
+import '../UserSide/chatPage.css'
 import {
   Mail ,
   Heart,
@@ -15,7 +16,7 @@ import {
   Calendar,
 } from "lucide-react";
 import '../Auth/LoadingBody.css'
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import char from "../../assets/happy-female-electrician.avif";
 import { useEffect, useState } from "react";
 import { editPassword, updateUser, userFetch } from "../../services/UserSurvice";
@@ -24,20 +25,24 @@ import { resetUser, setError, setisUserAthenticated, setFormData, setLoading, se
 import { getDocs, query, collection, where} from "firebase/firestore";
 import { toast } from "react-toastify";
 import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../../redux/slice/laborSlice";
+import Breadcrumb from "../BreadCrumb";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email)
   const user = useSelector((state: RootState) => state.user.user)
-  console.log("This is the user .......dddddddddddddddddddddddddddddddd ",user)
+  // console.log("This is the user .......dddddddddddddddddddddddddddddddd ",user)
   const loading  = useSelector((state: RootState) => state.user.loading)
   const dispatch = useDispatch()
   // console.log('Thsi siw eht email :',email)
   const [openEditProfile, setOpenEditProfile] = useState(false)
+  const [OpenCancelationModal, setOpenCancelationModal] = useState(false)
   const [openChangePassword , setOpenChangePasswod] = useState(false)
   const [userData, setUserData] = useState(null);
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState('')
+  const location = useLocation();
+  const currentPages = location.pathname.split('/').pop();
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     firstName: "",
@@ -50,7 +55,13 @@ const UserProfile = () => {
     lastName?: string;
     password?: string;
   } = useSelector((state: RootState) => state.user.error);
+  const bookingDetails = useSelector((state: RootState) => state.booking.bookingDetails)
   
+
+  console.log("Thiis is the BoookingDETAilssssssssssssss :",bookingDetails)
+
+
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -58,7 +69,7 @@ const UserProfile = () => {
 
         const {fetchUserResponse} = data
 
-        console.log("This is the data:::::::::::::",fetchUserResponse)
+        // console.log("This is the data:::::::::::::",fetchUserResponse)
         setUser(fetchUserResponse);
         setUserData(fetchUserResponse);
       } catch (error: any) {
@@ -237,7 +248,7 @@ const handleSave = async () => {
 
     try {
       dispatch(setError({}));
-      console.log('this sthe the PasswodDatat ------+++++-------:',PasswodData)
+      // console.log('this sthe the PasswodDatat ------+++++-------:',PasswodData)
       const response = await editPassword(PasswodData)
 
       if (response.status === 200) {
@@ -256,8 +267,18 @@ const handleSave = async () => {
     }
   };
 
+  const handleCancelation = () => {
+    setOpenCancelationModal(true)
+  }
+
+  const breadcrumbItems = [
+      { label: 'Home', link: '/' },
+      { label: 'LaborProfilePage', link: null }, // No link for the current page
+    ];
+
   return (
     <>
+     
       {loading && <div className="loader"></div>}
       {openChangePassword && (
          <div
@@ -413,70 +434,35 @@ const handleSave = async () => {
       </div>
     </div>
       )}
-      <div className="w-full relative">
-        <div className="relative">
-          <img
-            src={BgImage}
-            alt="Profile"
-            className="w-full h-[150px] sm:h-[200px] md:h-[234px] lg:h-[240px] object-cover"
-          />
 
-          <div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4">
-            <nav className="py-3 px-4 sm:px-6 md:px-8">
-              <div className="max-w-7xl mx-auto">
-                <ol className="flex items-center space-x-2 text-sm sm:text-base">
-                  <li className="flex items-center">
-                    <Link
-                      to="/"
-                      className="transition-colors duration-200 flex items-center"
-                    >
-                      <Home
-                        className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ${
-                          theam === "light" ? "text-white" : ""
-                        }`}
-                        strokeWidth={2}
-                      />
-                      <span
-                        className={`ml-1 hidden sm:inline ${
-                          theam === "light" ? "text-white" : ""
-                        }`}
-                      >
-                        Home
-                      </span>
-                    </Link>
-                  </li>
-                  <li className="flex items-center">
-                    <ChevronRight
-                      className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ${
-                        theam === "light" ? "text-white" : ""
-                      }`}
-                    />
-                  </li>
-                  <li className="flex items-center">
-                    <Link
-                      to="/profile"
-                      className="transition-colors duration-200 flex items-center"
-                    >
-                      <User
-                        className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ${
-                          theam === "light" ? "text-white" : ""
-                        }`}
-                        strokeWidth={2}
-                      />
-                      <span
-                        className={`ml-1 ${
-                          theam === "light" ? "text-white" : ""
-                        }`}
-                      >
-                        Profile
-                      </span>
-                    </Link>
-                  </li>
-                </ol>
-              </div>
-            </nav>
-          </div>
+      {OpenCancelationModal && (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="relative bg-white w-[300px] p-4 rounded-lg">
+          <h1>Warning Message</h1>
+          {/* Add your buttons or other content here */}
         </div>
+      </div>
+    )}
+
+      <div className="w-full relative">
+       <div className="relative">
+      <img
+        src={BgImage}
+        alt="Profile"
+        className="w-full h-[150px] sm:h-[200px] md:h-[234px] lg:h-[240px] object-cover"
+      />
+      <div className="">
+        <div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4">
+          <nav className="py-3 px-4 sm:px-6 md:px-8">
+              <Breadcrumb items={breadcrumbItems} currentPage={currentPages} />
+          </nav>
+        </div>
+
+        {/* <div className="absolute text-xl font-semibold  sm:text-2xl lg:text-3xl ">
+          MY Chatfdssssssssssssssssssssss
+        </div> */}
+      </div>
+    </div>
 
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-8 relative -mt-16 sm:-mt-16 md:-mt-[90px]">
@@ -488,7 +474,18 @@ const handleSave = async () => {
                     alt="Profile"
                     className="w-[150px] h-[150px] sm:w-[160px] sm:h-[160px] md:w-[190px] md:h-[190px] lg:w-[220px] lg:h-[220px] rounded-full border-4 shadow-lg object-cover"
                   />
+                <div className="">
+                  <Link to='/userChatPage'>
+                  <button className="chatBtn">
+                  <svg height="1.6em" fill="white"  viewBox="0 0 1000 1000" y="0px" x="0px" version="1.1">
+                  <path d="M881.1,720.5H434.7L173.3,941V720.5h-54.4C58.8,720.5,10,671.1,10,610.2v-441C10,108.4,58.8,59,118.9,59h762.2C941.2,59,990,108.4,990,169.3v441C990,671.1,941.2,720.5,881.1,720.5L881.1,720.5z M935.6,169.3c0-30.4-24.4-55.2-54.5-55.2H118.9c-30.1,0-54.5,24.7-54.5,55.2v441c0,30.4,24.4,55.1,54.5,55.1h54.4h54.4v110.3l163.3-110.2H500h381.1c30.1,0,54.5-24.7,54.5-55.1V169.3L935.6,169.3z M717.8,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.5,24.7,54.5,55.2C772.2,420.2,747.8,444.8,717.8,444.8L717.8,444.8z M500,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.4,24.7,54.4,55.2C554.4,420.2,530.1,444.8,500,444.8L500,444.8z M282.2,444.8c-30.1,0-54.5-24.7-54.5-55.1c0-30.4,24.4-55.2,54.5-55.2c30.1,0,54.4,24.7,54.4,55.2C336.7,420.2,312.3,444.8,282.2,444.8L282.2,444.8z"></path>
+                  </svg>
+                  <span className="tooltip">Chat</span>
+                  </button>
+                  </Link>
                 </div>
+                </div>
+
               </div>
 
               <div
@@ -500,10 +497,7 @@ const handleSave = async () => {
                   <div className="space-y-4 w-full sm:w-1/2">
                     <div className="text-center lg:text-left">
                       <div className="font-semibold font-[Rockwell] text-[28px] sm:text-[33px] md:text-[43px]">
-                        {userData?.firstName || "First Name"}
-                      </div>
-                      <div className="font-semibold font-[Rockwell] text-[20px] sm:text-[23px]">
-                         {userData?.lastName || "Last Name"}
+                        {userData?.firstName || "First Name"}  {userData?.lastName || "Last Name"}
                       </div>
                     </div>
 
@@ -542,6 +536,10 @@ const handleSave = async () => {
                       <Calendar className="w-5 h-5" />
                       <span>View & Manage Bookings</span>
                     </button>
+                    {/* <button className="flex items-center lg:w-[700px]  justify-center gap-2 px-4 py-2 bg-[#1f9dcb] text-white rounded-full hover:bg-[#20796d] transition-colors">
+                      <Calendar className="w-5 h-5" />
+                      <span>My chats</span>
+                    </button> */}
                   </div>
                 </div>
               </div>
@@ -563,55 +561,71 @@ const handleSave = async () => {
 
           </div>
          
-      
       {/* Outer border */}
-      <div className="border-2 border-gray-300 rounded-lg p-6 mb-4">
-        {/* Inner border */}
-        <div className="border-2 border-gray-200 rounded-lg p-6 mb-6">
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold text-[18px]  font-[rokkitt] text-[#21A391]  mb-2">Job Details:</h3>
-              <p className=" text-gray-700 border p-2 rounded-full font-[RobotoMono] px-4 py-3">Fixing the leaking sink</p>
-            </div>
+        <div className="border-2 border-gray-300 rounded-lg p-6 mb-4">
+          {/* Inner border */}
+            <div className="border-2 border-gray-200 rounded-lg p-6 mb-6">
+              {bookingDetails && Object.keys(bookingDetails).length > 0 ? (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-[18px] font-[rokkitt] text-[#21A391] mb-2">Job Details:</h3>
+                <p className="text-gray-700 border p-2 rounded-full font-[RobotoMono] px-4 py-3">
+                  {bookingDetails?.quote?.description || "N/A"}
+                </p>
+              </div>
 
-            <div>
-              <h3 className="font-semibold text-[18px]  font-[rokkitt] text-[#21A391] mb-2">Estimated Cost:</h3>
-              <p className=" text-gray-700  border p-2 rounded-full font-[RobotoMono]  px-4 py-3">₹150 (One Hundred and Fifty only)</p>
-            </div>
+              <div>
+                <h3 className="font-semibold text-[18px] font-[rokkitt] text-[#21A391] mb-2">Estimated Cost:</h3>
+                <p className="text-gray-700 border p-2 rounded-full font-[RobotoMono] px-4 py-3">
+                  ₹{bookingDetails?.quote?.estimatedCost || "N/A"}
+                </p>
+              </div>
 
-            <div>
-              <h3 className="font-semibold text-[18px]  font-[rokkitt] text-[#21A391] mb-2">Status:</h3>
-              <p className=" text-gray-700  border p-2 rounded-full font-[RobotoMono] px-4 py-3">Confirmed</p>
-            </div>
+              <div>
+                <h3 className="font-semibold text-[18px] font-[rokkitt] text-[#21A391] mb-2">Status:</h3>
+                <p className="text-gray-700 border p-2 rounded-full font-[RobotoMono] px-4 py-3">
+                  {bookingDetails?.status || "N/A"}
+                </p>
+              </div>
 
-            <div>
-              <h3 className="font-semibold text-[18px]  font-[rokkitt] text-[#21A391] mb-2">Scheduled Date and Time:</h3>
-              <p className=" text-gray-700  border p-2 rounded-full font-[RobotoMono] px-4 py-3">2024-12-25 10:00 AM</p>
-            </div>
+              <div>
+                <h3 className="font-semibold text-[18px] font-[rokkitt] text-[#21A391] mb-2">Scheduled Date and Time:</h3>
+                <p className="text-gray-700 border p-2 rounded-full font-[RobotoMono] px-4 py-3">
+                  {bookingDetails?.quote?.arrivalTime ? new Date(bookingDetails.quote.arrivalTime).toLocaleString() : "N/A"}
+                </p>
+              </div>
 
-            <div>
-              <h3 className="font-semibold  text-[18px]  font-[rokkitt] text-[#21A391] mb-2">Laborer contact:</h3>
-              <p className=" text-gray-700  border p-2 rounded-full font-[RobotoMono] px-4 py-3">John Doe, 123-456-7890</p>
-            </div>
+              <div>
+                <h3 className="font-semibold text-[18px] font-[rokkitt] text-[#21A391] mb-2">Laborer ID:</h3>
+                <p className="text-gray-700 border p-2 rounded-full font-[RobotoMono] px-4 py-3">
+                  {bookingDetails?.laborId || "N/A"}
+                </p>
+              </div>
 
-            <div className="flex md:justify-between md:space-y-0 space-y-3 md:flex-row flex-col pt-4">
-              <button className="bg-[#A32121] rounded-full text-white px-6 py-4 md:w-[300px] hover:bg-red-600 transition-colors">
-                Cancel Booking
-              </button>
-              <button className="bg-[#9CA321] text-white px-6 md:w-[300px] py-4 rounded-full hover:bg-[#707418] transition-colors">
-                Reschedule
-              </button>
+              <div className="flex md:justify-between md:space-y-0 space-y-3 md:flex-row flex-col pt-4">
+                    <button className="bg-[#A32121] rounded-full text-white px-6 py-4 md:w-[300px] hover:bg-red-600 transition-colors"
+                    onClick={handleCancelation}
+                    >
+                  Cancel Booking
+                </button>
+                <button className="bg-[#9CA321] text-white px-6 md:w-[300px] py-4 rounded-full hover:bg-[#707418] transition-colors">
+                  Reschedule
+                </button>
+              </div>
             </div>
+            ):(
+               <p className="text-gray-600 text-lg font-medium text-center">No Bookings Yet.</p>
+            )}
           </div>
-        </div>
 
-        {/* Work completed status */}
-        <div className="text-center">
+          {/* Work completed status */}
+          <div className="text-center">
             <span className="bg-[#21A391] cursor-pointer text-white px-4 py-4 rounded-full text-lg font-medium md:w-[300px] inline-block">
               Work Completed
             </span>
           </div>
-      </div>
+        </div>
+
     </div>
     </div>
     </>

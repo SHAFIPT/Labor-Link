@@ -3,6 +3,7 @@ import { IUserSideRepository } from "../../repositories/interface/IUserSideRepos
 import { IUserServices } from "../../services/interface/IUserServices";
 import { IUser } from "../../entities/UserEntity";
 import { IBooking } from '../../entities/bookingEntity';
+import { ILaborer } from 'entities/LaborEntity';
 
 
 export default class UserServices implements IUserServices{
@@ -24,12 +25,19 @@ export default class UserServices implements IUserServices{
     }
 
      async bookingLabor(bookingDetails: IBooking): Promise<IBooking | null> {
-        try {
+         try {
+             
+             
+             
             const booking = await this.userRepository.createBooking(bookingDetails);
+             
             return booking;
         } catch (error) {
             console.error("Error in booking labor:", error);
             throw new Error("Failed to book labor");
         }
+    }
+    async fetchLaborId(email: string): Promise<string | null>{
+        return await this.userRepository.fetchLaborId(email)
     }
 }

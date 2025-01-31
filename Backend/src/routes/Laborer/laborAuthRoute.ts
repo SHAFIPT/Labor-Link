@@ -15,4 +15,4 @@ laborAuthRoute.post('/forgot-password-reset',authController.resetPassword.bind(a
 laborAuthRoute.patch('/logout', decodedLaborRefreshToken, authController.logoutLabor.bind(authController))
 laborAuthRoute.get('/refresh-token', verifyRefreshLaborTokenMiddleware, authController.refreshAccessToken.bind(authController));
 
-export default laborAuthRoute
+export default laborAuthRoute             

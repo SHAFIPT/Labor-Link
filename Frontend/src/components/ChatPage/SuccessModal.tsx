@@ -2,7 +2,7 @@ import React from "react";
 import { CheckCircle } from "lucide-react"; // Success icon
 import { useNavigate } from "react-router-dom";
 
-const SuccessModal = ({ successModal, setSuccessModal }) => {
+const SuccessModal = ({ successModal, setSuccessModal  }) => {
   const navigate = useNavigate();
 
   if (!successModal) return null;

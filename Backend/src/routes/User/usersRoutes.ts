@@ -7,6 +7,7 @@ usersRoutes.get('/fetchUser',authenticateUser ,userSideController.fetchUsers.bin
 usersRoutes.post('/profileUpdate',authenticateUser ,userSideController.profileUpdate.bind(userSideController))
 usersRoutes.post('/UpdatePassword',authenticateUser ,userSideController.UpdatePassword.bind(userSideController))
 usersRoutes.post('/bookingLabor',userSideController.bookingLabor.bind(userSideController))
+usersRoutes.get('/fetchId/:email',userSideController.fetchLaborId.bind(userSideController))
 // /user/users
 
 export default usersRoutes

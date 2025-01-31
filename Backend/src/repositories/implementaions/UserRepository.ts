@@ -133,7 +133,7 @@ export default class UserRepository implements IUserRepository{
     async isBlockeduser(userId: string): Promise<IUser | null> {
     try {
         const user = await User.findById(userId).select('isBlocked');
-        return user;
+        return user;     
     } catch (error) {
         console.error('Error in repository while checking block status:', error);
         throw error;

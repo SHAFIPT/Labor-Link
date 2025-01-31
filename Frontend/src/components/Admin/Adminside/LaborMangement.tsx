@@ -15,6 +15,9 @@ const LaborMangement = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const debouncedSearchTerm = UseDebounce(searchTerm, 500);
+  const [showModal, setShowModal] = useState(false); // Modal visibility state
+  const [selectedLabor, setSelectedLabor] = useState(null);
+
 
   console.log("this is the repnse of the users users :", Labors);
   Labors.map((user) => {
@@ -302,7 +305,11 @@ const LaborMangement = () => {
                     <button
                       className="flex items-center gap-1 px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-xs"
                       aria-label="Delete user"
-                      onClick={() => handleDeleteLabor(labor)}
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to delete this user?")) {
+                          handleDeleteLabor(labor);
+                        }
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                       <span className="hidden md:inline">Delete</span>

@@ -7,7 +7,7 @@ import { IAdminAuthRepositoy } from "../interface/IAdminAuthRepositoy";
 export class AdminAuthRepository implements IAdminAuthRepositoy {
   async findByEmail(admin: Partial<IAdmin>): Promise<IAdmin | null> {
     return await Admin.findOne({ email: admin.email });
-  }
+  }             
 
   async createAdmin(admin: Partial<IAdmin>): Promise<IAdmin | null> {
     try {

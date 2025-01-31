@@ -40,10 +40,13 @@ export const editPassword = async (PasswodData: { email: string; password: strin
 }
 
 
-export const fetchLaborsByLocation = async (locationOfUser) => {
+export const fetchLaborsByLocation = async (filters) => {
   try {
 
-    const response = await api.post('/api/labor/labors/fetchLaborsByLocation',locationOfUser)
+     const { latitude, longitude, country, state, city, zipCode, category, rating , sortOrder} = filters;
+    const response = await api.get('/api/labor/labors/fetchLaborsByLocation', {
+      params: { latitude, longitude, country, state, city, zipCode, category, rating ,  sortOrder }
+    });
     return response
   } catch (error) {
     console.error("Error in labor locaiong searching :", error);

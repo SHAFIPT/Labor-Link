@@ -360,6 +360,16 @@ const navigate = useNavigate()
       'Commercial Painting',
       'Residential Painting',
       'Trim and Detail Work'
+    ],
+     acMechanic: [
+      'Air Conditioner Installation',
+      'AC Repair and Maintenance',
+      'Refrigerant Refilling',
+      'Compressor Repair',
+      'Duct Cleaning and Repair',
+      'Thermostat Installation and Repair',
+      'HVAC System Troubleshooting',
+      'Annual AC Servicing'
     ]
   };
 
@@ -498,6 +508,7 @@ const navigate = useNavigate()
                  <option value="cleaner">Cleaner</option>
                  <option value="carpenter">Carpenter</option>
                  <option value="painter">Painter</option>
+                 <option value="acMechanic">Ac Mechanical</option>
                </select>
                <i className="absolute right-5 top-[57px] transform -translate-y-1/2 text-gray-500 fas fa-chevron-down"></i>{" "}
                {/* FontAwesome Dropdown Icon */}

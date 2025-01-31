@@ -1,6 +1,7 @@
 import { IAboutMe, ILaborer } from "entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import Labor from "../../models/LaborModel";
+import { SortOrder } from "mongoose";
 
 export class LaborSideRepository implements ILaborSidRepository {
   async fetchLabor(laborId: string): Promise<ILaborer | null> {
@@ -23,76 +24,121 @@ export class LaborSideRepository implements ILaborSidRepository {
       console.error("Error updating labor profile:", error);
       throw error;
     }
-    }
-    async updatePassword(email: string, NewPassword: string): Promise<ILaborer | null> {
-        return await Labor.findOneAndUpdate(
-            { email }, // Query by email
-            { $set: { password: NewPassword } }, // Update password field
-            { new: true } // Return the updated document
-        );
   }
-  
-  async fetchLabors(userLatandLog: { latitude: number; longitude: number; }): Promise<ILaborer[]> {
+  async updatePassword(
+    email: string,
+    NewPassword: string
+  ): Promise<ILaborer | null> {
+    return await Labor.findOneAndUpdate(
+      { email }, // Query by email
+      { $set: { password: NewPassword } }, // Update password field
+      { new: true } // Return the updated document
+    );
+  }
 
-    console.log("thsi is the userLatndLog  latitude;  ++++------++++",userLatandLog.latitude)
-    console.log("thsi is the userLatndLog longitude ; ++++++++******+++++++",userLatandLog.longitude)
-
+  async fetchLabors(params: {
+    latitude: number;
+    longitude: number;
+    country?: string;
+    state?: string;
+    city?: string;
+    zipCode?: string;
+    category?: string;
+    rating?: number;
+    sortOrder?: "asc" | "desc";
+  }): Promise<ILaborer[]> {
     try {
-      return await Labor.find({
-        isApproved: true,
+      // console.log("TTTTTTTTTTTheeeeeeeeeeees ratingggggggggggggg:",params.rating)
+
+      // Construct filter object dynamically
+      const filter: any = { isApproved: true };
+
+      if (params.country) filter["address.country"] = params.country;
+      if (params.state) filter["address.state"] = params.state;
+      if (params.city) {
+        filter["address.city"] = {
+          $regex: `^${params.city}$`,
+          $options: "i",
+        };
+      }
+      if (params.zipCode) filter["address.postalCode"] = params.zipCode;
+      if (params.category) filter["categories"] = params.category;
+      if (params.rating) filter["rating"] = { $gte: params.rating };
+
+      // Create the base query
+      const baseQuery = {
+        ...filter,
         location: {
           $near: {
             $geometry: {
-              type: 'Point',
-              coordinates: [userLatandLog.longitude, userLatandLog.latitude],
+              type: "Point",
+              coordinates: [params.longitude, params.latitude],
             },
             $maxDistance: 5000,
-          }
-        }    
-      }).select('-password -refreshToken');
+          },
+        },
+      };
+
+      // Define sort options with correct type
+      const sortOptions: { [key: string]: SortOrder } =
+        params.sortOrder === "asc"
+          ? { rating: 1 as SortOrder }
+          : params.sortOrder === "desc"
+          ? { rating: -1 as SortOrder }
+          : {};
+
+      const results = await Labor.find(baseQuery)
+        .sort(sortOptions)
+        .select("-password -refreshToken");
+
+      return results;
     } catch (error) {
-      console.error('Error fetching laborers from database:', error);
-      throw new Error('Failed to fetch laborers.');
+      console.error("Error fetching laborers:", error);
+      throw new Error("Failed to fetch laborers.");
     }
   }
-  
- async aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<IAboutMe>  {
-  try {
-    const { userId, name, experience, description } = data;
 
-    console.log("Thsi sthe user detials : ", {
-      userId,
-      name,
-      description,
-      experience
-    })
+  async aboutMe(data: {
+    userId: string;
+    name: string;
+    experience: string;
+    description: string;
+  }): Promise<IAboutMe> {
+    try {
+      const { userId, name, experience, description } = data;
 
-    const labor = await Labor.findById(userId);
+      console.log("Thsi sthe user detials : ", {
+        userId,
+        name,
+        description,
+        experience,
+      });
 
-    console.log("Thsis itehlagbor in db : ",labor)
+      const labor = await Labor.findById(userId);
 
-    if (!labor) { 
-      throw new Error('Laborer not found');
+      console.log("Thsis itehlagbor in db : ", labor);
+
+      if (!labor) {
+        throw new Error("Laborer not found");
+      }
+
+      // Check if 'aboutMe' already exists, then update or add new
+      if (labor.aboutMe) {
+        // Update existing aboutMe
+        labor.aboutMe.name = name;
+        labor.aboutMe.experience = experience;
+        labor.aboutMe.description = description;
+      } else {
+        // Add new aboutMe
+        labor.aboutMe = { name, experience, description };
+      }
+
+      await labor.save();
+
+      return labor.aboutMe;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Error in aboutMe profile update");
     }
-
-    // Check if 'aboutMe' already exists, then update or add new
-    if (labor.aboutMe) {
-      // Update existing aboutMe
-      labor.aboutMe.name = name;
-      labor.aboutMe.experience = experience;
-      labor.aboutMe.description = description;
-    } else {
-      // Add new aboutMe
-      labor.aboutMe = { name, experience, description };
-    }
-
-    await labor.save();
-    
-
-    return labor.aboutMe;
-  } catch (error) {
-    console.error(error);
-    throw new Error('Error in aboutMe profile update');
   }
-}
 }

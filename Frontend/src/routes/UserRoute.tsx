@@ -11,6 +11,8 @@ import UserProfilePage from '../pages/userSide/UserProfilePage';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store/store';
 import ChatPage from '../pages/Chat/ChatPage';
+import UserChatView from '../pages/userSide/UserChatView';
+import UserPrivateRoute from '../components/Authentications/UserPrivateRoute';
 
 // Loading components
 const PageLoadingFallback = () => (
@@ -75,12 +77,13 @@ const UserRoute = () => {
         <Route
           path="/userProfilePage"
           element={
-            <UserPublicRoute role="user">
+            <UserPrivateRoute role="user">
               <UserProfilePage />
-            </UserPublicRoute>
+            </UserPrivateRoute>
           }
         />
-        <Route path="/chatingPage/:chatId" element={<ChatPage />} />
+        <Route path="/chatingPage/:chatId" element={<UserPublicRoute role='user'><ChatPage /></UserPublicRoute>} />
+        <Route path="/userChatPage" element={<UserPrivateRoute role='user'><UserChatView /></UserPrivateRoute>} />
         ;
       </Routes>
     </Suspense>

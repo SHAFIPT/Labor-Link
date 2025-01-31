@@ -9,7 +9,7 @@ export class LaborRepository implements ILaborRepository {
   async findByEmail(email: string): Promise<ILaborer | null> {
     return await Labor.findOne({ email });
   }
-
+   
   async createLabor(labor: Partial<ILaborer>): Promise<ILaborer | null> {
     try {
       const newLabor = new Labor(labor);

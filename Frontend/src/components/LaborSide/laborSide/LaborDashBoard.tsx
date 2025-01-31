@@ -23,6 +23,13 @@ interface ChatDocument {
   quoteSent: boolean;
   messagesCount: number;
   lastReadTimestamp: Timestamp;
+  lastMessageSender : string
+}
+
+interface Message {
+  message: string;
+  timestamp: Timestamp;
+  sender: 'user' | 'labor';
 }
 
 interface UserData {
@@ -133,14 +140,7 @@ const LaborDashBoard = () => {
     localStorage.setItem("currentStage", currentStage);
   }, [currentStage]);
 
-useEffect(() => {
-  const initialUnreadState = chats.reduce((acc, chat) => {
-    // Compare the last message timestamp with lastReadTimestamp
-    acc[chat.id] = chat.lastUpdated && chat.lastUpdated > chat.lastReadTimestamp;
-    return acc;
-  }, {});
-  setUnreadChats(initialUnreadState);
-}, [chats]);
+
 
 const fetchChats = (userUid) => {
   if (!userUid) {
@@ -164,14 +164,21 @@ const fetchChats = (userUid) => {
       chatSnapshot.docs.map(async (doc) => {
         const chatData = doc.data() as ChatDocument;
         
-        const messagesCollection = collection(db, "Chats", doc.id, "messages");
-        const unreadQuery = query(
-          messagesCollection,
-          where("timestamp", ">", chatData.lastReadTimestamp || new Timestamp(0, 0))
-        );
-        
-        const unreadSnapshot = await getCountFromServer(unreadQuery);
-        const unreadCount = unreadSnapshot.data().count;
+
+
+        let unreadCount = 0;
+        if (chatData.lastMessageSender === 'user') {
+          
+          const messagesCollection = collection(db, "Chats", doc.id, "messages");
+          const unreadQuery = query(
+            messagesCollection,
+            where("timestamp", ">", chatData.lastReadTimestamp || new Timestamp(0, 0))
+          );
+          
+          const unreadSnapshot = await getCountFromServer(unreadQuery);
+           unreadCount = unreadSnapshot.data().count;
+        }
+
 
         return {
           id: doc.id,
@@ -220,12 +227,21 @@ const fetchChats = (userUid) => {
     }, []);
 
    // Add a function to update the last read timestamp
-    const markChatAsRead = async (chatId) => {
-      const chatRef = doc(db, "Chats", chatId);
-      await updateDoc(chatRef, {
-        lastReadTimestamp: serverTimestamp()
-      });
-    };
+   const markChatAsRead = async (chatId) => {
+    const chatRef = doc(db, "Chats", chatId);
+
+    // ✅ Set lastReadTimestamp before querying messages
+    await updateDoc(chatRef, {
+      lastReadTimestamp: serverTimestamp()
+    });
+
+    // ✅ Optionally, update local state to reflect immediately
+    setChats((prevChats) =>
+      prevChats.map((chat) =>
+        chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
+      )
+    );
+  };
 
     // Modify the navigation handler to mark messages as read
     const handleNavigateChatpage = async (chatId) => {
@@ -309,51 +325,58 @@ const fetchChats = (userUid) => {
               </>
             )}
             {/* Sidebar and other content */}
-         {currentStage === "Chats" ? (
-          <div className="p-6 w-full">
-            <h1 className="text-2xl font-bold mb-4">Chats</h1>
-            {chats.length > 0 ? (
-              <div className="space-y-4" >
-                {chats.map((chat) => (
-                  <div
-                    key={chat.id}
-                    className="flex items-center p-4 bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-shadow w-full"
-                     onClick={() => handleNavigateChatpage(chat.id)}
-                  >
-                    {/* User Profile Picture */}
-                    <img
-                      src={chat.userData?.profilePicture || 'default-profile-picture.jpg'}
-                      alt="User Profile"
-                      className="w-12 h-12 rounded-full object-cover mr-4"
-                    />
+          {currentStage === "Chats" ? (
+            <div className="p-6 w-full">
+              <h1 className="text-2xl font-bold mb-4">Chats</h1>
+              {chats.length > 0 ? (
+                <div className="space-y-4">
+                  {chats
+                    .slice() // Make a copy to avoid mutating state
+                    .sort((a, b) => b.lastUpdated.toMillis() - a.lastUpdated.toMillis()) // Sort by latest message
+                    .map((chat) => (
+                      <div
+                        key={chat.id}
+                        className="flex items-center p-4 bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-shadow w-full"
+                        onClick={() => {
+                          handleNavigateChatpage(chat.id);
+                          markChatAsRead(chat.id); // ✅ Mark as read on click
+                        }}
+                      >
+                        {/* User Profile Picture */}
+                        <img
+                          src={chat.userData?.profilePicture || 'default-profile-picture.jpg'}
+                          alt="User Profile"
+                          className="w-12 h-12 rounded-full object-cover mr-4"
+                        />
 
-                    {/* Chat Info */}
-                    <div className="flex-1">
-                      <div className="flex justify-between">
-                        <h3 className="text-xl font-semibold">{chat.userData?.name || 'Unknown User'}</h3>
-                        <span className="text-gray-500 text-sm">
-                          {chat.lastUpdated && format(chat.lastUpdated.toDate(), 'h:mm a')}
-                        </span>
-                      </div>
-                      <p className="text-gray-600">{chat.lastMessage || 'No message'}</p>
-                    </div>
+                        {/* Chat Info */}
+                        <div className="flex-1">
+                          <div className="flex justify-between">
+                            <h3 className="text-xl font-semibold">{chat.userData?.name || 'Unknown User'}</h3>
+                            <span className="text-gray-500 text-sm">
+                              {chat.lastUpdated && format(chat.lastUpdated.toDate(), 'h:mm a')}
+                            </span>
+                          </div>
+                          <p className="text-gray-600">{chat.lastMessage || 'No message'}</p>
+                        </div>
 
-                    {/* Message Count */}
-                       {chat.unreadCount > 0 && (
-                      <div className="ml-4 flex items-center">
-                        <span className="bg-red-500 text-white text-sm font-medium rounded-full w-6 h-6 flex items-center justify-center">
-                          {chat.unreadCount}
-                        </span>
+                        {/* ✅ Show notification if user is last sender and there are unread messages */}
+                        {chat.lastMessageSender === "user" && chat.unreadCount > 0 && (
+                          <div className="ml-4 flex items-center">
+                            <span className="bg-red-500 text-white text-sm font-medium rounded-full w-6 h-6 flex items-center justify-center">
+                              {chat.unreadCount}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center mt-8">No chats available</p>
-            )}
-          </div>
-        ) : null}
+                    ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center mt-8">No chats available</p>
+              )}
+            </div>
+          ) : null}
+
 
 
           </>
@@ -417,7 +440,8 @@ const fetchChats = (userUid) => {
                 </div>
               </div>
             </div>
-          )}
+              )}
+              
           
           {currentStage === "Chats" ? (
             <div className="p-6 w-full">

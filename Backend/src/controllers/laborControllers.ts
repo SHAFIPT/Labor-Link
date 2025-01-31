@@ -5,6 +5,7 @@ import { Request , Response ,NextFunction } from "express"
 import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
 
+
 interface DecodedToken {
   id: string;
   role: string;
@@ -155,30 +156,71 @@ class laborSideController {
        }
   }
   
-  public fetchLaborsByLocation = async (req: Request, res: Response, next: NextFunction) => {
+public fetchLaborsByLocation = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { latitude, longitude ,  sortOrder} = req.query;
 
-      const { latitude, longitude } = req.body;
+        console.log("This is the latitude and longitude:", { latitude, longitude });
 
-      console.log("This is the latitude and logitude :",{latitude, longitude})
+        // Check if latitude and longitude are provided
+        if (!latitude || !longitude) {
+            return res.status(400).json({ message: 'Latitude and Longitude are required.' });
+        }
 
-       if (!latitude || !longitude) {
-          return res.status(400).json({ message: 'Latitude and Longitude are required.' });
+        // Convert latitude and longitude to numbers
+        const lat = parseFloat(latitude as string);
+        const lng = parseFloat(longitude as string);
+
+        // Check if the conversion resulted in valid numbers
+        if (isNaN(lat) || isNaN(lng)) {
+            return res.status(400).json({ message: 'Invalid latitude or longitude.' });
       }
       
-        
-      const laborers = await this.laborService.fetchLabor({ latitude, longitude });
+       const validatedSortOrder = sortOrder === 'asc' || sortOrder === 'desc' 
+      ? sortOrder 
+      : undefined;
 
-      console.log("thsi si the laboresers :: ",laborers)
+        // Explicitly cast the other optional query parameters
+        const country = req.query.country as string | undefined;
+        const state = req.query.state as string | undefined;
+        const city = req.query.city as string | undefined;
+        const zipCode = req.query.zipCode as string | undefined;
+        const category = req.query.category as string | undefined;
+        const rating = req.query.rating ? parseFloat(req.query.rating as string) : undefined;
+
+        // Call the service method with the converted numbers
+        const laborers = await this.laborService.fetchLabor({
+            latitude: lat,
+            longitude: lng,
+            country,
+            state,
+            city,
+            zipCode,
+            category,
+            rating,
+            sortOrder: validatedSortOrder
+        });
       
-      return res.status(200).json({ laborers });
+      // console.log("YYYYYYYYYYYYYYYYYYYYYYYY", {
+      //   latitude: lat,
+      //       longitude: lng,
+      //       country,
+      //       state,
+      //       city,
+      //       zipCode,
+      //       category,
+      //       rating
+      // })
 
-       
+        // console.log("This is the laborers:", laborers);
+
+        return res.status(200).json({ laborers });
     } catch (error) {
-          console.error("Error fetch labors :", error);
-         next(error);
+        console.error("Error fetching labors:", error);
+        next(error);
     }
-  }
+};
+
   public abouteMe = async (req: Request, res: Response, next: NextFunction) => {
     try {
 

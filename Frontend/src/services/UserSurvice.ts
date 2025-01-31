@@ -48,3 +48,14 @@ export const bookTheLabor = async (userId : string , laborId : string , quote : 
     throw error;
     }
 }
+
+export const fetchlaborId = async (email : string) => {
+  try {
+    
+    const response = await api.get(`/api/user/users/fetchId/${email}`);
+    return response
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}

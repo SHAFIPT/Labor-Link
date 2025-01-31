@@ -9,7 +9,7 @@ const laborSideContorller = new laborSideController()
 laborRoutes.get('/fetchLabor',authenticateLabor , laborSideContorller.fetchLabors.bind(laborSideContorller))
 laborRoutes.post('/updateProfile',authenticateLabor , laborSideContorller.updateProfile.bind(laborSideContorller))
 laborRoutes.post('/UpdatePassword',authenticateLabor , laborSideContorller.UpdatePassword.bind(laborSideContorller))
-laborRoutes.post('/fetchLaborsByLocation',laborSideContorller.fetchLaborsByLocation.bind(laborSideContorller))
+laborRoutes.get('/fetchLaborsByLocation',laborSideContorller.fetchLaborsByLocation.bind(laborSideContorller))
 laborRoutes.post('/abouteMe',authenticateLabor , laborSideContorller.abouteMe.bind(laborSideContorller))
 
-export default laborRoutes
+export default laborRoutes             

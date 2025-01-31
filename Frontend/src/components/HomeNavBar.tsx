@@ -23,20 +23,66 @@ import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading, setA
 import { checkIsBlock, logout } from "../services/UserAuthServices";
 import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../redux/slice/laborSlice";
 import LocationPrompt from "./LocationUser/LocationPrompt";
+import NotificaionModal from "./UserSide/notificaionModal";
+import { auth, db } from "../utils/firbase";
+import { collection, doc, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+interface ChatDocument {
+  laborId: string;
+  userId: string;
+  lastMessage: string;
+  lastUpdated: Timestamp;  // Change to Timestamp, not string
+  quoteSent: boolean;
+  messagesCount: number;
+  lastReadTimestamp: Timestamp;
+  lastMessageSender : string
+}
+
+interface UserData {
+  // Add user fields based on your Users collection structure
+  name?: string;
+  email?: string;
+  profilePicture? : string
+  // ... other user fields
+}
+
+
+
+interface Chat extends ChatDocument {
+  id: string;
+  userData?: UserData | null;
+  unreadCount: number;
+}
+
+
+
 const HomeNavBar = () => {
   
   
   const user = useSelector((state: RootState) => state.user)
+
+
+  const userData = user?.user
+
   const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
   const laborer = useSelector((state: RootState) => state.labor.laborer)
   const loading = useSelector((state: RootState) => state.user.loading)
   // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
+  // console.log("This is the userData..................",userData)
+
 
   // const [userLocation, setUserLocation] = useState(null);
   const locationOfUser = useSelector((state: RootState) => state.user.locationOfUser);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [notificaionOn, setNotificaionOn] = useState(false)
+  const [chats, setChats] = useState<Chat[]>([]);
+
+
+  console.log("This is the Chats ...................",chats)
+  const hasUnreadMessages = chats.some((chat) => chat.unreadCount > 0);
 
   useEffect(() => {
     
@@ -80,7 +126,7 @@ const HomeNavBar = () => {
     navigate('/userProfilePage')
   }
 
-
+ 
   const shouldShowUserName = isUserAthenticated 
   // const shouldShowLaborName = isLaborAuthenticated 
   useEffect(() => {
@@ -107,17 +153,95 @@ const HomeNavBar = () => {
   ];
 
 
+    const fetchChats = (userUids) => {
+    if (!userUids) {
+      throw new Error("Missing user credentials");
+    }
 
-  // useEffect(() => {
-  //   const resetState = async () => {
-  //     dispatch(resetUser());
-  //     await persistor.purge(); // Clears persisted Redux state
-  //   };
+    const currentUser = auth.currentUser;
 
-  //   resetState();
-  // }, [dispatch]); 
+    if (!currentUser || !currentUser.uid) {
+      throw new Error("User is not authenticated");
+    }
 
-  // console.log('user :', user);
+    const userUid = currentUser.uid;
+
+    const chatCollection = collection(db, "Chats");
+    const chatQuery = query(chatCollection, where("userId", "==", userUid));
+
+    const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
+      const chatData = await Promise.all(
+        chatSnapshot.docs.map(async (doc) => {
+          const chatData = doc.data() as ChatDocument;
+
+          let unreadCount = 0;
+          if (chatData.lastMessageSender === "labor") {
+            const messagesCollection = collection(
+              db,
+              "Chats",
+              doc.id,
+              "messages"
+            );
+            const unreadQuery = query(
+              messagesCollection,
+              where(
+                "timestamp",
+                ">",
+                chatData.lastReadTimestamp || new Timestamp(0, 0)
+              )
+            );
+            const unreadSnapShot = await getCountFromServer(unreadQuery);
+            unreadCount = unreadSnapShot.data().count;
+          }
+
+          return {
+            id: doc.id,
+            ...chatData,
+            unreadCount,
+          };
+        })
+      );
+
+      const userPromises = chatData.map(async (chat) => {
+        try {
+          const userDocRef = doc(db, "Labors", chat.laborId);
+          const userSnapshot = await getDoc(userDocRef);
+          const userData = userSnapshot.exists() ? userSnapshot.data() : null;
+
+          return {
+            ...chat,
+            userData,
+          };
+        } catch (error) {
+          console.error(
+            `Error fetching labor data for chat ${chat.id}:`,
+            error
+          );
+          return { ...chat, userData: null };
+        }
+      });
+
+      const chatsWithUserData = await Promise.all(userPromises);
+      setChats(chatsWithUserData);
+    });
+    return unsubscribe;
+  };
+
+  useEffect(() => {
+    const auth = getAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const chatListenerUnsubscribe = fetchChats(user.uid); // Start real-time listener
+        return () => chatListenerUnsubscribe && chatListenerUnsubscribe(); // Cleanup listener
+      } else {
+        setChats([]); // Clear chats if no user is authenticated
+        toast.error("Please sign in to view chats");
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup auth listener on unmount
+  }, []);
   
    
   const handleLogout = useCallback(async () => {
@@ -478,7 +602,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
 
         <div className="rightSide flex items-center p-5 space-x-4 md:space-x-6 md:p-4 lg:space-x-16 lg:p-16 ">
           <div className="lg:block hidden">
-            <div className="searchBox h-[23px] lg:h-[50px] lg:w-[630px] flex items-center border shadow-lg rounded-xl px-4 transition-all group lg:focus-within:w-[700px] sm:focus-within:w-[200px] md:focus-within:w-[10px] focus-within:w-[200px] ">
+            <div className="searchBox h-[23px] lg:h-[50px] lg:w-[630px] flex items-center border shadow-lg rounded-xl px-4 transition-all group ">
               <input
                 type="search"
                 name="search"
@@ -558,6 +682,8 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           >
             Brouse all labors
           </button>
+          
+
           <div className="relative">
             {/* Menu Icon - Now with higher z-index to stay on top */}
             <div className="lg:hidden md:hidden sm:hidden fixed top-9 right-1 z-50">
@@ -611,6 +737,35 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 )}
               </nav>
             </div>
+
+
+            {/* Bell Iconnnnnnnnnnnnnn */}
+
+
+            {notificaionOn && (
+              <NotificaionModal onClose={() => setNotificaionOn(false)} chats={chats}/>
+            )}
+
+
+            <div className="di" onClick={() => setNotificaionOn(true)}>
+            <div className="relative cursor-pointer">
+              {/* Notification Bell Icon */}
+              <i className="fas fa-bell text-2xl"></i>
+
+              {/* Glowing Red Notification Indicator */}
+              {hasUnreadMessages && (
+                <div className="absolute -top-2 -right-2">
+                  <div className="relative">
+                    {/* Static Red Dot */}
+                    <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                    {/* Pulsating Glow Effect */}
+                    <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           </div>
         </div>
         {shouldShowUserName ? (
@@ -624,6 +779,9 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleViewProfile}>
                   View Profile
                 </button>
+                {/* <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleViewChats}>
+                  My Chats
+                </button> */}
                 <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleLogout}>
                   Logout
                 </button>

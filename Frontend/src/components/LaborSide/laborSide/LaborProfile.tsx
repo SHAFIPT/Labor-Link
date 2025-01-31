@@ -31,6 +31,7 @@ import { ILaborer } from "../../../@types/labor"
 import ChatComponets from "../../ChatPage/ChatComponets"
 import { getDocs, query, collection, where, updateDoc, doc, getFirestore, serverTimestamp, addDoc } from "firebase/firestore";
 import { db , app } from '../../../utils/firbase';
+import Breadcrumb from "../../BreadCrumb"
 
 const LaborProfile = () => {
     const dispatch = useDispatch()
@@ -51,6 +52,10 @@ const LaborProfile = () => {
  
   console.log('Thsi is eth current Laborer Laborer  +++++++++++++++ :',user)
   // console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
+  const location = useLocation();
+  const currentPage = location.pathname.split('/').pop();
+
+  console.log("Thsi is the current paaaaaaaaaaaaaaaaaaageeeeeeeeeeeeeeeeee",currentPage)
   const [openEditProfile, setOpenEditProfile] = useState(false)
   const [laborData, setLaborData] = useState(null)
   const [openAbout, setOpenAbout] = useState(false)
@@ -786,12 +791,20 @@ const findLaborIdByEmail = async (email) => {
   } else {
     return null;  // Return null if no labor is found
   }
-};
+  };
+  
+    const breadcrumbItems = [
+      { label: 'Home', link: '/' },
+      { label: 'LaborListing Page', link: '/laborListing' }, // No link for the current page
+      { label: 'LaborProfile Page', link: null }, // No link for the current page
+    ];
+
   
 
   return (
     <>
       {loading && <div className="loader"></div>}
+      
       {openChangePassword && (
         <div
           className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 `}
@@ -1534,47 +1547,10 @@ const findLaborIdByEmail = async (email) => {
           {theam === "light" ? (
             <>
               <div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4">
+                  <Breadcrumb items={breadcrumbItems} currentPage={currentPage} />  
                 <nav className=" py-3 px-4 sm:px-6 md:px-8 ">
                   {" "}
                   {/* chnge the px ------------------------*/}
-                  <div className="max-w-7xl mx-auto">
-                    <ol className="flex items-center space-x-2 text-sm sm:text-base">
-                      <li className="flex items-center">
-                        <Link
-                          to="/labor/laborDashBoard"
-                          className="transition-colors duration-200 flex items-center"
-                        >
-                          <Home
-                            className="md:w-6 md:h-6 w-4 h-4 sm:w-5 sm:h-5 text-white"
-                            strokeWidth={2} // Increase this value to make the icon thicker
-                          />
-                          <span className="ml-1 hidden sm:inline text-white">
-                            Home
-                          </span>
-                        </Link>
-                      </li>
-
-                      <li className="flex items-center text-white">
-                        <ChevronRight
-                          className="md:w-6 md:h-6 w-4 h-4 sm:w-5 sm:h-5"
-                          strokeWidth={2}
-                        />
-                      </li>
-
-                      <li className="flex items-center text-white">
-                        <a
-                          href="/profile"
-                          className="  transition-colors duration-200 flex items-center"
-                        >
-                          <User
-                            className="md:w-6 md:h-6 w-4 h-4 sm:w-5 sm:h-5"
-                            strokeWidth={3}
-                          />
-                          <span className="ml-1">Profile</span>
-                        </a>
-                      </li>
-                    </ol>
-                  </div>
                 </nav>
               </div>
             </>

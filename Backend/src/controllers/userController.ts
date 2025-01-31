@@ -170,7 +170,29 @@ export class userController {
       console.error("Error in booking labor:", error);
          next(error);
      }
-   }
+  }
+  
+  public fetchLaborId = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { email } = req.params
+      
+      if (!email) {
+        throw new Error("Email is not found...........")
+      }
+
+      email as string
+
+      const laborId = await this.userService.fetchLaborId(email)
+      if (laborId) {
+        res.status(200).json({laborId})
+      } 
+      
+    } catch (error) {
+       console.error("Error in booking labor:", error);
+         next(error);
+    }
+  }
 }
 
 
