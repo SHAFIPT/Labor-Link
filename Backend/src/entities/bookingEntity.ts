@@ -1,5 +1,18 @@
 import { Document, Types } from 'mongoose';
 
+export interface IAddressDetails {
+  name: string;
+  phone: string;
+  district: string;
+  place: string;
+  address: string;
+  pincode: string;
+  latitude: number;
+  longitude: number;
+}
+
+
+
 export interface IBooking extends Document {
   bookingId: string;
   userId: Types.ObjectId;
@@ -27,6 +40,8 @@ export interface IBooking extends Document {
     canceledAt?: Date;
     cancellationFee?: number;
   };
+
+  addressDetails: IAddressDetails;
 
   createdAt?: Date;
   updatedAt?: Date;

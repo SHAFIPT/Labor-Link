@@ -3,7 +3,7 @@ import AuthLaborController from '../../controllers/authLaborController';
 import { decodedLaborRefreshToken, verifyRefreshLaborTokenMiddleware } from "../../middleware/authMiddleware";
 
 const laborAuthRoute = Router()
-const authController = new AuthLaborController()
+const authController = new AuthLaborController()   
 
 laborAuthRoute.post('/login',authController.login.bind(authController))
 laborAuthRoute.post('/registerAboutYou',authController.aboutYou.bind(authController))

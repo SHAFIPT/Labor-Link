@@ -32,7 +32,7 @@ export default class UserServices implements IUserServices {
       console.error("Error in booking labor:", error);
       throw new Error("Failed to book labor");
     }
-  }
+  } 
   async fetchLaborId(email: string): Promise<string | null> {
     return await this.userRepository.fetchLaborId(email);
   }

@@ -19,7 +19,8 @@ import { toast } from 'react-toastify';
 import SuccessModal from './SuccessModal';
 import { fetchlaborId } from '../../services/UserSurvice';
 import { setBookingDetails } from '../../redux/slice/bookingSlice';
-import bgImage from '../../assets/chatBg5.webp'
+import bgImage from '../../assets/toole.avif'        
+import AddressModal from './AddressModal';
 const ChatComponents = () => {
 
   const userLogin = useSelector((state: RootState) => state.user.user);
@@ -41,6 +42,17 @@ const ChatComponents = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [fetchedLaborId, setFetchedLaborId] = useState(null);
   const [chatData, setChatData] = useState(null);
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [userAddress, setUserAddress] = useState({
+    name: "",
+    phone: "",
+    district: "",
+    place: "",
+    address: "",
+    pincode: "",
+    latitude: null,
+    longitude: null,
+  });
   const [currentUserData, setCurrentUserData] = useState({
     profilePicture: "",
     name: "",
@@ -78,8 +90,7 @@ useEffect(() => {
       setChatData(chatSnap.data());
     }
   };
-
-  fetchChatData();
+  fetchChatData()
 }, [chatId]);
   
   
@@ -477,46 +488,45 @@ useEffect(() => {
   setIsConfirmModalOpen(true);
   };
   
-  // Add new function to handle final confirmation
-const handleConfirmQuoteAcceptance = async () => {
-  try {
+  const handleConfirmQuoteAcceptance = async () => {
+    setAddressModalOpen(true); // Show the modal before booking
+  };
 
 
-    // console.log("Thsis is the selected quoteeeeeeeeeeeeeeeee",selectedQuoteDetails)
+  const handleAddressSubmit = async () => {
+    try {
+      if (!userAddress.district || !userAddress.place || !userAddress.address || !userAddress.pincode) {
+        toast.error("Please fill all fields!");
+        return;
+      }
 
-    // Update the quote status in the message
-    const messageRef = doc(db, "Chats", chatId, "messages", selectedQuoteId);
-    await updateDoc(messageRef, {
-      "content.status": "accepted",
-    });
+      // Update the quote status in the message
+      const messageRef = doc(db, "Chats", chatId, "messages", selectedQuoteId);
+      await updateDoc(messageRef, { "content.status": "accepted" });
 
-    // Update the chat document with the accepted quote
-    await updateDoc(doc(db, "Chats", chatId), {
-      quoteAccepted: true,
-      acceptedQuoteAmount: selectedQuoteDetails.estimatedCost,
-      quoteAcceptedAt: serverTimestamp(),
-    });
+      // Update the chat document with the accepted quote
+      await updateDoc(doc(db, "Chats", chatId), {
+        quoteAccepted: true,
+        acceptedQuoteAmount: selectedQuoteDetails.estimatedCost,
+        quoteAcceptedAt: serverTimestamp(),
+      });
 
-    const response = await bookTheLabor(userId, laborId, selectedQuoteDetails)
-    if (response.status === 201) {
+      console.log("Thissssssssssssiis the userAddress",userAddress)
 
-      // console.log("This is the reponseDataa ::::::::::",response)
-      toast.success('booking successfully..........')
-      // Close the modal
-      const { booking } = response.data
-      dispatch(setBookingDetails(booking))
-      console.log("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii respnse :",response)
-      setSuccessModal(true)
-      setIsConfirmModalOpen(false);
-      setSelectedQuoteId(null);
-      setSelectedQuoteDetails(null);
+      // Send booking request with the address details
+      const response = await bookTheLabor(userId, laborId, selectedQuoteDetails, userAddress);
 
+      if (response.status === 201) {
+        toast.success("Booking successful!");
+        dispatch(setBookingDetails(response.data.booking));
+        setSuccessModal(true);
+        setAddressModalOpen(false);
+      }
+
+    } catch (error) {
+      console.error("Error accepting quote:", error);
     }
-
-  } catch (error) {
-    console.error("Error accepting quote:", error);
-  }
-};
+  };
 
   const onEmojiSelect = (emoji) => {
     setNewMessage((prevMessage) => prevMessage + emoji.native); // Append selected emoji
@@ -552,6 +562,15 @@ const handleConfirmQuoteAcceptance = async () => {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Modal */}
+
+
+      <AddressModal
+        isOpen={addressModalOpen}
+        onClose={() => setAddressModalOpen(false)}
+        onSubmit={handleAddressSubmit}
+        userAddress={userAddress}
+        setUserAddress={setUserAddress}
+      />
 
     {isConfirmModalOpen && (
         <QuoteConfirmationModal
@@ -637,7 +656,7 @@ const handleConfirmQuoteAcceptance = async () => {
       )}
 
       {/* Header */}
-      <div className="flex items-center p-2 sm:p-4 bg-[#21a391] text-white">
+      <div className="flex items-center p-2 sm:p-4 bg-[#465b70] text-white">
         <ArrowLeft
           className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-4 cursor-pointer"
           onClick={() => window.history.back()}
@@ -736,11 +755,11 @@ const handleConfirmQuoteAcceptance = async () => {
                   {/* Message Bubble */}
                   <div
                     className={`p-2 sm:p-3 rounded-lg max-w-[75%] sm:max-w-xs md:max-w-md ${
-                      isCurrentUser ? "bg-blue-500 text-white" : "bg-gray-200"
+                      isCurrentUser ? "bg-[#cdffcd] text-white" : "bg-gray-200"
                     }`}
                   >
                     {message.type === "text" ? (
-                      <p className="text-sm sm:text-base">{message.content}</p>
+                      <p className="text-sm text-black sm:text-base">{message.content}</p>
                     ) : message.type === "image" ? (
                       <img 
                         src={message.mediaUrl} 
@@ -754,7 +773,7 @@ const handleConfirmQuoteAcceptance = async () => {
                         className="rounded-lg max-w-full"
                       />
                     ) : (
-                      <p className="text-sm sm:text-base">{message.content}</p>
+                      <p className="text-sm  sm:text-base">{message.content}</p>
                     )}
                   </div>
 
@@ -776,7 +795,7 @@ const handleConfirmQuoteAcceptance = async () => {
       />
 
       {/* Input Section */}
-      <div className="p-2 sm:p-4 bg-white border-t border-gray-300">
+      <div className="p-2 sm:p-4 bg-[#465b70] border-t border-gray-300">
         <form
           onSubmit={handleSendMessage}
           className="flex items-center space-x-2 sm:space-x-4"
@@ -788,10 +807,10 @@ const handleConfirmQuoteAcceptance = async () => {
             placeholder="Type here..."
             className="flex-grow p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+          <div className="flex items-center space-x-2 sm:space-x-4 text-white flex-shrink-0">
             <div className="relative">
               <Smile
-                className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 cursor-pointer"
+                className="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
               />
               {showEmojiPicker && (
@@ -801,7 +820,7 @@ const handleConfirmQuoteAcceptance = async () => {
               )}
             </div>
           </div>
-          <div className="input-container">
+          <div className="input-container text-white ">
             {/* File Input */}
             <input
               type="file"
@@ -817,7 +836,7 @@ const handleConfirmQuoteAcceptance = async () => {
               <Send className="icon" />
             </button> */}
           </div>
-          <Mic className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600 cursor-pointer hidden sm:block" />
+          <Mic className="w-5 h-5 sm:w-6 sm:h-6 cursor-pointer hidden sm:block text-white " />
           <button className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
             <Send className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>

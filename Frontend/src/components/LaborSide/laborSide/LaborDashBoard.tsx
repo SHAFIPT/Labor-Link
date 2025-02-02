@@ -67,7 +67,7 @@ const LaborDashBoard = () => {
   const [unreadChats, setUnreadChats] = useState({});
   const [chats, setChats] = useState<Chat[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(2);
   const [totalPages, setTotalPages] = useState(1);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -292,6 +292,10 @@ const LaborDashBoard = () => {
       new Date(a.quote.arrivalTime).getTime()
   );
 
+  const handelViewDetails = (booking) => {
+    navigate('/labor/viewBookingDetials' ,{state : {booking}})
+  }
+
   return (
     <div>
       {loading && <div className="loader"></div>}
@@ -455,7 +459,7 @@ const LaborDashBoard = () => {
             ) : null}
 
             {currentStage === "Bookings" && (
-              <div className="bookingDetails p-4 w-full max-w-5xl mx-auto">
+              <div className="bookingDetails p-4 w-full max-w-5xl mx-auto ">
                 <h1 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
                   Current Bookings
                 </h1>
@@ -465,10 +469,10 @@ const LaborDashBoard = () => {
                     sortedBookings.map((booking) => (
                       <div
                         key={booking._id}
-                        className="flex flex-col md:flex-row border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow bg-white"
+                        className="flex flex-col md:flex-row border border-gray-200 rounded-lg p-6 shadow-xl hover:shadow-md transition-shadow bg-white "
                       >
                         {/* Left Section: User Details */}
-                        <div className="flex flex-col items-center md:w-1/3 border-r   border-gray-200 pr-6">
+                        <div className="flex  flex-col items-center md:w-1/3 bor der-r   border-gray-200 pr-6">
                           <img
                             src={
                               booking?.userId?.ProfilePic ||
@@ -540,11 +544,11 @@ const LaborDashBoard = () => {
                               </p>
                               <span
                                 className={`inline-block px-3 py-1 rounded-full text-sm font-medium 
-                      ${
-                        booking.paymentStatus === "Paid"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
+                                ${
+                                  booking.paymentStatus === "Paid"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                                }`}
                               >
                                 {booking.paymentStatus}
                               </span>
@@ -552,7 +556,8 @@ const LaborDashBoard = () => {
                           </div>
 
                           <div className="flex justify-end mt-4 pt-4 border-t">
-                            <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium">
+                            <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium"
+                              onClick={() => handelViewDetails(booking)}>
                               View Details
                             </button>
                           </div>
@@ -802,7 +807,7 @@ const LaborDashBoard = () => {
 
                             <div className="space-y-1">
                               <p className="font-medium ">Scheduled Time</p>
-                              <p className="text-gray-800">
+                              <p className="">
                                 {new Date(
                                   booking.quote.arrivalTime
                                 ).toLocaleString()}

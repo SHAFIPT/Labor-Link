@@ -14,7 +14,7 @@ const QuoteMessage = ({ message, isCurrentUser, formatTimestamp, participants, o
       <div className={`flex flex-col gap-2 ${isCurrentUser ? "items-end" : "items-start"}`}>
         <div
           className={`p-4 rounded-lg shadow-md w-full sm:w-[300px] md:w-[400px] lg:w-[500px] flex flex-col ${
-            isCurrentUser ? "bg-blue-50" : "bg-gray-50"
+            isCurrentUser ? "bg-[#cdffcd]" : "bg-gray-50"
           }`}
         >
           <div className="flex items-center gap-4">
@@ -32,7 +32,7 @@ const QuoteMessage = ({ message, isCurrentUser, formatTimestamp, participants, o
             </div>
 
             <div className="flex-1">
-              <h3 className="font-medium mb-2">
+              <h3 className="font-medium text-black mb-2">
                 {isCurrentUser
                   ? "Here is my quote for the job:"
                   : "You have received a quote from the laborer:"}
@@ -42,17 +42,17 @@ const QuoteMessage = ({ message, isCurrentUser, formatTimestamp, participants, o
 
           <div className="space-y-2 mt-4">
             <div>
-              <span className="font-semibold">Job details:</span>
+              <span className="font-semibold text-[#6b2a2a]">Job details:</span>
               <p className="text-gray-600">{message.content.description}</p>
             </div>
 
             <div>
-              <span className="font-semibold">Estimated Cost:</span>
+              <span className="font-semibold text-[#6b2a2a]">Estimated Cost:</span>
               <p className="text-gray-600">₹{message.content.estimatedCost}</p>
             </div>
 
             <div className="space-y-1">
-            <span className="font-semibold">Available Time:</span>
+            <span className="font-semibold text-[#6b2a2a]">Available Time:</span>
             <div className="flex flex-col text-gray-600">
               <p>
                 <span className="inline-block w-5">

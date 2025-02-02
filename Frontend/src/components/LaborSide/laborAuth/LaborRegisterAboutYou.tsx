@@ -183,7 +183,7 @@ const LaborRegister = () => {
       const coordinates = await geocodeAddress(fullAddress);
       if (coordinates) {
         console.log("Geocoded Coordinates:   +++++ ------- ++++++++", coordinates);
-        setAddress((prevAddress) => ({
+        setAddress((prevAddress) => ({   
           ...prevAddress,
           latitude: coordinates.latitude,
           longitude: coordinates.longitude,

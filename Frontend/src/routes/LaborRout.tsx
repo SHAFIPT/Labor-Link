@@ -12,8 +12,8 @@ import PublicRoute from "../components/Authentications/PublicRoute";
 import LaborPrivateRoute from "../components/Authentications/LaborPrivateRoute"
 import LaborDashBoardPage from '../pages/LaborSide/LaborDashBoard';
 import LaborPublicRoute from '../components/Authentications/LaborPublicRoute';
-
-
+import LaborViewAllDetials from '../pages/adminSide/LaborViewAllDetials';
+import LaborBookingDetails from '../pages/LaborSide/laborViewDetialpage'
 
 const LaborRout = () => {
   // const navigate = useNavigate();
@@ -39,6 +39,14 @@ const LaborRout = () => {
           element={
             <LaborPrivateRoute role="labor">
               <LaborDashBoardPage />
+            </LaborPrivateRoute>
+          }
+        />;
+        <Route
+          path="/viewBookingDetials"
+          element={
+            <LaborPrivateRoute role="labor">
+              <LaborBookingDetails />
             </LaborPrivateRoute>
           }
         />;

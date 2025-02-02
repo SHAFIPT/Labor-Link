@@ -7,7 +7,7 @@ const QuoteConfirmationModal = ({ isOpen, onClose, onConfirm, quoteDetails }) =>
       console.log("This is the selected Queet4e leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",quoteDetails)
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40">
       <div className="bg-white rounded-lg max-w-[600px] w-full p-6 shadow-xl">
         {/* Icon and Header */}
         <div className="flex flex-col items-center text-center mb-6">

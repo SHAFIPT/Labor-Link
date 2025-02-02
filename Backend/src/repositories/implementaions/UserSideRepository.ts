@@ -48,6 +48,18 @@ export default class UserSideRepository implements IUserSideRepository {
         throw new Error("Missing required quote fields");
       }
 
+      if (
+        !bookingDetails.addressDetails?.district ||
+        !bookingDetails.addressDetails?.name ||
+        !bookingDetails.addressDetails?.place ||
+        !bookingDetails.addressDetails?.address ||
+        !bookingDetails.addressDetails?.pincode ||
+        !bookingDetails.addressDetails?.latitude ||
+        !bookingDetails.addressDetails?.longitude
+      ) {
+        throw new Error("Missing address details");
+      }
+
       console.log(
         "This is the CreateBooooking ;;;;;;;;;;;;;;;",
         bookingDetails
@@ -64,6 +76,7 @@ export default class UserSideRepository implements IUserSideRepository {
           estimatedCost: bookingDetails.quote.estimatedCost,
           arrivalTime: bookingDetails.quote.arrivalTime,
         },
+        addressDetails: bookingDetails.addressDetails,
         status: "confirmed",
         paymentStatus: "pending",
         createdAt: new Date(),

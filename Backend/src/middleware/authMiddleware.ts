@@ -11,7 +11,7 @@ import Labor from "../models/LaborModel";
 interface DecodedToken extends JwtPayload {
   id: string;
   role: string;
-  iat: number;
+  iat: number;     
   exp: number;
 }
 
@@ -293,7 +293,7 @@ export const decodedAdminRefreshToken = (
 
 
 export const verifyRefreshAdminTokenMiddleware = (
-  req: Request & Partial<{ user: string | jwt.JwtPayload }>,
+  req: Request & Partial<{ admin: string | jwt.JwtPayload }>,
   res: Response,
   next: NextFunction
 ): void => {
@@ -309,7 +309,7 @@ export const verifyRefreshAdminTokenMiddleware = (
   try {
     const decoded = verifyRefreshToken(refreshToken);
     // Check if decoded is an object before spreading
-    req.user = typeof decoded === 'object' 
+    req.admin = typeof decoded === 'object' 
       ? { ...decoded, rawToken: refreshToken }
       : { token: decoded, rawToken: refreshToken };
     next();
@@ -325,7 +325,7 @@ export const verifyRefreshAdminTokenMiddleware = (
 
 
 export const verifyRefreshLaborTokenMiddleware = (
-  req: Request & Partial<{ user: string | jwt.JwtPayload }>,
+  req: Request & Partial<{ labor: string  | jwt.JwtPayload }>,
   res: Response,
   next: NextFunction
 ): void => {
@@ -341,7 +341,7 @@ export const verifyRefreshLaborTokenMiddleware = (
   try {
     const decoded = verifyRefreshToken(refreshToken);
     // Check if decoded is an object before spreading
-    req.user = typeof decoded === 'object' 
+    req.labor = typeof decoded === 'object' 
       ? { ...decoded, rawToken: refreshToken }
       : { token: decoded, rawToken: refreshToken };
     next();

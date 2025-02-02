@@ -12,7 +12,7 @@ const BookingSchema : Schema = new Schema<IBooking>({
     arrivalTime: { type: Date, required: true }
   },
 
-
+    
   additionalChargeRequest: {
     amount: { type: Number, default: 0 }, // Extra charge requested
     reason: { type: String }, // Explanation for extra charge
@@ -34,6 +34,17 @@ const BookingSchema : Schema = new Schema<IBooking>({
     enum: ['pending', 'paid', 'failed'],
     default: 'pending' 
   },
+
+   addressDetails: {
+      name: { type: String, required: true },
+      phone: { type: String, required: true },
+      district: { type: String, required: true },
+      place: { type: String, required: true },
+      address: { type: String, required: true },
+      pincode: { type: String, required: true },
+      latitude: { type: Number, required: true },
+      longitude: { type: Number, required: true }
+    },
 
   cancellation: {
     reason: { type: String }, 

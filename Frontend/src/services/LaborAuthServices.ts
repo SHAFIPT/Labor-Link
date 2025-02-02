@@ -1,10 +1,11 @@
 import axios, { AxiosError } from "axios";
 import { ILaborer } from "../@types/labor";
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-});
+import { laborAxiosInstance } from "./instance/laborInstance";
+
+
+const api = laborAxiosInstance
+
 
 export const registerAboutYou = async (formData: Partial<ILaborer>) => {
   

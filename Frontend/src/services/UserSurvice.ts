@@ -35,30 +35,35 @@ export const editPassword = async (PasswodData: { email: string; password: strin
     throw error;
     }
 }
-export const bookTheLabor = async (userId : string , laborId : string , quote : { description: string; estimatedCost: number; arrivalTime: Date }) => {
-    try {
-      const response = await api.post('/api/user/users/bookingLabor', {
-        userId,
-        laborId,
-        quote
-        })  
-        return response
-    } catch (error) {
-        console.error("Error Paasword change:", error);
-    throw error;
-    }
-}
-
-export const fetchlaborId = async (email : string) => {
+export const bookTheLabor = async (
+  userId: string,
+  laborId: string,
+  quote: { description: string; estimatedCost: number; arrivalTime: Date },
+  addressDetails: { name: string; phone: string; district: string; place: string; address: string; pincode: string; latitude: number | null; longitude: number | null }
+) => {
   try {
-    
+    const response = await api.post("/api/user/users/bookingLabor", {
+      userId,
+      laborId,
+      quote,
+      addressDetails
+    });
+    return response;
+  } catch (error) {
+    console.error("Error Paasword change:", error);
+    throw error;
+  }
+};
+
+export const fetchlaborId = async (email: string) => {
+  try {
     const response = await api.get(`/api/user/users/fetchId/${email}`);
-    return response
+    return response;
   } catch (error) {
     console.error("Error in About me :", error);
     throw error;
   }
-}
+};
 
 export const fetchBookings = async (page : number , limit : number) => {
   try {

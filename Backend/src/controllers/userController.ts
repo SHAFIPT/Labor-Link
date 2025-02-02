@@ -131,12 +131,13 @@ export class userController {
   public bookingLabor = async (req: Request, res: Response, next: NextFunction) => {
     try {
        
-      const { userId, laborId, quote } = req.body;
+      const { userId, laborId, quote , addressDetails} = req.body;
 
       console.log("This is the Boooking data ", {
         userId,
         laborId,
-        quote
+        quote, 
+        addressDetails
       })
 
 
@@ -144,15 +145,29 @@ export class userController {
             return res.status(400).json({ message: "Missing required quote fields" });
       }
 
-      const bookingDetails: Partial<IBooking> = {
-            userId,
-            laborId,
-            quote: {
-                description: quote.description,
-                estimatedCost: quote.estimatedCost,
-                arrivalTime: quote.arrivalTime
-            }
-      };
+        if (
+          !addressDetails?.district ||
+          !addressDetails?.place ||
+          !addressDetails?.address ||
+          !addressDetails?.pincode ||
+          !addressDetails?.phone ||
+          !addressDetails?.name
+        ) {
+          return res
+            .status(400)
+            .json({ message: "Missing required address fields" });
+        }
+
+        const bookingDetails: Partial<IBooking> = {
+          userId,
+          laborId,
+          quote: {
+            description: quote.description,
+            estimatedCost: quote.estimatedCost,
+            arrivalTime: quote.arrivalTime,
+          },
+          addressDetails,
+        };
       
       console.log("This si erhe boooikingDetails...................",bookingDetails)
 
