@@ -8,7 +8,7 @@ const adminUserController = new adminController()
 
 // users fetch
 adminUserRoute.get('/usersFetch',authenticate,adminUserController.fetchUser.bind(adminUserController))
-
+    
 // labor fetch
 adminUserRoute.get('/laborsFetch', authenticate,adminUserController.fetchLabor.bind(adminUserController))
 

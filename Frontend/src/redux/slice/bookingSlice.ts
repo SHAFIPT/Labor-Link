@@ -23,7 +23,7 @@ export interface BookingDetails {
 
 // ✅ Export BookingState so it can be imported in store.ts
 export interface BookingState {
-  bookingDetails: BookingDetails | null;
+  bookingDetails: BookingDetails[] | null; // Now it's an array or null
 }
 
 const initialState: BookingState = {
@@ -34,8 +34,8 @@ const bookingSlice = createSlice({
   name: "booking",
   initialState,
   reducers: {
-    setBookingDetails: (state, action: PayloadAction<BookingDetails>) => {
-      state.bookingDetails = action.payload;
+     setBookingDetails: (state, action: PayloadAction<BookingDetails[]>) => {
+      state.bookingDetails = action.payload; // Now accepts an array
     },
     clearBookingDetails: (state) => {
       state.bookingDetails = null;

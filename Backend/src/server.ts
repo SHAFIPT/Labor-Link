@@ -17,7 +17,7 @@ app.use(cookieParser())
 app.use(bodyParser.raw({ type: 'application/json' }));
 app.use(cores({
     origin: 'http://localhost:5173',
-    credentials: true
+    credentials: true         
 }))
 
 app.use('/',router)

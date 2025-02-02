@@ -9,15 +9,40 @@ interface CertificateData {
   certificateImages: (File | string)[];
 }
 
+const reasonSchema = Joi.string()
+  .required()
+  .messages({
+    "string.empty": "Please select a reason for cancellation.",
+  });
+const placeSchema = Joi.string()
+  .required()
+
+// Validation schema for comments
+const commentsSchema = Joi.string()
+  .max(500)
+  .messages({
+    "string.max": "Comments should not exceed 500 characters.",
+  });
+
+const phoneSchema = Joi.string()
+  .pattern(/^\d{10}$/) // Exactly 10 digits
+  .required()
+  .messages({
+    "string.pattern.base": "Phone number must be a 10-digit number",
+    "string.empty": "Phone number is required",
+  });
+
 // First Name Validation Schema
 const firstNameSchema = Joi.string()
   .min(2)
   .max(50)
+  .regex(/^[A-Za-z\s]+$/) // Only letters and spaces allowed
   .required()
   .messages({
     "string.min": "First name should be at least 2 characters",
     "string.max": "First name should be less than 50 characters",
     "string.empty": "First name is required",
+    "string.pattern.base": "First name should contain only letters and spaces",
   });
 
 // Last Name Validation Schema
@@ -236,6 +261,25 @@ const availabilitySchema = Joi.array() // Adjust with your valid options
     "string.max": "Address should be less than 500 characters",
     "string.empty": "Address is required",
   });
+
+  export const validatePhoneNumbers = (phone) => {
+  const { error } = phoneSchema.validate(phone);
+  return error ? error.details[0].message : null;
+};
+
+  export const validateReason = (reason) => {
+  const { error } = reasonSchema.validate(reason);
+  return error ? error.details[0].message : null;
+};
+  export const validatePlace = (reason) => {
+  const { error } = placeSchema.validate(reason);
+  return error ? error.details[0].message : null;
+};
+
+export const validateComments = (comments) => {
+  const { error } = commentsSchema.validate(comments);
+  return error ? error.details[0].message : null;
+};
 
 
   export const validateAddress = (address: string) => {

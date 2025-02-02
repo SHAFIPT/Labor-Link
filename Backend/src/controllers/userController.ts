@@ -193,6 +193,72 @@ export class userController {
          next(error);
     }
   }
+
+  public fetchBookings = async (req: Request & { user: { id: string } }, res: Response, next: NextFunction) => {
+    try {
+
+      const userId = req.user.id;
+      const page = parseInt(req.query.page as string) || 1
+      const limit = parseInt(req.query.limit as string) || 10
+
+
+
+      if (!userId) {
+        throw new Error("User is not found.")
+      }
+
+      const {bookings ,total}  = await this.userService.fetchBooking(userId , page ,limit)
+
+      if (bookings ) {
+        res.status(200).json({
+          message: 'fetching booking succesfully ..',
+          bookings,
+          total,
+          page,
+          limit,
+          totalPages : Math.ceil(total / limit)
+        })
+      }
+      
+    } catch (error) {
+        console.error("Error in fetch booking....:", error);
+        next(error);
+    }
+  }
+
+  public cancelBooking = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { bookingId, reason, comments, isWithin30Minutes, canceledBy } = req.body;
+
+      if (!bookingId) {
+        throw new Error ('No booking id is found...')
+      }
+
+
+      const cancelledBooking = await this.userService.cancelBooking({
+        bookingId,
+        reason,
+        comments,
+        isWithin30Minutes,
+        canceledBy
+      })
+      
+      if (!cancelledBooking) {
+      throw new Error('Failed to cancel booking.');
+    }
+
+    res.status(200).json({
+      message: 'Booking canceled successfully',
+      booking: cancelledBooking,
+    });
+
+      
+    } catch (error) {
+        console.error("Error in cancell booking", error);
+        next(error);
+    }
+  }
 }
 
 

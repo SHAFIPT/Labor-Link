@@ -2,6 +2,7 @@ import  bycript  from 'bcrypt';
 import { IAboutMe, ILaborer } from "entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import { ILaborService } from "../../services/interface/ILaborServices";
+import { IBooking } from 'entities/bookingEntity';
 
 export class LaborServices implements ILaborService{
     private laborRepsitory: ILaborSidRepository
@@ -39,5 +40,8 @@ export class LaborServices implements ILaborService{
             console.error('Error AboutMe:', error);
             throw new Error('Failed to Aboute me.');
         }
+    }
+    async fetchBookings(laborId: string, page: number, limit: number): Promise<{ bookings: IBooking[]; total: number; }> {
+        return await this.laborRepsitory.fetchBooking(laborId, page, limit);
     }
 }

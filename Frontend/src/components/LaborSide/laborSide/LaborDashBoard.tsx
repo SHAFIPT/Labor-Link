@@ -2,6 +2,8 @@ import LaborDashBoardNav from "./LaborDashBoardNav"
 
 import React, { useEffect, useState } from 'react';
 import { HomeIcon, MessageSquare, Receipt, Briefcase, User, LogOut, DollarSign } from 'lucide-react';
+import { FaCalendarCheck } from "react-icons/fa"; 
+import { Phone, MapPin } from 'lucide-react';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
 import { auth, db } from "../../../utils/firbase";
@@ -12,8 +14,9 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-toastify";
 import { format } from 'date-fns';
 import { useNavigate } from "react-router-dom";
-import { laborFetch } from "../../../services/LaborServices";
+import { fetchLaborBookings, laborFetch } from "../../../services/LaborServices";
 import { resetUser, setAccessToken, setisUserAthenticated, setUser } from "../../../redux/slice/userSlice";
+import { setBookingDetails } from "../../../redux/slice/bookingSlice";
 
 interface ChatDocument {
   laborId: string;
@@ -63,26 +66,35 @@ const LaborDashBoard = () => {
   const [currentStage, setCurrentStage] = useState("Dashboard");
   const [unreadChats, setUnreadChats] = useState({});
   const [chats, setChats] = useState<Chat[]>([]);
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  console.log("Gthis si the chats :::::",chats)
+  console.log("Gthis si the chats :::::", chats);
 
   console.log("thsis eth labo data :A", email);
 
+  const bookingDetails = useSelector(
+    (state: RootState) => state.booking.bookingDetails
+  );
 
-    const totalUnreadCount = chats.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0);
+  console.log("Thiis is the BoookingDETAilssssssssssssss :", bookingDetails);
 
-     const navItems: NavItem[] = [
+  const totalUnreadCount = chats.reduce(
+    (sum, chat) => sum + (chat.unreadCount || 0),
+    0
+  );
+
+  const navItems: NavItem[] = [
     { name: "Dashboard", icon: HomeIcon, stage: "Dashboard" },
-    { name: "Browse Labors", icon: User, stage: "Browse" },
+    { name: "Bookings", icon: FaCalendarCheck, stage: "Bookings" },
     { name: "Chats", icon: MessageSquare, stage: "Chats" },
+    { name: "Total Works ", icon: Briefcase, stage: "Works" },
     { name: "Billing History", icon: Receipt, stage: "Billing" },
-    { name: "Total Works", icon: Briefcase, stage: "Works" },
     { name: "View Profile", icon: User, stage: "Profile" },
   ];
-
 
   const stats = [
     { title: "Total Work Taken", value: "24", icon: Briefcase },
@@ -91,44 +103,44 @@ const LaborDashBoard = () => {
     { title: "Pending Tasks", value: "6", icon: MessageSquare },
   ];
 
- useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const data = await laborFetch();
-      // console.log("This is the Data LLLLLLLLLLLLLLLLLLLLLLLLLL", data);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const data = await laborFetch();
+        // console.log("This is the Data LLLLLLLLLLLLLLLLLLLLLLLLLL", data);
 
-      const { fetchUserResponse } = data
-      
-      //  console.log("This is the laborData LLLLLLLLLLLLLLLLlaborData", fetchUserResponse);
+        const { fetchUserResponse } = data;
 
-      dispatch(setLaborer(fetchUserResponse))
-    } catch (error: any) {
-      if (error.response && error.response.status === 403) {
-        const errorMessage = error.response.data?.message || "Your account has been blocked.";
-        toast.error(errorMessage); // Show dynamic error message
+        //  console.log("This is the laborData LLLLLLLLLLLLLLLLlaborData", fetchUserResponse);
 
-        localStorage.removeItem("LaborAccessToken");
+        dispatch(setLaborer(fetchUserResponse));
+      } catch (error: any) {
+        if (error.response && error.response.status === 403) {
+          const errorMessage =
+            error.response.data?.message || "Your account has been blocked.";
+          toast.error(errorMessage); // Show dynamic error message
 
-        // Reset User State
-        dispatch(setUser({}));
-        dispatch(resetUser());
-        dispatch(setisUserAthenticated(false));
-        dispatch(setAccessToken(""));
+          localStorage.removeItem("LaborAccessToken");
 
-        // Reset Labor State
-        dispatch(setLaborer({}));
-        dispatch(resetLaborer());
-        dispatch(setIsLaborAuthenticated(false));
+          // Reset User State
+          dispatch(setUser({}));
+          dispatch(resetUser());
+          dispatch(setisUserAthenticated(false));
+          dispatch(setAccessToken(""));
 
-        navigate("/"); // Redirect to login page
+          // Reset Labor State
+          dispatch(setLaborer({}));
+          dispatch(resetLaborer());
+          dispatch(setIsLaborAuthenticated(false));
+
+          navigate("/"); // Redirect to login page
+        }
       }
-    }
-  };
+    };
 
-  fetchUser();
- }, [navigate, dispatch]);
-  
-  
+    fetchUser();
+  }, [navigate, dispatch]);
+
   useEffect(() => {
     // Get the saved stage from localStorage or default to "Dashboard"
     const savedStage = localStorage.getItem("currentStage") || "Dashboard";
@@ -140,99 +152,102 @@ const LaborDashBoard = () => {
     localStorage.setItem("currentStage", currentStage);
   }, [currentStage]);
 
+  const fetchChats = (userUid) => {
+    if (!userUid) {
+      throw new Error("Missing user credentials");
+    }
 
+    const auth = getAuth();
+    const currentLabor = auth.currentUser;
 
-const fetchChats = (userUid) => {
-  if (!userUid) {
-    throw new Error("Missing user credentials");
-  }
+    if (!currentLabor || !currentLabor.uid) {
+      throw new Error("User is not authenticated");
+    }
 
-  const auth = getAuth();
-  const currentLabor = auth.currentUser;
+    const laborUid = currentLabor.uid;
 
-  if (!currentLabor || !currentLabor.uid) {
-    throw new Error("User is not authenticated");
-  }
+    const chatCollection = collection(db, "Chats");
+    const chatQuery = query(chatCollection, where("laborId", "==", laborUid));
 
-  const laborUid = currentLabor.uid;
+    const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
+      const chatData = await Promise.all(
+        chatSnapshot.docs.map(async (doc) => {
+          const chatData = doc.data() as ChatDocument;
 
-  const chatCollection = collection(db, "Chats");
-  const chatQuery = query(chatCollection, where("laborId", "==", laborUid));
+          let unreadCount = 0;
+          if (chatData.lastMessageSender === "user") {
+            const messagesCollection = collection(
+              db,
+              "Chats",
+              doc.id,
+              "messages"
+            );
+            const unreadQuery = query(
+              messagesCollection,
+              where(
+                "timestamp",
+                ">",
+                chatData.lastReadTimestamp || new Timestamp(0, 0)
+              )
+            );
 
-  const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
-    const chatData = await Promise.all(
-      chatSnapshot.docs.map(async (doc) => {
-        const chatData = doc.data() as ChatDocument;
-        
+            const unreadSnapshot = await getCountFromServer(unreadQuery);
+            unreadCount = unreadSnapshot.data().count;
+          }
 
+          return {
+            id: doc.id,
+            ...chatData,
+            unreadCount,
+          };
+        })
+      );
 
-        let unreadCount = 0;
-        if (chatData.lastMessageSender === 'user') {
-          
-          const messagesCollection = collection(db, "Chats", doc.id, "messages");
-          const unreadQuery = query(
-            messagesCollection,
-            where("timestamp", ">", chatData.lastReadTimestamp || new Timestamp(0, 0))
-          );
-          
-          const unreadSnapshot = await getCountFromServer(unreadQuery);
-           unreadCount = unreadSnapshot.data().count;
-        }
+      const userPromises = chatData.map(async (chat) => {
+        try {
+          const userDocRef = doc(db, "Users", chat.userId);
+          const userSnapshot = await getDoc(userDocRef);
+          const userData = userSnapshot.exists() ? userSnapshot.data() : null;
 
-
-        return {
-          id: doc.id,
-          ...chatData,
-          unreadCount,
-        };
-      })
-    );
-
-    const userPromises = chatData.map(async (chat) => {
-      try {
-        const userDocRef = doc(db, "Users", chat.userId);
-        const userSnapshot = await getDoc(userDocRef);
-        const userData = userSnapshot.exists() ? userSnapshot.data() : null;
-
-        return {
-          ...chat,
-          userData,
-        };
-      } catch (error) {
-        console.error(`Error fetching user data for chat ${chat.id}:`, error);
-        return { ...chat, userData: null };
-      }
-    });
-
-    const chatsWithUserData = await Promise.all(userPromises);
-    setChats(chatsWithUserData);
-  });
-
-  return unsubscribe;
-};
-    useEffect(() => {
-      const auth = getAuth();
-
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          const chatListenerUnsubscribe = fetchChats(user.uid); // Start real-time listener
-          return () => chatListenerUnsubscribe && chatListenerUnsubscribe(); // Cleanup listener
-        } else {
-          setChats([]); // Clear chats if no user is authenticated
-          toast.error('Please sign in to view chats');
+          return {
+            ...chat,
+            userData,
+          };
+        } catch (error) {
+          console.error(`Error fetching user data for chat ${chat.id}:`, error);
+          return { ...chat, userData: null };
         }
       });
 
-      return () => unsubscribe(); // Cleanup auth listener on unmount
-    }, []);
+      const chatsWithUserData = await Promise.all(userPromises);
+      setChats(chatsWithUserData);
+    });
 
-   // Add a function to update the last read timestamp
-   const markChatAsRead = async (chatId) => {
+    return unsubscribe;
+  };
+  useEffect(() => {
+    const auth = getAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const chatListenerUnsubscribe = fetchChats(user.uid); // Start real-time listener
+        return () => chatListenerUnsubscribe && chatListenerUnsubscribe(); // Cleanup listener
+      } else {
+        setChats([]); // Clear chats if no user is authenticated
+        toast.error("Please sign in to view chats");
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup auth listener on unmount
+  }, []);
+
+  // Add a function to update the last read timestamp
+  const markChatAsRead = async (chatId) => {
     const chatRef = doc(db, "Chats", chatId);
 
     // ✅ Set lastReadTimestamp before querying messages
     await updateDoc(chatRef, {
-      lastReadTimestamp: serverTimestamp()
+      lastReadTimestamp: serverTimestamp(),
     });
 
     // ✅ Optionally, update local state to reflect immediately
@@ -243,51 +258,88 @@ const fetchChats = (userUid) => {
     );
   };
 
-    // Modify the navigation handler to mark messages as read
-    const handleNavigateChatpage = async (chatId) => {
-      await markChatAsRead(chatId);
-      navigate(`/chatingPage/${chatId}`);
+  // Modify the navigation handler to mark messages as read
+  const handleNavigateChatpage = async (chatId) => {
+    await markChatAsRead(chatId);
+    navigate(`/chatingPage/${chatId}`);
+  };
+
+  console.log("this is the chat coutn :;;;;;;;;;;;;", unreadChats);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const responseInBacked = await fetchLaborBookings(currentPage, limit);
+
+        if (responseInBacked.status == 200) {
+          const { bookings, total, page, limit, totalPages } =
+            responseInBacked.data;
+          setTotalPages(totalPages);
+          dispatch(setBookingDetails(bookings));
+          // toast.success("Booking fetched succesfully")
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Error to fetch booking....!");
+      }
     };
+    fetchBookings();
+  }, [currentPage, limit, dispatch]);
 
-    console.log('this is the chat coutn :;;;;;;;;;;;;',unreadChats)
-
+  const sortedBookings = [...bookingDetails].sort(
+    (a, b) =>
+      new Date(b.quote.arrivalTime).getTime() -
+      new Date(a.quote.arrivalTime).getTime()
+  );
 
   return (
     <div>
       {loading && <div className="loader"></div>}
       <LaborDashBoardNav />
-      <div className="flex h-screen ">
+      <div className="flex  ">
         {/* Desktop Sidebar */}
         {theme == "light" ? (
           <>
-            <div className="hidden lg:block w-64 bg-white shadow-lg">
+            <div className="hidden lg:block lg:ml-9 w-64 lg:mt-10 bg-white h-[460px] shadow-lg">
               <div className="flex flex-col h-full">
                 <div className="p-4 border-b">
                   <h2 className="text-xl font-bold">Labor Panel</h2>
                 </div>
 
-                 <nav className="flex-1 p-4 space-y-2">
-                    {navItems.map((item) => (
-                      <a
-                        key={item.name}
-                        href="#"
-                        onClick={() => setCurrentStage(item.stage)}
-                        className="flex items-center w-full px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors relative"
-                      >
-                        <item.icon className="w-5 h-5 mr-3" />
-                        <span>{item.name}</span>
-                        
-                        {/* Only show notification badge for Chats and if there are unread messages */}
-                        {item.name === "Chats" && totalUnreadCount > 0 && (
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                            <span className="bg-red-500 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                              {totalUnreadCount}
-                            </span>
-                          </div>
-                        )}
-                      </a>
-                    ))}
-                  </nav>
+                <nav className="flex-1 p-4 space-y-2">
+                  {navItems.map((item) => (
+                    <a
+                      key={item.name}
+                      href="#"
+                      onClick={() => setCurrentStage(item.stage)}
+                      className={`flex items-center w-full px-4 py-3 rounded-lg transition-colors relative
+                          ${
+                            currentStage === item.stage
+                              ? "bg-blue-600 text-white shadow-md"
+                              : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                          }
+                        `}
+                    >
+                      <item.icon
+                        className={`w-5 h-5 mr-3 ${
+                          currentStage === item.stage
+                            ? "text-white"
+                            : "text-gray-700"
+                        }`}
+                      />
+                      <span>{item.name}</span>
+
+                      {/* Notification Badge for Chats */}
+                      {item.name === "Chats" && totalUnreadCount > 0 && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                          <span className="bg-red-500 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
+                            {totalUnreadCount}
+                          </span>
+                        </div>
+                      )}
+                    </a>
+                  ))}
+                </nav>
               </div>
             </div>
             {currentStage === "Dashboard" && (
@@ -325,81 +377,255 @@ const fetchChats = (userUid) => {
               </>
             )}
             {/* Sidebar and other content */}
-          {currentStage === "Chats" ? (
-            <div className="p-6 w-full">
-              <h1 className="text-2xl font-bold mb-4">Chats</h1>
-              {chats.length > 0 ? (
-                <div className="space-y-4">
-                  {chats
-                    .slice() // Make a copy to avoid mutating state
-                    .sort((a, b) => b.lastUpdated.toMillis() - a.lastUpdated.toMillis()) // Sort by latest message
-                    .map((chat) => (
-                      <div
-                        key={chat.id}
-                        className="flex items-center p-4 bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-shadow w-full"
-                        onClick={() => {
-                          handleNavigateChatpage(chat.id);
-                          markChatAsRead(chat.id); // ✅ Mark as read on click
-                        }}
-                      >
-                        {/* User Profile Picture */}
-                        <img
-                          src={chat.userData?.profilePicture || 'default-profile-picture.jpg'}
-                          alt="User Profile"
-                          className="w-12 h-12 rounded-full object-cover mr-4"
-                        />
+            {currentStage === "Chats" ? (
+              <div className="p-4 w-full max-w-5xl mx-auto">
+                <h1 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                  Chats
+                </h1>
 
-                        {/* Chat Info */}
-                        <div className="flex-1">
-                          <div className="flex justify-between">
-                            <h3 className="text-xl font-semibold">{chat.userData?.name || 'Unknown User'}</h3>
-                            <span className="text-gray-500 text-sm">
-                              {chat.lastUpdated && format(chat.lastUpdated.toDate(), 'h:mm a')}
-                            </span>
+                <div className="bodyPart space-y-2">
+                  {chats.length > 0 ? (
+                    chats
+                      .slice()
+                      .sort(
+                        (a, b) =>
+                          b.lastUpdated.toMillis() - a.lastUpdated.toMillis()
+                      )
+                      .map((chat) => (
+                        <div
+                          key={chat.id}
+                          onClick={() => {
+                            handleNavigateChatpage(chat.id);
+                            markChatAsRead(chat.id);
+                          }}
+                          className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-white cursor-pointer"
+                        >
+                          {/* First Row: User Image, Name, Time, Status */}
+                          <div className="flex justify-between items-center">
+                            {/* Left Section: User Image + Name */}
+                            <div className="flex items-center space-x-4">
+                              <img
+                                src={
+                                  chat.userData?.profilePicture ||
+                                  "default-profile-picture.jpg"
+                                }
+                                alt="User Profile"
+                                className="w-[50px] h-[50px] rounded-full object-cover"
+                              />
+
+                              <span className="font-semibold text-gray-800">
+                                {chat.userData?.name || "Unknown User"}
+                              </span>
+                            </div>
+                            <div className="mt-1 text-gray-700 text-sm truncate">
+                              {chat.lastMessage || "No message"}
+                            </div>
+
+                            {/* Right Section: Time + Read Status */}
+                            <div className="flex items-center space-x-3 text-sm text-gray-600">
+                              <span>
+                                {chat.lastUpdated &&
+                                  format(chat.lastUpdated.toDate(), "h:mm a")}
+                              </span>
+                              {chat.lastMessageSender === "user" &&
+                              chat.unreadCount > 0 ? (
+                                <span className="bg-red-500 text-white px-2 py-1 text-xs font-medium rounded-full">
+                                  {chat.unreadCount}
+                                </span>
+                              ) : (
+                                <span className="text-green-500 font-medium">
+                                  Read
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-gray-600">{chat.lastMessage || 'No message'}</p>
+
+                          {/* Second Row: Last Message */}
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                      <p className="text-gray-500 text-lg">
+                        No chats available
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            {currentStage === "Bookings" && (
+              <div className="bookingDetails p-4 w-full max-w-5xl mx-auto">
+                <h1 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                  Current Bookings
+                </h1>
+
+                <div className="bodyPart space-y-6">
+                  {sortedBookings && sortedBookings.length > 0 ? (
+                    sortedBookings.map((booking) => (
+                      <div
+                        key={booking._id}
+                        className="flex flex-col md:flex-row border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow bg-white"
+                      >
+                        {/* Left Section: User Details */}
+                        <div className="flex flex-col items-center md:w-1/3 border-r   border-gray-200 pr-6">
+                          <img
+                            src={
+                              booking?.userId?.ProfilePic ||
+                              "https://via.placeholder.com/80"
+                            }
+                            alt="User"
+                            className="w-[165px] h-[165px] rounded-full object-cover"
+                          />
+                          <div className="ml-4 space-y-2">
+                            <p className="font-semibold text-lg text-gray-800">
+                              {booking?.userId?.firstName}{" "}
+                              {booking?.userId?.lastName}
+                            </p>
+                            <p className="text-sm text-gray-600 flex items-center">
+                              <Phone size={16} className="text-gray-500" />
+                              {booking?.userId?.phoneNumber}
+                            </p>
+                            <p className="text-sm text-gray-600 flex items-center">
+                              <MapPin size={16} className="text-gray-500" />{" "}
+                              {booking?.userId?.location}
+                            </p>
+                          </div>
                         </div>
 
-                        {/* ✅ Show notification if user is last sender and there are unread messages */}
-                        {chat.lastMessageSender === "user" && chat.unreadCount > 0 && (
-                          <div className="ml-4 flex items-center">
-                            <span className="bg-red-500 text-white text-sm font-medium rounded-full w-6 h-6 flex items-center justify-center">
-                              {chat.unreadCount}
-                            </span>
+                        {/* Right Section: Job Details */}
+                        <div className="md:w-2/3 mt-6 md:mt-0 md:pl-6 space-y-3">
+                          <div className="space-y-1">
+                            <p className="font-medium text-gray-700">
+                              Job Description
+                            </p>
+                            <p className="text-gray-800 bg-gray-50 p-3 rounded-md">
+                              {booking.quote.description}
+                            </p>
                           </div>
-                        )}
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div className="space-y-1">
+                              <p className="font-medium text-gray-700">
+                                Estimated Cost
+                              </p>
+                              <p className="text-lg font-semibold text-green-600">
+                                ${booking.quote.estimatedCost}
+                              </p>
+                            </div>
+
+                            <div className="space-y-1">
+                              <p className="font-medium text-gray-700">
+                                Scheduled Time
+                              </p>
+                              <p className="text-gray-800">
+                                {new Date(
+                                  booking.quote.arrivalTime
+                                ).toLocaleString()}
+                              </p>
+                            </div>
+
+                            <div className="space-y-1">
+                              <p className="font-medium text-gray-700">
+                                Status
+                              </p>
+                              <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                {booking.status}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1">
+                              <p className="font-medium text-gray-700">
+                                Payment Status
+                              </p>
+                              <span
+                                className={`inline-block px-3 py-1 rounded-full text-sm font-medium 
+                      ${
+                        booking.paymentStatus === "Paid"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                              >
+                                {booking.paymentStatus}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-end mt-4 pt-4 border-t">
+                            <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium">
+                              View Details
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    ))}
+                    ))
+                  ) : (
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                      <p className="text-gray-500 text-lg">
+                        No bookings available
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <p className="text-gray-500 text-center mt-8">No chats available</p>
-              )}
-            </div>
-          ) : null}
 
-
-
+                <div className="flex justify-center items-center gap-4 mt-8 mb-4">
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="px-5 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors hover:bg-[#2a8f97]"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-4 py-2 bg-gray-100 rounded-md font-medium text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage >= totalPages}
+                    className="px-5 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors hover:bg-[#2a8f97]"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <>
-            <div className="hidden bg-[#0f8585] lg:mt-8 lg:block w-64 h-[460px] border border-gray-700 rounded-md shadow-lg">
+            <div className="hidden bg-gray-800 lg:ml-9 lg:mt-8 lg:block w-64 h-[460px] border border-gray-700 rounded-md shadow-lg">
               <div className="flex flex-col h-full">
                 <div className="p-4 border-b">
                   <h2 className="text-xl font-bold">Labor Panel</h2>
                 </div>
 
-                  <nav className="flex-1 p-4 space-y-2">
+                <nav className="flex-1 p-4 space-y-2">
                   {navItems.map((item) => (
                     <a
                       key={item.name}
                       href="#"
                       onClick={() => setCurrentStage(item.stage)}
-                      className="flex items-center w-full px-4 py-3  rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors relative"
+                      className={`flex items-center w-full px-4 py-3 rounded-lg transition-colors relative
+                        ${
+                          currentStage === item.stage
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "text-[#a4d2eb] hover:bg-blue-50 hover:text-blue-600"
+                        }
+                      `}
                     >
-                      <item.icon className="w-5 h-5 mr-3" />
+                      <item.icon
+                        className={`w-5 h-5 mr-3 ${
+                          currentStage === item.stage
+                            ? "text-white"
+                            : "text-[#a4d2eb]"
+                        }`}
+                      />
                       <span>{item.name}</span>
-                      
-                      {/* Only show notification badge for Chats and if there are unread messages */}
+
+                      {/* Notification Badge for Chats */}
                       {item.name === "Chats" && totalUnreadCount > 0 && (
                         <div className="absolute right-2 top-1/2 -translate-y-1/2">
                           <span className="bg-red-500 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
@@ -413,82 +639,240 @@ const fetchChats = (userUid) => {
               </div>
             </div>
 
-              
-          {currentStage === 'Dashboard' && (
-            <div className="flex-1 overflow-auto">
-              <div className="p-6">
-                <div className="flex justify-center mb-8">
-                  <h1 className="text-3xl md:text-[35px] font-bold font-[Rockwell]">
-                    Welcome to Labor Dashboard
-                  </h1>
-                </div>
+            {currentStage === "Dashboard" && (
+              <div className="flex-1 overflow-auto">
+                <div className="p-6">
+                  <div className="flex justify-center mb-8">
+                    <h1 className="text-3xl md:text-[35px] font-bold font-[Rockwell]">
+                      Welcome to Labor Dashboard
+                    </h1>
+                  </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {stats.map((stat) => (
-                    <div
-                      key={stat.title}
-                      className="bg-[#0f8585] p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <stat.icon className="w-8 h-8 " />
-                        <span className="text-2xl font-bold">{stat.value}</span>
-                      </div>
-                      <h3 className=" font-medium">{stat.title}</h3>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-              )}
-              
-          
-          {currentStage === "Chats" ? (
-            <div className="p-6 w-full">
-              <h1 className="text-2xl font-bold mb-4">Chats</h1>
-              {chats.length > 0 ? (
-                <div className="space-y-4">
-                  {chats.map((chat) => (
-                    <div
-                      key={chat.id}
-                      className="flex items-center p-4 bg-[#0f8585] rounded-lg shadow-md hover:shadow-lg transition-shadow w-full"
-                    >
-                      {/* User Profile Picture */}
-                      <img
-                        src={chat.userData?.profilePicture || 'default-profile-picture.jpg'}
-                        alt="User Profile"
-                        className="w-12 h-12 rounded-full object-cover mr-4"
-                      />
-
-                      {/* Chat Info */}
-                      <div className="flex-1">
-                        <div className="flex justify-between">
-                          <h3 className="text-xl font-semibold">{chat.userData?.name || 'Unknown User'}</h3>
-                          <span className=" text-sm">
-                            {chat.lastUpdated && format(chat.lastUpdated.toDate(), 'h:mm a')}
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {stats.map((stat) => (
+                      <div
+                        key={stat.title}
+                        className="bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <stat.icon className="w-8 h-8 " />
+                          <span className="text-2xl font-bold">
+                            {stat.value}
                           </span>
                         </div>
-                        <p className="">{chat.lastMessage || 'No message'}</p>
+                        <h3 className=" font-medium">{stat.title}</h3>
                       </div>
-
-                      {/* Message Count */}
-                       {chat.unreadCount > 0 && (
-                      <div className="ml-4 flex items-center">
-                        <span className="bg-red-500 text-white text-sm font-medium rounded-full w-6 h-6 flex items-center justify-center">
-                          {chat.unreadCount}
-                        </span>
-                      </div>
-                    )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              ) : (
-                <p className=" text-center mt-8">No chats available</p>
-              )}
-            </div>
-          ) : null}
+              </div>
+            )}
 
-            
+            {currentStage === "Chats" ? (
+              <div className="p-4 w-full max-w-5xl mx-auto">
+                <h1 className="text-2xl font-bold mb-6 border-b pb-3">Chats</h1>
+
+                <div className="bodyPart space-y-2">
+                  {chats.length > 0 ? (
+                    chats
+                      .slice()
+                      .sort(
+                        (a, b) =>
+                          b.lastUpdated.toMillis() - a.lastUpdated.toMillis()
+                      )
+                      .map((chat) => (
+                        <div
+                          key={chat.id}
+                          onClick={() => {
+                            handleNavigateChatpage(chat.id);
+                            markChatAsRead(chat.id);
+                          }}
+                          className="border border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-gray-800 cursor-pointer"
+                        >
+                          {/* First Row: User Image, Name, Time, Status */}
+                          <div className="flex justify-between items-center">
+                            {/* Left Section: User Image + Name */}
+                            <div className="flex items-center space-x-4">
+                              <img
+                                src={
+                                  chat.userData?.profilePicture ||
+                                  "default-profile-picture.jpg"
+                                }
+                                alt="User Profile"
+                                className="w-[50px] h-[50px] rounded-full object-cover"
+                              />
+
+                              <span className="font-semibold ">
+                                {chat.userData?.name || "Unknown User"}
+                              </span>
+                            </div>
+                            <div className="mt-1  text-sm truncate">
+                              {chat.lastMessage || "No message"}
+                            </div>
+
+                            {/* Right Section: Time + Read Status */}
+                            <div className="flex items-center space-x-3 text-sm ">
+                              <span>
+                                {chat.lastUpdated &&
+                                  format(chat.lastUpdated.toDate(), "h:mm a")}
+                              </span>
+                              {chat.lastMessageSender === "user" &&
+                              chat.unreadCount > 0 ? (
+                                <span className="bg-red-500 text-white px-2 py-1 text-xs font-medium rounded-full">
+                                  {chat.unreadCount}
+                                </span>
+                              ) : (
+                                <span className="text-green-500 font-medium">
+                                  Read
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Second Row: Last Message */}
+                        </div>
+                      ))
+                  ) : (
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                      <p className="text-gray-500 text-lg">
+                        No chats available
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            {currentStage === "Bookings" && (
+              <div className="bookingDetails p-4 w-full max-w-5xl mx-auto">
+                <h1 className="text-2xl font-bold mb-6  border-b pb-3">
+                  Current Bookings
+                </h1>
+
+                <div className="bodyPart space-y-6">
+                  {sortedBookings && sortedBookings.length > 0 ? (
+                    sortedBookings.map((booking) => (
+                      <div
+                        key={booking._id}
+                        className="flex flex-col md:flex-row border border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow bg-gray-800"
+                      >
+                        {/* Left Section: User Details */}
+                        <div className="flex flex-col items-center md:w-1/3 border-r   border-gray-700 pr-6">
+                          <img
+                            src={
+                              booking?.userId?.ProfilePic ||
+                              "https://via.placeholder.com/80"
+                            }
+                            alt="User"
+                            className="w-[165px] h-[165px] rounded-full object-cover"
+                          />
+                          <div className="ml-4 space-y-2">
+                            <p className="font-semibold text-lg ">
+                              {booking?.userId?.firstName}{" "}
+                              {booking?.userId?.lastName}
+                            </p>
+                            <p className="text-sm  flex items-center">
+                              <Phone size={16} className="" />
+                              {booking?.userId?.phoneNumber}
+                            </p>
+                            <p className="text-sm  flex items-center">
+                              <MapPin size={16} className="" />{" "}
+                              {booking?.userId?.location}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Right Section: Job Details */}
+                        <div className="md:w-2/3 mt-6 md:mt-0 md:pl-6 space-y-3">
+                          <div className="space-y-1">
+                            <p className="font-medium ">Job Description</p>
+                            <p className="text-gray-800 bg-gray-50 p-3 rounded-md">
+                              {booking.quote.description}
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div className="space-y-1">
+                              <p className="font-medium ">Estimated Cost</p>
+                              <p className="text-lg font-semibold text-green-600">
+                                ${booking.quote.estimatedCost}
+                              </p>
+                            </div>
+
+                            <div className="space-y-1">
+                              <p className="font-medium ">Scheduled Time</p>
+                              <p className="text-gray-800">
+                                {new Date(
+                                  booking.quote.arrivalTime
+                                ).toLocaleString()}
+                              </p>
+                            </div>
+
+                            <div className="space-y-1">
+                              <p className="font-medium ">Status</p>
+                              <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                {booking.status}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1">
+                              <p className="font-medium ">Payment Status</p>
+                              <span
+                                className={`inline-block px-3 py-1 rounded-full text-sm font-medium 
+                      ${
+                        booking.paymentStatus === "Paid"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                              >
+                                {booking.paymentStatus}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-end mt-4 pt-4 border-t">
+                            <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium">
+                              View Details
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                      <p className="text-gray-500 text-lg">
+                        No bookings available
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-center items-center gap-4 mt-8 mb-4">
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="px-5 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors hover:bg-[#2a8f97]"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-4 py-2 bg-gray-100 rounded-md font-medium text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage >= totalPages}
+                    className="px-5 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors hover:bg-[#2a8f97]"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

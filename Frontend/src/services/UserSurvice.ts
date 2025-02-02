@@ -59,3 +59,32 @@ export const fetchlaborId = async (email : string) => {
     throw error;
   }
 }
+
+export const fetchBookings = async (page : number , limit : number) => {
+  try {
+
+    const response = await api.get(`/api/user/users/fetchBookings?page=${page}&limit=${limit}`);
+    return response
+    
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  } 
+}
+export const cancelSubmision = async (cancelFormData) => {
+  try {  
+
+    const response = await api.post('/api/user/users/cancelBooking', {
+      bookingId: cancelFormData.bookingId, 
+      reason: cancelFormData.reason,
+      comments: cancelFormData.comments,
+      isWithin30Minutes: cancelFormData.isWithin30Minutes,
+      canceledBy: 'user', 
+    });
+    return response
+    
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}

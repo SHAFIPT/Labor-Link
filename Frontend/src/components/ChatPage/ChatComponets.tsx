@@ -19,7 +19,7 @@ import { toast } from 'react-toastify';
 import SuccessModal from './SuccessModal';
 import { fetchlaborId } from '../../services/UserSurvice';
 import { setBookingDetails } from '../../redux/slice/bookingSlice';
-
+import bgImage from '../../assets/chatBg5.webp'
 const ChatComponents = () => {
 
   const userLogin = useSelector((state: RootState) => state.user.user);
@@ -675,7 +675,15 @@ const handleConfirmQuoteAcceptance = async () => {
         </div>
       </div>
 
-      <div className="flex-grow p-2 sm:p-4 overflow-y-auto space-y-4 sm:space-y-6">
+      <div   className="flex-grow p-2 sm:p-4 overflow-y-auto space-y-4 "
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }}
+    >
         {messages.map((message) => {
           const isCurrentUser = message.senderId === auth.currentUser?.uid;
           const isLabor = message.senderId === chatDetails?.laborId;
@@ -710,7 +718,7 @@ const handleConfirmQuoteAcceptance = async () => {
           return (
             <div
               key={message.id}
-              className={`flex items-start gap-2 sm:gap-4 ${
+              className={`flex items-start gap-2 sm:gap-4  ${
                 isCurrentUser ? "flex-row-reverse" : "flex-row"
               }`}
             >

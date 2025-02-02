@@ -11,5 +11,6 @@ laborRoutes.post('/updateProfile',authenticateLabor , laborSideContorller.update
 laborRoutes.post('/UpdatePassword',authenticateLabor , laborSideContorller.UpdatePassword.bind(laborSideContorller))
 laborRoutes.get('/fetchLaborsByLocation',laborSideContorller.fetchLaborsByLocation.bind(laborSideContorller))
 laborRoutes.post('/abouteMe',authenticateLabor , laborSideContorller.abouteMe.bind(laborSideContorller))
+laborRoutes.get('/fetchBooking',authenticateLabor , laborSideContorller.fetchBooking.bind(laborSideContorller))
 
 export default laborRoutes             

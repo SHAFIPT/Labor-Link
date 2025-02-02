@@ -1,3 +1,4 @@
+import { IBooking } from "../../entities/bookingEntity";
 import { IAboutMe, ILaborer } from "../../entities/LaborEntity";
 
 
@@ -16,5 +17,6 @@ export interface ILaborService{
     sortOrder?: 'asc' | 'desc';
     rating?: number;
   }): Promise<ILaborer[]>;
-    aboutMe(data: { userId: string;  name: string; experience: string; description: string; }): Promise<IAboutMe> ;
+  aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<IAboutMe>;
+  fetchBookings(laborId: string, page: number, limit: number): Promise<{ bookings: IBooking[], total: number }>
 }

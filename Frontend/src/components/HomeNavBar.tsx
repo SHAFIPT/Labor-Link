@@ -753,7 +753,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
               <i className="fas fa-bell text-2xl"></i>
 
               {/* Glowing Red Notification Indicator */}
-              {hasUnreadMessages && (
+              {hasUnreadMessages && isUserAthenticated && (
                 <div className="absolute -top-2 -right-2">
                   <div className="relative">
                     {/* Static Red Dot */}

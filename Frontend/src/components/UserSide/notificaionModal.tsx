@@ -9,6 +9,7 @@ const NotificationModal = ({ onClose , chats }) => {
     const location = useLocation();
     const navigate = useNavigate()
     const currentPages = location.pathname.split("/").pop();
+    const isUserAthenticated = useSelector((state : RootState) => state.user.isUserAthenticated)
 
     const handleNavigateChatPage = () => {
         if (currentPages === 'userChatPage') {
@@ -47,7 +48,7 @@ const NotificationModal = ({ onClose , chats }) => {
           {/* <Link to='/userChatPage'> */}
           <div className="space-y-2" onClick={handleNavigateChatPage}>
                 {/* List of notifications */}
-                {unreadChats.length > 0 ? (
+                {unreadChats.length > 0 && isUserAthenticated ? (
                   unreadChats.map((chat) => (
                     <div key={chat.id} className="p-2 hover:bg-gray-100 rounded">
                       <p className="text-sm">
@@ -88,7 +89,7 @@ const NotificationModal = ({ onClose , chats }) => {
           {/* <Link to='/userChatPage'> */}
           <div className="space-y-2" onClick={handleNavigateChatPage}>
                 {/* List of notifications */}
-                {unreadChats.length > 0 ? (
+                {unreadChats.length > 0 && isUserAthenticated ? (
                   unreadChats.map((chat) => (
                     <div key={chat.id} className="p-2 hover:bg-gray-100 rounded">
                       <p className="text-sm">

@@ -253,6 +253,40 @@ public fetchLaborsByLocation = async (req: Request, res: Response, next: NextFun
        console.error("Error about me:", error);
          next(error);
     }
+  }    
+
+  public fetchBooking = async (req: Request & { labor: { id: string } }, res: Response, next: NextFunction) => {     
+    try {
+      console.log("iumaaaaaaaaaaa heeeeeeeeeereeeeeeeeeeeee................")
+
+      const laborId = req.labor.id
+      const page = parseInt(req.query.page as string) || 1
+      const limit = parseInt(req.query.limit as string) || 10
+
+      if (!laborId) {
+        res.status(404).json({message : 'Labor not Found.'})
+      }
+
+     const {bookings ,total} = await this.laborService.fetchBookings(laborId, page, limit)
+
+      if (!bookings) {
+        res.status(404).json({message : 'No bookings found by labor'})
+      }
+      
+      res.status(200).json({
+          message: 'fetching booking succesfully ..',
+          bookings,
+          total,
+          page,
+          limit,
+          totalPages : Math.ceil(total / limit)
+      })
+
+      
+    } catch (error) {
+       console.error("Error labor:", error);
+         next(error);
+    }
   }
 }
 

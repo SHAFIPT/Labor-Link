@@ -35,6 +35,14 @@ const BookingSchema : Schema = new Schema<IBooking>({
     default: 'pending' 
   },
 
+  cancellation: {
+    reason: { type: String }, 
+    comments: { type: String }, 
+    canceledBy: { type: String, enum: ['user', 'labor'] }, 
+    canceledAt: { type: Date, default: Date.now },
+    cancellationFee: { type: Number, default: 0 },
+  },
+
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

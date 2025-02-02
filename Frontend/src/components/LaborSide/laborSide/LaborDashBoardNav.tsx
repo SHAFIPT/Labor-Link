@@ -556,9 +556,9 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           )}
         </div>
         {/* Divider Line */}
-          <div className="w-full flex justify-center mt-4 sm:mt-5 md:mt-6 lg:mt-0 lg:mb-3">
+          {/* <div className="w-full flex justify-center mt-4 sm:mt-5 md:mt-6 lg:mt-0 lg:mb-3">
             <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[72%] h-[2px] bg-[#ECECEC] mx-auto" />
-          </div>
+          </div> */}
       </div>
     </div>
   );

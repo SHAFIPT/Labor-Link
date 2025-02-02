@@ -2,6 +2,8 @@ import { IAboutMe, ILaborer } from "entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import Labor from "../../models/LaborModel";
 import { SortOrder } from "mongoose";
+import { IBooking } from "../../entities/bookingEntity";
+import Booking from "../../models/BookingModal";
 
 export class LaborSideRepository implements ILaborSidRepository {
   async fetchLabor(laborId: string): Promise<ILaborer | null> {
@@ -139,6 +141,34 @@ export class LaborSideRepository implements ILaborSidRepository {
     } catch (error) {
       console.error(error);
       throw new Error("Error in aboutMe profile update");
+    }
+  }
+  async fetchBooking(
+    laborId: string,
+    page: number,
+    limit: number
+  ): Promise<{ bookings: IBooking[]; total: number }> {
+    try {
+      const skip = (page - 1) * limit;
+
+      const bookings = await Booking.find({ laborId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate({
+          path: "userId", // Field to populate
+          select: "firstName lastName  ProfilePic", // Fields to include from the Labor schema
+        })
+        .exec();
+
+      const total = await Booking.countDocuments({
+        laborId
+      });
+
+      return { bookings, total };
+    } catch (error) {
+      console.error("Error fetch bookings:", error);
+      throw new Error("Failed to fetch bookings");
     }
   }
 }
