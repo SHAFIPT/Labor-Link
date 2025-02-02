@@ -520,6 +520,7 @@ useEffect(() => {
         toast.success("Booking successful!");
         dispatch(setBookingDetails(response.data.booking));
         setSuccessModal(true);
+        setIsConfirmModalOpen(false)
         setAddressModalOpen(false);
       }
 
@@ -842,7 +843,7 @@ useEffect(() => {
           </button>
         </form>
         {/* !chatData?.quoteAccepted && */}
-        {Object.keys(userLogin).length === 0 &&  (
+        {Object.keys(userLogin).length === 0 &&  !chatData?.quoteAccepted &&   (
           <div className="flex items-center mt-2 sm:mt-4 relative">
             <button
               className="w-[140px] sm:w-[174px] p-2 sm:p-3 text-sm sm:text-base bg-[#21a391] text-white rounded-lg hover:bg-green-600"

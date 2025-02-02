@@ -166,7 +166,11 @@ export class userController {
             estimatedCost: quote.estimatedCost,
             arrivalTime: quote.arrivalTime,
           },
-          addressDetails,
+          addressDetails: {
+            ...addressDetails,
+            Userlatitude: addressDetails.latitude,
+            Userlongitude: addressDetails.longitude,
+          },
         };
       
       console.log("This si erhe boooikingDetails...................",bookingDetails)

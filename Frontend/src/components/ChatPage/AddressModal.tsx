@@ -54,10 +54,13 @@ const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }
     const handleSubmit = () => {
         // Validate fields before submit
         console.log("hhhhhhhhhhhhhhhoooooooooooooooiiiiii")
-        console.log("Thsi is Valdiatefieldllll",validateFields)
-        if (validateFields()) {
+        console.log("Thsi is Valdiatefieldllll", validateFields)
+        console.log("jjjjjjjjjjjjjjjj")
+        console.log("Thsi is the errorr :;;",error)
+        if (Object.keys(error).length === 0) {
             console.log("Tissssss sumbitedddddddddddddddddd")
             onSubmit();
+            onClose()
             dispatch(setError({}))
         }
     };

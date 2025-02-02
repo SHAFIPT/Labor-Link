@@ -54,8 +54,8 @@ export default class UserSideRepository implements IUserSideRepository {
         !bookingDetails.addressDetails?.place ||
         !bookingDetails.addressDetails?.address ||
         !bookingDetails.addressDetails?.pincode ||
-        !bookingDetails.addressDetails?.latitude ||
-        !bookingDetails.addressDetails?.longitude
+        !bookingDetails.addressDetails?.Userlatitude ||
+        !bookingDetails.addressDetails?.Userlongitude
       ) {
         throw new Error("Missing address details");
       }
@@ -118,9 +118,9 @@ export default class UserSideRepository implements IUserSideRepository {
         .limit(limit)
         .populate({
           path: "laborId", // Field to populate
-          select: "firstName lastName  phone", // Fields to include from the Labor schema
+          select: "firstName lastName  phone ", // Fields to include from the Labor schema
         })
-        .exec();
+        .exec();      
 
       const total = await Booking.countDocuments({
         userId,

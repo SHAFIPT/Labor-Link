@@ -157,7 +157,11 @@ export class LaborSideRepository implements ILaborSidRepository {
         .limit(limit)
         .populate({
           path: "userId", // Field to populate
-          select: "firstName lastName  ProfilePic", // Fields to include from the Labor schema
+          select: "firstName lastName  ProfilePic  ", // Fields to include from the Labor schema
+        })
+        .populate({
+          path: 'laborId',
+          select : 'location.coordinates'
         })
         .exec();
 

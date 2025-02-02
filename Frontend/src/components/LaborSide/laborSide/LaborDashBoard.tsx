@@ -488,11 +488,11 @@ const LaborDashBoard = () => {
                             </p>
                             <p className="text-sm text-gray-600 flex items-center">
                               <Phone size={16} className="text-gray-500" />
-                              {booking?.userId?.phoneNumber}
+                              {booking?.addressDetails?.phone}
                             </p>
                             <p className="text-sm text-gray-600 flex items-center">
                               <MapPin size={16} className="text-gray-500" />{" "}
-                              {booking?.userId?.location}
+                              {booking?.addressDetails?.place}
                             </p>
                           </div>
                         </div>
@@ -837,7 +837,9 @@ const LaborDashBoard = () => {
                           </div>
 
                           <div className="flex justify-end mt-4 pt-4 border-t">
-                            <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium">
+                            <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium"
+                            onClick={() => handelViewDetails(booking)}
+                            >
                               View Details
                             </button>
                           </div>

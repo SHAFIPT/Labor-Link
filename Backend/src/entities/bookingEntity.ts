@@ -7,8 +7,8 @@ export interface IAddressDetails {
   place: string;
   address: string;
   pincode: string;
-  latitude: number;
-  longitude: number;
+  Userlatitude: number;
+  Userlongitude: number;
 }
 
 

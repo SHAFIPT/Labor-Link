@@ -42,8 +42,8 @@ const BookingSchema : Schema = new Schema<IBooking>({
       place: { type: String, required: true },
       address: { type: String, required: true },
       pincode: { type: String, required: true },
-      latitude: { type: Number, required: true },
-      longitude: { type: Number, required: true }
+      Userlatitude: { type: Number, required: true },
+      Userlongitude: { type: Number, required: true }
     },
 
   cancellation: {
