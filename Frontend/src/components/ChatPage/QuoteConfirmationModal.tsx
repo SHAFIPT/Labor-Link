@@ -25,11 +25,11 @@ const QuoteConfirmationModal = ({ isOpen, onClose, onConfirm, quoteDetails }) =>
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Estimated Cost:</span>
-              <span className="font-semibold">₹{quoteDetails?.estimatedCost}</span>
+              <span className="font-semibold text-black">₹{quoteDetails?.estimatedCost}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Arrival Time:</span>
-              <span className="font-semibold">
+              <span className="font-semibold text-black">
                 {new Date(quoteDetails?.arrivalTime).toLocaleString('en-IN', {
                   dateStyle: 'medium',
                   timeStyle: 'short'

@@ -219,6 +219,7 @@ export class userController {
       const userId = req.user.id;
       const page = parseInt(req.query.page as string) || 1
       const limit = parseInt(req.query.limit as string) || 10
+      const status = req.query.status as string;
 
 
 
@@ -226,7 +227,9 @@ export class userController {
         throw new Error("User is not found.")
       }
 
-      const {bookings ,total}  = await this.userService.fetchBooking(userId , page ,limit)
+      const filter = status ? { status } : {};
+
+      const {bookings ,total}  = await this.userService.fetchBooking(userId , page ,limit ,filter)
 
       if (bookings ) {
         res.status(200).json({
@@ -278,6 +281,25 @@ export class userController {
         next(error);
     }
   }
+  public updateReadStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { bookingId } = req.params; 
+        const { isUserRead } = req.body; 
+
+        if (!bookingId) {
+            return res.status(400).json({ message: "Booking ID is required" });
+        }
+
+    
+        const updatedBooking  = await this.userService.updateReadStatus(bookingId, isUserRead);
+
+        return res.status(200).json({ message: "Read status updated successfully", data: updatedBooking  });
+
+    } catch (error) {
+        console.error("Error in updating read status", error);
+        next(error);
+    }
+};
 }
 
 

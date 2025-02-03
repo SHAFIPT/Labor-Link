@@ -286,11 +286,11 @@ const LaborDashBoard = () => {
     fetchBookings();
   }, [currentPage, limit, dispatch]);
 
-  const sortedBookings = [...bookingDetails].sort(
-    (a, b) =>
-      new Date(b.quote.arrivalTime).getTime() -
-      new Date(a.quote.arrivalTime).getTime()
-  );
+  // const sortedBookings = [...bookingDetails].sort(
+  //   (a, b) =>
+  //     new Date(b.quote.arrivalTime).getTime() -
+  //     new Date(a.quote.arrivalTime).getTime()
+  // );
 
   const handelViewDetails = (booking) => {
     navigate('/labor/viewBookingDetials' ,{state : {booking}})
@@ -465,8 +465,8 @@ const LaborDashBoard = () => {
                 </h1>
 
                 <div className="bodyPart space-y-6">
-                  {sortedBookings && sortedBookings.length > 0 ? (
-                    sortedBookings.map((booking) => (
+                  {bookingDetails && bookingDetails.length > 0 ? (
+                    bookingDetails.map((booking) => (
                       <div
                         key={booking._id}
                         className="flex flex-col md:flex-row border border-gray-200 rounded-lg p-6 shadow-xl hover:shadow-md transition-shadow bg-white "
@@ -530,13 +530,18 @@ const LaborDashBoard = () => {
                             </div>
 
                             <div className="space-y-1">
-                              <p className="font-medium text-gray-700">
-                                Status
-                              </p>
-                              <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                {booking.status}
-                              </span>
-                            </div>
+                                <p className="font-medium text-gray-700">Status</p>
+                                <span
+                                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                                    booking.status === "canceled"
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-blue-100 text-blue-800"
+                                  }`}
+                                >
+                                  {booking.status}
+                                </span>
+                              </div>
+
 
                             <div className="space-y-1">
                               <p className="font-medium text-gray-700">
@@ -756,8 +761,8 @@ const LaborDashBoard = () => {
                 </h1>
 
                 <div className="bodyPart space-y-6">
-                  {sortedBookings && sortedBookings.length > 0 ? (
-                    sortedBookings.map((booking) => (
+                  {bookingDetails && bookingDetails.length > 0 ? (
+                    bookingDetails.map((booking) => (
                       <div
                         key={booking._id}
                         className="flex flex-col md:flex-row border border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow bg-gray-800"
@@ -779,11 +784,11 @@ const LaborDashBoard = () => {
                             </p>
                             <p className="text-sm  flex items-center">
                               <Phone size={16} className="" />
-                              {booking?.userId?.phoneNumber}
+                              {booking?.addressDetails?.phone}
                             </p>
                             <p className="text-sm  flex items-center">
                               <MapPin size={16} className="" />{" "}
-                              {booking?.userId?.location}
+                              {booking?.addressDetails?.place}
                             </p>
                           </div>
                         </div>
@@ -815,11 +820,18 @@ const LaborDashBoard = () => {
                             </div>
 
                             <div className="space-y-1">
-                              <p className="font-medium ">Status</p>
-                              <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                              <p className="font-medium text-gray-200">Status</p>
+                              <span
+                                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                                  booking.status === "canceled"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
                                 {booking.status}
                               </span>
                             </div>
+
 
                             <div className="space-y-1">
                               <p className="font-medium ">Payment Status</p>

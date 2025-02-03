@@ -28,6 +28,7 @@ import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../../redux/s
 import Breadcrumb from "../BreadCrumb";
 import { setBookingDetails } from "../../redux/slice/bookingSlice";
 import CancelBookingForm from "./CancelBookingForm";
+import CancellationDetails from "./CancellationDetails";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email);
@@ -42,10 +43,12 @@ const UserProfile = () => {
   const [userData, setUserData] = useState(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [cancelDetilsModal , setCancelDetilsModal] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("");
   const location = useLocation();
   const currentPages = location.pathname.split("/").pop();
   const [currentPage, setCurrentPage] = useState(1);
+  const [filter, setFilter] = useState(""); 
   const [limit, setLimit] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
@@ -280,7 +283,7 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchBooking = async () => {
       try {
-        const response = await fetchBookings(currentPage, limit); // Assuming fetchBookings is an API call
+        const response = await fetchBookings(currentPage, limit , filter); // Assuming fetchBookings is an API call
         if (response.status === 200) {
           console.log("Bookings fetched successfully:", response.data);
           const { bookings, total, page, limit, totalPages } = response.data;
@@ -297,7 +300,18 @@ const UserProfile = () => {
     };
 
     fetchBooking(); // Call the function inside useEffect
-  }, [currentPage, limit,dispatch]);
+  }, [currentPage, limit, dispatch , filter]);
+
+  const handleFilterChange = (value) => {
+    setFilter(value);
+  };
+
+  // const handleViewCancelaiton = (bookingData) => {
+  //   <CancellationDetails booking={bookingData} />
+  // }
+  // const handleManageBooking = () => {
+  //   navigate('/bookingDetails-and-history')
+  // }
 
   const breadcrumbItems = [
     { label: "Home", link: "/" },
@@ -467,7 +481,6 @@ const UserProfile = () => {
         </div>
       )}
 
-     
       <div className="w-full relative">
         <div className="relative">
           <img
@@ -570,11 +583,12 @@ const UserProfile = () => {
                       <PenSquare className="w-5 h-5" />
                       <span>Edit Profile</span>
                     </button>
-
-                    <button className="flex items-center lg:w-[700px]  justify-center gap-2 px-4 py-2 bg-[#21A391] text-white rounded-full hover:bg-[#20796d] transition-colors">
-                      <Calendar className="w-5 h-5" />
-                      <span>View & Manage Bookings</span>
-                    </button>
+                    <Link to="/bookingDetails-and-history">
+                      <button className="flex items-center lg:w-[700px]  justify-center gap-2 px-4 py-2 bg-[#21A391] text-white rounded-full hover:bg-[#20796d] transition-colors">
+                        <Calendar className="w-5 h-5" />
+                        <span>View & Manage Bookings</span>
+                      </button>
+                    </Link>
                     {/* <button className="flex items-center lg:w-[700px]  justify-center gap-2 px-4 py-2 bg-[#1f9dcb] text-white rounded-full hover:bg-[#20796d] transition-colors">
                       <Calendar className="w-5 h-5" />
                       <span>My chats</span>
@@ -593,109 +607,331 @@ const UserProfile = () => {
 
       <div className="currentStatus mb-4">
         <div className="max-w-3xl mx-auto border rounded-md p-4 mt-5">
+          <div className="flex space-x-4 md:mb-0 mb-4 justify-center md:justify-start">
+            <div className="relative w-64">
+              <select
+                className="appearance-none w-full bg-gradient-to-r from-blue-600 to-blue-700 
+                 text-white px-4 py-2 rounded-lg 
+                 border border-blue-500 
+                 shadow-md 
+                 hover:from-blue-700 hover:to-blue-800 
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 
+                 transition-all duration-300 
+                 cursor-pointer"
+                onChange={(e) => handleFilterChange(e.target.value)}
+              >
+                <option value="" className="bg-white text-gray-700">
+                  Filter by Status
+                </option>
+                <option value="canceled" className="bg-white text-gray-700">
+                  Cancelled
+                </option>
+                <option value="confirmed" className="bg-white text-gray-700">
+                  Confirmed
+                </option>
+                <option value="completed" className="bg-white text-gray-700">
+                  Completed
+                </option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white">
+                <svg
+                  className="fill-current h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                </svg>
+              </div>
+            </div>
+          </div>
           <div className="flex justify-center">
             <h2 className="text-xl font-semibold text-center mb-4 border rounded-full w-[200px] py-1">
               Current Status
             </h2>
           </div>
 
-          {bookingDetails && bookingDetails.length > 0 ? (
-            bookingDetails.map((booking) => (
-              <div className="border-2 border-gray-300 rounded-lg p-4 mb-3">
-                <div
-                  key={booking._id}
-                  className="border-2 border-gray-200 rounded-lg p-4 mb-4"
-                >
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-base font-[rokkitt] text-[#21A391] mb-1">
-                        Job Details:
-                      </h3>
-                      <p className="border p-1.5 rounded-full font-[RobotoMono] px-3 py-2 text-sm">
-                        {booking?.quote?.description || "N/A"}
-                      </p>
+          {theam == "dark" ? (
+            <>
+              {bookingDetails && bookingDetails.length > 0 ? (
+                bookingDetails.map((booking) => (
+                  <div className="border-2 border-gray-700 rounded-lg p-6 mb-5 bg-gray-800 shadow-md">
+                    <div
+                      key={booking._id}
+                      className="border-2 border-gray-600 rounded-lg p-5 mb-5 bg-gray-900"
+                    >
+                      <div className="space-y-5">
+                        {/* Job Details */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                            Job Details:
+                          </h3>
+                          <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
+                            {booking?.quote?.description || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Estimated Cost */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                            Estimated Cost:
+                          </h3>
+                          <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
+                            ₹{booking?.quote?.estimatedCost || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Status */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                            Status:
+                          </h3>
+                          <p
+                            className={`border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] px-4 py-2 ${
+                              booking?.status === "canceled"
+                                ? "text-red-500"
+                                : "text-gray-300"
+                            }`}
+                          >
+                            {booking?.status || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Scheduled Date and Time */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                            Scheduled Date and Time:
+                          </h3>
+                          <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
+                            {booking?.quote?.arrivalTime
+                              ? new Date(
+                                  booking.quote.arrivalTime
+                                ).toLocaleString()
+                              : "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Laborer Name */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                            Laborer Name:
+                          </h3>
+                          <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
+                            {booking?.laborId?.firstName}{" "}
+                            {booking?.laborId?.lastName}
+                          </p>
+                        </div>
+
+                        {/* Laborer Phone */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                            Laborer Phone:
+                          </h3>
+                          <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
+                            {booking?.laborId?.phone || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Cancellation Button and Logic */}
+                        {OpenCancelationModal && (
+                          <CancelBookingForm
+                            onClose={() => setOpenCancelationModal(false)}
+                            bookingId={booking.bookingId}
+                          />
+                        )}
+
+                        {booking.status !== "canceled" && (
+                          <div className="flex md:justify-between md:space-y-0 space-y-4 md:flex-row flex-col pt-4">
+                            <button
+                              className="bg-[#e74c3c] rounded-full text-white px-6 py-3 md:w-[180px] text-lg hover:bg-red-600 transition-colors"
+                              onClick={handleCancelation}
+                            >
+                              Cancel Booking
+                            </button>
+                            <button className="bg-[#f39c12] text-white px-6 py-3 md:w-[180px] rounded-full text-lg hover:bg-[#e67e22] transition-colors">
+                              Reschedule
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div>
-                      <h3 className="font-semibold text-base font-[rokkitt] text-[#21A391] mb-1">
-                        Estimated Cost:
-                      </h3>
-                      <p className="border p-1.5 rounded-full font-[RobotoMono] px-3 py-2 text-sm">
-                        ₹{booking?.quote?.estimatedCost || "N/A"}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="font-semibold text-base font-[rokkitt] text-[#21A391] mb-1">
-                        Status:
-                      </h3>
-                      <p className="border p-1.5 rounded-full font-[RobotoMono] px-3 py-2 text-sm">
-                        {booking?.status || "N/A"}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="font-semibold text-base font-[rokkitt] text-[#21A391] mb-1">
-                        Scheduled Date and Time:
-                      </h3>
-                      <p className="border p-1.5 rounded-full font-[RobotoMono] px-3 py-2 text-sm">
-                        {booking?.quote?.arrivalTime
-                          ? new Date(booking.quote.arrivalTime).toLocaleString()
-                          : "N/A"}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="font-semibold text-base font-[rokkitt] text-[#21A391] mb-1">
-                        Laborer Name:
-                      </h3>
-                      <p className="border p-1.5 rounded-full font-[RobotoMono] px-3 py-2 text-sm">
-                        {booking?.laborId?.firstName}{" "}
-                        {booking?.laborId?.lastName}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="font-semibold text-base font-[rokkitt] text-[#21A391] mb-1">
-                        Laborer Phone:
-                      </h3>
-                      <p className="border p-1.5 rounded-full font-[RobotoMono] px-3 py-2 text-sm">
-                        {booking?.laborId?.phone || "N/A"}
-                      </p>
-                    </div>
-
-                     {OpenCancelationModal && (
-                      <CancelBookingForm 
-                        onClose={() => setOpenCancelationModal(false)} 
-                        bookingId={booking.bookingId} 
+                    {cancelDetilsModal && (
+                      <CancellationDetails
+                        booking={booking}
+                        isOpen={cancelDetilsModal}
+                        onClose={() => setCancelDetilsModal(false)}
                       />
                     )}
 
-                    <div className="flex md:justify-between md:space-y-0 space-y-2 md:flex-row flex-col pt-3">
-                      <button
-                        className="bg-[#A32121] rounded-full text-white px-4 py-2 md:w-[200px] text-sm hover:bg-red-600 transition-colors"
-                        onClick={handleCancelation}
+                    {/* Work Completed Button */}
+                    <div
+                      className="text-center mt-6"
+                      onClick={() => setCancelDetilsModal(true)}
+                    >
+                      <span
+                        className={`cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full ${
+                          booking.status === "canceled"
+                            ? "bg-red-500 text-white"
+                            : "bg-[#32eae0] text-black"
+                        }`}
                       >
-                        Cancel Booking
-                      </button>
-                      <button className="bg-[#9CA321] text-white px-4 md:w-[200px] py-2 rounded-full text-sm hover:bg-[#707418] transition-colors">
-                        Reschedule
-                      </button>
+                        {booking.status === "canceled"
+                          ? "View Cancel Details"
+                          : "Work Completed"}
+                      </span>
                     </div>
                   </div>
-                </div>
-
-                <div className="text-center">
-                  <span className="bg-[#21A391] cursor-pointer text-white px-3 py-2 rounded-full text-base font-medium md:w-[200px] inline-block">
-                    Work Completed
-                  </span>
-                </div>
-              </div>
-            ))
+                ))
+              ) : (
+                <p className="text-gray-400 text-lg font-medium text-center">
+                  No Bookings Yet.
+                </p>
+              )}
+            </>
           ) : (
-            <p className="text-gray-600 text-base font-medium text-center">
-              No Bookings Yet.
-            </p>
+            <>
+              {bookingDetails && bookingDetails.length > 0 ? (
+                bookingDetails.map((booking) => (
+                  <div className="border-2 border-gray-300 rounded-lg p-6 mb-5 bg-white shadow-lg">
+                    <div
+                      key={booking._id}
+                      className="border-2 border-gray-200 rounded-lg p-5 mb-5 bg-gray-50"
+                    >
+                      <div className="space-y-5">
+                        {/* Job Details */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
+                            Job Details:
+                          </h3>
+                          <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
+                            {booking?.quote?.description || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Estimated Cost */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
+                            Estimated Cost:
+                          </h3>
+                          <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
+                            ₹{booking?.quote?.estimatedCost || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Status */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
+                            Status:
+                          </h3>
+                          <p
+                            className={`border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] px-4 py-2 ${
+                              booking?.status === "canceled"
+                                ? "text-red-500"
+                                : "text-gray-700"
+                            }`}
+                          >
+                            {booking?.status || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Scheduled Date and Time */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
+                            Scheduled Date and Time:
+                          </h3>
+                          <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
+                            {booking?.quote?.arrivalTime
+                              ? new Date(
+                                  booking.quote.arrivalTime
+                                ).toLocaleString()
+                              : "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Laborer Name */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
+                            Laborer Name:
+                          </h3>
+                          <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
+                            {booking?.laborId?.firstName}{" "}
+                            {booking?.laborId?.lastName}
+                          </p>
+                        </div>
+
+                        {/* Laborer Phone */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
+                            Laborer Phone:
+                          </h3>
+                          <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
+                            {booking?.laborId?.phone || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* Cancellation Button and Logic */}
+                        {OpenCancelationModal && (
+                          <CancelBookingForm
+                            onClose={() => setOpenCancelationModal(false)}
+                            bookingId={booking.bookingId}
+                          />
+                        )}
+
+                        {booking.status !== "canceled" && (
+                          <div className="flex md:justify-between md:space-y-0 space-y-4 md:flex-row flex-col pt-4">
+                            <button
+                              className="bg-[#e74c3c] rounded-full text-white px-3 py-1 md:w-[180px] text-lg hover:bg-red-600 transition-colors"
+                              onClick={handleCancelation}
+                            >
+                              Cancel Booking
+                            </button>
+                            <button className="bg-[#f39c12] text-white px-6 py-3 md:w-[180px] rounded-full text-lg hover:bg-[#e67e22] transition-colors">
+                              Reschedule
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Work Completed Button */}
+                    {/* <div className="text-center mt-6">
+                      <span className="bg-[#1e40af] cursor-pointer text-white px-6 py-3 rounded-full text-lg font-medium md:w-[280px] inline-block">
+                        Work Completed
+                      </span>
+                    </div> */}
+
+                    {cancelDetilsModal && (
+                      <CancellationDetails
+                        booking={booking}
+                        isOpen={cancelDetilsModal}
+                        onClose={() => setCancelDetilsModal(false)}
+                      />
+                    )}
+
+                    <div
+                      className="text-center mt-6"
+                      onClick={() => setCancelDetilsModal(true)}
+                    >
+                      <span
+                        className={`cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full ${
+                          booking.status === "canceled"
+                            ? "bg-red-500 text-white"
+                            : "bg-[#1e40af] text-white"
+                        }`}
+                      >
+                        {booking.status === "canceled"
+                          ? "View Cancel Details"
+                          : "Work Completed"}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-600 text-lg font-medium text-center">
+                  No Bookings Yet.
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>

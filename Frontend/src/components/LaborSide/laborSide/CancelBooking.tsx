@@ -7,15 +7,16 @@ import {
   validatePhoneNumbers,
   validatePlace,
   validateReason,
-} from "../../utils/laborRegisterValidators";
+} from "../../../utils/laborRegisterValidators"
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from 'react-toastify';
-import { setError, setLoading } from '../../redux/slice/userSlice';
-import { RootState } from '../../redux/store/store';
-import '../Auth/LoadingBody.css'
-import { cancelSubmision } from '../../services/UserSurvice';
+import { setError, setLoading } from '../../../redux/slice/laborSlice';
+import { RootState } from '../../../redux/store/store';
+import '../../Auth/LoadingBody.css'
+import { cancelSubmision } from '../../../services/LaborServices';
+import { setBookingDetails } from '../../../redux/slice/bookingSlice';
 
-const CancelBookingForm = ({ onClose , bookingId }) => {
+const CancelBookingForm = ({ onClose, bookingId }) => {
   const dispatch = useDispatch();
   const loading = useSelector((state: RootState) => state.user.loading);
   const [cancelFormData, setCancelFormData] = useState({
@@ -34,9 +35,9 @@ const CancelBookingForm = ({ onClose , bookingId }) => {
     place?: string;
     reason?: string;
     comments?: string;
-    } = useSelector((state: RootState) => state.user.error);
-    
-    console.log("Thsi is the ERRRRRROoooooors ",error.name)
+  } = useSelector((state: RootState) => state.labor.error);
+
+  console.log("Thsi is the ERRRRRROoooooors ", error?.name);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -72,11 +73,15 @@ const CancelBookingForm = ({ onClose , bookingId }) => {
       return;
     }
     try {
-      const cancelResponse = await cancelSubmision({ ...cancelFormData, bookingId });
+      const cancelResponse = await cancelSubmision({
+        ...cancelFormData,
+        bookingId,
+      });
 
       if (cancelResponse.status === 200) {
         toast.success("The cancel form is successfully submitted...");
-        onClose()
+        dispatch(setBookingDetails(cancelResponse.data.booking))
+        onClose();
       }
     } catch (error) {
       console.error(error);
@@ -86,16 +91,21 @@ const CancelBookingForm = ({ onClose , bookingId }) => {
     }
   };
 
+  const handleCloseModal = () => {
+    dispatch(setError({}));
+    onClose();
+  };
+
   return (
     <>
       {loading && <div className="loader"></div>}
 
-      <div className=" fixed -inset-3 bg-black  bg-opacity-50 z-10 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg p-6 max-w-md w-full">
-          <h2 className="text-xl text-black font-bold mb-4 text-center">
+      <div className="fixed -inset-7 bg-black bg-opacity-50 z-10 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg mb-7 p-6 w-full max-w-md md:max-w-lg lg:max-w-md mx-auto overflow-y-auto max-h-[calc(100vh-1rem)] sm:max-w-full sm:h-auto">
+          <h2 className="text-xl sm:text-lg text-black font-bold mb-4 text-center">
             Cancel Booking Form
           </h2>
-          <p className="text-sm text-gray-600 mb-6">
+          <p className="text-sm text-gray-600 mb-6 text-center">
             We understand that circumstances may arise, requiring you to cancel
             your upcoming appointment. Please complete this form to inform us of
             the cancellation.
@@ -109,59 +119,61 @@ const CancelBookingForm = ({ onClose , bookingId }) => {
                 placeholder="Name"
                 value={cancelFormData.name}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border text-black border-gray-300 rounded-md sm:p-3"
                 required
               />
               {error?.name && (
-                    <p className="text-red-500 text-sm mt-1">{error.name}</p>
+                <p className="text-red-500 text-sm mt-1">{error.name}</p>
               )}
+
               <input
                 type="email"
                 name="email"
                 placeholder="Email"
                 value={cancelFormData.email}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border text-black border-gray-300 rounded-md sm:p-3"
                 required
               />
               {error?.email && (
-                    <p className="text-red-500 text-sm mt-1">{error.email}</p>
-                  )}
+                <p className="text-red-500 text-sm mt-1">{error.email}</p>
+              )}
+
               <input
                 type="tel"
                 name="phone"
                 placeholder="Phone"
                 value={cancelFormData.phone}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border text-black border-gray-300 rounded-md sm:p-3"
                 required
               />
               {error?.phone && (
-                    <p className="text-red-500 text-sm mt-1">{error.phone}</p>
-                  )}
+                <p className="text-red-500 text-sm mt-1">{error.phone}</p>
+              )}
+
               <input
                 type="text"
                 name="place"
                 placeholder="Place"
                 value={cancelFormData.place}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border text-black border-gray-300 rounded-md sm:p-3"
                 required
               />
               {error?.place && (
-                    <p className="text-red-500 text-sm mt-1">{error.place}</p>
-                  )}
+                <p className="text-red-500 text-sm mt-1">{error.place}</p>
+              )}
 
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Please select the appropriate reason for canceling your
-                  appointment:
+                  Please select a reason for canceling:
                 </label>
                 <select
                   name="reason"
                   value={cancelFormData.reason}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border text-black border-gray-300 rounded-md sm:p-3"
                   required
                 >
                   <option value="" disabled>
@@ -175,24 +187,24 @@ const CancelBookingForm = ({ onClose , bookingId }) => {
                 </select>
               </div>
               {error?.reason && (
-                    <p className="text-red-500 text-sm mt-1">{error.reason}</p>
-                  )}
+                <p className="text-red-500 text-sm mt-1">{error.reason}</p>
+              )}
 
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Additional Comments (if any)
+                  Additional Comments (optional)
                 </label>
                 <textarea
                   name="comments"
                   value={cancelFormData.comments}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border text-black border-gray-300 rounded-md sm:p-3"
                   rows="3"
                 />
               </div>
               {error?.comments && (
-                    <p className="text-red-500 text-sm mt-1">{error.comments}</p>
-                  )}
+                <p className="text-red-500 text-sm mt-1">{error.comments}</p>
+              )}
 
               <div className="mt-4">
                 <label className="flex items-center">
@@ -210,24 +222,24 @@ const CancelBookingForm = ({ onClose , bookingId }) => {
                 {cancelFormData.isWithin30Minutes && (
                   <p className="text-sm text-red-600 mt-2">
                     Note: A cancellation fee will be applied for cancellations
-                    within 30 minutes of the scheduled time.
+                    within 30 minutes.
                   </p>
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end space-x-4">
+              <div className="mt-6 flex justify-between space-x-4">
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
+                  onClick={handleCloseModal}
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors w-1/2 sm:w-auto"
                 >
                   Close
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#A32121] text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+                  className="bg-[#A32121] text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors w-1/2 sm:w-auto"
                 >
-                  Submit Cancellation
+                  Submit
                 </button>
               </div>
             </div>

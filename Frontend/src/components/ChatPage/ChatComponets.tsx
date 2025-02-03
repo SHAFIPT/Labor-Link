@@ -806,7 +806,7 @@ useEffect(() => {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type here..."
-            className="flex-grow p-2 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-grow p-2 sm:p-3 text-black text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <div className="flex items-center space-x-2 sm:space-x-4 text-white flex-shrink-0">
             <div className="relative">

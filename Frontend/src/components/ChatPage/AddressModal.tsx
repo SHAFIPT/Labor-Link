@@ -86,7 +86,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }
                             placeholder="Enter your Name"
                             value={userAddress.name}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {error?.name && (
                             <p className="text-red-500 text-sm mt-1">{error.name}</p>
@@ -98,7 +98,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }
                             placeholder="Enter your Phone Number"
                             value={userAddress.phone}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded-md"
+                            className="w-full p-2 border text-black border-gray-300 rounded-md"
                         />
                         {error?.phone && (
                             <p className="text-red-500 text-sm mt-1">{error.phone}</p>
@@ -111,7 +111,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }
                                 placeholder="District"
                                 value={userAddress.city}
                                 onChange={handleChange}
-                                className="w-1/2 p-2 border border-gray-300 rounded-md"
+                                className="w-1/2 p-2 border text-black border-gray-300 rounded-md"
                             />
                             {error?.city && (
                                 <p className="text-red-500 text-sm mt-1">{error.city}</p>
@@ -123,7 +123,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }
                                 placeholder="Place"
                                 value={userAddress.place}
                                 onChange={handleChange}
-                                className="w-1/2 p-2 border border-gray-300 rounded-md"
+                                className="w-1/2 p-2 border text-black border-gray-300 rounded-md"
                             />
                             {error?.place && (
                                 <p className="text-red-500 text-sm mt-1">{error.place}</p>
@@ -136,7 +136,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }
                             placeholder="Full Address"
                             value={userAddress.address}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded-md"
+                            className="w-full p-2 border text-black border-gray-300 rounded-md"
                         />
                         {error?.address && (
                             <p className="text-red-500 text-sm mt-1">{error.address}</p>
@@ -148,7 +148,7 @@ const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }
                             placeholder="Pincode"
                             value={userAddress.pincode}
                             onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded-md"
+                            className="w-full p-2 border text-black border-gray-300 rounded-md"
                         />
                         {error?.picode && (
                             <p className="text-red-500 text-sm mt-1">{error.picode}</p>

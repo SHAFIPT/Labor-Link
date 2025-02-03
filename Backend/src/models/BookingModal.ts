@@ -52,6 +52,7 @@ const BookingSchema : Schema = new Schema<IBooking>({
     canceledBy: { type: String, enum: ['user', 'labor'] }, 
     canceledAt: { type: Date, default: Date.now },
     cancellationFee: { type: Number, default: 0 },
+    isUserRead: { type: Boolean, default: false }, 
   },
 
   createdAt: { type: Date, default: Date.now },

@@ -65,17 +65,18 @@ export const fetchlaborId = async (email: string) => {
   }
 };
 
-export const fetchBookings = async (page : number , limit : number) => {
+export const fetchBookings = async (page: number, limit: number, filter: string) => {
   try {
+    // Add the filter to the query string if it's provided
+    const url = `/api/user/users/fetchBookings?page=${page}&limit=${limit}${filter ? `&status=${filter}` : ''}`;
 
-    const response = await api.get(`/api/user/users/fetchBookings?page=${page}&limit=${limit}`);
-    return response
-    
+    const response = await api.get(url);
+    return response;
   } catch (error) {
-    console.error("Error in About me :", error);
+    console.error("Error fetching bookings:", error);
     throw error;
-  } 
-}
+  }
+};
 export const cancelSubmision = async (cancelFormData) => {
   try {  
 

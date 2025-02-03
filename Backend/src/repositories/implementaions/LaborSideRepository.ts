@@ -160,19 +160,48 @@ export class LaborSideRepository implements ILaborSidRepository {
           select: "firstName lastName  ProfilePic  ", // Fields to include from the Labor schema
         })
         .populate({
-          path: 'laborId',
-          select : 'location.coordinates'
+          path: "laborId",
+          select: "location.coordinates",
         })
         .exec();
 
       const total = await Booking.countDocuments({
-        laborId
+        laborId,
       });
 
       return { bookings, total };
     } catch (error) {
       console.error("Error fetch bookings:", error);
       throw new Error("Failed to fetch bookings");
+    }
+  }
+  async fetchSimilorLabors(
+    latitude: number,
+    longitude: number,
+    categorie: string,
+    laborId: string
+  ): Promise<ILaborer[]> {
+    try {
+      // Find labors within a 5km radius of the user's location
+      const labors = await Labor.find({
+        _id: { $ne: laborId },
+        isApproved : true ,
+        location: {
+          $nearSphere: {
+            $geometry: {
+              type: "Point",
+              coordinates: [longitude, latitude], // Longitude first, then latitude
+            },
+            $maxDistance: 5000, // 5 kilometers in meters
+          },
+        },
+        categories: categorie,
+      }).exec();
+
+      return labors;
+    } catch (error) {
+      console.error("Error in fetching similar labors:", error);
+      throw error;
     }
   }
 }

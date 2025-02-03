@@ -44,4 +44,7 @@ export class LaborServices implements ILaborService{
     async fetchBookings(laborId: string, page: number, limit: number): Promise<{ bookings: IBooking[]; total: number; }> {
         return await this.laborRepsitory.fetchBooking(laborId, page, limit);
     }
+    async fetchSimilorLabors(latitude: number, logitude: number, categorie: string , laborId: string) {
+        return await this.laborRepsitory.fetchSimilorLabors(latitude,logitude,categorie , laborId)
+    }
 }

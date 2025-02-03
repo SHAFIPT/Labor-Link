@@ -39,9 +39,10 @@ export default class UserServices implements IUserServices {
   async fetchBooking(
     userId: string,
     page: number,
-    limit: number
+    limit: number,
+    filter: object
   ): Promise<{ bookings: IBooking[]; total: number }> {
-    return await this.userRepository.fetchBooking(userId, page, limit);
+    return await this.userRepository.fetchBooking(userId, page, limit, filter);
   }
   async cancelBooking(data: {
     bookingId: string;
@@ -73,5 +74,8 @@ export default class UserServices implements IUserServices {
       console.error("Error in cancelBooking:", error);
       throw new Error("Failed to cancel booking.");
     }
+  }
+  async updateReadStatus(bookingId: string, isUserRead: boolean): Promise<IBooking | null> {
+    return await this.userRepository.updateReadStatus(bookingId, isUserRead)
   }
 }

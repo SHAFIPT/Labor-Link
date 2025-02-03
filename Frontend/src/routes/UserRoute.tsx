@@ -13,6 +13,7 @@ import { RootState } from '../redux/store/store';
 import ChatPage from '../pages/Chat/ChatPage';
 import UserChatView from '../pages/userSide/UserChatView';
 import UserPrivateRoute from '../components/Authentications/UserPrivateRoute';
+import ViewBookingPage from '../pages/userSide/ViewBookingDetils';
 
 // Loading components
 const PageLoadingFallback = () => (
@@ -79,6 +80,14 @@ const UserRoute = () => {
           element={
             <UserPrivateRoute role="user">
               <UserProfilePage />
+            </UserPrivateRoute>
+          }
+        />
+        <Route
+          path="/bookingDetails-and-history"
+          element={
+            <UserPrivateRoute role="user">
+              <ViewBookingPage/>
             </UserPrivateRoute>
           }
         />

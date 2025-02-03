@@ -39,6 +39,7 @@ export interface IBooking extends Document {
     canceledBy?: 'user' | 'labor';
     canceledAt?: Date;
     cancellationFee?: number;
+    isUserRead?: boolean
   };
 
   addressDetails: IAddressDetails;

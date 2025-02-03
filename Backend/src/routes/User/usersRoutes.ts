@@ -10,6 +10,5 @@ usersRoutes.post('/bookingLabor',userSideController.bookingLabor.bind(userSideCo
 usersRoutes.get('/fetchId/:email',userSideController.fetchLaborId.bind(userSideController))
 usersRoutes.get('/fetchBookings',authenticateUser,userSideController.fetchBookings.bind(userSideController))
 usersRoutes.post('/cancelBooking',userSideController.cancelBooking.bind(userSideController))
-// /user/users
-
+usersRoutes.put('/update-read-status/:bookingId',authenticateUser,userSideController.updateReadStatus.bind(userSideController))
 export default usersRoutes

@@ -9,13 +9,14 @@ export interface IUserServices {
     updatePassword(email: string, password: string): Promise<IUser | null>
     bookingLabor(bookingDetails: Partial <IBooking>): Promise<IBooking | null>;
     fetchLaborId(email : string): Promise<string | null>;
-    fetchBooking(userId: string, page: number, limit: number): Promise<{ bookings: IBooking[], total: number }>;
+    fetchBooking(userId: string, page: number, limit: number ,filter: object): Promise<{ bookings: IBooking[], total: number }>;
      cancelBooking(data: { 
         bookingId: string; 
         reason: string; 
         comments: string; 
         isWithin30Minutes: boolean; 
         canceledBy: 'user' | 'labor'
-    }): Promise<IBooking | null>;
+     }): Promise<IBooking | null>;
+    updateReadStatus(bookingId: string, isUserRead: boolean): Promise<IBooking | null> 
 }
 

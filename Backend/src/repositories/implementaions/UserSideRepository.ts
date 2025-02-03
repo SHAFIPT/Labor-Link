@@ -108,23 +108,24 @@ export default class UserSideRepository implements IUserSideRepository {
     userId: string,
     page: number,
     limit: number
+    ,filter: object
   ): Promise<{ bookings: IBooking[]; total: number }> {
     try {
       const skip = (page - 1) * limit;
 
-      const bookings = await Booking.find({ userId, status: "confirmed" })
+      const bookings = await Booking.find({ userId , ...filter })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .populate({
           path: "laborId", // Field to populate
-          select: "firstName lastName  phone ", // Fields to include from the Labor schema
+          select: "firstName lastName  phone  location.coordinates categories", // Fields to include from the Labor schema
         })
         .exec();      
 
       const total = await Booking.countDocuments({
         userId,
-        status: "confirmed",
+        ...filter
       });
 
       return { bookings, total };
@@ -177,6 +178,7 @@ export default class UserSideRepository implements IUserSideRepository {
       canceledBy,
       canceledAt: currentTime,
       cancellationFee,
+      isUserRead: false,
     };
 
     // Save the updated booking
@@ -185,5 +187,18 @@ export default class UserSideRepository implements IUserSideRepository {
     console.error('Error in cancelBooking repository method:', error);
     throw new Error('Failed to cancel booking.');
   }
-}
+  }
+   async updateReadStatus(bookingId: string, isUserRead: boolean): Promise<IBooking | null> {
+    try {
+      const updatedBooking = await Booking.findOneAndUpdate(
+        { bookingId },
+        { $set: { "cancellation.isUserRead": isUserRead } },
+        { new: true } 
+      );
+      return updatedBooking;
+    } catch (error) {
+      console.error("Error updating booking read status:", error);
+      throw error;
+    }
+  }
 }

@@ -75,3 +75,39 @@ export const fetchLaborBookings = async (page : number, limit : number) => {
     throw error;
   }
 }
+export const fetchLaobrs = async ({ latitude, longitude , categorie, laborId }) => {
+  try {
+    // Assuming the backend accepts latitude and longitude in query params
+    const response = await api.get('/api/labor/labors/fetchSimilorLabors', {
+      params: {
+        latitude,
+        longitude,
+        categorie,
+        laborId
+      }
+    });
+    return response;
+  } catch (error) {
+    console.error("Error in fetching similar labors:", error);
+    throw error;
+  }
+};
+
+
+export const cancelSubmision = async (cancelFormData) => {
+  try {  
+
+    const response = await api.post('/api/user/users/cancelBooking', {
+      bookingId: cancelFormData.bookingId, 
+      reason: cancelFormData.reason,
+      comments: cancelFormData.comments,
+      isWithin30Minutes: cancelFormData.isWithin30Minutes,
+      canceledBy: 'labor', 
+    });
+    return response
+    
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}

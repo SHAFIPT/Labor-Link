@@ -69,14 +69,18 @@ const HomeNavBar = () => {
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
   const laborer = useSelector((state: RootState) => state.labor.laborer)
   const loading = useSelector((state: RootState) => state.user.loading)
+  const bookingDetails = useSelector((state: RootState) => state.booking.bookingDetails)
   // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
-  // console.log("This is the userData..................",userData)
+  console.log("This is the bookingDetails..................", bookingDetails)
+  
+ 
 
 
   // const [userLocation, setUserLocation] = useState(null);
   const locationOfUser = useSelector((state: RootState) => state.user.locationOfUser);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [isNotificationRead, setIsNotificationRead] = useState(false);
   const [notificaionOn, setNotificaionOn] = useState(false)
   const [chats, setChats] = useState<Chat[]>([]);
 
@@ -743,17 +747,32 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
 
 
             {notificaionOn && (
-              <NotificaionModal onClose={() => setNotificaionOn(false)} chats={chats}/>
+              <NotificaionModal onClose={() => setNotificaionOn(false)} chats={chats} bookingDetails={bookingDetails} />
             )}
 
 
             <div className="di" onClick={() => setNotificaionOn(true)}>
             <div className="relative cursor-pointer">
               {/* Notification Bell Icon */}
-              <i className="fas fa-bell text-2xl"></i>
+                <i className="fas fa-bell text-2xl"></i>
+                
+
+             {(bookingDetails?.length && bookingDetails[0].status === "canceled" && 
+                bookingDetails[0].cancellation?.canceledBy === "labor" && !bookingDetails[0].cancellation?.isUserRead) && isUserAthenticated &&  (
+                  <div className="absolute -top-2 -right-2">
+                    <div className="relative">
+                      {/* Static Red Dot */}
+                      <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                      {/* Pulsating Glow Effect */}
+                      <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                    </div>
+                  </div>
+              )}
+
 
               {/* Glowing Red Notification Indicator */}
-              {hasUnreadMessages && isUserAthenticated && (
+              {hasUnreadMessages  && isUserAthenticated &&  (
                 <div className="absolute -top-2 -right-2">
                   <div className="relative">
                     {/* Static Red Dot */}
