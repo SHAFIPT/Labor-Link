@@ -32,7 +32,7 @@ export default class UserServices implements IUserServices {
       console.error("Error in booking labor:", error);
       throw new Error("Failed to book labor");
     }
-  } 
+  }
   async fetchLaborId(email: string): Promise<string | null> {
     return await this.userRepository.fetchLaborId(email);
   }
@@ -49,7 +49,7 @@ export default class UserServices implements IUserServices {
     reason: string;
     comments: string;
     isWithin30Minutes: boolean;
-    canceledBy: 'user' | 'labor'
+    canceledBy: "user" | "labor";
   }): Promise<IBooking | null> {
     try {
       const { bookingId } = data;
@@ -75,7 +75,25 @@ export default class UserServices implements IUserServices {
       throw new Error("Failed to cancel booking.");
     }
   }
-  async updateReadStatus(bookingId: string, isUserRead: boolean): Promise<IBooking | null> {
-    return await this.userRepository.updateReadStatus(bookingId, isUserRead)
+  async updateReadStatus(
+    bookingId: string,
+    isUserRead: boolean
+  ): Promise<IBooking | null> {
+    return await this.userRepository.updateReadStatus(bookingId, isUserRead);
+  }
+  async resheduleRequst(
+    bookingId: string,
+    newDate: string,
+    newTime: string,
+    reason: string,
+    requestSentBy: string
+  ): Promise<IBooking | null> {
+    return await this.userRepository.resheduleRequst(
+      bookingId,
+      newDate,
+      newTime,
+      reason,
+      requestSentBy
+    );
   }
 }

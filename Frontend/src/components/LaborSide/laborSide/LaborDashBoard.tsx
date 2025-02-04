@@ -17,6 +17,9 @@ import { useNavigate } from "react-router-dom";
 import { fetchLaborBookings, laborFetch } from "../../../services/LaborServices";
 import { resetUser, setAccessToken, setisUserAthenticated, setUser } from "../../../redux/slice/userSlice";
 import { setBookingDetails } from "../../../redux/slice/bookingSlice";
+import { ClockIcon } from "@heroicons/react/24/solid";
+import ResheduleRequstModal from "./resheduleRequstModal";
+import RescheduleRequestModal from "./resheduleRequstModal";
 
 interface ChatDocument {
   laborId: string;
@@ -63,7 +66,9 @@ const LaborDashBoard = () => {
   const theme = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.labor.laborer.email);
   const loading = useSelector((state: RootState) => state.labor.loading);
+  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
   const [currentStage, setCurrentStage] = useState("Dashboard");
+  const [resheduleModal, setResheduleModal] = useState(null);
   const [unreadChats, setUnreadChats] = useState({});
   const [chats, setChats] = useState<Chat[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -272,7 +277,7 @@ const LaborDashBoard = () => {
         const responseInBacked = await fetchLaborBookings(currentPage, limit);
 
         if (responseInBacked.status == 200) {
-          const { bookings, total, page, limit, totalPages } =
+          const { bookings, totalPages } =
             responseInBacked.data;
           setTotalPages(totalPages);
           dispatch(setBookingDetails(bookings));
@@ -283,8 +288,10 @@ const LaborDashBoard = () => {
         toast.error("Error to fetch booking....!");
       }
     };
-    fetchBookings();
-  }, [currentPage, limit, dispatch]);
+     if (currentStage === "Bookings") {
+        fetchBookings();
+      }
+  }, [currentStage,currentPage, limit, dispatch]);
 
   // const sortedBookings = [...bookingDetails].sort(
   //   (a, b) =>
@@ -296,10 +303,17 @@ const LaborDashBoard = () => {
     navigate('/labor/viewBookingDetials' ,{state : {booking}})
   }
 
+ 
+
   return (
     <div>
+      <RescheduleRequestModal
+        isOpen={resheduleModal !== null}
+        onClose={() => setResheduleModal(null)}
+        bookingDetails={resheduleModal ? [resheduleModal] : []}
+      />
       {loading && <div className="loader"></div>}
-      <LaborDashBoardNav />
+      <LaborDashBoardNav setCurrentStage={setCurrentStage} />
       <div className="flex  ">
         {/* Desktop Sidebar */}
         {theme == "light" ? (
@@ -518,7 +532,7 @@ const LaborDashBoard = () => {
                               </p>
                             </div>
 
-                            <div className="space-y-1">
+                            <div className="space-y-1 relative">
                               <p className="font-medium text-gray-700">
                                 Scheduled Time
                               </p>
@@ -527,21 +541,84 @@ const LaborDashBoard = () => {
                                   booking.quote.arrivalTime
                                 ).toLocaleString()}
                               </p>
+
+
+                              {bookingDetails?.length > 0 &&
+                                bookingDetails[0].reschedule &&
+                                bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
+                                bookingDetails[0].reschedule.rejectedBy === "user" && // Rejected by labor
+                                bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
+                                bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
+                                bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
+                                isLaborAuthenticated && (
+                                  <button
+                                    className={`relative flex items-center justify-center text-white 
+                              bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 
+                              font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
+                              text-xs sm:text-sm md:text-base lg:text-sm
+                              ${
+                                booking ? "animate-bounce shadow-blue-500" : ""
+                              }`}
+                                    onClick={() => setResheduleModal(booking)}
+                                  >
+                                    <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
+                                    <span className="hidden sm:inline">
+                                      Reschedule Request
+                                    </span>
+                                    <span className="sm:hidden">
+                                      Reschedule Request
+                                    </span>
+                                  </button>
+                                )}
+
+
+                              {/* Reschedule Icon/Button */}
+
+                              {bookingDetails?.length > 0 &&
+                                bookingDetails[0].reschedule &&
+                                bookingDetails[0].reschedule.isReschedule ===
+                                  false && // Request is still pending
+                                bookingDetails[0].reschedule.requestSentBy ===
+                                  "user" && // Request sent by the user
+                                bookingDetails[0].reschedule.acceptedBy ===
+                                  null && // Not yet accepted
+                                bookingDetails[0].reschedule.rejectedBy ===
+                                  null && ( // Not yet rejected
+                                  <button
+                                    className={`relative flex items-center justify-center text-white 
+                              bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 
+                              font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
+                              text-xs sm:text-sm md:text-base lg:text-sm
+                              ${
+                                booking ? "animate-bounce shadow-blue-500" : ""
+                              }`}
+                                    onClick={() => setResheduleModal(booking)}
+                                  >
+                                    <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
+                                    <span className="hidden sm:inline">
+                                      Reschedule Request
+                                    </span>
+                                    <span className="sm:hidden">
+                                      Reschedule Request
+                                    </span>
+                                  </button>
+                                )}
                             </div>
 
                             <div className="space-y-1">
-                                <p className="font-medium text-gray-700">Status</p>
-                                <span
-                                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                                    booking.status === "canceled"
-                                      ? "bg-red-100 text-red-800"
-                                      : "bg-blue-100 text-blue-800"
-                                  }`}
-                                >
-                                  {booking.status}
-                                </span>
-                              </div>
-
+                              <p className="font-medium text-gray-700">
+                                Status
+                              </p>
+                              <span
+                                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                                  booking.status === "canceled"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {booking.status}
+                              </span>
+                            </div>
 
                             <div className="space-y-1">
                               <p className="font-medium text-gray-700">
@@ -561,8 +638,10 @@ const LaborDashBoard = () => {
                           </div>
 
                           <div className="flex justify-end mt-4 pt-4 border-t">
-                            <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium"
-                              onClick={() => handelViewDetails(booking)}>
+                            <button
+                              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium"
+                              onClick={() => handelViewDetails(booking)}
+                            >
                               View Details
                             </button>
                           </div>
@@ -817,10 +896,76 @@ const LaborDashBoard = () => {
                                   booking.quote.arrivalTime
                                 ).toLocaleString()}
                               </p>
+
+                              {bookingDetails?.length > 0 &&
+                                bookingDetails[0].reschedule &&
+                                bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
+                                bookingDetails[0].reschedule.rejectedBy === "user" && // Rejected by labor
+                                bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
+                                bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
+                                bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
+                                isLaborAuthenticated && (
+                                  <button
+                                    className={`relative flex items-center justify-center text-white 
+                              bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 
+                              font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
+                              text-xs sm:text-sm md:text-base lg:text-sm
+                              ${
+                                booking ? "animate-bounce shadow-blue-500" : ""
+                              }`}
+                                    onClick={() => setResheduleModal(booking)}
+                                  >
+                                    <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
+                                    <span className="hidden sm:inline">
+                                      Reschedule Request
+                                    </span>
+                                    <span className="sm:hidden">
+                                      Reschedule Request
+                                    </span>
+                                  </button>
+                                )}
+
+                              {bookingDetails?.length > 0 &&
+                                bookingDetails[0].reschedule &&
+                                bookingDetails[0].reschedule.isReschedule ===
+                                  false && // Request is still pending
+                                bookingDetails[0].reschedule.requestSentBy ===
+                                  "user" && // Request sent by the user
+                                bookingDetails[0].reschedule.acceptedBy ===
+                                  null && // Not yet accepted
+                                bookingDetails[0].reschedule.rejectedBy ===
+                                  null && ( // Not yet rejected
+                                  <button
+                                    className={`relative flex items-center justify-center 
+                                  font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
+                                  text-xs sm:text-sm md:text-base lg:text-sm
+                                  ${
+                                    booking
+                                      ? "animate-bounce shadow-blue-500"
+                                      : ""
+                                  }
+                                  ${
+                                    theme === "dark"
+                                      ? "bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-gray-200 shadow-blue-700"
+                                      : "bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 text-white shadow-blue-500"
+                                  }`}
+                                    onClick={() => setResheduleModal(booking)}
+                                  >
+                                    <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
+                                    <span className="hidden sm:inline">
+                                      Reschedule Request
+                                    </span>
+                                    <span className="sm:hidden">
+                                      Reschedule
+                                    </span>
+                                  </button>
+                                )}
                             </div>
 
                             <div className="space-y-1">
-                              <p className="font-medium text-gray-200">Status</p>
+                              <p className="font-medium text-gray-200">
+                                Status
+                              </p>
                               <span
                                 className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                                   booking.status === "canceled"
@@ -831,7 +976,6 @@ const LaborDashBoard = () => {
                                 {booking.status}
                               </span>
                             </div>
-
 
                             <div className="space-y-1">
                               <p className="font-medium ">Payment Status</p>
@@ -849,8 +993,9 @@ const LaborDashBoard = () => {
                           </div>
 
                           <div className="flex justify-end mt-4 pt-4 border-t">
-                            <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium"
-                            onClick={() => handelViewDetails(booking)}
+                            <button
+                              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors text-sm font-medium"
+                              onClick={() => handelViewDetails(booking)}
                             >
                               View Details
                             </button>

@@ -19,5 +19,14 @@ export interface ILaborService{
   }): Promise<ILaborer[]>;
   aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<IAboutMe>;
   fetchBookings(laborId: string, page: number, limit: number): Promise<{ bookings: IBooking[], total: number }>
-  fetchSimilorLabors(latitude: number, longitude: number, categorie: string ,laborId: string): Promise<ILaborer[]>
+  fetchSimilorLabors(latitude: number, longitude: number, categorie: string, laborId: string): Promise<ILaborer[]>
+  fetchBookingDetils(bookingId :string) : Promise<IBooking| null>
+  acceptResheduleRequst(bookingId :string) : Promise<IBooking| null>
+  rejectResheduleRequst(
+    bookingId: string,
+    newDate: string,
+    newTime: string,
+    rejectionReason: string,
+    rejectedBy: string
+  ): Promise<IBooking | null>
 }

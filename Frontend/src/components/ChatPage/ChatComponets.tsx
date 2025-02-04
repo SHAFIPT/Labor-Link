@@ -43,6 +43,7 @@ const ChatComponents = () => {
   const [fetchedLaborId, setFetchedLaborId] = useState(null);
   const [chatData, setChatData] = useState(null);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const theam = useSelector((state: RootState) => state.theme.mode);
   const [userAddress, setUserAddress] = useState({
     name: "",
     phone: "",
@@ -587,6 +588,9 @@ useEffect(() => {
 
 
       {showModal && (
+        <>
+      {theam == 'light' ? (
+        
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg w-96">
             <h2 className="text-xl font-semibold">Quote Details</h2>
@@ -654,6 +658,79 @@ useEffect(() => {
             </div>
           </div>
         </div>
+       
+      ):(
+        
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-gray-700 p-6 rounded-lg w-96">
+            <h2 className="text-xl font-semibold">Quote Details</h2>
+
+            {/* Description Input */}
+            <div className="mt-4">
+              <label htmlFor="description" className="block text-sm">
+                Description:
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={quoteData.description}
+                onChange={handleChange}
+                rows="4"
+                className="w-full mt-2 p-2 border text-black border-gray-600 rounded-lg"
+                placeholder="Enter a description of the work..."
+              />
+            </div>
+
+            <div>
+            <label className="block text-sm font-medium text-gray-700">Arrival Time</label>
+            <input
+              type="datetime-local"
+              value={quoteData.arrivalTime}
+              onChange={(e) => setQuoteData({ ...quoteData, arrivalTime: e.target.value })}
+              className="mt-1 block w-full text-black rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+
+
+            {/* Estimated Cost Input */}
+            <div className="mt-4">
+              <label htmlFor="estimatedCost" className="block text-sm">
+                Estimated Cost:
+              </label>
+              <input
+                type="number"
+                id="estimatedCost"
+                name="estimatedCost"
+                value={quoteData.estimatedCost}
+                onChange={handleChange}
+                className="w-full mt-2 text-black p-2 border border-gray-300 rounded-lg"
+                placeholder="Enter the estimated cost..."
+                min="0"
+              />
+            </div>
+
+
+
+            {/* Buttons */}
+            <div className="mt-4 flex justify-end">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
+                onClick={() => setShowModal(false)}
+              >
+                Close
+              </button>
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                onClick={handleSubmitQuote}
+              >
+                Submit Quote
+              </button>
+            </div>
+          </div>
+        </div>
+        
+      )}
+        </> 
       )}
 
       {/* Header */}

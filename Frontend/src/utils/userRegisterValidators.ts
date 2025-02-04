@@ -199,4 +199,29 @@ export const editProfileValidate = async (data: Partial<IUser>) => {
   }
 
 }
+
+
+export const validateNewDate = (newDate) => {
+  const schema = Joi.date().required().messages({
+    "date.base": "Please select a valid date.",
+  });
+  const { error } = schema.validate(newDate);
+  return error ? error.details[0].message : null;
+};
+
+export const validateNewTime = (newTime) => {
+  const schema = Joi.string().required().messages({
+    "string.empty": "Please select a valid time.",
+  });
+  const { error } = schema.validate(newTime);
+  return error ? error.details[0].message : null;
+};
+
+export const validateReason = (reason) => {
+  const schema = Joi.string().required().messages({
+    "string.empty": "Please provide a reason for the reschedule.",
+  });
+  const { error } = schema.validate(reason);
+  return error ? error.details[0].message : null;
+};
 export default validate;

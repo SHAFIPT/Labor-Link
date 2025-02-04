@@ -80,7 +80,6 @@ const HomeNavBar = () => {
   // const [userLocation, setUserLocation] = useState(null);
   const locationOfUser = useSelector((state: RootState) => state.user.locationOfUser);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [isNotificationRead, setIsNotificationRead] = useState(false);
   const [notificaionOn, setNotificaionOn] = useState(false)
   const [chats, setChats] = useState<Chat[]>([]);
 

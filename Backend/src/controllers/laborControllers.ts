@@ -381,6 +381,83 @@ class laborSideController {
   }
 };
 
+  public fetchBookings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { bookingId } = req.params;
+    
+    if (!bookingId) {
+      return res.status(404).json({ message: 'Booking id is not found...' });
+    }
+
+    const bookingDetails = await this.laborService.fetchBookingDetils(bookingId);
+
+    if (bookingDetails) {
+      return res.status(200).json({ message: 'Booking fetched successfully', bookings: bookingDetails });
+    } else {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    next(error);
+  }
+  };
+  
+  public submitRejection = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { newTime, newDate, rejectionReason, bookingId , rejectedBy } = req.body
+      
+      console.log("this is the reonsponse data aa :", {
+        newDate, 
+        newTime,
+        rejectionReason,
+        bookingId
+      })
+
+       const resheduleRequst = await this.laborService.rejectResheduleRequst(
+        bookingId,
+        newDate,
+        newTime,
+        rejectionReason,
+        rejectedBy
+      )
+
+      if (resheduleRequst) {
+        return res.status(200)
+        .json({message : 'resheduleRequst has been sent....', reshedule : resheduleRequst})
+      }
+      
+
+      
+    } catch (error) {
+      console.error("Error submit Rejection:", error);
+    next(error);
+    }
+  }
+
+
+  public acceptBooking = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { bookingId } = req.params; 
+
+      if (!bookingId) {
+            return res.status(400).json({ message: "Booking ID is required" });
+        }
+
+      const updatedBooking  = await this.laborService.acceptResheduleRequst(bookingId);
+
+      return res.status(200).json({ message: "Accept reshedule successfully",reshedule : updatedBooking });
+      
+      
+    } catch (error) {
+      console.error("Error accetpt rejection:", error);
+    next(error);
+    }
+  }
+
+
 }
 
 export default laborSideController;

@@ -11,6 +11,18 @@ export interface IAddressDetails {
   Userlongitude: number;
 }
 
+export interface IReschedule {
+  newTime: string;            
+  newDate: Date;               
+  reasonForReschedule?: string; 
+  requestSentBy?: 'user' | 'labor'; 
+  isReschedule: boolean;       
+  acceptedBy?: 'user' | 'labor' | null;  // Make optional
+  rejectedBy?: 'user' | 'labor' | null;  // Make optional
+  rejectionNewDate?: Date | null;  // Make optional
+  rejectionNewTime?: string | null;  // Make optional
+  rejectionReason?: string | null;  // Make optional
+}
 
 
 export interface IBooking extends Document {
@@ -43,6 +55,7 @@ export interface IBooking extends Document {
   };
 
   addressDetails: IAddressDetails;
+  reschedule?: IReschedule;
 
   createdAt?: Date;
   updatedAt?: Date;

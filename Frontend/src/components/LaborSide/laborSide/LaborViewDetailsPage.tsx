@@ -4,13 +4,16 @@ import { Clock, Calendar, DollarSign, User, FileText, AlertCircle, ArrowLeft, In
 import mapboxgl from "mapbox-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { RootState } from '../../../redux/store/store';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import CancelBooking from './CancelBooking';
+import { toast } from 'react-toastify';
+import { setBookingDetails } from '../../../redux/slice/bookingSlice';
+import { fetchBookings } from '../../../services/LaborServices';
 
 const LaborViewDetailsPage = () => {
   const location = useLocation();
   const booking = location.state?.booking;
-  // console.log("This is BBBBBBBBBBBBBB",booking)
+  console.log("This is BBBBBBBBBBBBBB",booking)
 
   const [cancelBooking , setCancelBooking] = useState(false)
   const { Userlatitude, Userlongitude } = booking.addressDetails
@@ -20,7 +23,8 @@ const LaborViewDetailsPage = () => {
   // console.log("TTTTTTTTT",Userlatitude)
   // console.log("bbbbbbbbbbbb",Userlongitude)
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   const {
     bookingId,
@@ -171,6 +175,22 @@ const LaborViewDetailsPage = () => {
 
     return () => map.remove();
   }, [coordinates]);
+
+  useEffect(() => {
+  const fetchBooking = async () => {
+    if (bookingId) {
+      const fetchBookingResponse = await fetchBookings(bookingId);
+      if (fetchBookingResponse.status === 200) {
+        toast.success('Booking fetched successfully');
+        dispatch(setBookingDetails(fetchBookingResponse.data.bookings));
+      } else {
+        toast.error('Error fetching booking details');
+      }
+    }
+  };
+  
+  fetchBooking();
+}, [bookingId, dispatch]);
 
 
   return (

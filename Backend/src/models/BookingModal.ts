@@ -55,6 +55,19 @@ const BookingSchema : Schema = new Schema<IBooking>({
     isUserRead: { type: Boolean, default: false }, 
   },
 
+    reschedule: {
+    newTime: { type: String },
+    newDate: { type: Date },
+    reasonForReschedule: { type: String },
+    requestSentBy: { type: String, enum: ['user', 'labor'], required: false  },
+    isReschedule: { type: Boolean, default: false },
+    acceptedBy: { type: String, enum: ['user', 'labor'], default: null },
+    rejectedBy: { type: String, enum: ['user', 'labor'], default: null },
+    rejectionNewDate: { type: Date },
+    rejectionNewTime: { type: String },
+    rejectionReason: { type: String }
+  },
+
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

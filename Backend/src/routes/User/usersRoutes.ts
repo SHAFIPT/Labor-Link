@@ -10,5 +10,6 @@ usersRoutes.post('/bookingLabor',userSideController.bookingLabor.bind(userSideCo
 usersRoutes.get('/fetchId/:email',userSideController.fetchLaborId.bind(userSideController))
 usersRoutes.get('/fetchBookings',authenticateUser,userSideController.fetchBookings.bind(userSideController))
 usersRoutes.post('/cancelBooking',userSideController.cancelBooking.bind(userSideController))
-usersRoutes.put('/update-read-status/:bookingId',authenticateUser,userSideController.updateReadStatus.bind(userSideController))
+usersRoutes.put('/update-read-status/:bookingId',userSideController.updateReadStatus.bind(userSideController))
+usersRoutes.post('/resheduleRequst',userSideController.reshedulRequest.bind(userSideController))
 export default usersRoutes

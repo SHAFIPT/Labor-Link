@@ -94,3 +94,14 @@ export const cancelSubmision = async (cancelFormData) => {
     throw error;
   }
 }
+export const handleRescheduleWork = async (reshedulDatas) => {
+  try {
+
+    const response = await api.post('/api/user/users/resheduleRequst', reshedulDatas)
+    return response
+    
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}

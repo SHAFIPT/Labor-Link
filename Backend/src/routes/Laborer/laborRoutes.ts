@@ -13,5 +13,8 @@ laborRoutes.get('/fetchLaborsByLocation',laborSideContorller.fetchLaborsByLocati
 laborRoutes.post('/abouteMe',authenticateLabor , laborSideContorller.abouteMe.bind(laborSideContorller))
 laborRoutes.get('/fetchBooking',authenticateLabor , laborSideContorller.fetchBooking.bind(laborSideContorller))
 laborRoutes.get('/fetchSimilorLabors' , laborSideContorller.fetchSimilorLabors.bind(laborSideContorller))
+laborRoutes.get('/fetchBooking/:bookingId' , laborSideContorller.fetchBookings.bind(laborSideContorller))
+laborRoutes.post('/submitRejection',laborSideContorller.submitRejection.bind(laborSideContorller))
+laborRoutes.put('/acceptBooking/:bookingId',laborSideContorller.acceptBooking.bind(laborSideContorller))
 
 export default laborRoutes             

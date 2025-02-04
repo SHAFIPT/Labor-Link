@@ -111,3 +111,37 @@ export const cancelSubmision = async (cancelFormData) => {
     throw error;
   }
 }
+
+export const fetchBookings = async (bookingId) => {
+  try {
+
+    const response = await api.get(`/api/labor/labors/fetchBooking/${bookingId}`)
+    return response
+    
+  } catch (error) {
+     console.error("Error fetchBooking :", error);
+    throw error;
+  }
+}
+export const rejectReshedule = async (rejectionData) => {
+  try {
+
+    const response = await api.post('/api/labor/labors/submitRejection',rejectionData)
+    return response
+    
+  } catch (error) {
+     console.error("Error fetchBooking :", error);
+    throw error;
+  }
+}
+export const acceptReshedule = async (bookingId) => {
+  try {
+
+    const response = await api.put(`/api/labor/labors/acceptBooking/${bookingId}`)
+    return response
+    
+  } catch (error) {
+     console.error("Error fetchBooking :", error);
+    throw error;
+  }
+}

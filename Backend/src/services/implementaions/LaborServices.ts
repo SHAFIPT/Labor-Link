@@ -47,4 +47,19 @@ export class LaborServices implements ILaborService{
     async fetchSimilorLabors(latitude: number, logitude: number, categorie: string , laborId: string) {
         return await this.laborRepsitory.fetchSimilorLabors(latitude,logitude,categorie , laborId)
     }
+    async fetchBookingDetils(bookingId: string): Promise<IBooking | null> {
+        return await this.laborRepsitory.fetchBookingDetils(bookingId)
+    }
+    async rejectResheduleRequst(bookingId: string, newDate: string, newTime: string, rejectionReason: string, rejectedBy: string): Promise<IBooking | null> {
+        return await this.laborRepsitory.rejectResheduleRequst(
+        bookingId,
+        newDate,
+        newTime,
+        rejectionReason,
+        rejectedBy
+        );
+    }
+    async acceptResheduleRequst(bookingId: string): Promise<IBooking | null> {
+        return await this.laborRepsitory.acceptResheduleRequst(bookingId)
+    }
 }

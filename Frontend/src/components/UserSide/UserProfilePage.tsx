@@ -29,6 +29,8 @@ import Breadcrumb from "../BreadCrumb";
 import { setBookingDetails } from "../../redux/slice/bookingSlice";
 import CancelBookingForm from "./CancelBookingForm";
 import CancellationDetails from "./CancellationDetails";
+import ResheduleModal from "./ResheduleModal";
+import RescheduleRequestModal from "../LaborSide/laborSide/resheduleRequstModal";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email);
@@ -41,6 +43,7 @@ const UserProfile = () => {
   const [OpenCancelationModal, setOpenCancelationModal] = useState(false);
   const [openChangePassword, setOpenChangePasswod] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [resheduleModals, setResheduleModal] = useState(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [cancelDetilsModal , setCancelDetilsModal] = useState(false)
@@ -51,6 +54,7 @@ const UserProfile = () => {
   const [filter, setFilter] = useState(""); 
   const [limit, setLimit] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [resheduleModal, setResheduleModalOpen] = useState(false)
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -286,7 +290,7 @@ const UserProfile = () => {
         const response = await fetchBookings(currentPage, limit , filter); // Assuming fetchBookings is an API call
         if (response.status === 200) {
           console.log("Bookings fetched successfully:", response.data);
-          const { bookings, total, page, limit, totalPages } = response.data;
+          const { bookings , totalPages } = response.data;
 
           console.log("Thsi si eth BookingDATAAAAAAAAAAAAA:", bookings);
           dispatch(setBookingDetails(bookings));
@@ -320,7 +324,13 @@ const UserProfile = () => {
 
   return (
     <>
+      <RescheduleRequestModal
+        isOpen={resheduleModals !== null}
+        onClose={() => setResheduleModal(null)}
+        bookingDetails={resheduleModals ? [resheduleModals] : []}
+      />
       {loading && <div className="loader"></div>}
+
       {openChangePassword && (
         <div
           className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 `}
@@ -740,16 +750,70 @@ const UserProfile = () => {
                         )}
 
                         {booking.status !== "canceled" && (
-                          <div className="flex md:justify-between md:space-y-0 space-y-4 md:flex-row flex-col pt-4">
+                          <div className="flex flex-col md:flex-row items-center justify-between w-full pt-4 space-y-4 md:space-y-0">
+                            {/* Cancel Booking Button - Full width on mobile, fixed width on larger screens */}
                             <button
-                              className="bg-[#e74c3c] rounded-full text-white px-6 py-3 md:w-[180px] text-lg hover:bg-red-600 transition-colors"
+                              className="w-full md:w-[180px] bg-[#e74c3c] rounded-full text-white px-6 py-3 text-lg hover:bg-red-600 transition-colors"
                               onClick={handleCancelation}
                             >
                               Cancel Booking
                             </button>
-                            <button className="bg-[#f39c12] text-white px-6 py-3 md:w-[180px] rounded-full text-lg hover:bg-[#e67e22] transition-colors">
-                              Reschedule
-                            </button>
+
+                            <div className="w-full md:w-auto flex flex-col items-center">
+                              {booking.reschedule ? (
+                                <div className="flex flex-col items-center w-full">
+                                  {/* Buttons Container - Ensures consistent width and alignment */}
+                                  <div className="flex items-center space-x-4 w-full justify-center mb-2 min-h-[50px]">
+                                    {/* If Labor Rejected Reschedule Request */}
+                                    {booking.reschedule.rejectedBy === "labor" && (
+                                      <button
+                                        className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
+                                        onClick={() => setResheduleModal(booking)}
+                                      >
+                                        View Details
+                                      </button>
+                                    )}
+
+                                    {/* Fallback or Reschedule Button */}
+                                    {booking.reschedule.requestSentBy !== "user" && (
+                                      <button
+                                        className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
+                                        onClick={() => setResheduleModalOpen(true)}
+                                      >
+                                        Reschedule
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  {/* Message Container - Always full width, centered */}
+                                  <div className="w-full text-center">
+                                    {/* If Reschedule Request is Pending from User */}
+                                    {booking.reschedule.requestSentBy === "user" &&
+                                      booking.reschedule.acceptedBy === null &&
+                                      booking.reschedule.rejectedBy !== "labor" && (
+                                        <p className="text-yellow-500 text-sm mt-1">
+                                          Your reschedule request is pending. Please wait for admin approval.
+                                        </p>
+                                    )}
+
+                                    {/* Labor Rejection Message */}
+                                    {booking.reschedule.rejectedBy === "labor" && (
+                                      <p className="text-red-500 text-sm mt-1">
+                                        Your reschedule request was rejected by {booking.laborId.firstName} {booking.laborId.lastName}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                // Reschedule Button when no active reschedule
+                                <button
+                                  className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
+                                  onClick={() => setResheduleModalOpen(true)}
+                                >
+                                  Reschedule
+                                </button>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -879,15 +943,50 @@ const UserProfile = () => {
 
                         {booking.status !== "canceled" && (
                           <div className="flex md:justify-between md:space-y-0 space-y-4 md:flex-row flex-col pt-4">
+                            {/* Cancel Booking Button */}
                             <button
                               className="bg-[#e74c3c] rounded-full text-white px-3 py-1 md:w-[180px] text-lg hover:bg-red-600 transition-colors"
                               onClick={handleCancelation}
                             >
                               Cancel Booking
                             </button>
-                            <button className="bg-[#f39c12] text-white px-6 py-3 md:w-[180px] rounded-full text-lg hover:bg-[#e67e22] transition-colors">
-                              Reschedule
-                            </button>
+
+                            {/* Reschedule Modal */}
+                            {resheduleModal && (
+                              <ResheduleModal
+                                onClose={() => setResheduleModalOpen(false)}
+                                bookingId={booking.bookingId}
+                              />
+                            )}
+
+                            {/* Reschedule Button */}
+
+                            {/* Warning Message Below Reschedule Button */}
+                            {bookingDetails?.[0]?.reschedule?.requestSentBy ===
+                              "user" &&
+                            bookingDetails?.[0]?.reschedule?.acceptedBy ===
+                              null ? (
+                              <div className="flex items-center space-x-2 mt-2">
+                                {/* Warning Icon */}
+                                <i className="fas fa-exclamation-triangle text-orange-500"></i>
+                                {/* Warning Message */}
+                                <p className="text-orange-500 text-sm">
+                                  Your reschedule request is pending. Please
+                                  wait for labor approval.
+                                </p>
+                              </div>
+                            ) : (
+                              <button
+                                className="bg-[#f39c12] text-white px-6 py-3 md:w-[180px] rounded-full text-lg hover:bg-[#e67e22] transition-colors"
+                                onClick={() => setResheduleModalOpen(true)}
+                                disabled={
+                                  bookingDetails?.[0]?.reschedule
+                                    ?.acceptedBy !== null
+                                } // Disable if request is pending
+                              >
+                                Reschedule
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>

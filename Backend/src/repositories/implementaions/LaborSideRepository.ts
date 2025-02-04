@@ -200,7 +200,66 @@ export class LaborSideRepository implements ILaborSidRepository {
 
       return labors;
     } catch (error) {
-      console.error("Error in fetching similar labors:", error);
+      
+    }
+  }
+  async fetchBookingDetils(bookingId: string): Promise<IBooking | null> {
+    try {
+
+      const booking = await Booking.findOne({ bookingId: bookingId });
+
+      if (!booking) {
+        throw new Error("Booking not found");
+      }
+
+      return booking
+      
+    } catch (error) {
+      console.error("Error in fetchting bookings", error);
+      throw error;
+    }
+  }
+  async rejectResheduleRequst(bookingId: string, newDate: string, newTime: string, rejectionReason: string, rejectedBy: string): Promise<IBooking | null> {
+    try {
+      
+      const updatedBooking = await Booking.findOneAndUpdate(
+         { bookingId: bookingId },
+        {
+          $set: {
+            "reschedule.isReschedule": false,
+            "reschedule.rejectedBy": rejectedBy,
+            "reschedule.rejectionNewDate": newDate,
+            "reschedule.rejectionNewTime": newTime,
+            "reschedule.rejectionReason": rejectionReason,
+          },       
+        },
+        { new: true }
+      );
+      return updatedBooking
+    } catch (error) {
+      console.error("Error in reject Boooking", error);
+      throw error;
+    }
+  }
+  async acceptResheduleRequst(bookingId: string): Promise<IBooking | null> {
+    try {
+      const updatedBooking = await Booking.findByIdAndUpdate(
+        bookingId,
+        {
+          $set: {
+            "reschedule.isReschedule": true,
+            "reschedule.acceptedBy": "labor", // Assuming labor is accepting
+            "reschedule.rejectedBy": null,
+            "reschedule.rejectionNewDate": null,
+            "reschedule.rejectionNewTime": null,
+            "reschedule.rejectionReason": null,
+          },
+        },
+        { new: true }
+      );
+      return updatedBooking
+    } catch (error) {
+      console.error("Error in accept booking", error);
       throw error;
     }
   }

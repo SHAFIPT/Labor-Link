@@ -107,13 +107,13 @@ export default class UserSideRepository implements IUserSideRepository {
   async fetchBooking(
     userId: string,
     page: number,
-    limit: number
-    ,filter: object
+    limit: number,
+    filter: object
   ): Promise<{ bookings: IBooking[]; total: number }> {
     try {
       const skip = (page - 1) * limit;
 
-      const bookings = await Booking.find({ userId , ...filter })
+      const bookings = await Booking.find({ userId, ...filter })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -121,11 +121,11 @@ export default class UserSideRepository implements IUserSideRepository {
           path: "laborId", // Field to populate
           select: "firstName lastName  phone  location.coordinates categories", // Fields to include from the Labor schema
         })
-        .exec();      
+        .exec();
 
       const total = await Booking.countDocuments({
         userId,
-        ...filter
+        ...filter,
       });
 
       return { bookings, total };
@@ -143,61 +143,96 @@ export default class UserSideRepository implements IUserSideRepository {
     }
   }
   async cancelBooking(
-  bookingFound: IBooking,
-  data: {
-    reason: string;
-    comments: string;
-    isWithin30Minutes: boolean;
-    canceledBy: 'user' | 'labor'
+    bookingFound: IBooking,
+    data: {
+      reason: string;
+      comments: string;
+      isWithin30Minutes: boolean;
+      canceledBy: "user" | "labor";
+    }
+  ): Promise<IBooking | null> {
+    try {
+      const { reason, comments, isWithin30Minutes, canceledBy } = data;
+
+      // Get the current time and the booking's arrival time
+      const currentTime = new Date();
+      const arrivalTime = new Date(bookingFound.quote.arrivalTime);
+
+      // Calculate the time difference in milliseconds
+      const timeDifference = arrivalTime.getTime() - currentTime.getTime();
+
+      // Convert the time difference to minutes
+      const timeDifferenceInMinutes = timeDifference / (1000 * 60);
+
+      // Check if the cancellation is within 30 minutes of the arrival time
+      const isWithinCancellationWindow = timeDifferenceInMinutes <= 30;
+
+      // Apply cancellation fee only if the cancellation is within 30 minutes
+      const cancellationFee = isWithinCancellationWindow ? 100 : 0; // Example: $100 fee for cancellations within 30 minutes
+
+      // Update booking status and cancellation details
+      bookingFound.status = "canceled";
+      bookingFound.cancellation = {
+        reason,
+        comments,
+        canceledBy,
+        canceledAt: currentTime,
+        cancellationFee,
+        isUserRead: false,
+      };
+
+      // Save the updated booking
+      return await bookingFound.save();
+    } catch (error) {
+      console.error("Error in cancelBooking repository method:", error);
+      throw new Error("Failed to cancel booking.");
+    }
   }
-): Promise<IBooking | null> {
-  try {
-    const { reason, comments, isWithin30Minutes, canceledBy } = data;
-
-    // Get the current time and the booking's arrival time
-    const currentTime = new Date();
-    const arrivalTime = new Date(bookingFound.quote.arrivalTime);
-
-    // Calculate the time difference in milliseconds
-    const timeDifference = arrivalTime.getTime() - currentTime.getTime();
-
-    // Convert the time difference to minutes
-    const timeDifferenceInMinutes = timeDifference / (1000 * 60);
-
-    // Check if the cancellation is within 30 minutes of the arrival time
-    const isWithinCancellationWindow  = timeDifferenceInMinutes <= 30;
-
-    // Apply cancellation fee only if the cancellation is within 30 minutes
-    const cancellationFee = isWithinCancellationWindow  ? 100 : 0; // Example: $100 fee for cancellations within 30 minutes
-
-    // Update booking status and cancellation details
-    bookingFound.status = 'canceled';
-    bookingFound.cancellation = {
-      reason,
-      comments,
-      canceledBy,
-      canceledAt: currentTime,
-      cancellationFee,
-      isUserRead: false,
-    };
-
-    // Save the updated booking
-    return await bookingFound.save();
-  } catch (error) {
-    console.error('Error in cancelBooking repository method:', error);
-    throw new Error('Failed to cancel booking.');
-  }
-  }
-   async updateReadStatus(bookingId: string, isUserRead: boolean): Promise<IBooking | null> {
+  async updateReadStatus(
+    bookingId: string,
+    isUserRead: boolean
+  ): Promise<IBooking | null> {
     try {
       const updatedBooking = await Booking.findOneAndUpdate(
         { bookingId },
         { $set: { "cancellation.isUserRead": isUserRead } },
-        { new: true } 
+        { new: true }
       );
       return updatedBooking;
     } catch (error) {
       console.error("Error updating booking read status:", error);
+      throw error;
+    }
+  }
+  async resheduleRequst(
+    bookingId: string,
+    newDate: string,
+    newTime: string,
+    reason: string,
+    requestSentBy: "user" | "labor"
+  ): Promise<IBooking | null> {
+    try {
+      const convertedDate = new Date(newDate);
+
+      const booking = await Booking.findOne({ bookingId: bookingId });
+
+      if (!booking) {
+        throw new Error("Booking not found");
+      }
+
+      booking.reschedule = {
+        newDate: convertedDate,
+        newTime,
+        reasonForReschedule: reason,
+        requestSentBy,
+        isReschedule: false,
+      };
+
+      await booking.save();
+
+      return booking;
+    } catch (error) {
+      console.error("Error in reschedule request:", error);
       throw error;
     }
   }

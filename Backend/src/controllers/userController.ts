@@ -299,7 +299,37 @@ export class userController {
         console.error("Error in updating read status", error);
         next(error);
     }
-};
+  };
+  public reshedulRequest = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { bookingId , newDate, newTime, reason , requestSentBy } = req.body
+      
+      console.log("this is the reonsponse data aa :", {
+        newDate, 
+        newTime,
+        reason,
+        bookingId
+      })
+
+      const resheduleRequst = await this.userService.resheduleRequst(
+        bookingId,
+        newDate,
+        newTime,
+        reason,
+        requestSentBy
+      )
+
+      if (resheduleRequst) {
+        return res.status(200)
+        .json({message : 'resheduleRequst has been sent....', reshedule : resheduleRequst})
+      }
+      
+    } catch (error) {
+      console.error("Error in reshedule request.", error);
+        next(error);
+    }
+  }
 }
 
 

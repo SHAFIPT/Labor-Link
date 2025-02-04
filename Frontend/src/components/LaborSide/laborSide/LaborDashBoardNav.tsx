@@ -12,9 +12,38 @@ import { HomeIcon, MessageSquare, Receipt, Briefcase, User, Users } from 'lucide
 import { resetUser } from "../../../redux/slice/userSlice";
 import { resetLaborer, setFormData, setIsLaborAuthenticated, setLaborer } from "../../../redux/slice/laborSlice";
 import { logout } from "../../../services/LaborAuthServices";
+import NotificationModal from "../../UserSide/notificaionModal";
+import { auth, db } from "../../../utils/firbase";
+import { collection, doc, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 // import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading, setAccessToken } from '../../../redux/slice/laborSlice'
 // import { checkIsBlock, logout } from "../services/UserAuthServices";
-const LaborDashBoardNav = () => {
+interface ChatDocument {
+  laborId: string;
+  userId: string;
+  lastMessage: string;
+  lastUpdated: Timestamp;  // Change to Timestamp, not string
+  quoteSent: boolean;
+  messagesCount: number;
+  lastReadTimestamp: Timestamp;
+  lastMessageSender : string
+}
+interface UserData {
+  // Add user fields based on your Users collection structure
+  name?: string;
+  email?: string;
+  profilePicture? : string
+  // ... other user fields
+}
+interface Chat extends ChatDocument {
+  id: string;
+  userData?: UserData | null;
+  unreadCount: number;
+}
+
+
+
+const LaborDashBoardNav = ({ setCurrentStage }) => {
   const user = useSelector((state: RootState) => state.user);
   const isUserAthenticated = useSelector(
     (state: RootState) => state.user.isUserAthenticated
@@ -24,20 +53,30 @@ const LaborDashBoardNav = () => {
   );
   const laborer = useSelector((state: RootState) => state.labor.laborer);
   const loading = useSelector((state: RootState) => state.user.loading);
+  const bookingDetails = useSelector((state: RootState) => state.booking.bookingDetails);
   // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
+
+  console.log("Thsisi the teh bookdingdeeeeeeeeeeeeeeeeeeeeeee",bookingDetails)
+
+  
   useEffect(() => {
     console.log("isLaborAuthenticated :", isLaborAuthenticated);
     console.log("isUserAthenticated :", isUserAthenticated);
     console.log("laborer :", laborer);
     console.log("user :", user);
   }, [isLaborAuthenticated, isUserAthenticated, laborer, user]);
-
+  
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Get dispatch function
   const theme = useSelector((state: RootState) => state.theme.mode);
   const [isOpen, setIsOpen] = useState(false); // Get the current theme
+  const [notificaionOn, setNotificaionOn] = useState(false)
+  const [chats, setChats] = useState<Chat[]>([]);
+  const hasUnreadMessages = chats.some((chat) => chat.unreadCount > 0);
 
+  console.log("Thsi si the chats..................",chats)
+  
   const toggleDarkMode = () => {
     dispatch(toggleTheme()); // Dispatch toggle action
   };
@@ -70,11 +109,111 @@ const LaborDashBoardNav = () => {
             toast('logout successfully....!')
             navigate('/');
         }
+  }
+  
+
+    const fetchChats = (userUids) => {
+    if (!userUids) {
+      throw new Error("Missing user credentials");
     }
+
+    const currentUser = auth.currentUser;
+
+    if (!currentUser || !currentUser.uid) {
+      throw new Error("User is not authenticated");
+    }
+
+    const userUid = currentUser.uid;
+
+    const chatCollection = collection(db, "Chats");
+    const chatQuery = query(chatCollection, where("laborId", "==", userUid));
+
+    const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
+      const chatData = await Promise.all(
+        chatSnapshot.docs.map(async (doc) => {
+          const chatData = doc.data() as ChatDocument;
+
+          let unreadCount = 0;
+          if (chatData.lastMessageSender === "user") {
+            const messagesCollection = collection(
+              db,
+              "Chats",
+              doc.id,
+              "messages"
+            );
+            const unreadQuery = query(
+              messagesCollection,
+              where(
+                "timestamp",
+                ">",
+                chatData.lastReadTimestamp || new Timestamp(0, 0)
+              )
+            );
+            const unreadSnapShot = await getCountFromServer(unreadQuery);
+            unreadCount = unreadSnapShot.data().count;
+          }
+
+          return {
+            id: doc.id,
+            ...chatData,
+            unreadCount,
+          };
+        })
+      );
+
+      const userPromises = chatData.map(async (chat) => {
+        try {
+          const userDocRef = doc(db, "Users", chat.userId);
+          const userSnapshot = await getDoc(userDocRef);
+          const userData = userSnapshot.exists() ? userSnapshot.data() : null;
+
+          return {
+            ...chat,
+            userData,
+          };
+        } catch (error) {
+          console.error(
+            `Error fetching user data for chat ${chat.id}:`,
+            error
+          );
+          return { ...chat, userData: null };
+        }
+      });
+
+      const chatsWithUserData = await Promise.all(userPromises);
+      setChats(chatsWithUserData);
+    });
+    return unsubscribe;
+  };
+
+  useEffect(() => {
+    const auth = getAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const chatListenerUnsubscribe = fetchChats(user.uid); // Start real-time listener
+        return () => chatListenerUnsubscribe && chatListenerUnsubscribe(); // Cleanup listener
+      } else {
+        setChats([]); // Clear chats if no user is authenticated
+        toast.error("Please sign in to view chats");
+      }
+    });
+
+    return () => unsubscribe(); // Cleanup auth listener on unmount
+  }, []);
 
     
   return (
     <div>
+      {notificaionOn && (
+        <NotificationModal
+          onClose={() => setNotificaionOn(false)}
+          chats={chats} 
+          bookingDetails={bookingDetails}
+          setCurrentStage={isLaborAuthenticated ? setCurrentStage : undefined}
+        />
+      )}
+
       <div>
         {loading && <div className="loader"></div>}
         <div className="w-full flex justify-between ">
@@ -477,56 +616,176 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 </button>
               </div>
 
-            <div
-            className={`fixed inset-x-0 top-0 h-/2 bg-[#184242] transform transition-transform duration-300 ease-in-out z-40 ${
-                isOpen ? "translate-y-0" : "-translate-y-full"
-            }`}
-            >
-            <nav className="container mx-auto h-full px-4 py-8">
-                <div className="grid gap-y-4 h-full max-w-md mx-auto">
-                <div className="space-y-4">
-                    <Link to={''} className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200">
-                    <HomeIcon className="w-6 h-6 flex-shrink-0" />
-                    <span className="text-lg font-medium">Dashboard</span>
-                    </Link>
-                    <Link to='' className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200">
-                    <span className="text-lg font-medium">Chats</span>
-                    </Link>
-                    <Link to='' className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200">  
-                    <Receipt className="w-6 h-6 flex-shrink-0" />
-                    <span className="text-lg font-medium">Billing History</span>
-                    </Link>
-                    <Link to='' className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"> 
-                    <Briefcase className="w-6 h-6 flex-shrink-0" />
-                    <span className="text-lg font-medium">Total Works</span>
-                    </Link>
-                    <Link to='/labor/LaborProfile' className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200">      
-                    <User className="w-6 h-6 flex-shrink-0" />
-                    <span className="text-lg font-medium">View Profile page</span>
-                    </Link>
-                </div>
-
-                {isLaborAuthenticated && (
-                    <div className="mt-auto pb-4">
-                    <button className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1">
-                        <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
-                        <svg
-                            className="w-4 h-4"
-                            viewBox="0 0 512 512"
-                            fill="white"
-                        >
-                            <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
-                        </svg>
-                        </div>
-                        <div className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-                        Logout
-                        </div>
-                    </button>
+              <div
+                className={`fixed inset-x-0 top-0 h-/2 bg-[#184242] transform transition-transform duration-300 ease-in-out z-40 ${
+                  isOpen ? "translate-y-0" : "-translate-y-full"
+                }`}
+              >
+                <nav className="container mx-auto h-full px-4 py-8">
+                  <div className="grid gap-y-4 h-full max-w-md mx-auto">
+                    <div className="space-y-4">
+                      <Link
+                        to={""}
+                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
+                      >
+                        <HomeIcon className="w-6 h-6 flex-shrink-0" />
+                        <span className="text-lg font-medium">Dashboard</span>
+                      </Link>
+                      <Link
+                        to=""
+                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
+                      >
+                        <span className="text-lg font-medium">Chats</span>
+                      </Link>
+                      <Link
+                        to=""
+                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
+                      >
+                        <Receipt className="w-6 h-6 flex-shrink-0" />
+                        <span className="text-lg font-medium">
+                          Billing History
+                        </span>
+                      </Link>
+                      <Link
+                        to=""
+                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
+                      >
+                        <Briefcase className="w-6 h-6 flex-shrink-0" />
+                        <span className="text-lg font-medium">Total Works</span>
+                      </Link>
+                      <Link
+                        to="/labor/LaborProfile"
+                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
+                      >
+                        <User className="w-6 h-6 flex-shrink-0" />
+                        <span className="text-lg font-medium">
+                          View Profile page
+                        </span>
+                      </Link>
                     </div>
-                )}
-                </div>
-            </nav>
+
+                    {isLaborAuthenticated && (
+                      <div className="mt-auto pb-4">
+                        <button className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1">
+                          <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
+                            <svg
+                              className="w-4 h-4"
+                              viewBox="0 0 512 512"
+                              fill="white"
+                            >
+                              <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
+                            </svg>
+                          </div>
+                          <div className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                            Logout
+                          </div>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </nav>
+              </div>
             </div>
+
+            <div className="di" onClick={() => setNotificaionOn(true)}>
+              <div className="relative cursor-pointer">
+                {/* Notification Bell Icon */}
+                <i className="fas fa-bell text-2xl"></i>
+
+                {bookingDetails?.length > 0 &&
+                  bookingDetails[0].status === "canceled" &&
+                  bookingDetails[0].cancellation?.canceledBy === "user" &&
+                  !bookingDetails[0].cancellation?.isUserRead &&
+                  isLaborAuthenticated && (
+                    <div className="absolute -top-2 -right-2">
+                      <div className="relative">
+                        {/* Static Red Dot */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                        {/* Pulsating Glow Effect */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                      </div>
+                    </div>
+                  )}
+                
+
+
+                 {bookingDetails?.length > 0 &&
+                    bookingDetails[0].reschedule && // Ensure reschedule exists
+                    bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
+                    bookingDetails[0].reschedule.requestSentBy === "user" && // Request sent by the user
+                    bookingDetails[0].reschedule.acceptedBy === null && // Not yet accepted
+                    bookingDetails[0].reschedule.rejectedBy === null && // Not yet rejected
+                    (
+                      <div className="absolute -top-2 -right-2">
+                        <div className="relative">
+                          {/* Static Red Dot */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                          {/* Pulsating Glow Effect */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                        </div>
+                      </div>
+                    )
+                }
+                
+
+                {bookingDetails?.length > 0 &&
+                  bookingDetails[0].reschedule &&
+                  bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
+                  bookingDetails[0].reschedule.rejectedBy === "labor" && // Rejected by labor
+                  bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
+                  bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
+                  bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
+                  !isLaborAuthenticated &&
+                  (
+                    <div className="absolute -top-2 -right-2">
+                        <div className="relative">
+                          {/* Static Red Dot */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                          {/* Pulsating Glow Effect */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                        </div>
+                      </div>
+                  )
+                }
+                {bookingDetails?.length > 0 &&
+                  bookingDetails[0].reschedule &&
+                  bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
+                  bookingDetails[0].reschedule.rejectedBy === "user" && // Rejected by labor
+                  bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
+                  bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
+                  bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
+                  isLaborAuthenticated &&
+                  (
+                    <div className="absolute -top-2 -right-2">
+                        <div className="relative">
+                          {/* Static Red Dot */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                          {/* Pulsating Glow Effect */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                        </div>
+                      </div>
+                  )
+                }
+
+
+
+                {/* Glowing Red Notification Indicator */}
+                {hasUnreadMessages && isLaborAuthenticated && (
+                  <div className="absolute -top-2 -right-2">
+                    <div className="relative">
+                      {/* Static Red Dot */}
+                      <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                      {/* Pulsating Glow Effect */}
+                      <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           {isLaborAuthenticated ? (
@@ -537,12 +796,15 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
 
                 {/* Dropdown */}
                 <div className="absolute top-[90px] right-0 w-[130px] hidden flex-col bg-white shadow-md rounded-md p-2 border border-gray-200 group-hover:flex">
-                  <Link to='/labor/ProfilePage'>
-                  <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left">
-                    View Profile
+                  <Link to="/labor/ProfilePage">
+                    <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left">
+                      View Profile
                     </button>
-                    </Link>
-                  <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleLogoutLabor}>
+                  </Link>
+                  <button
+                    className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left"
+                    onClick={handleLogoutLabor}
+                  >
                     Logout
                   </button>
                 </div>
@@ -556,7 +818,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           )}
         </div>
         {/* Divider Line */}
-          {/* <div className="w-full flex justify-center mt-4 sm:mt-5 md:mt-6 lg:mt-0 lg:mb-3">
+        {/* <div className="w-full flex justify-center mt-4 sm:mt-5 md:mt-6 lg:mt-0 lg:mb-3">
             <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[72%] h-[2px] bg-[#ECECEC] mx-auto" />
           </div> */}
       </div>
