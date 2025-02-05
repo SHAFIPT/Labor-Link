@@ -134,10 +134,43 @@ export const rejectReshedule = async (rejectionData) => {
     throw error;
   }
 }
-export const acceptReshedule = async (bookingId) => {
+export const acceptReshedule = async (bookingId , acceptedBy) => {
   try {
 
-    const response = await api.put(`/api/labor/labors/acceptBooking/${bookingId}`)
+    const response = await api.put(`/api/labor/labors/acceptBooking/${bookingId}`,acceptedBy)
+    return response
+    
+  } catch (error) {
+     console.error("Error fetchBooking :", error);
+    throw error;
+  }
+}
+export const submitAdditionalCharge = async (additonalCharges) => {
+  try {
+
+    const response = await api.post('/api/labor/labors/additionalCharge',additonalCharges)
+    return response
+    
+  } catch (error) {
+     console.error("Error fetchBooking :", error);
+    throw error;
+  }
+}
+export const acceptRequst = async (bookingId) => {
+  try {
+
+    const response = await api.patch(`/api/labor/labors/acceptRequst/${bookingId}`)
+    return response
+    
+  } catch (error) {
+     console.error("Error fetchBooking :", error);
+    throw error;
+  }
+}
+export const rejectRequst = async (bookingId) => {
+  try {
+
+    const response = await api.patch(`/api/labor/labors/rejectRequst/${bookingId}`)
     return response
     
   } catch (error) {

@@ -5,7 +5,7 @@ import { userAxiosInstance } from "../../services/instance/userInstance";
 const api = userAxiosInstance
 
 export interface User {
-  ProfilePic: string;
+  ProfilePic : string;
   firstName: string;
   lastName: string;
 }
@@ -13,7 +13,8 @@ export interface Labor {
   ProfilePic: string;
   firstName: string;
   lastName: string;
-  phone : string
+  phone: string
+  location: string
 }
 
 export interface AddressDetails {
@@ -28,30 +29,50 @@ export interface Quote {
 }
 
 export interface BookingDetails {
-  _id :string
+  _id: string;
   bookingId: string;
-  userId: User; // User is now an object, not a string
-  laborId: Labor;
+  userId: User;  // Changed from User object to string
+  laborId: Labor; // Changed from Labor object to string
   status: string;
   paymentStatus: string;
   createdAt: string;
   updatedAt: string;
+  isUserRead?: boolean; 
   cancellation: {
-    canceledBy: string;
     isUserRead: boolean;
+    canceledAt: string;
+    cancellationFee: number;
+  };
+  additionalChargeRequest?: {
+    amount: number;
+    reason?: string;
+    status: 'pending' | 'approved' | 'declined';
   };
   reschedule: {
     isReschedule: boolean;
     requestSentBy: 'user' | 'labor';
-    acceptedBy: 'user' | 'labor'
-    rejectedBy: 'user' | 'labor'
+    acceptedBy: 'user' | 'labor' | null;
+    rejectedBy: 'user' | 'labor' | null;
     rejectionNewDate: string;
     rejectionNewTime: string;
     rejectionReason: string;
-  }
-  addressDetails: AddressDetails; // Added addressDetails
-  quote: Quote; // Added quote
-  isUserRead?: boolean;
+    newTime: string;
+    newDate: string;
+    reasonForReschedule: string;
+  };
+
+  addressDetails: {
+    name: string;
+    phone: string;
+    district: string;
+    place: string;
+    address: string;
+  };
+  quote: {
+    description: string;
+    estimatedCost: number;
+    arrivalTime: string;
+  };
 }
 
 // Redux State
@@ -60,7 +81,7 @@ export interface BookingState {
 }
 
 const initialState: BookingState = {
-  bookingDetails: null,
+  bookingDetails: [],
 };
 
 // ✅ Async Thunk to update read status in backend
@@ -80,6 +101,10 @@ export const updateBookingReadStatusAsync = createAsyncThunk(
   }
 );
 
+
+
+
+
 const bookingSlice = createSlice({
   name: "booking",
   initialState,
@@ -98,8 +123,17 @@ const bookingSlice = createSlice({
         }
       }
     },
+    updateSingleBooking: (state, action: PayloadAction<BookingDetails>) => {
+        if (!Array.isArray(state.bookingDetails)) {
+          state.bookingDetails = [action.payload]; // ✅ Convert into an array
+        } else {
+          state.bookingDetails = state.bookingDetails.map(booking =>
+            booking.bookingId === action.payload.bookingId ? action.payload : booking
+          );
+        }
+      }
   },
 });
 
-export const { setBookingDetails, clearBookingDetails, updateBookingReadStatus } = bookingSlice.actions;
+export const { setBookingDetails, clearBookingDetails, updateBookingReadStatus  , updateSingleBooking } = bookingSlice.actions;
 export default bookingSlice.reducer;

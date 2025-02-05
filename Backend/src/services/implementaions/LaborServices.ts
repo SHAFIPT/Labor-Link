@@ -50,16 +50,26 @@ export class LaborServices implements ILaborService{
     async fetchBookingDetils(bookingId: string): Promise<IBooking | null> {
         return await this.laborRepsitory.fetchBookingDetils(bookingId)
     }
-    async rejectResheduleRequst(bookingId: string, newDate: string, newTime: string, rejectionReason: string, rejectedBy: string): Promise<IBooking | null> {
+    async rejectResheduleRequst(bookingId: string, newDate: string, newTime: string, rejectionReason: string, rejectedBy: string , requestSentBy : string): Promise<IBooking | null> {
         return await this.laborRepsitory.rejectResheduleRequst(
         bookingId,
         newDate,
         newTime,
         rejectionReason,
-        rejectedBy
+        rejectedBy,
+        requestSentBy
         );
     }
-    async acceptResheduleRequst(bookingId: string): Promise<IBooking | null> {
-        return await this.laborRepsitory.acceptResheduleRequst(bookingId)
+    async acceptResheduleRequst(bookingId: string , acceptedBy : string): Promise<IBooking | null> {
+        return await this.laborRepsitory.acceptResheduleRequst(bookingId , acceptedBy)
+    }
+    async additionalCharge(bookingId: string, amount: number, reason: string): Promise<IBooking | null> {
+        return await this.laborRepsitory.additionalCharge(bookingId , amount ,reason )
+    }
+    async acceptRequst(bookingId: string): Promise<IBooking | null> {
+        return await this.laborRepsitory.acceptRequst(bookingId)
+    }
+    async rejectRequst(bookingId: string): Promise<IBooking | null> {
+        return await this.laborRepsitory.rejectRequst(bookingId)
     }
 }

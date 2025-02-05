@@ -756,7 +756,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 <i className="fas fa-bell text-2xl"></i>
                 
 
-             {(bookingDetails?.length && bookingDetails[0].status === "canceled" && 
+             {(bookingDetails?.length && bookingDetails[0]?.status === "canceled" && 
                 bookingDetails[0].cancellation?.canceledBy === "labor" && !bookingDetails[0].cancellation?.isUserRead) && isUserAthenticated &&  (
                   <div className="absolute -top-2 -right-2">
                     <div className="relative">

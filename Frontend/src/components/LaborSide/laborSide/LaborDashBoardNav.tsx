@@ -693,9 +693,9 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 <i className="fas fa-bell text-2xl"></i>
 
                 {bookingDetails?.length > 0 &&
-                  bookingDetails[0].status === "canceled" &&
-                  bookingDetails[0].cancellation?.canceledBy === "user" &&
-                  !bookingDetails[0].cancellation?.isUserRead &&
+                  // bookingDetails[0]?.status === "canceled" &&
+                  bookingDetails[0]?.cancellation?.canceledBy === "user" &&
+                  !bookingDetails[0]?.cancellation?.isUserRead &&
                   isLaborAuthenticated && (
                     <div className="absolute -top-2 -right-2">
                       <div className="relative">
@@ -711,11 +711,11 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
 
 
                  {bookingDetails?.length > 0 &&
-                    bookingDetails[0].reschedule && // Ensure reschedule exists
-                    bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
-                    bookingDetails[0].reschedule.requestSentBy === "user" && // Request sent by the user
-                    bookingDetails[0].reschedule.acceptedBy === null && // Not yet accepted
-                    bookingDetails[0].reschedule.rejectedBy === null && // Not yet rejected
+                    bookingDetails[0]?.reschedule && // Ensure reschedule exists
+                    bookingDetails[0]?.reschedule.isReschedule === false && // Request is still pending
+                    bookingDetails[0]?.reschedule.requestSentBy === "user" && // Request sent by the user
+                    bookingDetails[0]?.reschedule.acceptedBy === null && // Not yet accepted
+                    bookingDetails[0]?.reschedule.rejectedBy === null && // Not yet rejected
                     (
                       <div className="absolute -top-2 -right-2">
                         <div className="relative">
@@ -731,12 +731,12 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 
 
                 {bookingDetails?.length > 0 &&
-                  bookingDetails[0].reschedule &&
-                  bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
-                  bookingDetails[0].reschedule.rejectedBy === "labor" && // Rejected by labor
-                  bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
-                  bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
-                  bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
+                  bookingDetails[0]?.reschedule &&
+                  bookingDetails[0]?.reschedule.isReschedule === false && // Request is still pending
+                  bookingDetails[0]?.reschedule.rejectedBy === "labor" && // Rejected by labor
+                  bookingDetails[0]?.reschedule.rejectionNewDate && // Has a rejection date
+                  bookingDetails[0]?.reschedule.rejectionNewTime && // Has a rejection time
+                  bookingDetails[0]?.reschedule.rejectionReason && // Has a rejection reason
                   !isLaborAuthenticated &&
                   (
                     <div className="absolute -top-2 -right-2">
@@ -751,12 +751,12 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                   )
                 }
                 {bookingDetails?.length > 0 &&
-                  bookingDetails[0].reschedule &&
-                  bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
-                  bookingDetails[0].reschedule.rejectedBy === "user" && // Rejected by labor
-                  bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
-                  bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
-                  bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
+                  bookingDetails[0]?.reschedule &&
+                  bookingDetails[0]?.reschedule?.isReschedule === false && // Request is still pending
+                  bookingDetails[0]?.reschedule?.rejectedBy === "user" && // Rejected by labor
+                  bookingDetails[0]?.reschedule?.rejectionNewDate && // Has a rejection date
+                  bookingDetails[0]?.reschedule?.rejectionNewTime && // Has a rejection time
+                  bookingDetails[0]?.reschedule?.rejectionReason && // Has a rejection reason
                   isLaborAuthenticated &&
                   (
                     <div className="absolute -top-2 -right-2">

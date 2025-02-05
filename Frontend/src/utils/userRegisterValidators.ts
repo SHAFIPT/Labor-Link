@@ -200,11 +200,15 @@ export const editProfileValidate = async (data: Partial<IUser>) => {
 
 }
 
-
 export const validateNewDate = (newDate) => {
-  const schema = Joi.date().required().messages({
-    "date.base": "Please select a valid date.",
-  });
+  const schema = Joi.date()
+    .min("now") // ⬅️ Ensures the date is today or in the future
+    .required()
+    .messages({
+      "date.base": "Please select a valid date.",
+      "date.min": "You cannot select a past date.", // ⬅️ Custom error for past dates
+    });
+
   const { error } = schema.validate(newDate);
   return error ? error.details[0].message : null;
 };

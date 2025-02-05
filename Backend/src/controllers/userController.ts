@@ -307,7 +307,7 @@ export class userController {
       
       console.log("this is the reonsponse data aa :", {
         newDate, 
-        newTime,
+        newTime,           
         reason,
         bookingId
       })
@@ -319,6 +319,8 @@ export class userController {
         reason,
         requestSentBy
       )
+
+      console.log("HHHHHHHHHHHHHHHIIIIIIIIIIIIIIIIIIIII",resheduleRequst)
 
       if (resheduleRequst) {
         return res.status(200)

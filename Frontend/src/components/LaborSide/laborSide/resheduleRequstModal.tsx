@@ -5,7 +5,7 @@ import { RootState } from '../../../redux/store/store';
 import { validateNewDate, validateNewTime, validateReason } from '../../../utils/userRegisterValidators';
 import { setError } from '../../../redux/slice/laborSlice';
 import { toast } from 'react-toastify';
-import { setBookingDetails } from '../../../redux/slice/bookingSlice';
+import { setBookingDetails, updateSingleBooking } from '../../../redux/slice/bookingSlice';
 import { acceptReshedule, rejectReshedule } from '../../../services/LaborServices';
 
 const RescheduleRequestModal = ({ 
@@ -53,6 +53,8 @@ const RescheduleRequestModal = ({
   }, [isOpen]);
     
   const rejectedBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null;
+  const acceptedBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null;
+  const requestSentBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null
 
   const handleRejectionSubmit = async (e) => {
     e.preventDefault();
@@ -66,7 +68,7 @@ const RescheduleRequestModal = ({
       if (!validateErrors.newDate && !validateErrors.newTime && !validateErrors.rejectionReason) {
           try {
             //   const rejectedBy = 'labor'
-              const response = await rejectReshedule({...rejectionData , bookingId , rejectedBy})
+              const response = await rejectReshedule({...rejectionData , bookingId , rejectedBy , requestSentBy})
 
               if (response.status === 200) {
                   console.log("This si tthe repns...............", response)
@@ -87,12 +89,16 @@ const RescheduleRequestModal = ({
   };
     const handleAcceptRequst = async () => {
       try {
-        const response = await acceptReshedule(bookingId);
+        const response = await acceptReshedule(bookingId , acceptedBy);
 
         if (response.status === 200) {
-          dispatch(setBookingDetails(response.data.reshedule));
+          const { reshedule } = response.data
+          
+          console.log("Thanveeeeeeeeraaaaaaaaaaaaaa>>>>>>",reshedule)
+          dispatch(updateSingleBooking(reshedule))
           onClose();
           toast.success("reshedule requst accepted succesfully....");
+
         }
       } catch (error) {
         console.error(error);
@@ -259,7 +265,9 @@ const RescheduleRequestModal = ({
           </button>
           <button 
             className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          onClick={handleAcceptRequst}
           >
+            
             Accept
           </button>
         </div>

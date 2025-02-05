@@ -16,5 +16,8 @@ laborRoutes.get('/fetchSimilorLabors' , laborSideContorller.fetchSimilorLabors.b
 laborRoutes.get('/fetchBooking/:bookingId' , laborSideContorller.fetchBookings.bind(laborSideContorller))
 laborRoutes.post('/submitRejection',laborSideContorller.submitRejection.bind(laborSideContorller))
 laborRoutes.put('/acceptBooking/:bookingId',laborSideContorller.acceptBooking.bind(laborSideContorller))
+laborRoutes.post('/additionalCharge',authenticateLabor,laborSideContorller.additionalCharge.bind(laborSideContorller))
+laborRoutes.patch('/acceptRequst',authenticateLabor,laborSideContorller.acceptRequst.bind(laborSideContorller))
+laborRoutes.patch('/rejectRequst',authenticateLabor,laborSideContorller.rejectRequst.bind(laborSideContorller))
 
 export default laborRoutes             

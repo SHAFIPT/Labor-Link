@@ -21,7 +21,7 @@ const BookingSchema : Schema = new Schema<IBooking>({
       enum: ['pending', 'approved', 'declined'], 
       default: 'pending' 
     }
-  },
+  },  
 
   status: {
     type: String,
@@ -54,7 +54,7 @@ const BookingSchema : Schema = new Schema<IBooking>({
     cancellationFee: { type: Number, default: 0 },
     isUserRead: { type: Boolean, default: false }, 
   },
-
+    
     reschedule: {
     newTime: { type: String },
     newDate: { type: Date },

@@ -9,20 +9,35 @@ import CancelBooking from './CancelBooking';
 import { toast } from 'react-toastify';
 import { setBookingDetails } from '../../../redux/slice/bookingSlice';
 import { fetchBookings } from '../../../services/LaborServices';
+import ResheduleModal from '../../UserSide/ResheduleModal';
+import RescheduleRequestModal from './resheduleRequstModal';
+import '../../Auth/LoadingBody.css'
+import { setLoading } from '../../../redux/slice/laborSlice';
+import AdditionalCharge from './AdditionalCharge';
 
 const LaborViewDetailsPage = () => {
   const location = useLocation();
   const booking = location.state?.booking;
   console.log("This is BBBBBBBBBBBBBB",booking)
+  const bookingdetislss = useSelector((state: RootState) => state.booking.bookingDetails);
 
-  const [cancelBooking , setCancelBooking] = useState(false)
+  const [cancelBooking, setCancelBooking] = useState(false)
+  const loading = useSelector((state: RootState) => state.user.loading);
+  const [resheduleModal, setResheduleModalOpen] = useState(null)
+  const [resheduleModals, setResheduleModal] = useState(null);
+  const [additionalCharge, setAdditionalCharge] = useState(null);
   const { Userlatitude, Userlongitude } = booking.addressDetails
   const { coordinates: laborCoordinates } = booking.laborId.location;
   const theme = useSelector((state: RootState) => state.theme.mode);
   
   // console.log("TTTTTTTTT",Userlatitude)
-  // console.log("bbbbbbbbbbbb",Userlongitude)
-
+  console.log("rrrrrrrrrrrrrrrrrrrrrrrrrrrrr", bookingdetislss)
+  
+  const bookingDetails = Array.isArray(bookingdetislss) 
+  ? bookingdetislss.find(b => b.bookingId === booking?.bookingId)
+  : booking;
+  
+  console.log("ppppppppppppppppppp", bookingDetails)
   const navigate = useNavigate();
   const dispatch = useDispatch()
 
@@ -39,6 +54,8 @@ const LaborViewDetailsPage = () => {
     additionalChargeRequest,
     addressDetails
   } = booking;
+
+console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString();
@@ -176,25 +193,82 @@ const LaborViewDetailsPage = () => {
     return () => map.remove();
   }, [coordinates]);
 
-  useEffect(() => {
-  const fetchBooking = async () => {
-    if (bookingId) {
-      const fetchBookingResponse = await fetchBookings(bookingId);
-      if (fetchBookingResponse.status === 200) {
-        toast.success('Booking fetched successfully');
-        dispatch(setBookingDetails(fetchBookingResponse.data.bookings));
+   const fetchBookingData = async () => {
+    if (!bookingId) return;
+    
+    dispatch(setLoading(true));
+    try {
+      const response = await fetchBookings(bookingId);
+      if (response.status === 200) {
+        
+        dispatch(setBookingDetails(response.data.bookings));
       } else {
         toast.error('Error fetching booking details');
       }
+    } catch (error) {
+      toast.error('Failed to fetch booking details');
+      console.error('Fetch error:', error);
+    } finally {
+      dispatch(setLoading(false));
     }
   };
-  
-  fetchBooking();
-}, [bookingId, dispatch]);
 
+  // Initial data fetch
+  useEffect(() => {
+    fetchBookingData();
+  }, [bookingId, dispatch]);
+
+  
+  const isRescheduleReset = (reschedule) => {
+    return reschedule.isReschedule === true &&
+      !reschedule.newTime &&
+      !reschedule.newDate &&
+      !reschedule.reasonForReschedule &&
+      !reschedule.requestSentBy &&
+      !reschedule.rejectedBy &&
+      !reschedule.rejectionNewDate &&
+      !reschedule.rejectionNewTime &&
+      !reschedule.rejectionReason;
+  };
+
+  // Helper function to check if reschedule is rejected with new details
+  const hasRejectionDetails = (reschedule) => {
+  const hasRejection = 
+    reschedule.rejectedBy === "user" &&
+    reschedule.rejectionNewDate &&
+    reschedule.rejectionNewTime &&
+    reschedule.rejectionReason;
+
+  const hasRequest = 
+    reschedule.requestSentBy === "user" &&
+    reschedule.newDate &&
+    reschedule.newTime &&
+    reschedule.reasonForReschedule;
+
+  return hasRejection || hasRequest;
+};
 
   return (
     <>
+      {loading && <div className="loader"></div>}
+      {resheduleModal && (
+        <ResheduleModal
+          onClose={() => setResheduleModalOpen(false)}
+          bookingId={resheduleModal}
+        />
+      )}
+      <RescheduleRequestModal
+        isOpen={resheduleModals !== null}
+        onClose={() => setResheduleModal(null)}
+        bookingDetails={resheduleModals ? [resheduleModals] : []}
+      />
+      {additionalCharge && (
+        <AdditionalCharge
+          onClose={() => setAdditionalCharge(null)}
+          bookingId={additionalCharge}
+          booking={booking}
+        />
+      )}
       {theme === "light" ? (
         <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
@@ -216,19 +290,19 @@ const LaborViewDetailsPage = () => {
               </div>
 
               {/* Status Banner */}
-               <div
-              className={`px-6 py-2 ${
-                status === "confirmed"
-                  ? "bg-green-100 text-green-800"
-                  : status === "canceled"
-                  ? "bg-red-100 text-red-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
-            >
-              <p className="text-sm font-medium">
-                Status: {status.toUpperCase()}
-              </p>
-            </div>
+              <div
+                className={`px-6 py-2 ${
+                  status === "confirmed"
+                    ? "bg-green-100 text-green-800"
+                    : status === "canceled"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                <p className="text-sm font-medium">
+                  Status: {status.toUpperCase()}
+                </p>
+              </div>
 
               {/* Main Content */}
               <div className="p-6 space-y-6">
@@ -340,19 +414,75 @@ const LaborViewDetailsPage = () => {
                   // Action Buttons
                   <div className="flex flex-col gap-4">
                     {/* Top Row Buttons (Responsive) */}
-                    <div className="flex flex-wrap gap-4 justify-center md:justify-between">
+                     <div className="flex flex-wrap gap-4 justify-center md:justify-between">
                       <button
                         className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full md:w-auto"
                         onClick={() => setCancelBooking(true)}
                       >
                         Cancel Booking
                       </button>
-                      <button className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto">
+                        <button className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
+                        onClick={() => setAdditionalCharge(bookingId)}
+                        >
                         Request Additional Charge
                       </button>
-                      <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto">
+
+                      {/* Case 1: Rejection with details */}
+                      {hasRejectionDetails(bookingDetails.reschedule) && (
+                        <div className="flex flex-col items-center w-full space-y-2">
+                          <button className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
+                            onClick={() => setResheduleModal(bookingDetails)}
+                          >
+                            {bookingDetails.reschedule.rejectedBy === "user"  ? "View Rejection" : "View Request"}
+                          </button>
+                          {(() => {
+                            if (bookingDetails.reschedule.rejectedBy === "user") {
+                              return (
+                                <p className="text-red-500 text-sm">
+                                  Your reschedule request was rejected by{" "}
+                                  {bookingDetails.userId.firstName}{" "}
+                                  {bookingDetails.userId.lastName}
+                                </p>
+                              );
+                            } else if (bookingDetails.reschedule.requestSentBy === "user") {
+                              return (
+                                <p className="text-yellow-500 text-sm">
+                                  User sent a new reschedule request
+                                </p>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      )}
+
+                      {/* Case 2: Pending user request */}
+                      {((bookingDetails.reschedule.requestSentBy === "labor" &&
+                        bookingDetails.reschedule.acceptedBy === null &&
+                        bookingDetails.reschedule.rejectedBy === null) ||
+                        (bookingDetails.reschedule.requestSentBy === "labor" &&
+                          bookingDetails.reschedule.rejectedBy === "labor")) && (
+                        <div className="w-full text-center">
+                          <p className="text-yellow-500 text-sm">
+                            {bookingDetails.reschedule.rejectedBy === "labor"
+                              ? "Your reschedule rejection request is pending. Please wait for user approval."
+                              : "Your reschedule request is pending. Please wait for user approval."}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Case 3: Reset state */}
+                      {isRescheduleReset(bookingDetails.reschedule) && (
+                       
+                      <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                      onClick={() =>
+                            setResheduleModalOpen(bookingDetails.bookingId)
+                          }
+                          >
                         Reschedule
                       </button>
+                      )}
+
                     </div>
 
                     {/* Bottom Centered Button */}
@@ -394,20 +524,19 @@ const LaborViewDetailsPage = () => {
               </div>
 
               {/* Status Banner */}
-             <div
-              className={`px-6 py-2 ${
-                status === "confirmed"
-                  ? "bg-green-100 text-green-800"
-                  : status === "canceled"
-                  ? "bg-red-100 text-red-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
-            >
-              <p className="text-sm font-medium">
-                Status: {status.toUpperCase()}
-              </p>
-            </div>
-
+              <div
+                className={`px-6 py-2 ${
+                  status === "confirmed"
+                    ? "bg-green-100 text-green-800"
+                    : status === "canceled"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                <p className="text-sm font-medium">
+                  Status: {status.toUpperCase()}
+                </p>
+              </div>
 
               {/* Main Content */}
               <div className="p-6 space-y-6">
@@ -520,29 +649,104 @@ const LaborViewDetailsPage = () => {
                 ) : (
                   // Action Buttons
                   <div className="flex flex-col gap-4">
-                    {/* Top Row Buttons (Responsive) */}
-                    <div className="flex flex-wrap gap-4 justify-center md:justify-between">
-                      <button
-                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full md:w-auto"
-                        onClick={() => setCancelBooking(true)}
-                      >
-                        Cancel Booking
-                      </button>
-                      <button className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto">
-                        Request Additional Charge
-                      </button>
-                      <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto">
-                        Reschedule
-                      </button>
-                    </div>
+  {/* Top Row Buttons (Responsive) */}
+  <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+    {/* Cancel Booking Button */}
+    <div className="w-full md:w-auto">
+      <button
+        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full"
+        onClick={() => setCancelBooking(true)}
+      >
+        Cancel Booking
+      </button>
+    </div>
 
-                    {/* Bottom Centered Button */}
-                    <div className="flex justify-center">
-                      <button className="px-6 py-2 bg-green-600 lg:ml-10 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto">
-                        Work Completed
-                      </button>
-                    </div>
-                  </div>
+    {/* Additional Charge Section */}
+    <div className="w-full md:w-auto flex flex-col items-center md:items-start">
+      {bookingDetails?.additionalChargeRequest?.status === "pending" && 
+      bookingDetails?.additionalChargeRequest?.amount > 0 && 
+      bookingDetails?.additionalChargeRequest?.reason ? (
+        <div className="text-center md:text-left w-full">
+          <p className='text-yellow-500 text-sm'>
+            <strong>Note:</strong> Your request has been sent to {bookingDetails?.userId?.firstName} and additional charges will only apply if they accept it. 
+            The original estimated cost will remain unchanged until then.
+          </p>
+        </div>
+      ) : (
+        <button
+          className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full"
+          onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
+        >
+          Request Additional Charge
+        </button>
+      )}
+    </div>
+
+    {/* Reschedule and Rejection Section */}
+    <div className="w-full md:w-auto flex flex-col items-center">
+      {hasRejectionDetails(bookingDetails.reschedule) && (
+        <div className="flex flex-col items-center w-full space-y-2">
+          <button 
+            className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full"
+            onClick={() => setResheduleModal(bookingDetails)}
+          >
+            {bookingDetails.reschedule.rejectedBy === "user" ? "View Rejection" : "View Request"}
+          </button>
+          {(() => {
+            if (bookingDetails.reschedule.rejectedBy === "user") {
+              return (
+                <p className="text-red-500 text-sm text-center">
+                  Your reschedule request was rejected by{" "}
+                  {bookingDetails.userId.firstName}{" "}
+                  {bookingDetails.userId.lastName}
+                </p>
+              );
+            } else if (bookingDetails.reschedule.requestSentBy === "user") {
+              return (
+                <p className="text-yellow-500 text-sm text-center">
+                  User sent a new reschedule request
+                </p>
+              );
+            }
+            return null;
+          })()}
+        </div>
+      )}
+
+      {/* Pending Reschedule Request */}
+      {((bookingDetails.reschedule.requestSentBy === "labor" &&
+        bookingDetails.reschedule.acceptedBy === null &&
+        bookingDetails.reschedule.rejectedBy === null) ||
+        (bookingDetails.reschedule.requestSentBy === "labor" &&
+          bookingDetails.reschedule.rejectedBy === "labor")) && (
+        <div className="w-full text-center">
+          <p className="text-yellow-500 text-sm">
+            {bookingDetails.reschedule.rejectedBy === "labor"
+              ? "Your reschedule rejection request is pending. Please wait for user approval."
+              : "Your reschedule request is pending. Please wait for user approval."}
+          </p>
+        </div>
+      )}
+
+      {/* Reschedule Button */}
+      {isRescheduleReset(bookingDetails.reschedule) && (
+        <button 
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full"
+          onClick={() => setResheduleModalOpen(bookingDetails.bookingId)}
+        >
+          Reschedule
+        </button>
+      )}
+    </div>
+  </div>
+
+  {/* Bottom Centered Button */}
+  <div className="flex justify-center">
+    <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto">
+      Work Completed
+    </button>
+  </div>
+</div>
                 )}
               </div>
 

@@ -38,6 +38,11 @@ interface BookingDetails {
     isUserRead?: boolean;
     isLaborRead?: boolean;
   };
+   additionalChargeRequest?: {
+    amount: number;
+    reason?: string;
+    status: 'pending' | 'approved' | 'declined';
+  };
   reschedule: {
     isReschedule: boolean;
     requestSentBy: 'user' | 'labor';
@@ -155,11 +160,41 @@ const NotificationModal = ({
     canceledBooking?.cancellation?.isUserRead
   );
 
+
+  const hasRejectionDetails = (reschedule) => {
+    const hasRejection = 
+      reschedule.rejectedBy === "labor" &&
+      reschedule.rejectionNewDate &&
+      reschedule.rejectionNewTime &&
+      reschedule.rejectionReason;
+
+    const hasRequest = 
+      reschedule.requestSentBy === "labor" &&
+      reschedule.newDate &&
+      reschedule.newTime &&
+      reschedule.reasonForReschedule;
+
+    return hasRejection || hasRequest;
+  };
+
+
+   const isRescheduleReset = (reschedule) => {
+    return reschedule.isReschedule === true &&
+      !reschedule.newTime &&
+      !reschedule.newDate &&
+      !reschedule.reasonForReschedule &&
+      !reschedule.requestSentBy &&
+      !reschedule.rejectedBy &&
+      !reschedule.rejectionNewDate &&
+      !reschedule.rejectionNewTime &&
+      !reschedule.rejectionReason;
+  };
+
   return (
     <>
       {theme === "light" ? (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-md">
-          <div className="bg-white rounded-2xl shadow-2xl w-11/12 md:w-2/5 lg:w-1/3 p-8">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-md overflow-y-auto max-h-[calc(100vh-1rem)]">
+          <div className="bg-white rounded-2xl shadow-2xl w-11/12 md:w-2/5 lg:w-1/3 p-8 ">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">
@@ -183,116 +218,183 @@ const NotificationModal = ({
                   Mark all as read
                 </button>
               </div> */}
+      
+
 
             {/* Notifications List */}
             <div className="space-y-4 max-h-80 overflow-y-auto">
-              {bookingDetails?.length > 0 &&
-                bookingDetails[0].reschedule &&
-                bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
-                bookingDetails[0].reschedule.requestSentBy === "user" && // Request sent by the user
-                bookingDetails[0].reschedule.acceptedBy === null && // Not yet accepted
-                bookingDetails[0].reschedule.rejectedBy === null && ( // Not yet rejected
-                  <div
-                    className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
-                    onClick={() =>
-                      handleNavigateToBookings(bookingDetails?.[0]?.bookingId)
-                    }
-                  >
-                    <i className="fas fa-calendar-alt text-yellow-600 text-lg"></i>
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">
-                        Reschedule Request from{" "}
-                        {bookingDetails[0]?.userId?.firstName || "User"}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        The user has requested to reschedule the booking. Please
-                        review the request.
-                      </p>
-                    </div>
-                  </div>
-                )}
 
-              
-              {bookingDetails?.length > 0 &&
-                bookingDetails[0].reschedule &&
-                bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
-                bookingDetails[0].reschedule.rejectedBy === "labor" && // Rejected by labor
-                bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
-                bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
-                bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
-                !isLaborAuthenticated && (
-                  <div
-                    className="p-4 bg-red-100 border-l-4 border-red-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-red-200"
-                    onClick={() =>
-                      handleNavigateToBookings(bookingDetails?.[0]?.bookingId)
-                    }
-                  >
-                    <i className="fas fa-exclamation-triangle text-red-600 text-lg"></i>
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">
-                        Reschedule Request Rejected by{" "}
-                        {bookingDetails[0]?.laborId?.firstName || "Labor"}
-                      </p>
-                      <p className="text-xs text-gray-600">
+
+                 
+             {/* User Cases */}
+      {!isLaborAuthenticated && (
+        <>
+        
+        {bookingDetails?.length > 0 &&
+          bookingDetails[0].additionalChargeRequest?.status === "pending" &&
+          bookingDetails[0].additionalChargeRequest?.amount > 0 &&
+          bookingDetails[0].additionalChargeRequest?.reason && (
+            <div
+              className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex flex-col gap-3 hover:bg-yellow-200"
+              onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+            >
+              <i className="fas fa-clock text-yellow-600 text-lg"></i>
+              <div>
+                <p className="text-sm font-medium text-gray-800">
+                  Pending Additional Charge Request
+                </p>
+                <p className="text-xs text-gray-600">
+                  You have received an additional charge request from the labor. Please check it.
+                </p>
+                {/* Additional Charge Details */}
+                <div className="mt-2 bg-blue-100 border-l-4 border-blue-500 p-2 rounded-lg">
+                  <p className="text-xs font-medium text-gray-800">Additional Charge Details</p>
+                  <p className="text-xs text-gray-600">
+                    <strong>Amount:</strong> ₹{bookingDetails[0].additionalChargeRequest.amount}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    <strong>Reason:</strong> {bookingDetails[0].additionalChargeRequest.reason}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+                
+
+
+          {/* Case 1: User's pending reschedule request */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule?.requestSentBy === "user" &&
+            bookingDetails[0].reschedule?.acceptedBy === null &&
+            bookingDetails[0].reschedule?.rejectedBy === null && (
+              <div
+                className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-clock text-yellow-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    Pending Reschedule Request
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Your reschedule request is pending. Please wait for labor approval.
+                  </p>
+                </div>
+              </div>
+          )}
+
+          {/* Case 2: User's pending rejection request */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule?.requestSentBy === "user" &&
+            bookingDetails[0].reschedule?.rejectedBy === "user" && (
+              <div
+                className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-clock text-yellow-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    Pending Rejection Request
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Your reschedule rejection request is pending. Please wait for labor approval.
+                  </p>
+                </div>
+              </div>
+          )}
+
+          {/* Case 3: Labor's rejection or new request */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule &&
+            hasRejectionDetails(bookingDetails[0].reschedule) && (
+              <div
+                className="p-4 bg-red-100 border-l-4 border-red-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-red-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    {bookingDetails[0].reschedule.rejectedBy === "labor" 
+                      ? `Reschedule Request Rejected by ${bookingDetails[0]?.laborId?.firstName || 'Labor'}`
+                      : "New Reschedule Request from Labor"}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {bookingDetails[0].reschedule.rejectedBy === "labor" ? (
+                      <>
                         The reschedule request was rejected. <br />
                         <strong>New Date:</strong>{" "}
-                        {formatDate(
-                          bookingDetails[0].reschedule.rejectionNewDate
-                        )}{" "}
-                        <br />
+                        {formatDate(bookingDetails[0].reschedule.rejectionNewDate)} <br />
                         <strong>New Time:</strong>{" "}
-                        {formatTime(
-                          bookingDetails[0].reschedule.rejectionNewTime
-                        )}{" "}
-                        <br />
+                        {formatTime(bookingDetails[0].reschedule.rejectionNewTime)} <br />
                         <strong>Reason:</strong>{" "}
                         {bookingDetails[0].reschedule.rejectionReason}
-                      </p>
-                    </div>
-                  </div>
-                  )}
-
-              {bookingDetails?.length > 0 &&
-                bookingDetails[0].reschedule &&
-                bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
-                bookingDetails[0].reschedule.rejectedBy === "user" && // Rejected by labor
-                bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
-                bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
-                bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
-                isLaborAuthenticated && (
-                  <div
-                    className="p-4 bg-red-100 border-l-4 border-red-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-red-200"
-                    onClick={() =>
-                      handleNavigateToBookings(bookingDetails?.[0]?.bookingId)
-                    }
-                  >
-                    <i className="fas fa-exclamation-triangle text-red-600 text-lg"></i>
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">
-                        Reschedule Request Rejected by{" "}
-                        {bookingDetails[0]?.userId?.firstName || "Labor"}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        The reschedule request was rejected. <br />
+                      </>
+                    ) : (
+                      <>
+                        Labor has sent a new reschedule request. <br />
                         <strong>New Date:</strong>{" "}
-                        {formatDate(
-                          bookingDetails[0].reschedule.rejectionNewDate
-                        )}{" "}
-                        <br />
+                        {formatDate(bookingDetails[0].reschedule.newDate)} <br />
                         <strong>New Time:</strong>{" "}
-                        {formatTime(
-                          bookingDetails[0].reschedule.rejectionNewTime
-                        )}{" "}
-                        <br />
+                        {formatTime(bookingDetails[0].reschedule.newTime)} <br />
                         <strong>Reason:</strong>{" "}
-                        {bookingDetails[0].reschedule.rejectionReason}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                        {bookingDetails[0].reschedule.reasonForReschedule}
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+          )}
+        </>
+      )}
               
 
-              
+      {isLaborAuthenticated && (
+        <>
+          {/* Case 1: User's reschedule request pending labor approval */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule?.requestSentBy === "user" &&
+            bookingDetails[0].reschedule?.acceptedBy === null &&
+            bookingDetails[0].reschedule?.rejectedBy === "user" && (
+              <div
+                className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-calendar-alt text-yellow-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    Reschedule Request from {bookingDetails[0]?.userId?.firstName || "User"}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    The user has requested to reschedule the booking. Please review the request.
+                  </p>
+                </div>
+              </div>
+          )}
+
+          {/* Case 2: Labor's sent request pending user approval */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule?.requestSentBy === "labor" &&
+            bookingDetails[0].reschedule?.acceptedBy === null &&
+            bookingDetails[0].reschedule?.rejectedBy === null && (
+              <div
+                className="p-4 bg-blue-100 border-l-4 border-blue-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-blue-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-clock text-blue-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    Pending Reschedule Request
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Your reschedule request is pending user approval.
+                  </p>
+                </div>
+              </div>
+          )}
+        </>
+      )}
+
+
               {/* Booking Cancellation Notification */}
               {(isUserAthenticated &&
                 canceledBooking &&
@@ -396,9 +498,186 @@ const NotificationModal = ({
                 </button>
               </div> */}
 
+
+
+
+              
+             {/* User Cases */}
+      {!isLaborAuthenticated && (
+        <>
+        
+        {bookingDetails?.length > 0 &&
+          bookingDetails[0].additionalChargeRequest?.status === "pending" &&
+          bookingDetails[0].additionalChargeRequest?.amount > 0 &&
+          bookingDetails[0].additionalChargeRequest?.reason && (
+            <div
+              className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex flex-col gap-3 hover:bg-yellow-200"
+              onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+            >
+              <i className="fas fa-clock text-yellow-600 text-lg"></i>
+              <div>
+                <p className="text-sm font-medium text-gray-800">
+                  Pending Additional Charge Request
+                </p>
+                <p className="text-xs text-gray-600">
+                  You have received an additional charge request from the labor. Please check it.
+                </p>
+                {/* Additional Charge Details */}
+                <div className="mt-2 bg-blue-100 border-l-4 border-blue-500 p-2 rounded-lg">
+                  <p className="text-xs font-medium text-gray-800">Additional Charge Details</p>
+                  <p className="text-xs text-gray-600">
+                    <strong>Amount:</strong> ₹{bookingDetails[0].additionalChargeRequest.amount}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    <strong>Reason:</strong> {bookingDetails[0].additionalChargeRequest.reason}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+      
+         
+
+
+
+          {/* Case 1: User's pending reschedule request */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule?.requestSentBy === "user" &&
+            bookingDetails[0].reschedule?.acceptedBy === null &&
+            bookingDetails[0].reschedule?.rejectedBy === null && (
+              <div
+                className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-clock text-yellow-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    Pending Reschedule Request
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Your reschedule request is pending. Please wait for labor approval.
+                  </p>
+                </div>
+              </div>
+          )}
+
+          {/* Case 2: User's pending rejection request */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule?.requestSentBy === "user" &&
+            bookingDetails[0].reschedule?.rejectedBy === "user" && (
+              <div
+                className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-clock text-yellow-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    Pending Rejection Request
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Your reschedule rejection request is pending. Please wait for labor approval.
+                  </p>
+                </div>
+              </div>
+          )}
+
+          {/* Case 3: Labor's rejection or new request */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule &&
+            hasRejectionDetails(bookingDetails[0].reschedule) && (
+              <div
+                className="p-4 bg-red-100 border-l-4 border-red-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-red-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    {bookingDetails[0].reschedule.rejectedBy === "labor" 
+                      ? `Reschedule Request Rejected by ${bookingDetails[0]?.laborId?.firstName || 'Labor'}`
+                      : "New Reschedule Request from Labor"}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {bookingDetails[0].reschedule.rejectedBy === "labor" ? (
+                      <>
+                        The reschedule request was rejected. <br />
+                        <strong>New Date:</strong>{" "}
+                        {formatDate(bookingDetails[0].reschedule.rejectionNewDate)} <br />
+                        <strong>New Time:</strong>{" "}
+                        {formatTime(bookingDetails[0].reschedule.rejectionNewTime)} <br />
+                        <strong>Reason:</strong>{" "}
+                        {bookingDetails[0].reschedule.rejectionReason}
+                      </>
+                    ) : (
+                      <>
+                        Labor has sent a new reschedule request. <br />
+                        <strong>New Date:</strong>{" "}
+                        {formatDate(bookingDetails[0].reschedule.newDate)} <br />
+                        <strong>New Time:</strong>{" "}
+                        {formatTime(bookingDetails[0].reschedule.newTime)} <br />
+                        <strong>Reason:</strong>{" "}
+                        {bookingDetails[0].reschedule.reasonForReschedule}
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+          )}
+        </>
+      )}
+              
+
+      {isLaborAuthenticated && (
+        <>
+          {/* Case 1: User's reschedule request pending labor approval */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule?.requestSentBy === "user" &&
+            bookingDetails[0].reschedule?.acceptedBy === null &&
+            bookingDetails[0].reschedule?.rejectedBy === "user" && (
+              <div
+                className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-calendar-alt text-yellow-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    Reschedule Request from {bookingDetails[0]?.userId?.firstName || "User"}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    The user has requested to reschedule the booking. Please review the request.
+                  </p>
+                </div>
+              </div>
+          )}
+
+          {/* Case 2: Labor's sent request pending user approval */}
+          {bookingDetails?.length > 0 &&
+            bookingDetails[0].reschedule?.requestSentBy === "labor" &&
+            bookingDetails[0].reschedule?.acceptedBy === null &&
+            bookingDetails[0].reschedule?.rejectedBy === null && (
+              <div
+                className="p-4 bg-blue-100 border-l-4 border-blue-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-blue-200"
+                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+              >
+                <i className="fas fa-clock text-blue-600 text-lg"></i>
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    Pending Reschedule Request
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Your reschedule request is pending user approval.
+                  </p>
+                </div>
+              </div>
+          )}
+        </>
+      )}
+
+
+
+
             {/* Notifications List */}
             <div className="space-y-4 max-h-80 overflow-y-auto">
-              {bookingDetails?.length > 0 &&
+              {/* {bookingDetails?.length > 0 &&
                 bookingDetails[0].reschedule &&
                 bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
                 bookingDetails[0].reschedule.requestSentBy === "user" && // Request sent by the user
@@ -422,48 +701,10 @@ const NotificationModal = ({
                       </p>
                     </div>
                   </div>
-                )}
+                )} */}
 
-               {bookingDetails?.length > 0 &&
-                bookingDetails[0].reschedule &&
-                bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
-                bookingDetails[0].reschedule.rejectedBy === "labor" && // Rejected by labor
-                bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
-                bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
-                bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
-                !isLaborAuthenticated && (
-                  <div
-                    className="p-4 bg-red-100 border-l-4 border-red-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-red-200"
-                    onClick={() =>
-                      handleNavigateToBookings(bookingDetails?.[0]?.bookingId)
-                    }
-                  >
-                    <i className="fas fa-exclamation-triangle text-red-600 text-lg"></i>
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">
-                        Reschedule Request Rejected by{" "}
-                        {bookingDetails[0]?.laborId?.firstName || "Labor"}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        The reschedule request was rejected. <br />
-                        <strong>New Date:</strong>{" "}
-                        {formatDate(
-                          bookingDetails[0].reschedule.rejectionNewDate
-                        )}{" "}
-                        <br />
-                        <strong>New Time:</strong>{" "}
-                        {formatTime(
-                          bookingDetails[0].reschedule.rejectionNewTime
-                        )}{" "}
-                        <br />
-                        <strong>Reason:</strong>{" "}
-                        {bookingDetails[0].reschedule.rejectionReason}
-                      </p>
-                    </div>
-                  </div>
-                  )}
-                
-               {bookingDetails?.length > 0 &&
+               
+               {/* {bookingDetails?.length > 0 &&
                 bookingDetails[0].reschedule &&
                 bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
                 bookingDetails[0].reschedule.rejectedBy === "user" && // Rejected by labor
@@ -500,7 +741,7 @@ const NotificationModal = ({
                       </p>
                     </div>
                   </div>
-                )}
+                )} */}
 
               {/* Booking Cancellation Notification */}
               {(isUserAthenticated &&

@@ -877,7 +877,7 @@ const LaborDashBoard = () => {
                           <div className="space-y-1">
                             <p className="font-medium ">Job Description</p>
                             <p className="text-gray-800 bg-gray-50 p-3 rounded-md">
-                              {booking.quote.description}
+                              {booking?.quote?.description}
                             </p>
                           </div>
 
@@ -885,7 +885,7 @@ const LaborDashBoard = () => {
                             <div className="space-y-1">
                               <p className="font-medium ">Estimated Cost</p>
                               <p className="text-lg font-semibold text-green-600">
-                                ${booking.quote.estimatedCost}
+                                ${booking?.quote?.estimatedCost}
                               </p>
                             </div>
 
@@ -893,17 +893,17 @@ const LaborDashBoard = () => {
                               <p className="font-medium ">Scheduled Time</p>
                               <p className="">
                                 {new Date(
-                                  booking.quote.arrivalTime
+                                  booking?.quote?.arrivalTime
                                 ).toLocaleString()}
                               </p>
 
                               {bookingDetails?.length > 0 &&
-                                bookingDetails[0].reschedule &&
-                                bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
-                                bookingDetails[0].reschedule.rejectedBy === "user" && // Rejected by labor
-                                bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
-                                bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
-                                bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
+                                bookingDetails[0]?.reschedule &&
+                                bookingDetails[0]?.reschedule?.isReschedule === false && // Request is still pending
+                                bookingDetails[0]?.reschedule?.rejectedBy === "user" && // Rejected by labor
+                                bookingDetails[0]?.reschedule?.rejectionNewDate && // Has a rejection date
+                                bookingDetails[0]?.reschedule?.rejectionNewTime && // Has a rejection time
+                                bookingDetails[0]?.reschedule?.rejectionReason && // Has a rejection reason
                                 isLaborAuthenticated && (
                                   <button
                                     className={`relative flex items-center justify-center text-white 
@@ -926,14 +926,14 @@ const LaborDashBoard = () => {
                                 )}
 
                               {bookingDetails?.length > 0 &&
-                                bookingDetails[0].reschedule &&
-                                bookingDetails[0].reschedule.isReschedule ===
+                                bookingDetails[0]?.reschedule &&
+                                bookingDetails[0]?.reschedule?.isReschedule ===
                                   false && // Request is still pending
-                                bookingDetails[0].reschedule.requestSentBy ===
+                                bookingDetails[0]?.reschedule?.requestSentBy ===
                                   "user" && // Request sent by the user
-                                bookingDetails[0].reschedule.acceptedBy ===
+                                bookingDetails[0]?.reschedule?.acceptedBy ===
                                   null && // Not yet accepted
-                                bookingDetails[0].reschedule.rejectedBy ===
+                                bookingDetails[0]?.reschedule?.rejectedBy ===
                                   null && ( // Not yet rejected
                                   <button
                                     className={`relative flex items-center justify-center 

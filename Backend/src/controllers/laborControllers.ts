@@ -406,13 +406,14 @@ class laborSideController {
   public submitRejection = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-      const { newTime, newDate, rejectionReason, bookingId , rejectedBy } = req.body
+      const { newTime, newDate, rejectionReason, bookingId , rejectedBy  ,requestSentBy} = req.body
       
       console.log("this is the reonsponse data aa :", {
         newDate, 
         newTime,
         rejectionReason,
-        bookingId
+        bookingId,
+        requestSentBy
       })
 
        const resheduleRequst = await this.laborService.rejectResheduleRequst(
@@ -420,7 +421,8 @@ class laborSideController {
         newDate,
         newTime,
         rejectionReason,
-        rejectedBy
+        rejectedBy,
+        requestSentBy
       )
 
       if (resheduleRequst) {
@@ -441,12 +443,13 @@ class laborSideController {
     try {
 
       const { bookingId } = req.params; 
-
+      const { acceptedBy } = req.body; 
+      
       if (!bookingId) {
             return res.status(400).json({ message: "Booking ID is required" });
         }
 
-      const updatedBooking  = await this.laborService.acceptResheduleRequst(bookingId);
+      const updatedBooking  = await this.laborService.acceptResheduleRequst(bookingId , acceptedBy);
 
       return res.status(200).json({ message: "Accept reshedule successfully",reshedule : updatedBooking });
       
@@ -457,6 +460,81 @@ class laborSideController {
     }
   }
 
+  public additionalCharge = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { bookingId, amount, reason } = req.body;
+
+      if (!bookingId || !amount || !reason) {
+            return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const additionalCharge = await this.laborService.additionalCharge(bookingId, amount, reason)
+      
+       if (additionalCharge) {
+        return res.status(200)
+          .json({
+            message: 'additional charge is has been updatedSucceffly ',
+            additnalChageAdd: additionalCharge
+          })
+      }
+      
+    } catch (error) {
+       console.error("Error in additionalCharge:", error);
+      next(error);
+    }
+  }
+
+  public  = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { bookingId } = req.params; 
+
+       if (!bookingId) {
+            return res.status(400).json({ message: "Booking ID is required" });
+      }
+      
+      const acceptRequstRespnse = await this.laborService.acceptRequst(bookingId)
+
+
+      if (acceptRequstRespnse) {
+        return res.status(200).json({ message: 'additional charge accept ,,,,', acceptRequst: acceptRequstRespnse });
+      } else {
+        return res.status(404).json({ message: 'Booking not found' });
+      }
+      
+      
+    } catch (error) {
+      console.error("Error in additional charge accept:", error);
+      next(error);
+    }
+  }
+  public rejectRequst = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { bookingId } = req.params; 
+
+       if (!bookingId) {
+            return res.status(400).json({ message: "Booking ID is required" });
+      }
+      
+      const rejectRequstRespnse = await this.laborService.rejectRequst(bookingId)
+
+
+      if (rejectRequstRespnse) {
+        return res.status(200).json({ message: 'additional charge reject ,,,,', rejectRequst : rejectRequstRespnse });
+      } else {
+        return res.status(404).json({ message: 'additional charge reject' });
+      }
+      
+
+      
+    } catch (error) {
+      console.error("Error in additional charge reject:", error);
+      next(error);
+    }
+  }
+  
 
 }
 

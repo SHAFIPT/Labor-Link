@@ -14,6 +14,7 @@ import {
   User,
   PenSquare,
   Calendar,
+  ClockIcon,
 } from "lucide-react";
 import '../Auth/LoadingBody.css'
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -31,6 +32,7 @@ import CancelBookingForm from "./CancelBookingForm";
 import CancellationDetails from "./CancellationDetails";
 import ResheduleModal from "./ResheduleModal";
 import RescheduleRequestModal from "../LaborSide/laborSide/resheduleRequstModal";
+import AdditionalChargeModal from "./AdditionalChargeModal";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email);
@@ -44,6 +46,7 @@ const UserProfile = () => {
   const [openChangePassword, setOpenChangePasswod] = useState(false);
   const [userData, setUserData] = useState(null);
   const [resheduleModals, setResheduleModal] = useState(null);
+  const [additionalChageModal, setAdditionalChageModal] = useState(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [cancelDetilsModal , setCancelDetilsModal] = useState(false)
@@ -54,7 +57,7 @@ const UserProfile = () => {
   const [filter, setFilter] = useState(""); 
   const [limit, setLimit] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [resheduleModal, setResheduleModalOpen] = useState(false)
+  const [resheduleModal, setResheduleModalOpen] = useState(null)
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -72,6 +75,11 @@ const UserProfile = () => {
   );
 
   console.log("Thiis is the BoookingDETAilssssssssssssss :", bookingDetails);
+  // console.log("Thiis is the llllllllllllllll :", booking.bookingId);
+
+  // const { bookingId } = bookingDetails
+  
+  // console.log("Thsis ie th bookingId")
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -284,6 +292,8 @@ const UserProfile = () => {
     setOpenCancelationModal(true);
   };
 
+  
+
   useEffect(() => {
     const fetchBooking = async () => {
       try {
@@ -317,17 +327,82 @@ const UserProfile = () => {
   //   navigate('/bookingDetails-and-history')
   // }
 
+  // useEffect(() => {
+  //   const fetchBooking = async () => {
+  //     if (bookingId) {
+  //       const fetchBookingResponse = await fetchBookings(bookingId);
+  //       if (fetchBookingResponse.status === 200) {
+  //         toast.success('Booking fetched successfully');
+  //         dispatch(setBookingDetails(fetchBookingResponse.data.bookings));
+  //       } else {
+  //         toast.error('Error fetching booking details');
+  //       }
+  //     }
+  //   };
+    
+  //   fetchBooking();
+  // }, [bookingId, dispatch]);
+
   const breadcrumbItems = [
     { label: "Home", link: "/" },
     { label: "LaborProfilePage", link: null }, // No link for the current page
   ];
 
+
+   const isRescheduleReset = (reschedule) => {
+    return reschedule.isReschedule === true &&
+      !reschedule.newTime &&
+      !reschedule.newDate &&
+      !reschedule.reasonForReschedule &&
+      !reschedule.requestSentBy &&
+      !reschedule.rejectedBy &&
+      !reschedule.rejectionNewDate &&
+      !reschedule.rejectionNewTime &&
+      !reschedule.rejectionReason;
+  };
+
+  // Helper function to check if reschedule is rejected with new details
+  // const hasRejectionDetails = (reschedule) => {
+  //   return reschedule.rejectedBy === "labor" &&
+  //     reschedule.rejectionNewDate &&
+  //     reschedule.rejectionNewTime &&
+  //     reschedule.rejectionReason;
+  // };
+
+  const hasRejectionDetails = (reschedule) => {
+    const hasRejection = 
+      reschedule.rejectedBy === "labor" &&
+      reschedule.rejectionNewDate &&
+      reschedule.rejectionNewTime &&
+      reschedule.rejectionReason;
+
+    const hasRequest = 
+      reschedule.requestSentBy === "labor" &&
+      reschedule.newDate &&
+      reschedule.newTime &&
+      reschedule.reasonForReschedule;
+
+    return hasRejection || hasRequest;
+  };
+
   return (
     <>
+      {/* Reschedule Modal */}
+      {resheduleModal && (
+        <ResheduleModal
+          onClose={() => setResheduleModalOpen(false)}
+          bookingId={resheduleModal}
+        />
+      )}
       <RescheduleRequestModal
         isOpen={resheduleModals !== null}
         onClose={() => setResheduleModal(null)}
         bookingDetails={resheduleModals ? [resheduleModals] : []}
+      />
+      <AdditionalChargeModal
+        isOpen={additionalChageModal !== null}
+        onClose={() => setAdditionalChageModal(null)}
+        bookingDetails={additionalChageModal ? [additionalChageModal] : []}
       />
       {loading && <div className="loader"></div>}
 
@@ -680,15 +755,42 @@ const UserProfile = () => {
                           </p>
                         </div>
 
-                        {/* Estimated Cost */}
-                        <div>
-                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
-                            Estimated Cost:
-                          </h3>
-                          <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
-                            ₹{booking?.quote?.estimatedCost || "N/A"}
-                          </p>
-                        </div>
+                       {/* Estimated Cost */}
+                      <div className="relative">
+                        <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                          Estimated Cost:
+                        </h3>
+                        <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
+                          ₹{booking?.quote?.estimatedCost || "N/A"}
+                        </p>
+
+                        {/* Highlighted Button for Additional Charge Request */}
+                        {bookingDetails?.length > 0 &&
+                          booking.additionalChargeRequest?.status === "pending" &&
+                          booking.additionalChargeRequest?.amount > 0 &&
+                          booking.additionalChargeRequest?.reason && (
+                            <button
+                                    className={`absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center justify-center 
+                                  font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
+                                  text-xs sm:text-sm md:text-base lg:text-sm
+                                  ${
+                                    booking
+                                      ? "animate-bounce shadow-blue-500"
+                                      : ""
+                                  }
+                                  ${
+                                    theam === "dark"
+                                      ? "bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-gray-200 shadow-blue-700"
+                                      : "bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 text-white shadow-blue-500"
+                                  }`}
+                                    onClick={() => setAdditionalChageModal(booking)}
+                                  >
+                              <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
+                              <span className="hidden sm:inline">Requesting Additional Charge</span>
+                              <span className="sm:hidden">Requesting Charge</span>
+                            </button>
+                          )}
+                      </div>
 
                         {/* Status */}
                         <div>
@@ -760,59 +862,64 @@ const UserProfile = () => {
                             </button>
 
                             <div className="w-full md:w-auto flex flex-col items-center">
-                              {booking.reschedule ? (
-                                <div className="flex flex-col items-center w-full">
-                                  {/* Buttons Container - Ensures consistent width and alignment */}
-                                  <div className="flex items-center space-x-4 w-full justify-center mb-2 min-h-[50px]">
-                                    {/* If Labor Rejected Reschedule Request */}
-                                    {booking.reschedule.rejectedBy === "labor" && (
+                              <div className="flex flex-col items-center w-full">
+                                <div className="flex flex-col items-center w-full space-y-4">
+                                  {/* Case 1: Rejection with details */}
+                                  {hasRejectionDetails(booking.reschedule) && (
+                                    <div className="flex flex-col items-center w-full space-y-2">
                                       <button
                                         className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
                                         onClick={() => setResheduleModal(booking)}
                                       >
-                                        View Details
+                                         {booking.reschedule.rejectedBy === "labor"  ? "View Rejection" : "View Request"}
                                       </button>
-                                    )}
+                                      {(() => {
+                                        if (booking.reschedule.rejectedBy === "labor") {
+                                          return (
+                                            <p className="text-red-500 text-sm">
+                                              Your reschedule request was rejected by{" "}
+                                              {booking.laborId.firstName}{" "}
+                                              {booking.laborId.lastName}
+                                            </p>
+                                          );
+                                        } else if (booking.reschedule.requestSentBy === "labor") {
+                                          return (
+                                            <p className="text-yellow-500 text-sm">
+                                              labor sent a new reschedule request
+                                            </p>
+                                          );
+                                        }
+                                        return null;
+                                      })()}
+                                    </div>
+                                  )}
 
-                                    {/* Fallback or Reschedule Button */}
-                                    {booking.reschedule.requestSentBy !== "user" && (
-                                      <button
-                                        className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
-                                        onClick={() => setResheduleModalOpen(true)}
-                                      >
-                                        Reschedule
-                                      </button>
-                                    )}
-                                  </div>
-
-                                  {/* Message Container - Always full width, centered */}
-                                  <div className="w-full text-center">
-                                    {/* If Reschedule Request is Pending from User */}
-                                    {booking.reschedule.requestSentBy === "user" &&
-                                      booking.reschedule.acceptedBy === null &&
-                                      booking.reschedule.rejectedBy !== "labor" && (
-                                        <p className="text-yellow-500 text-sm mt-1">
-                                          Your reschedule request is pending. Please wait for admin approval.
-                                        </p>
-                                    )}
-
-                                    {/* Labor Rejection Message */}
-                                    {booking.reschedule.rejectedBy === "labor" && (
-                                      <p className="text-red-500 text-sm mt-1">
-                                        Your reschedule request was rejected by {booking.laborId.firstName} {booking.laborId.lastName}
+                                  {/* Case 2: Pending user request */}
+                                  {((booking.reschedule.requestSentBy === "user" &&
+                                    booking.reschedule.acceptedBy === null &&
+                                    booking.reschedule.rejectedBy === null) ||
+                                    (booking.reschedule.requestSentBy === "user" &&
+                                      booking.reschedule.rejectedBy === "user")) && (
+                                    <div className="w-full text-center">
+                                      <p className="text-yellow-500 text-sm">
+                                        {booking.reschedule.rejectedBy === "user"
+                                          ? "Your reschedule rejection request is pending. Please wait for labor approval."
+                                          : "Your reschedule request is pending. Please wait for labor approval."}
                                       </p>
-                                    )}
-                                  </div>
+                                    </div>
+                                  )}
+
+                                  {/* Case 3: Reset state */}
+                                  {isRescheduleReset(booking.reschedule) && (
+                                    <button
+                                      className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
+                                      onClick={() => setResheduleModalOpen(booking.bookingId)}
+                                    >
+                                      Reschedule
+                                    </button>
+                                  )}
                                 </div>
-                              ) : (
-                                // Reschedule Button when no active reschedule
-                                <button
-                                  className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
-                                  onClick={() => setResheduleModalOpen(true)}
-                                >
-                                  Reschedule
-                                </button>
-                              )}
+                              </div>
                             </div>
                           </div>
                         )}
@@ -941,52 +1048,76 @@ const UserProfile = () => {
                           />
                         )}
 
-                        {booking.status !== "canceled" && (
-                          <div className="flex md:justify-between md:space-y-0 space-y-4 md:flex-row flex-col pt-4">
-                            {/* Cancel Booking Button */}
+                         {booking.status !== "canceled" && (
+                          <div className="flex flex-col md:flex-row items-center justify-between w-full pt-4 space-y-4 md:space-y-0">
+                            {/* Cancel Booking Button - Full width on mobile, fixed width on larger screens */}
                             <button
-                              className="bg-[#e74c3c] rounded-full text-white px-3 py-1 md:w-[180px] text-lg hover:bg-red-600 transition-colors"
+                              className="w-full md:w-[180px] bg-[#e74c3c] rounded-full text-white px-6 py-3 text-lg hover:bg-red-600 transition-colors"
                               onClick={handleCancelation}
                             >
                               Cancel Booking
                             </button>
 
-                            {/* Reschedule Modal */}
-                            {resheduleModal && (
-                              <ResheduleModal
-                                onClose={() => setResheduleModalOpen(false)}
-                                bookingId={booking.bookingId}
-                              />
-                            )}
+                            <div className="w-full md:w-auto flex flex-col items-center">
+                              <div className="flex flex-col items-center w-full">
+                                <div className="flex flex-col items-center w-full space-y-4">
+                                  {/* Case 1: Rejection with details */}
+                                  {hasRejectionDetails(booking.reschedule) && (
+                                    <div className="flex flex-col items-center w-full space-y-2">
+                                      <button
+                                        className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
+                                        onClick={() => setResheduleModal(booking)}
+                                      >
+                                         {booking.reschedule.rejectedBy === "labor"  ? "View Rejection" : "View Request"}
+                                      </button>
+                                      {(() => {
+                                        if (booking.reschedule.rejectedBy === "labor") {
+                                          return (
+                                            <p className="text-red-500 text-sm">
+                                              Your reschedule request was rejected by{" "}
+                                              {booking.laborId.firstName}{" "}
+                                              {booking.laborId.lastName}
+                                            </p>
+                                          );
+                                        } else if (booking.reschedule.requestSentBy === "labor") {
+                                          return (
+                                            <p className="text-yellow-500 text-sm">
+                                              labor sent a new reschedule request
+                                            </p>
+                                          );
+                                        }
+                                        return null;
+                                      })()}
+                                    </div>
+                                  )}
 
-                            {/* Reschedule Button */}
+                                  {/* Case 2: Pending user request */}
+                                  {((booking.reschedule.requestSentBy === "user" &&
+                                    booking.reschedule.acceptedBy === null &&
+                                    booking.reschedule.rejectedBy === null) ||
+                                    (booking.reschedule.requestSentBy === "user" &&
+                                      booking.reschedule.rejectedBy === "user")) && (
+                                    <div className="w-full text-center">
+                                      <p className="text-yellow-500 text-sm">
+                                        {booking.reschedule.rejectedBy === "user"
+                                          ? "Your reschedule rejection request is pending. Please wait for labor approval."
+                                          : "Your reschedule request is pending. Please wait for labor approval."}
+                                      </p>
+                                    </div>
+                                  )}
 
-                            {/* Warning Message Below Reschedule Button */}
-                            {bookingDetails?.[0]?.reschedule?.requestSentBy ===
-                              "user" &&
-                            bookingDetails?.[0]?.reschedule?.acceptedBy ===
-                              null ? (
-                              <div className="flex items-center space-x-2 mt-2">
-                                {/* Warning Icon */}
-                                <i className="fas fa-exclamation-triangle text-orange-500"></i>
-                                {/* Warning Message */}
-                                <p className="text-orange-500 text-sm">
-                                  Your reschedule request is pending. Please
-                                  wait for labor approval.
-                                </p>
+                                  {/* Case 3: Reset state */}
+                                  {isRescheduleReset(booking.reschedule) && (
+                                    <button
+                                      className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
+                                      onClick={() => setResheduleModalOpen(booking.bookingId)}
+                                    >
+                                      Reschedule
+                                    </button>
+                                  )}
+                                </div>
                               </div>
-                            ) : (
-                              <button
-                                className="bg-[#f39c12] text-white px-6 py-3 md:w-[180px] rounded-full text-lg hover:bg-[#e67e22] transition-colors"
-                                onClick={() => setResheduleModalOpen(true)}
-                                disabled={
-                                  bookingDetails?.[0]?.reschedule
-                                    ?.acceptedBy !== null
-                                } // Disable if request is pending
-                              >
-                                Reschedule
-                              </button>
-                            )}
+                            </div>
                           </div>
                         )}
                       </div>

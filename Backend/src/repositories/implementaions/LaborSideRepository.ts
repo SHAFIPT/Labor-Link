@@ -185,7 +185,7 @@ export class LaborSideRepository implements ILaborSidRepository {
       // Find labors within a 5km radius of the user's location
       const labors = await Labor.find({
         _id: { $ne: laborId },
-        isApproved : true ,
+        isApproved: true,
         location: {
           $nearSphere: {
             $geometry: {
@@ -199,68 +199,170 @@ export class LaborSideRepository implements ILaborSidRepository {
       }).exec();
 
       return labors;
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   }
   async fetchBookingDetils(bookingId: string): Promise<IBooking | null> {
     try {
-
       const booking = await Booking.findOne({ bookingId: bookingId });
 
       if (!booking) {
         throw new Error("Booking not found");
       }
 
-      return booking
-      
+      return booking;
     } catch (error) {
       console.error("Error in fetchting bookings", error);
       throw error;
     }
   }
-  async rejectResheduleRequst(bookingId: string, newDate: string, newTime: string, rejectionReason: string, rejectedBy: string): Promise<IBooking | null> {
+  async rejectResheduleRequst(
+    bookingId: string,
+    newDate: string,
+    newTime: string,
+    rejectionReason: string,
+    rejectedBy: string,
+    requestSentBy : string
+  ): Promise<IBooking | null> {
     try {
-      
-      const updatedBooking = await Booking.findOneAndUpdate(
-         { bookingId: bookingId },
+       await Booking.findOneAndUpdate(
+        { bookingId: bookingId },
         {
           $set: {
             "reschedule.isReschedule": false,
             "reschedule.rejectedBy": rejectedBy,
+            "reschedule.requestSentBy": requestSentBy,
             "reschedule.rejectionNewDate": newDate,
             "reschedule.rejectionNewTime": newTime,
             "reschedule.rejectionReason": rejectionReason,
-          },       
+          },
         },
         { new: true }
       );
-      return updatedBooking
+
+      const updatedBooking = await Booking.findOne({ bookingId: bookingId })
+      .populate({
+        path: "laborId",
+        select: "firstName lastName phone categories profilePicture location.coordinates",
+      })
+      .populate({
+        path: "userId",
+        select: "firstName lastName phone ProfilePic",
+      });
+
+      return updatedBooking;
     } catch (error) {
       console.error("Error in reject Boooking", error);
       throw error;
     }
   }
-  async acceptResheduleRequst(bookingId: string): Promise<IBooking | null> {
+  async acceptResheduleRequst(bookingId: string, acceptedBy: string): Promise<any> {
+  try {
+    const currentBooking = await Booking.findOne({ bookingId: bookingId });
+    
+    if (!currentBooking) {
+      throw new Error("Booking not found");
+    }
+
+    if (!currentBooking.reschedule) {
+      throw new Error("No reschedule information found");
+    }
+
+    // First update quote arrival time based on rejection status
+    let arrivalTime: Date;
+
+    if (!currentBooking.reschedule.rejectedBy) {
+      // Handle case where booking hasn't been rejected
+      if (!currentBooking.reschedule.newDate || !currentBooking.reschedule.newTime) {
+        throw new Error("New schedule time and date are required");
+      }
+
+      const newDateTime = new Date(currentBooking.reschedule.newDate);
+      const [hours, minutes] = currentBooking.reschedule.newTime.split(":");
+      newDateTime.setHours(parseInt(hours), parseInt(minutes));
+      arrivalTime = newDateTime;
+    } else {
+      // Handle case where booking was rejected
+      if (!currentBooking.reschedule.rejectionNewDate || !currentBooking.reschedule.rejectionNewTime) {
+        throw new Error("Rejection schedule time and date are required");
+      }
+
+      const rejectionDateTime = new Date(currentBooking.reschedule.rejectionNewDate);
+      const [hours, minutes] = currentBooking.reschedule.rejectionNewTime.split(":");
+      rejectionDateTime.setHours(parseInt(hours), parseInt(minutes));
+      arrivalTime = rejectionDateTime;
+    }
+
+    // Update booking with new arrival time and reset reschedule fields
+     await Booking.findOneAndUpdate(
+      { bookingId: bookingId },
+      {
+        $set: {
+          "quote.arrivalTime": arrivalTime,
+          reschedule: {
+            // Keep these two fields
+            isReschedule: true,
+            acceptedBy: acceptedBy,
+            
+            // Reset all other fields to initial state
+            newTime: null,
+            newDate: null,
+            reasonForReschedule: null,
+            requestSentBy: null,
+            rejectedBy: null,
+            rejectionNewDate: null,
+            rejectionNewTime: null,
+            rejectionReason: null
+          }
+        }
+      },
+      { new: true }
+    );
+
+    const updatedBooking = await Booking.findOne({ bookingId: bookingId })
+      .populate({
+        path: "laborId",
+        select: "firstName lastName phone categories profilePicture location.coordinates",
+      })
+      .populate({
+        path: "userId",
+        select: "firstName lastName phone ProfilePic",
+      });
+
+    return updatedBooking;
+  } catch (error) {
+    console.error("Error in accept booking", error);
+    throw error;
+  }
+  }  
+  async additionalCharge(bookingId: string, amount: number, reason: string): Promise<IBooking | null> {
     try {
-      const updatedBooking = await Booking.findByIdAndUpdate(
-        bookingId,
-        {
-          $set: {
-            "reschedule.isReschedule": true,
-            "reschedule.acceptedBy": "labor", // Assuming labor is accepting
-            "reschedule.rejectedBy": null,
-            "reschedule.rejectionNewDate": null,
-            "reschedule.rejectionNewTime": null,
-            "reschedule.rejectionReason": null,
-          },
-        },
-        { new: true }
-      );
-      return updatedBooking
+
+      const currentBooking = await Booking.findOne({ bookingId: bookingId });
+
+      if (!currentBooking) {
+        throw new Error("Booking not found");   
+      }
+
+      currentBooking.additionalChargeRequest = {
+        amount,
+        reason,
+        status: 'pending',
+      };
+
+      await currentBooking.save();
+
+      return currentBooking
+
+
     } catch (error) {
-      console.error("Error in accept booking", error);
+      console.error("Error in ", error);
       throw error;
     }
+  }
+  async acceptRequst(bookingId: string): Promise<IBooking | null> {
+    
+  }
+  async rejectRequst(bookingId: string): Promise<IBooking | null> {
+    
   }
 }

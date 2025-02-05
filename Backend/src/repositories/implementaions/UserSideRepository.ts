@@ -226,9 +226,16 @@ export default class UserSideRepository implements IUserSideRepository {
         reasonForReschedule: reason,
         requestSentBy,
         isReschedule: false,
-      };
+        rejectedBy: null,
+        acceptedBy: null
+      }
 
       await booking.save();
+
+      booking.populate({
+          path: "laborId", // Field to populate
+          select: "firstName lastName  phone  location.coordinates categories", // Fields to include from the Labor schema
+        });
 
       return booking;
     } catch (error) {
@@ -237,3 +244,5 @@ export default class UserSideRepository implements IUserSideRepository {
     }
   }
 }
+
+
