@@ -485,10 +485,12 @@ class laborSideController {
     }
   }
 
-  public  = async (req: Request, res: Response, next: NextFunction) => {
+  public acceptRequst = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
       const { bookingId } = req.params; 
+
+      console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiii accepttt',bookingId)
 
        if (!bookingId) {
             return res.status(400).json({ message: "Booking ID is required" });

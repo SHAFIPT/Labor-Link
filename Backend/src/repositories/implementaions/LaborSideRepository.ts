@@ -360,9 +360,64 @@ export class LaborSideRepository implements ILaborSidRepository {
     }
   }
   async acceptRequst(bookingId: string): Promise<IBooking | null> {
-    
+    try {
+
+      const currentBooking = await Booking.findOne({ bookingId: bookingId });
+
+      if (!currentBooking) {
+        throw new Error("Booking not found");   
+      }
+
+      const updatedEstimatedCost =
+        currentBooking.quote.estimatedCost + (currentBooking.additionalChargeRequest.amount || 0);
+      
+      await Booking.findOneAndUpdate(
+        { bookingId: bookingId },
+        {
+          $set: {
+                "quote.estimatedCost": updatedEstimatedCost,
+                "additionalChargeRequest.amount": null,
+                "additionalChargeRequest.reason": null,
+                "additionalChargeRequest.status": "approved"
+          },
+        },
+        {new : true}
+      ) 
+
+      return currentBooking
+      
+    } catch (error) {
+      console.error("Error in accept requat", error);
+      throw error;
+    }
   }
   async rejectRequst(bookingId: string): Promise<IBooking | null> {
-    
+    try {
+
+      const currentBooking = await Booking.findOne({ bookingId: bookingId });
+
+      if (!currentBooking) {
+        throw new Error("Booking not found");   
+      }
+
+
+      await Booking.findOneAndUpdate(
+        { bookingId: bookingId },
+        {
+          $set: {
+                "additionalChargeRequest.amount": null,
+                "additionalChargeRequest.reason": null,
+                "additionalChargeRequest.status": "declined"
+          },
+        },
+        {new : true}
+      ) 
+
+      return currentBooking
+      
+    } catch (error) {
+      console.error("Error in rejectRequst", error);
+      throw error;
+    }
   }
 }

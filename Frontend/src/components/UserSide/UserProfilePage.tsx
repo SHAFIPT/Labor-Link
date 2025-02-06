@@ -350,15 +350,15 @@ const UserProfile = () => {
 
 
    const isRescheduleReset = (reschedule) => {
-    return reschedule.isReschedule === true &&
-      !reschedule.newTime &&
-      !reschedule.newDate &&
-      !reschedule.reasonForReschedule &&
-      !reschedule.requestSentBy &&
-      !reschedule.rejectedBy &&
-      !reschedule.rejectionNewDate &&
-      !reschedule.rejectionNewTime &&
-      !reschedule.rejectionReason;
+    return reschedule?.isReschedule === true &&
+      !reschedule?.newTime &&
+      !reschedule?.newDate &&
+      !reschedule?.reasonForReschedule &&
+      !reschedule?.requestSentBy &&
+      !reschedule?.rejectedBy &&
+      !reschedule?.rejectionNewDate &&
+      !reschedule?.rejectionNewTime &&
+      !reschedule?.rejectionReason;
   };
 
   // Helper function to check if reschedule is rejected with new details
@@ -371,16 +371,16 @@ const UserProfile = () => {
 
   const hasRejectionDetails = (reschedule) => {
     const hasRejection = 
-      reschedule.rejectedBy === "labor" &&
-      reschedule.rejectionNewDate &&
-      reschedule.rejectionNewTime &&
-      reschedule.rejectionReason;
+      reschedule?.rejectedBy === "labor" &&
+      reschedule?.rejectionNewDate &&
+      reschedule?.rejectionNewTime &&
+      reschedule?.rejectionReason;
 
     const hasRequest = 
-      reschedule.requestSentBy === "labor" &&
-      reschedule.newDate &&
-      reschedule.newTime &&
-      reschedule.reasonForReschedule;
+      reschedule?.requestSentBy === "labor" &&
+      reschedule?.newDate &&
+      reschedule?.newTime &&
+      reschedule?.reasonForReschedule;
 
     return hasRejection || hasRequest;
   };
@@ -741,7 +741,7 @@ const UserProfile = () => {
                 bookingDetails.map((booking) => (
                   <div className="border-2 border-gray-700 rounded-lg p-6 mb-5 bg-gray-800 shadow-md">
                     <div
-                      key={booking._id}
+                      key={booking?._id}
                       className="border-2 border-gray-600 rounded-lg p-5 mb-5 bg-gray-900"
                     >
                       <div className="space-y-5">
@@ -755,22 +755,23 @@ const UserProfile = () => {
                           </p>
                         </div>
 
-                       {/* Estimated Cost */}
-                      <div className="relative">
-                        <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
-                          Estimated Cost:
-                        </h3>
-                        <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
-                          ₹{booking?.quote?.estimatedCost || "N/A"}
-                        </p>
+                        {/* Estimated Cost */}
+                        <div className="relative">
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                            Estimated Cost:
+                          </h3>
+                          <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
+                            ₹{booking?.quote?.estimatedCost || "N/A"}
+                          </p>
 
-                        {/* Highlighted Button for Additional Charge Request */}
-                        {bookingDetails?.length > 0 &&
-                          booking.additionalChargeRequest?.status === "pending" &&
-                          booking.additionalChargeRequest?.amount > 0 &&
-                          booking.additionalChargeRequest?.reason && (
-                            <button
-                                    className={`absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center justify-center 
+                          {/* Highlighted Button for Additional Charge Request */}
+                          {bookingDetails?.length > 0 &&
+                            booking?.additionalChargeRequest?.status ===
+                              "pending" &&
+                            booking?.additionalChargeRequest?.amount > 0 &&
+                            booking?.additionalChargeRequest?.reason && (
+                              <button
+                                className={`absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center justify-center 
                                   font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
                                   text-xs sm:text-sm md:text-base lg:text-sm
                                   ${
@@ -783,14 +784,18 @@ const UserProfile = () => {
                                       ? "bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-gray-200 shadow-blue-700"
                                       : "bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 text-white shadow-blue-500"
                                   }`}
-                                    onClick={() => setAdditionalChageModal(booking)}
-                                  >
-                              <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
-                              <span className="hidden sm:inline">Requesting Additional Charge</span>
-                              <span className="sm:hidden">Requesting Charge</span>
-                            </button>
-                          )}
-                      </div>
+                                onClick={() => setAdditionalChageModal(booking)}
+                              >
+                                <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
+                                <span className="hidden sm:inline">
+                                  Requesting Additional Charge
+                                </span>
+                                <span className="sm:hidden">
+                                  Requesting Charge
+                                </span>
+                              </button>
+                            )}
+                        </div>
 
                         {/* Status */}
                         <div>
@@ -851,7 +856,7 @@ const UserProfile = () => {
                           />
                         )}
 
-                        {booking.status !== "canceled" && (
+                        {booking?.status !== "canceled" && (
                           <div className="flex flex-col md:flex-row items-center justify-between w-full pt-4 space-y-4 md:space-y-0">
                             {/* Cancel Booking Button - Full width on mobile, fixed width on larger screens */}
                             <button
@@ -865,27 +870,40 @@ const UserProfile = () => {
                               <div className="flex flex-col items-center w-full">
                                 <div className="flex flex-col items-center w-full space-y-4">
                                   {/* Case 1: Rejection with details */}
-                                  {hasRejectionDetails(booking.reschedule) && (
+                                  {hasRejectionDetails(booking?.reschedule) && (
                                     <div className="flex flex-col items-center w-full space-y-2">
                                       <button
                                         className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
-                                        onClick={() => setResheduleModal(booking)}
+                                        onClick={() =>
+                                          setResheduleModal(booking)
+                                        }
                                       >
-                                         {booking.reschedule.rejectedBy === "labor"  ? "View Rejection" : "View Request"}
+                                        {booking?.reschedule?.rejectedBy ===
+                                        "labor"
+                                          ? "View Rejection"
+                                          : "View Request"}
                                       </button>
                                       {(() => {
-                                        if (booking.reschedule.rejectedBy === "labor") {
+                                        if (
+                                          booking?.reschedule?.rejectedBy ===
+                                          "labor"
+                                        ) {
                                           return (
                                             <p className="text-red-500 text-sm">
-                                              Your reschedule request was rejected by{" "}
-                                              {booking.laborId.firstName}{" "}
-                                              {booking.laborId.lastName}
+                                              Your reschedule request was
+                                              rejected by{" "}
+                                              {booking?.laborId?.firstName}{" "}
+                                              {booking?.laborId?.lastName}
                                             </p>
                                           );
-                                        } else if (booking.reschedule.requestSentBy === "labor") {
+                                        } else if (
+                                          booking.reschedule.requestSentBy ===
+                                          "labor"
+                                        ) {
                                           return (
                                             <p className="text-yellow-500 text-sm">
-                                              labor sent a new reschedule request
+                                              labor sent a new reschedule
+                                              request
                                             </p>
                                           );
                                         }
@@ -895,14 +913,18 @@ const UserProfile = () => {
                                   )}
 
                                   {/* Case 2: Pending user request */}
-                                  {((booking.reschedule.requestSentBy === "user" &&
-                                    booking.reschedule.acceptedBy === null &&
-                                    booking.reschedule.rejectedBy === null) ||
-                                    (booking.reschedule.requestSentBy === "user" &&
-                                      booking.reschedule.rejectedBy === "user")) && (
+                                  {((booking?.reschedule?.requestSentBy ===
+                                    "user" &&
+                                    booking?.reschedule?.acceptedBy === null &&
+                                    booking?.reschedule?.rejectedBy === null) ||
+                                    (booking?.reschedule?.requestSentBy ===
+                                      "user" &&
+                                      booking?.reschedule?.rejectedBy ===
+                                        "user")) && (
                                     <div className="w-full text-center">
                                       <p className="text-yellow-500 text-sm">
-                                        {booking.reschedule.rejectedBy === "user"
+                                        {booking?.reschedule?.rejectedBy ===
+                                        "user"
                                           ? "Your reschedule rejection request is pending. Please wait for labor approval."
                                           : "Your reschedule request is pending. Please wait for labor approval."}
                                       </p>
@@ -910,10 +932,14 @@ const UserProfile = () => {
                                   )}
 
                                   {/* Case 3: Reset state */}
-                                  {isRescheduleReset(booking.reschedule) && (
+                                  {isRescheduleReset(booking?.reschedule) && (
                                     <button
                                       className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
-                                      onClick={() => setResheduleModalOpen(booking.bookingId)}
+                                      onClick={() =>
+                                        setResheduleModalOpen(
+                                          booking?.bookingId
+                                        )
+                                      }
                                     >
                                       Reschedule
                                     </button>
@@ -941,12 +967,12 @@ const UserProfile = () => {
                     >
                       <span
                         className={`cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full ${
-                          booking.status === "canceled"
+                          booking?.status === "canceled"
                             ? "bg-red-500 text-white"
                             : "bg-[#32eae0] text-black"
                         }`}
                       >
-                        {booking.status === "canceled"
+                        {booking?.status === "canceled"
                           ? "View Cancel Details"
                           : "Work Completed"}
                       </span>
@@ -965,7 +991,7 @@ const UserProfile = () => {
                 bookingDetails.map((booking) => (
                   <div className="border-2 border-gray-300 rounded-lg p-6 mb-5 bg-white shadow-lg">
                     <div
-                      key={booking._id}
+                      key={booking?._id}
                       className="border-2 border-gray-200 rounded-lg p-5 mb-5 bg-gray-50"
                     >
                       <div className="space-y-5">
@@ -980,14 +1006,44 @@ const UserProfile = () => {
                         </div>
 
                         {/* Estimated Cost */}
-                        <div>
+                        <div className="relative">
                           <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
                             Estimated Cost:
                           </h3>
                           <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
                             ₹{booking?.quote?.estimatedCost || "N/A"}
                           </p>
+                        {/* Highlighted Button for Additional Charge Request */}
+                        {bookingDetails?.length > 0 &&
+                          booking?.additionalChargeRequest?.status ===
+                            "pending" &&
+                          booking?.additionalChargeRequest?.amount > 0 &&
+                          booking?.additionalChargeRequest?.reason && (
+                            <button
+                              className={`absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center justify-center 
+                                  font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
+                                  text-xs sm:text-sm md:text-base lg:text-sm
+                                  ${
+                                    booking
+                                      ? "animate-bounce shadow-blue-500"
+                                      : ""
+                                  }
+                                 ${
+  "bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 text-white"
+}`}
+                              onClick={() => setAdditionalChageModal(booking)}
+                            >
+                              <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
+                              <span className="hidden sm:inline">
+                                Requesting Additional Charge
+                              </span>
+                              <span className="sm:hidden">
+                                Requesting Charge
+                              </span>
+                            </button>
+                          )}
                         </div>
+
 
                         {/* Status */}
                         <div>
@@ -1013,7 +1069,7 @@ const UserProfile = () => {
                           <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
                             {booking?.quote?.arrivalTime
                               ? new Date(
-                                  booking.quote.arrivalTime
+                                  booking?.quote?.arrivalTime
                                 ).toLocaleString()
                               : "N/A"}
                           </p>
@@ -1044,11 +1100,11 @@ const UserProfile = () => {
                         {OpenCancelationModal && (
                           <CancelBookingForm
                             onClose={() => setOpenCancelationModal(false)}
-                            bookingId={booking.bookingId}
+                            bookingId={booking?.bookingId}
                           />
                         )}
 
-                         {booking.status !== "canceled" && (
+                        {booking?.status !== "canceled" && (
                           <div className="flex flex-col md:flex-row items-center justify-between w-full pt-4 space-y-4 md:space-y-0">
                             {/* Cancel Booking Button - Full width on mobile, fixed width on larger screens */}
                             <button
@@ -1062,27 +1118,40 @@ const UserProfile = () => {
                               <div className="flex flex-col items-center w-full">
                                 <div className="flex flex-col items-center w-full space-y-4">
                                   {/* Case 1: Rejection with details */}
-                                  {hasRejectionDetails(booking.reschedule) && (
+                                  {hasRejectionDetails(booking?.reschedule) && (
                                     <div className="flex flex-col items-center w-full space-y-2">
                                       <button
                                         className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
-                                        onClick={() => setResheduleModal(booking)}
+                                        onClick={() =>
+                                          setResheduleModal(booking)
+                                        }
                                       >
-                                         {booking.reschedule.rejectedBy === "labor"  ? "View Rejection" : "View Request"}
+                                        {booking?.reschedule?.rejectedBy ===
+                                        "labor"
+                                          ? "View Rejection"
+                                          : "View Request"}
                                       </button>
                                       {(() => {
-                                        if (booking.reschedule.rejectedBy === "labor") {
+                                        if (
+                                          booking?.reschedule?.rejectedBy ===
+                                          "labor"
+                                        ) {
                                           return (
                                             <p className="text-red-500 text-sm">
-                                              Your reschedule request was rejected by{" "}
-                                              {booking.laborId.firstName}{" "}
-                                              {booking.laborId.lastName}
+                                              Your reschedule request was
+                                              rejected by{" "}
+                                              {booking?.laborId?.firstName}{" "}
+                                              {booking?.laborId?.lastName}
                                             </p>
                                           );
-                                        } else if (booking.reschedule.requestSentBy === "labor") {
+                                        } else if (
+                                          booking?.reschedule?.requestSentBy ===
+                                          "labor"
+                                        ) {
                                           return (
                                             <p className="text-yellow-500 text-sm">
-                                              labor sent a new reschedule request
+                                              labor sent a new reschedule
+                                              request
                                             </p>
                                           );
                                         }
@@ -1092,14 +1161,18 @@ const UserProfile = () => {
                                   )}
 
                                   {/* Case 2: Pending user request */}
-                                  {((booking.reschedule.requestSentBy === "user" &&
-                                    booking.reschedule.acceptedBy === null &&
-                                    booking.reschedule.rejectedBy === null) ||
-                                    (booking.reschedule.requestSentBy === "user" &&
-                                      booking.reschedule.rejectedBy === "user")) && (
+                                  {((booking?.reschedule?.requestSentBy ===
+                                    "user" &&
+                                    booking?.reschedule?.acceptedBy === null &&
+                                    booking?.reschedule?.rejectedBy === null) ||
+                                    (booking?.reschedule?.requestSentBy ===
+                                      "user" &&
+                                      booking?.reschedule?.rejectedBy ===
+                                        "user")) && (
                                     <div className="w-full text-center">
                                       <p className="text-yellow-500 text-sm">
-                                        {booking.reschedule.rejectedBy === "user"
+                                        {booking?.reschedule?.rejectedBy ===
+                                        "user"
                                           ? "Your reschedule rejection request is pending. Please wait for labor approval."
                                           : "Your reschedule request is pending. Please wait for labor approval."}
                                       </p>
@@ -1107,10 +1180,14 @@ const UserProfile = () => {
                                   )}
 
                                   {/* Case 3: Reset state */}
-                                  {isRescheduleReset(booking.reschedule) && (
+                                  {isRescheduleReset(booking?.reschedule) && (
                                     <button
                                       className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
-                                      onClick={() => setResheduleModalOpen(booking.bookingId)}
+                                      onClick={() =>
+                                        setResheduleModalOpen(
+                                          booking?.bookingId
+                                        )
+                                      }
                                     >
                                       Reschedule
                                     </button>
@@ -1144,12 +1221,12 @@ const UserProfile = () => {
                     >
                       <span
                         className={`cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full ${
-                          booking.status === "canceled"
+                          booking?.status === "canceled"
                             ? "bg-red-500 text-white"
                             : "bg-[#1e40af] text-white"
                         }`}
                       >
-                        {booking.status === "canceled"
+                        {booking?.status === "canceled"
                           ? "View Cancel Details"
                           : "Work Completed"}
                       </span>

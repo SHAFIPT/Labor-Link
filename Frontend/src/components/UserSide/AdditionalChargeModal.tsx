@@ -1,8 +1,9 @@
 import React from 'react';
 import { toast } from 'react-toastify';
-import { updateSingleBooking } from '../../redux/slice/bookingSlice';
+import { setBookingDetails, updateSingleBooking } from '../../redux/slice/bookingSlice';
 import { useDispatch } from 'react-redux';
 import { acceptRequst, rejectRequst } from '../../services/LaborServices';
+import { XCircle } from 'lucide-react';
 
 const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails }) => {
     const dispatch = useDispatch()
@@ -14,17 +15,18 @@ const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails }) => {
     
     const bookingId = bookingDetails[0].bookingId
     
+    console.log("VVVVVVVVVVVVVVVVVVVV", bookingId)
 
     const handleAcceptRequest = async () => {
       try {
         const response = await acceptRequst(bookingId);
 
         if (response.status === 200) {
-          const { reshedule } = response.data;
+          const { rejectRequst } = response.data;
 
-          console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:", reshedule);
-          // dispatch(setBookingDetails(resheduleResponse.data.reshedule))
-          dispatch(updateSingleBooking(reshedule));
+          console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:", rejectRequst);
+          dispatch(setBookingDetails(rejectRequst))
+          // dispatch(updateSingleBooking(rejectRequst));
           toast.success("reshedule successfull");
           onClose();
         }
@@ -37,11 +39,11 @@ const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails }) => {
       try {
         const response = await rejectRequst(bookingId);
         if (response.status === 200) {
-          const { reshedule } = response.data;
+          const { rejectRequst } = response.data;
 
-          console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:", reshedule);
-          // dispatch(setBookingDetails(resheduleResponse.data.reshedule))
-          dispatch(updateSingleBooking(reshedule));
+          console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:", rejectRequst);
+          dispatch(setBookingDetails(rejectRequst))
+          // dispatch(updateSingleBooking(rejectRequst));
           toast.success("reshedule successfull");
           onClose();
         }
@@ -57,16 +59,24 @@ const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails }) => {
         <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
           Additional Charge Confirmation
         </h2>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <XCircle className="w-6 h-6" />
+        </button>
 
         <div className="space-y-4">
           <div>
             <p className="text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">Additional Charge:</span> {additionalCharge.amount}
+              <span className="font-semibold">Additional Charge:</span>{" "}
+              {additionalCharge.amount}
             </p>
           </div>
           <div>
             <p className="text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">Reason for the Charge:</span> {additionalCharge.reason}
+              <span className="font-semibold">Reason for the Charge:</span>{" "}
+              {additionalCharge.reason}
             </p>
           </div>
         </div>
@@ -79,7 +89,7 @@ const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails }) => {
             Accept It
           </button>
           <button
-             onClick={handleRejectRequest}
+            onClick={handleRejectRequest}
             className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300"
           >
             Reject It

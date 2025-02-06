@@ -665,7 +665,7 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
     <div className="w-full md:w-auto flex flex-col items-center md:items-start">
       {bookingDetails?.additionalChargeRequest?.status === "pending" && 
       bookingDetails?.additionalChargeRequest?.amount > 0 && 
-      bookingDetails?.additionalChargeRequest?.reason ? (
+      !bookingDetails?.additionalChargeRequest?.reason ? (
         <div className="text-center md:text-left w-full">
           <p className='text-yellow-500 text-sm'>
             <strong>Note:</strong> Your request has been sent to {bookingDetails?.userId?.firstName} and additional charges will only apply if they accept it. 

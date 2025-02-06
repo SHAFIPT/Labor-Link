@@ -12,6 +12,7 @@ interface InitialState {
   formData: Partial<ILaborer>;
   unsavedChanges: false,
   navigateBack: false,
+  isMobileChatListOpen: boolean,
 }
 
 const initialState: InitialState = {
@@ -24,7 +25,7 @@ const initialState: InitialState = {
   formData: {},
   unsavedChanges: false,
   navigateBack: false,
-  
+  isMobileChatListOpen: false,
 };
 
 // Create the slice
@@ -59,6 +60,9 @@ const laborerSlice = createSlice({
     setUnsavedChanges(state, action) {
       state.unsavedChanges = action.payload
     },
+     toggleMobileChatList: (state) => {
+      state.isMobileChatListOpen = !state.isMobileChatListOpen;
+    },
     resetLaborer(state) {
       state.laborer = {} as ILaborer;
       state.loading = false;
@@ -66,6 +70,7 @@ const laborerSlice = createSlice({
       state.accessToken = '';
       state.modal = false;
       state.formData = {};
+      state.isMobileChatListOpen = false
     },
   },
 });
@@ -81,6 +86,7 @@ export const {
   setNavigateBack,
   setIsLaborAuthenticated,
   resetLaborer,
+  toggleMobileChatList
 } = laborerSlice.actions;
 
 export default laborerSlice.reducer;

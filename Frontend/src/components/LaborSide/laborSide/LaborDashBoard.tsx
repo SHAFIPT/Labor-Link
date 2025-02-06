@@ -1,14 +1,14 @@
 import LaborDashBoardNav from "./LaborDashBoardNav"
 
 import React, { useEffect, useState } from 'react';
-import { HomeIcon, MessageSquare, Receipt, Briefcase, User, LogOut, DollarSign } from 'lucide-react';
+import { HomeIcon, MessageSquare, Receipt, Briefcase, User, LogOut, DollarSign, MessageCircle, MenuIcon } from 'lucide-react';
 import { FaCalendarCheck } from "react-icons/fa"; 
 import { Phone, MapPin } from 'lucide-react';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
 import { auth, db } from "../../../utils/firbase";
-import {  collection, getDocs, query, where, getDoc, doc, getCountFromServer, onSnapshot, Timestamp, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { resetLaborer, setIsLaborAuthenticated, setLaborer, setLoading } from "../../../redux/slice/laborSlice";
+import {  collection, getDocs, query, where, getDoc, doc, getCountFromServer, onSnapshot, Timestamp, serverTimestamp, updateDoc, orderBy, limitToLast } from 'firebase/firestore';
+import { resetLaborer, setIsLaborAuthenticated, setLaborer, setLoading, toggleMobileChatList } from "../../../redux/slice/laborSlice";
 import '../../Auth/LoadingBody.css'
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-toastify";
@@ -20,6 +20,7 @@ import { setBookingDetails } from "../../../redux/slice/bookingSlice";
 import { ClockIcon } from "@heroicons/react/24/solid";
 import ResheduleRequstModal from "./resheduleRequstModal";
 import RescheduleRequestModal from "./resheduleRequstModal";
+import ChatComponents from "../../ChatPage/ChatComponets";
 
 interface ChatDocument {
   laborId: string;
@@ -67,16 +68,20 @@ const LaborDashBoard = () => {
   const email = useSelector((state: RootState) => state.labor.laborer.email);
   const loading = useSelector((state: RootState) => state.labor.loading);
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
+  const isMobileChatListOpen = useSelector((state: RootState) => state.labor.isMobileChatListOpen);
   const [currentStage, setCurrentStage] = useState("Dashboard");
   const [resheduleModal, setResheduleModal] = useState(null);
   const [unreadChats, setUnreadChats] = useState({});
   const [chats, setChats] = useState<Chat[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedChatId, setSelectedChatId] = useState(null);
   const [limit, setLimit] = useState(2);
+  const currentPages = location.pathname.split('/').pop();
   const [totalPages, setTotalPages] = useState(1);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  console.log('99999999999999',currentPages)
   console.log("Gthis si the chats :::::", chats);
 
   console.log("thsis eth labo data :A", email);
@@ -158,78 +163,91 @@ const LaborDashBoard = () => {
   }, [currentStage]);
 
   const fetchChats = (userUid) => {
-    if (!userUid) {
-      throw new Error("Missing user credentials");
-    }
+  if (!userUid) {
+    throw new Error("Missing user credentials");
+  }
 
-    const auth = getAuth();
-    const currentLabor = auth.currentUser;
+  const auth = getAuth();
+  const currentLabor = auth.currentUser;
 
-    if (!currentLabor || !currentLabor.uid) {
-      throw new Error("User is not authenticated");
-    }
+  if (!currentLabor || !currentLabor.uid) {
+    throw new Error("User is not authenticated");
+  }
 
-    const laborUid = currentLabor.uid;
+  const laborUid = currentLabor.uid;
 
-    const chatCollection = collection(db, "Chats");
-    const chatQuery = query(chatCollection, where("laborId", "==", laborUid));
+  const chatCollection = collection(db, "Chats");
+  const chatQuery = query(chatCollection, where("laborId", "==", laborUid));
 
-    const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
-      const chatData = await Promise.all(
-        chatSnapshot.docs.map(async (doc) => {
-          const chatData = doc.data() as ChatDocument;
+  const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
+    const chatData = await Promise.all(
+      chatSnapshot.docs.map(async (doc) => {
+        const chatData = doc.data() as ChatDocument;
 
-          let unreadCount = 0;
-          if (chatData.lastMessageSender === "user") {
-            const messagesCollection = collection(
-              db,
-              "Chats",
-              doc.id,
-              "messages"
-            );
-            const unreadQuery = query(
-              messagesCollection,
-              where(
-                "timestamp",
-                ">",
-                chatData.lastReadTimestamp || new Timestamp(0, 0)
-              )
-            );
+        // Get the latest message for sorting
+        const messagesCollection = collection(db, "Chats", doc.id, "messages");
+        const latestMessageQuery = query(
+          messagesCollection,
+          orderBy("timestamp", "desc"),
+          limitToLast(1)
+        );
+        const latestMessageSnapshot = await getDocs(latestMessageQuery);
+        const latestMessage = latestMessageSnapshot.docs[0]?.data();
+        const latestMessageTime = latestMessage?.timestamp || new Timestamp(0, 0);
 
-            const unreadSnapshot = await getCountFromServer(unreadQuery);
-            unreadCount = unreadSnapshot.data().count;
-          }
-
-          return {
-            id: doc.id,
-            ...chatData,
-            unreadCount,
-          };
-        })
-      );
-
-      const userPromises = chatData.map(async (chat) => {
-        try {
-          const userDocRef = doc(db, "Users", chat.userId);
-          const userSnapshot = await getDoc(userDocRef);
-          const userData = userSnapshot.exists() ? userSnapshot.data() : null;
-
-          return {
-            ...chat,
-            userData,
-          };
-        } catch (error) {
-          console.error(`Error fetching user data for chat ${chat.id}:`, error);
-          return { ...chat, userData: null };
+        // Calculate unread count
+        let unreadCount = 0;
+        if (chatData.lastMessageSender === "user") {
+          const unreadQuery = query(
+            messagesCollection,
+            where(
+              "timestamp",
+              ">",
+              chatData.lastReadTimestamp || new Timestamp(0, 0)
+            )
+          );
+          const unreadSnapshot = await getCountFromServer(unreadQuery);
+          unreadCount = unreadSnapshot.data().count;
         }
-      });
 
-      const chatsWithUserData = await Promise.all(userPromises);
-      setChats(chatsWithUserData);
+        return {
+          id: doc.id,
+          ...chatData,
+          latestMessageTime,
+          unreadCount,
+        };
+      })
+    );
+
+    // Fetch user data and sort by latest message
+    const userPromises = chatData.map(async (chat) => {
+      try {
+        const userDocRef = doc(db, "Users", chat.userId);
+        const userSnapshot = await getDoc(userDocRef);
+        const userData = userSnapshot.exists() ? userSnapshot.data() : null;
+
+        return {
+          ...chat,
+          userData,
+        };
+      } catch (error) {
+        console.error(`Error fetching user data for chat ${chat.id}:`, error);
+        return { ...chat, userData: null };
+      }
     });
 
-    return unsubscribe;
-  };
+    const chatsWithUserData = await Promise.all(userPromises);
+    
+    // Sort chats by latest message timestamp
+    const sortedChats = chatsWithUserData.sort((a, b) => {
+      return b.latestMessageTime.seconds - a.latestMessageTime.seconds;
+    });
+
+    setChats(sortedChats);
+  });
+
+  return unsubscribe;
+};
   useEffect(() => {
     const auth = getAuth();
 
@@ -266,7 +284,7 @@ const LaborDashBoard = () => {
   // Modify the navigation handler to mark messages as read
   const handleNavigateChatpage = async (chatId) => {
     await markChatAsRead(chatId);
-    navigate(`/chatingPage/${chatId}`);
+    navigate(`/chatingPage` , {state : chatId});
   };
 
   console.log("this is the chat coutn :;;;;;;;;;;;;", unreadChats);
@@ -302,6 +320,12 @@ const LaborDashBoard = () => {
   const handelViewDetails = (booking) => {
     navigate('/labor/viewBookingDetials' ,{state : {booking}})
   }
+
+    const handleChatSelect = (chatId) => {
+    setSelectedChatId(chatId);
+    markChatAsRead(chatId);
+  };
+
 
  
 
@@ -413,7 +437,7 @@ const LaborDashBoard = () => {
                         <div
                           key={chat.id}
                           onClick={() => {
-                            handleNavigateChatpage(chat.id);
+                            handleChatSelect(chat.id);
                             markChatAsRead(chat.id);
                           }}
                           className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-white cursor-pointer"
@@ -542,11 +566,12 @@ const LaborDashBoard = () => {
                                 ).toLocaleString()}
                               </p>
 
-
                               {bookingDetails?.length > 0 &&
                                 bookingDetails[0].reschedule &&
-                                bookingDetails[0].reschedule.isReschedule === false && // Request is still pending
-                                bookingDetails[0].reschedule.rejectedBy === "user" && // Rejected by labor
+                                bookingDetails[0].reschedule.isReschedule ===
+                                  false && // Request is still pending
+                                bookingDetails[0].reschedule.rejectedBy ===
+                                  "user" && // Rejected by labor
                                 bookingDetails[0].reschedule.rejectionNewDate && // Has a rejection date
                                 bookingDetails[0].reschedule.rejectionNewTime && // Has a rejection time
                                 bookingDetails[0].reschedule.rejectionReason && // Has a rejection reason
@@ -570,7 +595,6 @@ const LaborDashBoard = () => {
                                     </span>
                                   </button>
                                 )}
-
 
                               {/* Reschedule Icon/Button */}
 
@@ -759,76 +783,179 @@ const LaborDashBoard = () => {
             )}
 
             {currentStage === "Chats" ? (
-              <div className="p-4 w-full max-w-5xl mx-auto">
-                <h1 className="text-2xl font-bold mb-6 border-b pb-3">Chats</h1>
+              <div className="p-4   w-full max-w-6xl mx-auto lg:mt-3">
+                <div className="rounded-xl md:h-[740px] h-screen bg-gray-700 text-[#E0E0E0] overflow-hidden">
+                  <div className="flex h-full">
+                    {/* Chat List Sidebar */}
+                    <div
+                      className={`
+                    h-auto
+                    lg:w-[400px]
+                    flex-shrink-0
+                    bg-gray-800
+                    transition-all
+                    duration-300
+                    ${isMobileChatListOpen ? "w-80" : "w-0"}
+                    lg:w-[400px]
+                    overflow-hidden
+                  `}
+                    >
+                      {/* Chat List Header */}
+                      <div className="sticky top-0 z-10 bg-gray-800 border-b border-gray-700">
+                        <div className="p-4 flex items-center justify-between">
+                          <h1 className="text-xl font-bold text-[#E0E0E0]">
+                            Labor Chats
+                          </h1>
+                       
+                            
+                          <button
+                            onClick={() => dispatch(toggleMobileChatList())}
+                            className="lg:hidden p-2 hover:bg-gray-700 rounded-full"
+                          >
+                            <MenuIcon className="w-5 h-5 text-gray-300" />
+                          </button>
+                        </div>
 
-                <div className="bodyPart space-y-2">
-                  {chats.length > 0 ? (
-                    chats
-                      .slice()
-                      .sort(
-                        (a, b) =>
-                          b.lastUpdated.toMillis() - a.lastUpdated.toMillis()
-                      )
-                      .map((chat) => (
-                        <div
-                          key={chat.id}
-                          onClick={() => {
-                            handleNavigateChatpage(chat.id);
-                            markChatAsRead(chat.id);
-                          }}
-                          className="border border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-gray-800 cursor-pointer"
-                        >
-                          {/* First Row: User Image, Name, Time, Status */}
-                          <div className="flex justify-between items-center">
-                            {/* Left Section: User Image + Name */}
-                            <div className="flex items-center space-x-4">
-                              <img
-                                src={
-                                  chat.userData?.profilePicture ||
-                                  "default-profile-picture.jpg"
-                                }
-                                alt="User Profile"
-                                className="w-[50px] h-[50px] rounded-full object-cover"
-                              />
+                        {/* Search Bar */}
+                        <div className="px-4 pb-2">
+                          <input
+                            type="text"
+                            placeholder="Search..."
+                            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded-lg text-[#E0E0E0] focus:ring-2 focus:ring-[#3ab3bc]"
+                          />
+                        </div>
+                      </div>
 
-                              <span className="font-semibold ">
-                                {chat.userData?.name || "Unknown User"}
-                              </span>
-                            </div>
-                            <div className="mt-1  text-sm truncate">
-                              {chat.lastMessage || "No message"}
-                            </div>
-
-                            {/* Right Section: Time + Read Status */}
-                            <div className="flex items-center space-x-3 text-sm ">
-                              <span>
-                                {chat.lastUpdated &&
-                                  format(chat.lastUpdated.toDate(), "h:mm a")}
-                              </span>
-                              {chat.lastMessageSender === "user" &&
-                              chat.unreadCount > 0 ? (
-                                <span className="bg-red-500 text-white px-2 py-1 text-xs font-medium rounded-full">
-                                  {chat.unreadCount}
-                                </span>
-                              ) : (
-                                <span className="text-green-500 font-medium">
-                                  Read
-                                </span>
+                      {/* Chat List */}
+                      <div className="h-[calc(100%-8rem)] overflow-y-auto">
+                    <div className=" divide-y divide-[#3B3B4F]">
+                      {chats.length > 0 ? (
+                        chats
+                          .map((chat) => (
+                            <div
+                              key={chat.id}
+                              onClick={() => {
+                                handleChatSelect(chat.id); // Handle selecting the chat
+                                dispatch(toggleMobileChatList()); // Close chat list when selecting a chat
+                              }}
+                              className={`
+                                flex items-center p-4
+                                hover:bg-gray-600
+                                cursor-pointer
+                                transition-colors
+                                duration-150
+                                ease-in-out
+                                ${selectedChatId === chat.id ? "bg-gray-600" : ""}
+                              `}
+                            >
+                              {/* Notification Badge for Unread Chats */}
+                              {chat.unreadCount > 0 && (
+                                <div className=" right-0 top-1/2 -translate-y-1/2">
+                                  <span className="bg-red-500 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
+                                    {chat.unreadCount}
+                                  </span>
+                                </div>
                               )}
+
+                                {/* Chat item content */}
+                                <div className="relative">
+                                  <img
+                                    src={
+                                      chat.userData?.profilePicture ||
+                                      "default-profile-picture.jpg"
+                                    }
+                                    alt="User"
+                                    className="w-12 h-12 rounded-full object-cover ring-2 ring-[#3B3B4F]"
+                                  />
+                                  <div
+                                    className={`
+                                  absolute bottom-0 right-0 
+                                  w-3 h-3 rounded-full 
+                                  border-2 border-[#2A2A3B]
+                                  ${
+                                    chat.userData?.online
+                                      ? "bg-[#4CAF50]"
+                                      : "bg-[#3B3B4F]"
+                                  }
+                                `}
+                                  />
+                                </div>
+
+                                <div className="ml-4 flex-1 min-w-0">
+                                  <div className="flex justify-between items-center mb-1">
+                                    <h3 className="font-semibold text-[#E0E0E0] truncate">
+                                      {chat.userData?.name || "Unknown User"}
+                                    </h3>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-12 text-[#B0B0C0]">
+                              No chats available
                             </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Chat Area */}
+                    <div className="flex-1 flex flex-col bg-[#2A2A3B] min-w-0">
+                      {selectedChatId ? (
+                        <ChatComponents
+                          chatId={selectedChatId}
+                            onMenuClick={() => dispatch(toggleMobileChatList())
+                            }
+                            currentPage={currentPages}
+                        />
+                      ) : (
+                        <div className="flex-1 flex flex-col bg-[#1E1E2E]">
+                          {/* Header with menu button */}
+                          <div className="p-4 flex items-center">
+                             {!isMobileChatListOpen && (
+                            <button
+                              onClick={() => dispatch(toggleMobileChatList())}
+                              className="lg:hidden p-2 hover:bg-gray-700 rounded-full"
+                            >
+                              <MenuIcon className="w-5 h-5 text-gray-300" />
+                            </button>
+                            )}
                           </div>
 
-                          {/* Second Row: Last Message */}
+                          {/* Centered content with responsive margin */}
+                          <div
+                            className={`
+                            flex-1 
+                            flex 
+                            items-center 
+                            justify-center 
+                            p-8
+                            transition-all
+                            duration-300
+                            ${isMobileChatListOpen ? "ml-80 lg:ml-0" : "ml-0"}
+                          `}
+                          >
+                            <div className="text-center max-w-md mx-auto">
+                              <div className="bg-[#2A2A3B] p-6 rounded-xl shadow-sm border border-[#3B3B4F]">
+                                <div className="bg-[#3B3B4F] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                  <MessageCircle
+                                    size={32}
+                                    className="text-[#B0B0C0]"
+                                  />
+                                </div>
+                                <h3 className="text-xl font-semibold text-[#E0E0E0] mb-2">
+                                  Select a Conversation
+                                </h3>
+                                <p className="text-[#B0B0C0]">
+                                  Choose a chat to start messaging
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      ))
-                  ) : (
-                    <div className="text-center py-12 bg-gray-50 rounded-lg">
-                      <p className="text-gray-500 text-lg">
-                        No chats available
-                      </p>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -899,11 +1026,16 @@ const LaborDashBoard = () => {
 
                               {bookingDetails?.length > 0 &&
                                 bookingDetails[0]?.reschedule &&
-                                bookingDetails[0]?.reschedule?.isReschedule === false && // Request is still pending
-                                bookingDetails[0]?.reschedule?.rejectedBy === "user" && // Rejected by labor
-                                bookingDetails[0]?.reschedule?.rejectionNewDate && // Has a rejection date
-                                bookingDetails[0]?.reschedule?.rejectionNewTime && // Has a rejection time
-                                bookingDetails[0]?.reschedule?.rejectionReason && // Has a rejection reason
+                                bookingDetails[0]?.reschedule?.isReschedule ===
+                                  false && // Request is still pending
+                                bookingDetails[0]?.reschedule?.rejectedBy ===
+                                  "user" && // Rejected by labor
+                                bookingDetails[0]?.reschedule
+                                  ?.rejectionNewDate && // Has a rejection date
+                                bookingDetails[0]?.reschedule
+                                  ?.rejectionNewTime && // Has a rejection time
+                                bookingDetails[0]?.reschedule
+                                  ?.rejectionReason && // Has a rejection reason
                                 isLaborAuthenticated && (
                                   <button
                                     className={`relative flex items-center justify-center text-white 

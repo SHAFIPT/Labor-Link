@@ -1,4 +1,4 @@
-import { authenticateLabor } from "../../middleware/authMiddleware";
+import { authenticateLabor, authenticateUser } from "../../middleware/authMiddleware";
 import laborSideController from "../../controllers/laborControllers";
 import { Router } from "express";
 
@@ -17,7 +17,7 @@ laborRoutes.get('/fetchBooking/:bookingId' , laborSideContorller.fetchBookings.b
 laborRoutes.post('/submitRejection',laborSideContorller.submitRejection.bind(laborSideContorller))
 laborRoutes.put('/acceptBooking/:bookingId',laborSideContorller.acceptBooking.bind(laborSideContorller))
 laborRoutes.post('/additionalCharge',authenticateLabor,laborSideContorller.additionalCharge.bind(laborSideContorller))
-laborRoutes.patch('/acceptRequst',authenticateLabor,laborSideContorller.acceptRequst.bind(laborSideContorller))
-laborRoutes.patch('/rejectRequst',authenticateLabor,laborSideContorller.rejectRequst.bind(laborSideContorller))
+laborRoutes.patch('/acceptRequst/:bookingId',laborSideContorller.acceptRequst.bind(laborSideContorller))
+laborRoutes.patch('/rejectRequst/:bookingId',laborSideContorller.rejectRequst.bind(laborSideContorller))
 
 export default laborRoutes             

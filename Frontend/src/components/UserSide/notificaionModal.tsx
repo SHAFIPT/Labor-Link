@@ -124,11 +124,11 @@ const NotificationModal = ({
 
   const canceledBooking = bookingDetails?.find((booking) =>
     isUserAthenticated
-      ? booking.status === "canceled" &&
-        booking.cancellation?.canceledBy === "labor"
+      ? booking?.status === "canceled" &&
+        booking?.cancellation?.canceledBy === "labor"
       : isLaborAuthenticated
-      ? booking.status === "canceled" &&
-        booking.cancellation?.canceledBy === "user"
+      ? booking?.status === "canceled" &&
+        booking?.cancellation?.canceledBy === "user"
       : false
   );
 
@@ -507,9 +507,9 @@ const NotificationModal = ({
         <>
         
         {bookingDetails?.length > 0 &&
-          bookingDetails[0].additionalChargeRequest?.status === "pending" &&
-          bookingDetails[0].additionalChargeRequest?.amount > 0 &&
-          bookingDetails[0].additionalChargeRequest?.reason && (
+          bookingDetails[0]?.additionalChargeRequest?.status === "pending" &&
+          bookingDetails[0]?.additionalChargeRequest?.amount > 0 &&
+          bookingDetails[0]?.additionalChargeRequest?.reason && (
             <div
               className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex flex-col gap-3 hover:bg-yellow-200"
               onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
@@ -526,10 +526,10 @@ const NotificationModal = ({
                 <div className="mt-2 bg-blue-100 border-l-4 border-blue-500 p-2 rounded-lg">
                   <p className="text-xs font-medium text-gray-800">Additional Charge Details</p>
                   <p className="text-xs text-gray-600">
-                    <strong>Amount:</strong> ₹{bookingDetails[0].additionalChargeRequest.amount}
+                    <strong>Amount:</strong> ₹{bookingDetails[0]?.additionalChargeRequest.amount}
                   </p>
                   <p className="text-xs text-gray-600">
-                    <strong>Reason:</strong> {bookingDetails[0].additionalChargeRequest.reason}
+                    <strong>Reason:</strong> {bookingDetails[0]?.additionalChargeRequest.reason}
                   </p>
                 </div>
               </div>
@@ -542,9 +542,9 @@ const NotificationModal = ({
 
           {/* Case 1: User's pending reschedule request */}
           {bookingDetails?.length > 0 &&
-            bookingDetails[0].reschedule?.requestSentBy === "user" &&
-            bookingDetails[0].reschedule?.acceptedBy === null &&
-            bookingDetails[0].reschedule?.rejectedBy === null && (
+            bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
+            bookingDetails[0]?.reschedule?.acceptedBy === null &&
+            bookingDetails[0]?.reschedule?.rejectedBy === null && (
               <div
                 className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
                 onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
@@ -563,8 +563,8 @@ const NotificationModal = ({
 
           {/* Case 2: User's pending rejection request */}
           {bookingDetails?.length > 0 &&
-            bookingDetails[0].reschedule?.requestSentBy === "user" &&
-            bookingDetails[0].reschedule?.rejectedBy === "user" && (
+            bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
+            bookingDetails[0]?.reschedule?.rejectedBy === "user" && (
               <div
                 className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
                 onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
@@ -583,8 +583,8 @@ const NotificationModal = ({
 
           {/* Case 3: Labor's rejection or new request */}
           {bookingDetails?.length > 0 &&
-            bookingDetails[0].reschedule &&
-            hasRejectionDetails(bookingDetails[0].reschedule) && (
+            bookingDetails[0]?.reschedule &&
+            hasRejectionDetails(bookingDetails[0]?.reschedule) && (
               <div
                 className="p-4 bg-red-100 border-l-4 border-red-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-red-200"
                 onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
