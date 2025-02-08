@@ -764,7 +764,7 @@ const handleChatPage = async (user) => {
     }
 
     // Navigate to chat page
-    navigate(`/chatingPage/${chatId}`, {state : {user}});
+    navigate(`/chatingPage`, { state: { user, chatId } });
     
   } catch (error) {
     console.error("Error in handleChatPage:", error);

@@ -10,11 +10,13 @@ export interface User {
   lastName: string;
 }
 export interface Labor {
+  _id : string
   ProfilePic: string;
   firstName: string;
   lastName: string;
   phone: string
   location: string
+  reviews: IReview[]
 }
 
 export interface AddressDetails {
@@ -27,6 +29,15 @@ export interface Quote {
   estimatedCost: number;
   arrivalTime: string;
 }
+
+export interface IReview {
+  reviewerName: string;
+  reviewText: string;
+  imageUrl: string[]; 
+  rating: number;  // Rating score (e.g., 1 to 5)
+  createdAt: Date;
+}
+
 
 export interface BookingDetails {
   _id: string;
@@ -43,6 +54,8 @@ export interface BookingDetails {
     canceledAt: string;
     cancellationFee: number;
   };
+  isUserCompletionReported?: boolean
+  isLaborCompletionReported?: boolean
   additionalChargeRequest?: {
     amount: number;
     reason?: string;

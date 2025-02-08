@@ -14,6 +14,7 @@ import ChatPage from '../pages/Chat/ChatPage';
 import UserChatView from '../pages/userSide/UserChatView';
 import UserPrivateRoute from '../components/Authentications/UserPrivateRoute';
 import ViewBookingPage from '../pages/userSide/ViewBookingDetils';
+import ReviewRating from '../pages/userSide/ReviewRating';
 
 // Loading components
 const PageLoadingFallback = () => (
@@ -91,8 +92,9 @@ const UserRoute = () => {
             </UserPrivateRoute>
           }
         />
-        <Route path="/chatingPage/:chatId" element={<UserPublicRoute role='user'><ChatPage /></UserPublicRoute>} />
+        <Route path="/chatingPage" element={<UserPublicRoute role='user'><ChatPage /></UserPublicRoute>} />
         <Route path="/userChatPage" element={<UserPrivateRoute role='user'><UserChatView /></UserPrivateRoute>} />
+        <Route path="/reviewRating" element={<UserPrivateRoute role='user'><ReviewRating /></UserPrivateRoute>} />
         ;
       </Routes>
     </Suspense>

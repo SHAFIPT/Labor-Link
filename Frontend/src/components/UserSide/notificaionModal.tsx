@@ -589,7 +589,7 @@ const NotificationModal = ({
                 className="p-4 bg-red-100 border-l-4 border-red-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-red-200"
                 onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
               >
-                <i className="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+                <i className="fas fa-exc  lamation-triangle text-red-600 text-lg"></i>
                 <div>
                   <p className="text-sm font-medium text-gray-800">
                     {bookingDetails[0].reschedule.rejectedBy === "labor" 
@@ -632,7 +632,7 @@ const NotificationModal = ({
           {bookingDetails?.length > 0 &&
             bookingDetails[0].reschedule?.requestSentBy === "user" &&
             bookingDetails[0].reschedule?.acceptedBy === null &&
-            bookingDetails[0].reschedule?.rejectedBy === "user" && (
+            bookingDetails[0].reschedule?.rejectedBy === null && (
               <div
                 className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
                 onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
@@ -801,14 +801,17 @@ const NotificationModal = ({
 
               {/* No Messages */}
               {!(
-                canceledBooking ||
-                unreadChats.length > 0 ||
-                bookingDetails?.[0]?.reschedule?.requestSentBy == "user"
-              ) && (
-                <p className="text-center text-gray-500 text-sm">
-                  No new notifications
-                </p>
-              )}
+                  canceledBooking ||
+                  unreadChats.length > 0 ||
+                  bookingDetails?.[0]?.reschedule?.requestSentBy === "user" ||
+                  hasRejectionDetails(bookingDetails?.[0]?.reschedule) ||
+                  (bookingDetails[0]?.additionalChargeRequest?.amount > 0) // Fixed parentheses
+                ) && (
+                  <p className="text-center text-gray-500 text-sm">
+                    No new notifications
+                  </p>
+                )}
+
             </div>
 
             {/* Close Button */}

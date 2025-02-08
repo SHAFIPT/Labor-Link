@@ -23,7 +23,15 @@ import { setBookingDetails } from '../../redux/slice/bookingSlice';
 import bgImage from '../../assets/toole.avif'        
 import AddressModal from './AddressModal';
 import { toggleMobileChatList } from '../../redux/slice/laborSlice';
-const ChatComponents = ({ chatId , currentPage = null}) => {
+
+interface ChatComponentProps {
+  chatId?: any; // Make chatId optional
+  currentPage?: any;
+}
+
+const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, currentPage = null }) => {
+  
+  console.log('hoooooooooooooo')
   const userLogin = useSelector((state: RootState) => state.user.user);
   const LaborLogin = useSelector((state: RootState) => state.labor.laborer);
   const isMobileChatListOpen = useSelector((state: RootState) => state.labor.isMobileChatListOpen);
@@ -33,7 +41,12 @@ const ChatComponents = ({ chatId , currentPage = null}) => {
 
 
   // const { chatId } = useParams();
-  const { state: user } = useLocation();
+  const location = useLocation();
+  const { user, chatId: chatIdState } = location.state || {}; 
+
+  console.log('Ngttttttttttttttttt',user)
+  
+  const chatId = chatIdProp || chatIdState;
   // const { state: chatId } = useLocation();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = useState(null);
@@ -80,6 +93,8 @@ const ChatComponents = ({ chatId , currentPage = null}) => {
       email: "",
     },
   });
+
+  console.log('This si the chatIdddddddddddddd<',chatId)
   
   console.log("888888888888888",participants)
   const [quoteData, setQuoteData] = useState({
@@ -135,7 +150,7 @@ const ChatComponents = ({ chatId , currentPage = null}) => {
 
   // console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv',fetchedLaborId)
 
-  const laborId = fetchedLaborId || user?.user._id;
+  const laborId = fetchedLaborId || user?.user?._id;
   const userId = userLogin?._id;
 
   // console.log("This is the chatId ::: ", chatId);
@@ -989,7 +1004,7 @@ const ChatComponents = ({ chatId , currentPage = null}) => {
               >
                 <MenuIcon className="w-5 h-5 text-gray-300" />
               </button>
-            )}
+            )}  
 
             <div className="flex items-center flex-1 min-w-0 ml-2">
               <div className="relative">
@@ -1054,7 +1069,10 @@ const ChatComponents = ({ chatId , currentPage = null}) => {
               const senderProfilePic = isLabor
                 ? participants.labor.profilePicture
                 : participants.user.profilePicture;
-
+              
+              const isQuoteMessage = message.type === "quote";
+              
+          
               return (
                 <div
                   key={message.id}
@@ -1067,6 +1085,18 @@ const ChatComponents = ({ chatId , currentPage = null}) => {
                       isCurrentUser ? "items-end" : "items-start"
                     } max-w-[75%]`}
                   >
+
+                     {/* Render QuoteMessage only if it's a quote */}
+                      {isQuoteMessage && (
+                        <QuoteMessage
+                          message={message}
+                          isCurrentUser={isCurrentUser}
+                          formatTimestamp={formatTimestamp}
+                          participants={participants}
+                          onAcceptQuote={handleAcceptQuote}
+                          isLabor={isLabor}
+                        />
+                      )}
                     <div
                       className={`flex items-end gap-2 ${
                         isCurrentUser ? "flex-row-reverse" : "flex-row"

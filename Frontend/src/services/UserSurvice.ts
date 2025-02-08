@@ -105,3 +105,43 @@ export const handleRescheduleWork = async (reshedulDatas) => {
     throw error;
   }
 }
+export const workCompletion = async (updateData, bookingId) => {
+  try {
+    const response = await api.post(`/api/user/users/workCompletion/${bookingId}`, updateData)
+    return response
+    
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}
+export const pymnetSuccess = async (pymnetData) => {
+  try {
+    const response = await api.post('/api/user/users/pymnetSuccess', pymnetData)
+    return response
+    
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}
+export const fetchBookingWithId = async (bookingId) => {
+  try {
+    const response = await api.get(`/api/user/users/fetchBookingWithId/${bookingId}`)
+    return response
+    
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}
+export const reviewSubmit = async (formData , bookingId) => {
+  try {
+    const response = await api.post(`/api/user/users/reviewSubmit/${bookingId}`,formData)
+    return response
+    
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}

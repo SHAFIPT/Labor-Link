@@ -51,10 +51,12 @@ const UserHome = () => {
   const isDarkmode = useSelector((state: RootState) => state.theme.mode)
   
   useEffect(() => {
+    console.log('hlooooooooooooooooooooooooooo')
     console.log('isDarkMode is this', isDarkmode);
   }, [isDarkmode]);
 
   useEffect(() => {
+    console.log('hlooooooooooooooooooooooooooo')
     const preloadImages = [HomeImage, aboutImage, thridbg];
     Promise.all(
       preloadImages.map((image) => {
@@ -225,6 +227,7 @@ const UserHome = () => {
   ];
 
   useEffect(() => {
+    console.log('hlooooooooooooooooooooooooooo')
     const handleResize = () => {
       if (window.innerWidth >= 940) {
         setDisplayCount(4); // Show 4 items for large screens
@@ -248,6 +251,7 @@ const UserHome = () => {
   const duplicatedLabors = [...labors, ...labors ,...labors];
   // Auto-scrolling animation
   useEffect(() => {
+    console.log('hlooooooooooooooooooooooooooo')
     const scrollInterval = setInterval(() => {
       setScrollPosition((prevPosition) => {
         const maxScroll = labors.length * 480; // Approximate width of each card + gap

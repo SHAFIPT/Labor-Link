@@ -72,7 +72,7 @@ const HomeNavBar = () => {
   const bookingDetails = useSelector((state: RootState) => state.booking.bookingDetails)
   // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
-  console.log("This is the bookingDetails..................", bookingDetails)
+  // console.log("This is the bookingDetails..................", bookingDetails)
   
  
 
@@ -84,13 +84,13 @@ const HomeNavBar = () => {
   const [chats, setChats] = useState<Chat[]>([]);
 
 
-  console.log("This is the Chats ...................",chats)
+  // console.log("This is the Chats ...................",chats)
   const hasUnreadMessages = chats.some((chat) => chat.unreadCount > 0);
 
-  useEffect(() => {
+  // useEffect(() => {
     
-    console.log("This is the locaiton fo the userLocation :",locationOfUser)
-  },[locationOfUser])
+  //   console.log("This is the locaiton fo the userLocation :",locationOfUser)
+  // },[locationOfUser])
 
    const handleLaborList = () => {
     // Check if either latitude or longitude is null
@@ -104,12 +104,12 @@ const HomeNavBar = () => {
 };
 
 
-  useEffect(() => {
-    console.log('isLaborAuthenticated :',isLaborAuthenticated)
-    console.log('isUserAthenticated :',isUserAthenticated)
-    console.log('laborer :',laborer)
-    console.log('user :',user)
-  },[isLaborAuthenticated,isUserAthenticated,laborer,user])
+  // useEffect(() => {
+  //   console.log('isLaborAuthenticated :',isLaborAuthenticated)
+  //   console.log('isUserAthenticated :',isUserAthenticated)
+  //   console.log('laborer :',laborer)
+  //   console.log('user :',user)
+  // },[isLaborAuthenticated,isUserAthenticated,laborer,user])
 
   const dispatch = useDispatch();
   const navigate = useNavigate()// Get dispatch function
@@ -133,6 +133,7 @@ const HomeNavBar = () => {
   const shouldShowUserName = isUserAthenticated 
   // const shouldShowLaborName = isLaborAuthenticated 
   useEffect(() => {
+    console.log('hlooooooooooooooooooooooooooo')
     console.log('shouldShowUserName :', shouldShowUserName)
     
   },[shouldShowUserName])
@@ -156,7 +157,8 @@ const HomeNavBar = () => {
   ];
 
 
-    const fetchChats = (userUids) => {
+  const fetchChats = (userUids) => {
+      console.log('hlooooooooooooooooooooooooooo')
     if (!userUids) {
       throw new Error("Missing user credentials");
     }
@@ -231,6 +233,7 @@ const HomeNavBar = () => {
   };
 
   useEffect(() => {
+    console.log('hlooooooooooooooooooooooooooo')
     const auth = getAuth();
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -248,6 +251,7 @@ const HomeNavBar = () => {
   
    
   const handleLogout = useCallback(async () => {
+    console.log('hlooooooooooooooooooooooooooo')
     try {
       const response = await logout();
       
@@ -301,12 +305,30 @@ const HomeNavBar = () => {
   // const handleLaborList = () => {
     
   // }
+
+  const hasRejectionDetails = (reschedule) => {
+    const hasRejection = 
+      reschedule.rejectedBy === "labor" &&
+      reschedule.rejectionNewDate &&
+      reschedule.rejectionNewTime &&
+      reschedule.rejectionReason;
+
+    const hasRequest = 
+      reschedule.requestSentBy === "labor" &&
+      reschedule.newDate &&
+      reschedule.newTime &&
+      reschedule.reasonForReschedule;
+
+    return hasRejection || hasRequest;
+  };
   
 
   return (
     <div>
-      {showLocationModal &&  <LocationPrompt setShowLocationModal={setShowLocationModal} />}
-     
+      {showLocationModal && (
+        <LocationPrompt setShowLocationModal={setShowLocationModal} />
+      )}
+
       {loading && <div className="loader"></div>}
       <div className="w-full flex justify-between ">
         <Link to={"/"}>
@@ -685,7 +707,6 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           >
             Brouse all labors
           </button>
-          
 
           <div className="relative">
             {/* Menu Icon - Now with higher z-index to stay on top */}
@@ -711,53 +732,137 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
             >
               <nav className="flex flex-col items-center justify-center h-full space-y-6">
                 <button
-                  
                   className="text-white text-xl hover:text-gray-300 transition-colors "
                   onClick={handleLaborList}
                 >
                   Browse all Labors
                 </button>
                 <button
-                  onClick={() =>handleViewProfile}
+                  onClick={() => handleViewProfile}
                   className="text-white text-xl hover:text-gray-300 transition-colors"
                 >
                   View Profile page
                 </button>
                 {shouldShowUserName && (
-                <button
-                  className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
-                  onClick={handleLogout}
-                >
-                  <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
-                    <svg className="w-4 h-4" viewBox="0 0 512 512" fill="white">
-                      <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path>
-                    </svg>
-                  </div>
-                  <div className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-                    Logout
-                  </div>
-                </button>
+                  <button
+                    className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
+                    onClick={handleLogout}
+                  >
+                    <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 512 512"
+                        fill="white"
+                      >
+                        <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path>
+                      </svg>
+                    </div>
+                    <div className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                      Logout
+                    </div>
+                  </button>
                 )}
               </nav>
             </div>
+            {/* 
 
+            {shouldShowUserName && (
+              <> */}
 
             {/* Bell Iconnnnnnnnnnnnnn */}
 
-
             {notificaionOn && (
-              <NotificaionModal onClose={() => setNotificaionOn(false)} chats={chats} bookingDetails={bookingDetails} />
+              <NotificaionModal
+                onClose={() => setNotificaionOn(false)}
+                chats={chats}
+                bookingDetails={bookingDetails}
+              />
             )}
-
+          
+            {shouldShowUserName && (
 
             <div className="di" onClick={() => setNotificaionOn(true)}>
-            <div className="relative cursor-pointer">
-              {/* Notification Bell Icon */}
+              <div className="relative cursor-pointer">
+                {/* Notification Bell Icon */}
                 <i className="fas fa-bell text-2xl"></i>
-                
 
-             {(bookingDetails?.length && bookingDetails[0]?.status === "canceled" && 
-                bookingDetails[0].cancellation?.canceledBy === "labor" && !bookingDetails[0].cancellation?.isUserRead) && isUserAthenticated &&  (
+                {bookingDetails?.length > 0 &&
+                  bookingDetails[0]?.additionalChargeRequest?.status ===
+                    "pending" &&
+                  bookingDetails[0]?.additionalChargeRequest?.amount > 0 &&
+                  bookingDetails[0]?.additionalChargeRequest?.reason && (
+                    <div className="absolute -top-2 -right-2">
+                      <div className="relative">
+                        {/* Static Red Dot */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                        {/* Pulsating Glow Effect */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                      </div>
+                    </div>
+                  )}
+
+                {bookingDetails?.length > 0 &&
+                  bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
+                  bookingDetails[0]?.reschedule?.rejectedBy === "user" && (
+                    <div className="absolute -top-2 -right-2">
+                      <div className="relative">
+                        {/* Static Red Dot */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                        {/* Pulsating Glow Effect */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                      </div>
+                    </div>
+                  )}
+
+                {bookingDetails?.length > 0 &&
+                  bookingDetails[0]?.reschedule &&
+                  hasRejectionDetails(bookingDetails[0]?.reschedule) && (
+                    <div className="absolute -top-2 -right-2">
+                      <div className="relative">
+                        {/* Static Red Dot */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                        {/* Pulsating Glow Effect */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                      </div>
+                    </div>
+                  )}
+
+                {bookingDetails?.length > 0 &&
+                  bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
+                  bookingDetails[0]?.reschedule?.acceptedBy === null &&
+                  bookingDetails[0]?.reschedule?.rejectedBy === null && (
+                    <div className="absolute -top-2 -right-2">
+                      <div className="relative">
+                        {/* Static Red Dot */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                        {/* Pulsating Glow Effect */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                      </div>
+                    </div>
+                  )}
+
+                {bookingDetails?.length &&
+                  bookingDetails[0]?.status === "canceled" &&
+                  bookingDetails[0].cancellation?.canceledBy === "labor" &&
+                  !bookingDetails[0].cancellation?.isUserRead &&
+                  isUserAthenticated && (
+                    <div className="absolute -top-2 -right-2">
+                      <div className="relative">
+                        {/* Static Red Dot */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                        {/* Pulsating Glow Effect */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                      </div>
+                    </div>
+                  )}
+
+                {/* Glowing Red Notification Indicator */}
+                {hasUnreadMessages && isUserAthenticated && (
                   <div className="absolute -top-2 -right-2">
                     <div className="relative">
                       {/* Static Red Dot */}
@@ -767,23 +872,13 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                       <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
                     </div>
                   </div>
-              )}
-
-
-              {/* Glowing Red Notification Indicator */}
-              {hasUnreadMessages  && isUserAthenticated &&  (
-                <div className="absolute -top-2 -right-2">
-                  <div className="relative">
-                    {/* Static Red Dot */}
-                    <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
-
-                    {/* Pulsating Glow Effect */}
-                    <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+            )}
+
+            {/* </>
+            )} */}
           </div>
         </div>
         {shouldShowUserName ? (
@@ -794,13 +889,19 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
 
               {/* Dropdown */}
               <div className="absolute top-[90px] right-0 w-[130px] hidden flex-col bg-white shadow-md rounded-md p-2 border border-gray-200 group-hover:flex">
-                <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleViewProfile}>
+                <button
+                  className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left"
+                  onClick={handleViewProfile}
+                >
                   View Profile
                 </button>
                 {/* <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleViewChats}>
                   My Chats
                 </button> */}
-                <button className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left" onClick={handleLogout}>
+                <button
+                  className="text-gray-700 hover:text-blue-500 text-sm px-4 py-2 text-left"
+                  onClick={handleLogout}
+                >
                   Logout
                 </button>
               </div>

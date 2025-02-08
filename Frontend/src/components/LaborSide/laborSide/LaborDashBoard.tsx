@@ -66,9 +66,15 @@ const LaborDashBoard = () => {
   //  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const theme = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.labor.laborer.email);
+  const laborer = useSelector((state: RootState) => state.labor.laborer);
   const loading = useSelector((state: RootState) => state.labor.loading);
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
   const isMobileChatListOpen = useSelector((state: RootState) => state.labor.isMobileChatListOpen);
+
+
+  console.log('this is the laborer ,,',laborer)
+  console.log('this is the authenitcted ,,',isLaborAuthenticated)
+
   const [currentStage, setCurrentStage] = useState("Dashboard");
   const [resheduleModal, setResheduleModal] = useState(null);
   const [unreadChats, setUnreadChats] = useState({});
@@ -292,6 +298,7 @@ const LaborDashBoard = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
+        // dispatch(resetLaborer())
         const responseInBacked = await fetchLaborBookings(currentPage, limit);
 
         if (responseInBacked.status == 200) {
@@ -326,6 +333,21 @@ const LaborDashBoard = () => {
     markChatAsRead(chatId);
   };
 
+
+  // useEffect(() => {
+  //   dispatch(resetLaborer())
+  //     dispatch(setUser({}));
+  //         dispatch(resetUser());
+  //         dispatch(setisUserAthenticated(false));
+  //         dispatch(setAccessToken(""));
+
+  //         // Reset Labor State
+  //         dispatch(setLaborer({}));
+  //         dispatch(resetLaborer());
+  //         dispatch(setIsLaborAuthenticated(false));
+
+  //         navigate("/"); 
+  // },[])
 
  
 

@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import BgImage from "../../assets/userProfielBg.png";
 import { RootState } from "../../redux/store/store";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { loadStripe } from "@stripe/stripe-js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../../utils/firbase'; // Adjust path as needed
@@ -20,7 +21,7 @@ import '../Auth/LoadingBody.css'
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import char from "../../assets/happy-female-electrician.avif";
 import { useEffect, useState } from "react";
-import { editPassword, fetchBookings, updateUser, userFetch } from "../../services/UserSurvice";
+import { editPassword, fetchBookings, pymnetSuccess, updateUser, userFetch } from "../../services/UserSurvice";
 import { editProfileValidate, validatePassword } from "../../utils/userRegisterValidators";
 import { resetUser, setError, setisUserAthenticated, setFormData, setLoading, setUser, setAccessToken } from "../../redux/slice/userSlice";
 import { getDocs, query, collection, where} from "firebase/firestore";
@@ -33,6 +34,7 @@ import CancellationDetails from "./CancellationDetails";
 import ResheduleModal from "./ResheduleModal";
 import RescheduleRequestModal from "../LaborSide/laborSide/resheduleRequstModal";
 import AdditionalChargeModal from "./AdditionalChargeModal";
+import WorkCompleteModal from "./workCompleteModal";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email);
@@ -44,6 +46,7 @@ const UserProfile = () => {
   const [openEditProfile, setOpenEditProfile] = useState(false);
   const [OpenCancelationModal, setOpenCancelationModal] = useState(false);
   const [openChangePassword, setOpenChangePasswod] = useState(false);
+  const [workCompleteModal ,setWorkCompleteModal] = useState(null)
   const [userData, setUserData] = useState(null);
   const [resheduleModals, setResheduleModal] = useState(null);
   const [additionalChageModal, setAdditionalChageModal] = useState(null);
@@ -52,6 +55,7 @@ const UserProfile = () => {
   const [cancelDetilsModal , setCancelDetilsModal] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("");
   const location = useLocation();
+  const [updatedBookingDetails , setUpdatedBookingDetails] = useState("")
   const currentPages = location.pathname.split("/").pop();
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState(""); 
@@ -75,13 +79,33 @@ const UserProfile = () => {
   );
 
   console.log("Thiis is the BoookingDETAilssssssssssssss :", bookingDetails);
+
+
+  console.log('this is the neeeeeeeeewwwwwww bbbbbbboke3ee ,',updatedBookingDetails)
   // console.log("Thiis is the llllllllllllllll :", booking.bookingId);
 
   // const { bookingId } = bookingDetails
   
   // console.log("Thsis ie th bookingId")
 
+
+  //  useEffect(() => {
+  //             const fetchBooking = async () => {
+  //                 const response = await fetchBookingWithId(bookingId)
+  //                 if (response.status === 200) {
+  //                     const { fetchedBooking } = response.data
+  //                     console.log('helooooooooooooooooooooooo',fetchedBooking)
+  //                     setBookingDetils(fetchedBooking)
+  //                     // toast.success('Booking fetched succesffull')
+  //                 } else {
+  //                     // toast.error('Eroor in fetched booking')
+  //                 }
+  //             }
+  //             fetchBooking()
+  //         }, [])
+
   useEffect(() => {
+    console.log('hlooooooooooooooooooooooooooo')
     const fetchUser = async () => {
       try {
         const data = await userFetch();
@@ -295,6 +319,7 @@ const UserProfile = () => {
   
 
   useEffect(() => {
+    console.log('hlooooooooooooooooooooooooooo')
     const fetchBooking = async () => {
       try {
         const response = await fetchBookings(currentPage, limit , filter); // Assuming fetchBookings is an API call
@@ -304,6 +329,7 @@ const UserProfile = () => {
 
           console.log("Thsi si eth BookingDATAAAAAAAAAAAAA:", bookings);
           dispatch(setBookingDetails(bookings));
+          setUpdatedBookingDetails(bookings);
           setTotalPages(totalPages);
         } else {
           console.error("Failed to fetch bookings:", response);
@@ -314,7 +340,7 @@ const UserProfile = () => {
     };
 
     fetchBooking(); // Call the function inside useEffect
-  }, [currentPage, limit, dispatch , filter]);
+  }, [currentPage, limit, dispatch , filter ]);
 
   const handleFilterChange = (value) => {
     setFilter(value);
@@ -350,7 +376,7 @@ const UserProfile = () => {
 
 
    const isRescheduleReset = (reschedule) => {
-    return reschedule?.isReschedule === true &&
+    return (reschedule?.isReschedule === false || reschedule?.isReschedule === true) &&
       !reschedule?.newTime &&
       !reschedule?.newDate &&
       !reschedule?.reasonForReschedule &&
@@ -359,7 +385,8 @@ const UserProfile = () => {
       !reschedule?.rejectionNewDate &&
       !reschedule?.rejectionNewTime &&
       !reschedule?.rejectionReason;
-  };
+};
+
 
   // Helper function to check if reschedule is rejected with new details
   // const hasRejectionDetails = (reschedule) => {
@@ -385,6 +412,50 @@ const UserProfile = () => {
     return hasRejection || hasRequest;
   };
 
+
+
+  const handleProceedToPay = async (bookingId , laborId ,userId) => {
+    try {
+
+      //  const stripePromise = loadStripe("pk_test_51QptmEJLpjNdl80OuFdHAnnBNJazlv9gHMbHgUaRgXFy2cjgIkMUDml6y9GDga07mC7cgP3T47wFRCDsXMfKN8Qu008iPGiYpz"); 
+
+      console.log('This sit is the dataa to passs :::', {
+        bookingId,
+        laborId,
+        userId
+      })
+
+      if (!bookingId || !laborId || !userId) {
+        toast.error('Missing Requarid fileds...')
+        return
+      }
+
+      const pymnetData = {
+        bookingId,
+        laborId,
+        userId
+      }
+
+      const pymnetResponse = await pymnetSuccess(pymnetData)
+
+      if (pymnetResponse.status === 200) {
+
+//         console.log(pymnetResponse.data.pymentRespnose
+// .url)
+        console.log("this si the succesfully payment ;;;;", pymnetResponse)
+        window.location.href=pymnetResponse.data.pymentRespnose
+          .url
+
+        
+        toast.success('your paymnet is successfull')
+      }
+      
+    } catch (error) {
+      console.error(error)
+      toast.error('Error in the pyament')
+    }
+  }
+
   return (
     <>
       {/* Reschedule Modal */}
@@ -404,6 +475,14 @@ const UserProfile = () => {
         onClose={() => setAdditionalChageModal(null)}
         bookingDetails={additionalChageModal ? [additionalChageModal] : []}
       />
+
+      {workCompleteModal && (
+        <WorkCompleteModal
+          onClose={() => setWorkCompleteModal(null)}
+          bookingId={workCompleteModal}
+        />
+      )}
+
       {loading && <div className="loader"></div>}
 
       {openChangePassword && (
@@ -469,103 +548,214 @@ const UserProfile = () => {
           </div>
         </div>
       )}
-      {openEditProfile && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl w-96 p-6 relative">
-            {/* Close Icon */}
-            <button
-              onClick={() => setOpenEditProfile(false)}
-              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
-            >
-              ✕
-            </button>
-
-            <h2 className="text-xl font-semibold text-center mb-6">
-              Edit Profile
-            </h2>
-
-            <div className="flex flex-col items-center space-y-6">
-              {/* Profile Image Section */}
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200">
-                  <img
-                    src={
-                      formData.image
-                        ? URL.createObjectURL(formData.image)
-                        : userData?.ProfilePic || ""
-                    }
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <label
-                  htmlFor="imageUpload"
-                  className="absolute bottom-0 right-0 bg-gray-200 rounded-full p-2 cursor-pointer"
-                >
-                  📷
-                  <input
-                    id="imageUpload"
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                  />
-                </label>
-              </div>
-
-              {/* Rest of the modal content remains the same */}
-              <div className="w-full space-y-4">
-                <input
-                  id="firstName"
-                  type="text"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                />
-                {error?.firstName && (
-                  <p className="text-red-500 text-sm mt-1">{error.firstName}</p>
-                )}
-
-                <input
-                  id="lastName"
-                  type="text"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                />
-                {error?.lastName && (
-                  <p className="text-red-500 text-sm mt-1">{error.lastName}</p>
-                )}
-
-                <input
-                  id="email"
-                  value={userData.email}
-                  readOnly
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 cursor-default rounded-md shadow-sm"
-                />
-
-                {/* Password Change Button */}
+      {theam === "light" ? (
+        <>
+          {openEditProfile && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white rounded-lg shadow-xl w-96 p-6 relative">
+                {/* Close Icon */}
                 <button
-                  onClick={() => setOpenChangePasswod(true)}
-                  className="w-full py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50"
+                  onClick={() => setOpenEditProfile(false)}
+                  className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
                 >
-                  Change Password
+                  ✕
                 </button>
-              </div>
 
-              {/* Save Button */}
-              <button
-                onClick={handleSave}
-                className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-              >
-                Save Changes
-              </button>
+                <h2 className="text-xl font-semibold text-center mb-6">
+                  Edit Profile
+                </h2>
+
+                <div className="flex flex-col items-center space-y-6">
+                  {/* Profile Image Section */}
+                  <div className="relative">
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200">
+                      <img
+                        src={
+                          formData.image
+                            ? URL.createObjectURL(formData.image)
+                            : userData?.ProfilePic || ""
+                        }
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <label
+                      htmlFor="imageUpload"
+                      className="absolute bottom-0 right-0 bg-gray-200 rounded-full p-2 cursor-pointer"
+                    >
+                      📷
+                      <input
+                        id="imageUpload"
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Rest of the modal content remains the same */}
+                  <div className="w-full space-y-4">
+                    <input
+                      id="firstName"
+                      type="text"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                    />
+                    {error?.firstName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {error.firstName}
+                      </p>
+                    )}
+
+                    <input
+                      id="lastName"
+                      type="text"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                    />
+                    {error?.lastName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {error.lastName}
+                      </p>
+                    )}
+
+                    <input
+                      id="email"
+                      value={userData.email}
+                      readOnly
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 cursor-default rounded-md shadow-sm"
+                    />
+
+                    {/* Password Change Button */}
+                    <button
+                      onClick={() => setOpenChangePasswod(true)}
+                      className="w-full py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      Change Password
+                    </button>
+                  </div>
+
+                  {/* Save Button */}
+                  <button
+                    onClick={handleSave}
+                    className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
+      ) : (
+        <>
+          {openEditProfile && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-60">
+              <div className="bg-[#1e1e1e] rounded-lg shadow-xl w-96 p-6 relative border border-[#444]">
+                {/* Close Icon */}
+                <button
+                  onClick={() => setOpenEditProfile(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-200"
+                >
+                  ✕
+                </button>
+
+                <h2 className="text-xl font-semibold text-center mb-6 text-gray-200">
+                  Edit Profile
+                </h2>
+
+                <div className="flex flex-col items-center space-y-6">
+                  {/* Profile Image Section */}
+                  <div className="relative">
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-500">
+                      <img
+                        src={
+                          formData.image
+                            ? URL.createObjectURL(formData.image)
+                            : userData?.ProfilePic || ""
+                        }
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <label
+                      htmlFor="imageUpload"
+                      className="absolute bottom-0 right-0 bg-gray-600 text-white rounded-full p-2 cursor-pointer hover:bg-gray-500"
+                    >
+                      📷
+                      <input
+                        id="imageUpload"
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Inputs */}
+                  <div className="w-full space-y-4">
+                    <input
+                      id="firstName"
+                      type="text"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 bg-[#2b2b2b] text-gray-200 border border-[#444] rounded-md shadow-sm focus:ring-2 focus:ring-blue-500"
+                    />
+                    {error?.firstName && (
+                      <p className="text-red-400 text-sm mt-1">
+                        {error.firstName}
+                      </p>
+                    )}
+
+                    <input
+                      id="lastName"
+                      type="text"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 bg-[#2b2b2b] text-gray-200 border border-[#444] rounded-md shadow-sm focus:ring-2 focus:ring-blue-500"
+                    />
+                    {error?.lastName && (
+                      <p className="text-red-400 text-sm mt-1">
+                        {error.lastName}
+                      </p>
+                    )}
+
+                    <input
+                      id="email"
+                      value={userData.email}
+                      readOnly
+                      className="w-full px-3 py-2 bg-[#2b2b2b] text-gray-400 border border-[#444] rounded-md shadow-sm cursor-not-allowed"
+                    />
+
+                    {/* Password Change Button */}
+                    <button
+                      onClick={() => setOpenChangePasswod(true)}
+                      className="w-full py-2 px-4 bg-[#333] text-gray-200 border border-gray-500 rounded-md hover:bg-[#444]"
+                    >
+                      Change Password
+                    </button>
+                  </div>
+
+                  {/* Save Button */}
+                  <button
+                    onClick={handleSave}
+                    className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 shadow-md"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
+ 
       <div className="w-full relative">
         <div className="relative">
           <img
@@ -685,6 +875,7 @@ const UserProfile = () => {
           </div>
         </div>
       </div>
+      
 
       <div className="w-full flex justify-center mt-4 sm:mt-5 md:mt-6 lg:mt-8 lg:mb-3">
         <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[72%] h-[2px] bg-[#ECECEC] mx-auto" />
@@ -733,7 +924,10 @@ const UserProfile = () => {
             <h2 className="text-xl font-semibold text-center mb-4 border rounded-full w-[200px] py-1">
               Current Status
             </h2>
-          </div>
+              </div>
+              
+     
+
 
           {theam == "dark" ? (
             <>
@@ -856,99 +1050,104 @@ const UserProfile = () => {
                           />
                         )}
 
-                        {booking?.status !== "canceled" && (
-                          <div className="flex flex-col md:flex-row items-center justify-between w-full pt-4 space-y-4 md:space-y-0">
-                            {/* Cancel Booking Button - Full width on mobile, fixed width on larger screens */}
-                            <button
-                              className="w-full md:w-[180px] bg-[#e74c3c] rounded-full text-white px-6 py-3 text-lg hover:bg-red-600 transition-colors"
-                              onClick={handleCancelation}
-                            >
-                              Cancel Booking
-                            </button>
+                        {booking?.status !== "canceled" &&
+                          booking?.status !== "completed" && (
+                            <div className="flex flex-col md:flex-row items-center justify-between w-full pt-4 space-y-4 md:space-y-0">
+                              {/* Cancel Booking Button - Full width on mobile, fixed width on larger screens */}
+                              <button
+                                className="w-full md:w-[180px] bg-[#e74c3c] rounded-full text-white px-6 py-3 text-lg hover:bg-red-600 transition-colors"
+                                onClick={handleCancelation}
+                              >
+                                Cancel Booking
+                              </button>
 
-                            <div className="w-full md:w-auto flex flex-col items-center">
-                              <div className="flex flex-col items-center w-full">
-                                <div className="flex flex-col items-center w-full space-y-4">
-                                  {/* Case 1: Rejection with details */}
-                                  {hasRejectionDetails(booking?.reschedule) && (
-                                    <div className="flex flex-col items-center w-full space-y-2">
+                              <div className="w-full md:w-auto flex flex-col items-center">
+                                <div className="flex flex-col items-center w-full">
+                                  <div className="flex flex-col items-center w-full space-y-4">
+                                    {/* Case 1: Rejection with details */}
+                                    {hasRejectionDetails(
+                                      booking?.reschedule
+                                    ) && (
+                                      <div className="flex flex-col items-center w-full space-y-2">
+                                        <button
+                                          className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
+                                          onClick={() =>
+                                            setResheduleModal(booking)
+                                          }
+                                        >
+                                          {booking?.reschedule?.rejectedBy ===
+                                          "labor"
+                                            ? "View Rejection"
+                                            : "View Request"}
+                                        </button>
+                                        {(() => {
+                                          if (
+                                            booking?.reschedule?.rejectedBy ===
+                                            "labor"
+                                          ) {
+                                            return (
+                                              <p className="text-red-500 text-sm">
+                                                Your reschedule request was
+                                                rejected by{" "}
+                                                {booking?.laborId?.firstName}{" "}
+                                                {booking?.laborId?.lastName}
+                                              </p>
+                                            );
+                                          } else if (
+                                            booking.reschedule.requestSentBy ===
+                                            "labor"
+                                          ) {
+                                            return (
+                                              <p className="text-yellow-500 text-sm">
+                                                labor sent a new reschedule
+                                                request
+                                              </p>
+                                            );
+                                          }
+                                          return null;
+                                        })()}
+                                      </div>
+                                    )}
+
+                                    {/* Case 2: Pending user request */}
+                                    {((booking?.reschedule?.requestSentBy ===
+                                      "user" &&
+                                      booking?.reschedule?.acceptedBy ===
+                                        null &&
+                                      booking?.reschedule?.rejectedBy ===
+                                        null) ||
+                                      (booking?.reschedule?.requestSentBy ===
+                                        "user" &&
+                                        booking?.reschedule?.rejectedBy ===
+                                          "user")) && (
+                                      <div className="w-full text-center">
+                                        <p className="text-yellow-500 text-sm">
+                                          {booking?.reschedule?.rejectedBy ===
+                                          "user"
+                                            ? "Your reschedule rejection request is pending. Please wait for labor approval."
+                                            : "Your reschedule request is pending. Please wait for labor approval."}
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    {/* Case 3: Reset state */}
+                                    {isRescheduleReset(booking?.reschedule) && (
                                       <button
                                         className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
                                         onClick={() =>
-                                          setResheduleModal(booking)
+                                          setResheduleModalOpen(
+                                            booking?.bookingId
+                                          )
                                         }
                                       >
-                                        {booking?.reschedule?.rejectedBy ===
-                                        "labor"
-                                          ? "View Rejection"
-                                          : "View Request"}
+                                        Reschedule
                                       </button>
-                                      {(() => {
-                                        if (
-                                          booking?.reschedule?.rejectedBy ===
-                                          "labor"
-                                        ) {
-                                          return (
-                                            <p className="text-red-500 text-sm">
-                                              Your reschedule request was
-                                              rejected by{" "}
-                                              {booking?.laborId?.firstName}{" "}
-                                              {booking?.laborId?.lastName}
-                                            </p>
-                                          );
-                                        } else if (
-                                          booking.reschedule.requestSentBy ===
-                                          "labor"
-                                        ) {
-                                          return (
-                                            <p className="text-yellow-500 text-sm">
-                                              labor sent a new reschedule
-                                              request
-                                            </p>
-                                          );
-                                        }
-                                        return null;
-                                      })()}
-                                    </div>
-                                  )}
-
-                                  {/* Case 2: Pending user request */}
-                                  {((booking?.reschedule?.requestSentBy ===
-                                    "user" &&
-                                    booking?.reschedule?.acceptedBy === null &&
-                                    booking?.reschedule?.rejectedBy === null) ||
-                                    (booking?.reschedule?.requestSentBy ===
-                                      "user" &&
-                                      booking?.reschedule?.rejectedBy ===
-                                        "user")) && (
-                                    <div className="w-full text-center">
-                                      <p className="text-yellow-500 text-sm">
-                                        {booking?.reschedule?.rejectedBy ===
-                                        "user"
-                                          ? "Your reschedule rejection request is pending. Please wait for labor approval."
-                                          : "Your reschedule request is pending. Please wait for labor approval."}
-                                      </p>
-                                    </div>
-                                  )}
-
-                                  {/* Case 3: Reset state */}
-                                  {isRescheduleReset(booking?.reschedule) && (
-                                    <button
-                                      className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
-                                      onClick={() =>
-                                        setResheduleModalOpen(
-                                          booking?.bookingId
-                                        )
-                                      }
-                                    >
-                                      Reschedule
-                                    </button>
-                                  )}
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     </div>
 
@@ -961,21 +1160,65 @@ const UserProfile = () => {
                     )}
 
                     {/* Work Completed Button */}
-                    <div
-                      className="text-center mt-6"
-                      onClick={() => setCancelDetilsModal(true)}
-                    >
-                      <span
-                        className={`cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full ${
-                          booking?.status === "canceled"
-                            ? "bg-red-500 text-white"
-                            : "bg-[#32eae0] text-black"
-                        }`}
-                      >
-                        {booking?.status === "canceled"
-                          ? "View Cancel Details"
-                          : "Work Completed"}
-                      </span>
+                    <div className="text-center mt-6">
+                      {booking?.status === "canceled" ? (
+                        // If the booking is canceled, show the cancel details button
+                        <span
+                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-red-500 text-white"
+                          onClick={() => setCancelDetilsModal(true)}
+                        >
+                          View Cancel Details
+                        </span>
+                      ) : booking?.isUserCompletionReported &&
+                        !booking?.isLaborCompletionReported ? (
+                        // Case 1: User has reported work completion, waiting for labor
+                        <p className="text-red-600 font-medium">
+                          Your work completion request is uploaded. Please wait
+                          for the labor's work completion report.
+                        </p>
+                      ) : !booking?.isUserCompletionReported &&
+                        booking?.isLaborCompletionReported ? (
+                        // Case 2: Labor has reported work completion, waiting for user
+                        <>
+                          <p className="text-gray-600 font-medium mb-2">
+                            The labor has updated their work completion. Now, we
+                            are waiting for your response.
+                          </p>
+                          <span
+                            className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
+                            onClick={() =>
+                              setWorkCompleteModal(booking.bookingId)
+                            }
+                          >
+                            Confirm Work Completion
+                          </span>
+                        </>
+                      ) : booking?.isUserCompletionReported &&
+                        booking?.isLaborCompletionReported ? (
+                        // Case 3: Both user and labor reported completion → Show "Proceed to Pay" button
+                        <span
+                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-green-500 text-white"
+                          onClick={() =>
+                            handleProceedToPay(
+                              booking.bookingId,
+                              booking.laborId?._id,
+                              booking.userId
+                            )
+                          }
+                        >
+                          Proceed to Pay
+                        </span>
+                      ) : (
+                        // Default Case: Show normal "Work Completed" button
+                        <span
+                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
+                          onClick={() =>
+                            setWorkCompleteModal(booking.bookingId)
+                          }
+                        >
+                          Work Completed
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))
@@ -1013,14 +1256,14 @@ const UserProfile = () => {
                           <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
                             ₹{booking?.quote?.estimatedCost || "N/A"}
                           </p>
-                        {/* Highlighted Button for Additional Charge Request */}
-                        {bookingDetails?.length > 0 &&
-                          booking?.additionalChargeRequest?.status ===
-                            "pending" &&
-                          booking?.additionalChargeRequest?.amount > 0 &&
-                          booking?.additionalChargeRequest?.reason && (
-                            <button
-                              className={`absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center justify-center 
+                          {/* Highlighted Button for Additional Charge Request */}
+                          {bookingDetails?.length > 0 &&
+                            booking?.additionalChargeRequest?.status ===
+                              "pending" &&
+                            booking?.additionalChargeRequest?.amount > 0 &&
+                            booking?.additionalChargeRequest?.reason && (
+                              <button
+                                className={`absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center justify-center 
                                   font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
                                   text-xs sm:text-sm md:text-base lg:text-sm
                                   ${
@@ -1028,22 +1271,19 @@ const UserProfile = () => {
                                       ? "animate-bounce shadow-blue-500"
                                       : ""
                                   }
-                                 ${
-  "bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 text-white"
-}`}
-                              onClick={() => setAdditionalChageModal(booking)}
-                            >
-                              <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
-                              <span className="hidden sm:inline">
-                                Requesting Additional Charge
-                              </span>
-                              <span className="sm:hidden">
-                                Requesting Charge
-                              </span>
-                            </button>
-                          )}
+                                 ${"bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 text-white"}`}
+                                onClick={() => setAdditionalChageModal(booking)}
+                              >
+                                <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
+                                <span className="hidden sm:inline">
+                                  Requesting Additional Charge
+                                </span>
+                                <span className="sm:hidden">
+                                  Requesting Charge
+                                </span>
+                              </button>
+                            )}
                         </div>
-
 
                         {/* Status */}
                         <div>
@@ -1104,99 +1344,104 @@ const UserProfile = () => {
                           />
                         )}
 
-                        {booking?.status !== "canceled" && (
-                          <div className="flex flex-col md:flex-row items-center justify-between w-full pt-4 space-y-4 md:space-y-0">
-                            {/* Cancel Booking Button - Full width on mobile, fixed width on larger screens */}
-                            <button
-                              className="w-full md:w-[180px] bg-[#e74c3c] rounded-full text-white px-6 py-3 text-lg hover:bg-red-600 transition-colors"
-                              onClick={handleCancelation}
-                            >
-                              Cancel Booking
-                            </button>
+                        {booking?.status !== "canceled" &&
+                          booking?.status !== "completed" && (
+                            <div className="flex flex-col md:flex-row items-center justify-between w-full pt-4 space-y-4 md:space-y-0">
+                              {/* Cancel Booking Button - Full width on mobile, fixed width on larger screens */}
+                              <button
+                                className="w-full md:w-[180px] bg-[#e74c3c] rounded-full text-white px-6 py-3 text-lg hover:bg-red-600 transition-colors"
+                                onClick={handleCancelation}
+                              >
+                                Cancel Booking
+                              </button>
 
-                            <div className="w-full md:w-auto flex flex-col items-center">
-                              <div className="flex flex-col items-center w-full">
-                                <div className="flex flex-col items-center w-full space-y-4">
-                                  {/* Case 1: Rejection with details */}
-                                  {hasRejectionDetails(booking?.reschedule) && (
-                                    <div className="flex flex-col items-center w-full space-y-2">
+                              <div className="w-full md:w-auto flex flex-col items-center">
+                                <div className="flex flex-col items-center w-full">
+                                  <div className="flex flex-col items-center w-full space-y-4">
+                                    {/* Case 1: Rejection with details */}
+                                    {hasRejectionDetails(
+                                      booking?.reschedule
+                                    ) && (
+                                      <div className="flex flex-col items-center w-full space-y-2">
+                                        <button
+                                          className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
+                                          onClick={() =>
+                                            setResheduleModal(booking)
+                                          }
+                                        >
+                                          {booking?.reschedule?.rejectedBy ===
+                                          "labor"
+                                            ? "View Rejection"
+                                            : "View Request"}
+                                        </button>
+                                        {(() => {
+                                          if (
+                                            booking?.reschedule?.rejectedBy ===
+                                            "labor"
+                                          ) {
+                                            return (
+                                              <p className="text-red-500 text-sm">
+                                                Your reschedule request was
+                                                rejected by{" "}
+                                                {booking?.laborId?.firstName}{" "}
+                                                {booking?.laborId?.lastName}
+                                              </p>
+                                            );
+                                          } else if (
+                                            booking?.reschedule
+                                              ?.requestSentBy === "labor"
+                                          ) {
+                                            return (
+                                              <p className="text-yellow-500 text-sm">
+                                                labor sent a new reschedule
+                                                request
+                                              </p>
+                                            );
+                                          }
+                                          return null;
+                                        })()}
+                                      </div>
+                                    )}
+
+                                    {/* Case 2: Pending user request */}
+                                    {((booking?.reschedule?.requestSentBy ===
+                                      "user" &&
+                                      booking?.reschedule?.acceptedBy ===
+                                        null &&
+                                      booking?.reschedule?.rejectedBy ===
+                                        null) ||
+                                      (booking?.reschedule?.requestSentBy ===
+                                        "user" &&
+                                        booking?.reschedule?.rejectedBy ===
+                                          "user")) && (
+                                      <div className="w-full text-center">
+                                        <p className="text-yellow-500 text-sm">
+                                          {booking?.reschedule?.rejectedBy ===
+                                          "user"
+                                            ? "Your reschedule rejection request is pending. Please wait for labor approval."
+                                            : "Your reschedule request is pending. Please wait for labor approval."}
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    {/* Case 3: Reset state */}
+                                    {isRescheduleReset(booking?.reschedule) && (
                                       <button
                                         className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
                                         onClick={() =>
-                                          setResheduleModal(booking)
+                                          setResheduleModalOpen(
+                                            booking?.bookingId
+                                          )
                                         }
                                       >
-                                        {booking?.reschedule?.rejectedBy ===
-                                        "labor"
-                                          ? "View Rejection"
-                                          : "View Request"}
+                                        Reschedule
                                       </button>
-                                      {(() => {
-                                        if (
-                                          booking?.reschedule?.rejectedBy ===
-                                          "labor"
-                                        ) {
-                                          return (
-                                            <p className="text-red-500 text-sm">
-                                              Your reschedule request was
-                                              rejected by{" "}
-                                              {booking?.laborId?.firstName}{" "}
-                                              {booking?.laborId?.lastName}
-                                            </p>
-                                          );
-                                        } else if (
-                                          booking?.reschedule?.requestSentBy ===
-                                          "labor"
-                                        ) {
-                                          return (
-                                            <p className="text-yellow-500 text-sm">
-                                              labor sent a new reschedule
-                                              request
-                                            </p>
-                                          );
-                                        }
-                                        return null;
-                                      })()}
-                                    </div>
-                                  )}
-
-                                  {/* Case 2: Pending user request */}
-                                  {((booking?.reschedule?.requestSentBy ===
-                                    "user" &&
-                                    booking?.reschedule?.acceptedBy === null &&
-                                    booking?.reschedule?.rejectedBy === null) ||
-                                    (booking?.reschedule?.requestSentBy ===
-                                      "user" &&
-                                      booking?.reschedule?.rejectedBy ===
-                                        "user")) && (
-                                    <div className="w-full text-center">
-                                      <p className="text-yellow-500 text-sm">
-                                        {booking?.reschedule?.rejectedBy ===
-                                        "user"
-                                          ? "Your reschedule rejection request is pending. Please wait for labor approval."
-                                          : "Your reschedule request is pending. Please wait for labor approval."}
-                                      </p>
-                                    </div>
-                                  )}
-
-                                  {/* Case 3: Reset state */}
-                                  {isRescheduleReset(booking?.reschedule) && (
-                                    <button
-                                      className="w-full md:w-[180px] bg-[#f39c12] text-white px-6 py-3 rounded-full text-lg hover:bg-[#e67e22] transition-colors"
-                                      onClick={() =>
-                                        setResheduleModalOpen(
-                                          booking?.bookingId
-                                        )
-                                      }
-                                    >
-                                      Reschedule
-                                    </button>
-                                  )}
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     </div>
 
@@ -1215,21 +1460,65 @@ const UserProfile = () => {
                       />
                     )}
 
-                    <div
-                      className="text-center mt-6"
-                      onClick={() => setCancelDetilsModal(true)}
-                    >
-                      <span
-                        className={`cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full ${
-                          booking?.status === "canceled"
-                            ? "bg-red-500 text-white"
-                            : "bg-[#1e40af] text-white"
-                        }`}
-                      >
-                        {booking?.status === "canceled"
-                          ? "View Cancel Details"
-                          : "Work Completed"}
-                      </span>
+                    <div className="text-center mt-6">
+                      {booking?.status === "canceled" ? (
+                        // If the booking is canceled, show the cancel details button
+                        <span
+                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-red-500 text-white"
+                          onClick={() => setCancelDetilsModal(true)}
+                        >
+                          View Cancel Details
+                        </span>
+                      ) : booking?.isUserCompletionReported &&
+                        !booking?.isLaborCompletionReported ? (
+                        // Case 1: User has reported work completion, waiting for labor
+                        <p className="text-gray-600 font-medium">
+                          Your work completion request is uploaded. Please wait
+                          for the labor's work completion report.
+                        </p>
+                      ) : !booking?.isUserCompletionReported &&
+                        booking?.isLaborCompletionReported ? (
+                        // Case 2: Labor has reported work completion, waiting for user
+                        <>
+                          <p className="text-gray-600 font-medium mb-2">
+                            The labor has updated their work completion. Now, we
+                            are waiting for your response.
+                          </p>
+                          <span
+                            className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
+                            onClick={() =>
+                              setWorkCompleteModal(booking.laborId)
+                            }
+                          >
+                            Confirm Work Completion
+                          </span>
+                        </>
+                      ) : booking?.isUserCompletionReported &&
+                        booking?.isLaborCompletionReported ? (
+                        // Case 3: Both user and labor reported completion → Show "Proceed to Pay" button
+                        <span
+                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-green-500 text-white"
+                          onClick={() =>
+                            handleProceedToPay(
+                              booking.bookingId,
+                              booking.laborId?._id,
+                              booking.userId
+                            )
+                          }
+                        >
+                          Proceed to Pay
+                        </span>
+                      ) : (
+                        // Default Case: Show normal "Work Completed" button
+                        <span
+                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
+                          onClick={() =>
+                            setWorkCompleteModal(booking.bookingId)
+                          }
+                        >
+                          Work Completed
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))

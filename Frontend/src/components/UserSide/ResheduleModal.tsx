@@ -66,7 +66,7 @@ const ResheduleModal = ({ onClose, bookingId }) => {
             
             console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:",reshedule)
               // dispatch(setBookingDetails(resheduleResponse.data.reshedule))
-                dispatch(updateSingleBooking(reshedule));
+                // dispatch(updateSingleBooking(reshedule));
                 toast.success("reshedule successfull")
                 onClose();
             }

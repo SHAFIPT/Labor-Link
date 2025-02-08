@@ -14,6 +14,7 @@ import RescheduleRequestModal from './resheduleRequstModal';
 import '../../Auth/LoadingBody.css'
 import { setLoading } from '../../../redux/slice/laborSlice';
 import AdditionalCharge from './AdditionalCharge';
+import WorkCompleteModal from '../../UserSide/workCompleteModal';
 
 const LaborViewDetailsPage = () => {
   const location = useLocation();
@@ -25,13 +26,15 @@ const LaborViewDetailsPage = () => {
   const loading = useSelector((state: RootState) => state.user.loading);
   const [resheduleModal, setResheduleModalOpen] = useState(null)
   const [resheduleModals, setResheduleModal] = useState(null);
+  const [workCompleteModal ,setWorkCompleteModal] = useState(null)
   const [additionalCharge, setAdditionalCharge] = useState(null);
   const { Userlatitude, Userlongitude } = booking.addressDetails
   const { coordinates: laborCoordinates } = booking.laborId.location;
   const theme = useSelector((state: RootState) => state.theme.mode);
-  
+  const [updatedBookingDetails , setUpdatedBookingDetails] = useState("")
   // console.log("TTTTTTTTT",Userlatitude)
   console.log("rrrrrrrrrrrrrrrrrrrrrrrrrrrrr", bookingdetislss)
+  console.log("55555555555rrrrrkaaaaaaaaabolarrrrrrrrrrrrrd", updatedBookingDetails)
   
   const bookingDetails = Array.isArray(bookingdetislss) 
   ? bookingdetislss.find(b => b.bookingId === booking?.bookingId)
@@ -200,8 +203,9 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
     try {
       const response = await fetchBookings(bookingId);
       if (response.status === 200) {
-        
+         const { bookings  } = response.data;
         dispatch(setBookingDetails(response.data.bookings));
+        setUpdatedBookingDetails(bookings);
       } else {
         toast.error('Error fetching booking details');
       }
@@ -216,20 +220,24 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
   // Initial data fetch
   useEffect(() => {
     fetchBookingData();
-  }, [bookingId, dispatch]);
+  }, []);
 
   
-  const isRescheduleReset = (reschedule) => {
-    return reschedule.isReschedule === true &&
-      !reschedule.newTime &&
-      !reschedule.newDate &&
-      !reschedule.reasonForReschedule &&
-      !reschedule.requestSentBy &&
-      !reschedule.rejectedBy &&
-      !reschedule.rejectionNewDate &&
-      !reschedule.rejectionNewTime &&
-      !reschedule.rejectionReason;
-  };
+const isRescheduleReset = (reschedule) => {
+  return (
+    reschedule?.isReschedule === false || // Initial state
+    (reschedule?.isReschedule === true &&
+      !reschedule?.newTime &&
+      !reschedule?.newDate &&
+      !reschedule?.reasonForReschedule &&
+      !reschedule?.requestSentBy &&
+      !reschedule?.rejectedBy &&
+      !reschedule?.rejectionNewDate &&
+      !reschedule?.rejectionNewTime &&
+      !reschedule?.rejectionReason)
+  );
+};
+
 
   // Helper function to check if reschedule is rejected with new details
   const hasRejectionDetails = (reschedule) => {
@@ -269,6 +277,10 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
           booking={booking}
         />
       )}
+      {workCompleteModal && <WorkCompleteModal
+        onClose={() => setWorkCompleteModal(null)}
+        bookingId={workCompleteModal}
+      />}
       {theme === "light" ? (
         <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
@@ -292,7 +304,7 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
               {/* Status Banner */}
               <div
                 className={`px-6 py-2 ${
-                  status === "confirmed"
+                  status === "confirmed" || status === "completed"
                     ? "bg-green-100 text-green-800"
                     : status === "canceled"
                     ? "bg-red-100 text-red-800"
@@ -406,93 +418,149 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
                   />
                 )}
 
-                {booking.status === "canceled" ? (
-                  <div className="bg-red-600 text-white text-center p-4 rounded-lg">
-                    <p className="font-bold text-lg">Booking Cancelled</p>
-                  </div>
-                ) : (
-                  // Action Buttons
-                  <div className="flex flex-col gap-4">
-                    {/* Top Row Buttons (Responsive) */}
-                     <div className="flex flex-wrap gap-4 justify-center md:justify-between">
-                      <button
-                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full md:w-auto"
-                        onClick={() => setCancelBooking(true)}
-                      >
-                        Cancel Booking
-                      </button>
-                        <button className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
-                        onClick={() => setAdditionalCharge(bookingId)}
-                        >
-                        Request Additional Charge
-                      </button>
-
-                      {/* Case 1: Rejection with details */}
-                      {hasRejectionDetails(bookingDetails.reschedule) && (
-                        <div className="flex flex-col items-center w-full space-y-2">
-                          <button className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
-                            onClick={() => setResheduleModal(bookingDetails)}
+                {bookingDetails?.status === "canceled" ? (
+                      <div className="bg-red-600 text-white text-center p-4 rounded-lg">
+                        <p className="font-bold text-lg">Booking Cancelled</p>
+                      </div>
+                    ) : bookingDetails?.status === "completed" ? (
+                      <div className="flex justify-center">
+                        <button className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto">
+                          Proceed to Pay
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-4">
+                        {/* Top Row Buttons */}
+                        <div className="flex flex-wrap gap-4 justify-center md:justify-between">
+                          {/* Cancel Booking Button */}
+                          <button
+                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full md:w-auto"
+                            onClick={() => setCancelBooking(true)}
                           >
-                            {bookingDetails.reschedule.rejectedBy === "user"  ? "View Rejection" : "View Request"}
+                            Cancel Booking
                           </button>
-                          {(() => {
-                            if (bookingDetails.reschedule.rejectedBy === "user") {
-                              return (
-                                <p className="text-red-500 text-sm">
-                                  Your reschedule request was rejected by{" "}
-                                  {bookingDetails.userId.firstName}{" "}
-                                  {bookingDetails.userId.lastName}
-                                </p>
-                              );
-                            } else if (bookingDetails.reschedule.requestSentBy === "user") {
-                              return (
-                                <p className="text-yellow-500 text-sm">
-                                  User sent a new reschedule request
-                                </p>
-                              );
-                            }
-                            return null;
-                          })()}
-                        </div>
-                      )}
 
-                      {/* Case 2: Pending user request */}
-                      {((bookingDetails.reschedule.requestSentBy === "labor" &&
-                        bookingDetails.reschedule.acceptedBy === null &&
-                        bookingDetails.reschedule.rejectedBy === null) ||
-                        (bookingDetails.reschedule.requestSentBy === "labor" &&
-                          bookingDetails.reschedule.rejectedBy === "labor")) && (
-                        <div className="w-full text-center">
-                          <p className="text-yellow-500 text-sm">
-                            {bookingDetails.reschedule.rejectedBy === "labor"
-                              ? "Your reschedule rejection request is pending. Please wait for user approval."
-                              : "Your reschedule request is pending. Please wait for user approval."}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Case 3: Reset state */}
-                      {isRescheduleReset(bookingDetails.reschedule) && (
-                       
-                      <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
-                      onClick={() =>
-                            setResheduleModalOpen(bookingDetails.bookingId)
-                          }
+                          {/* Additional Charge Request */}
+                          <button
+                            className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
+                            onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
                           >
-                        Reschedule
-                      </button>
-                      )}
+                            Request Additional Charge
+                          </button>
 
-                    </div>
+                          {isRescheduleReset(bookingDetails.reschedule) && (
+                                <button
+                                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                                  onClick={() => setResheduleModalOpen(bookingDetails.bookingId)}
+                                >
+                                  Reschedule
+                                </button>
+                              )}
+                      
+                          {/* Reschedule Handling */}
+                            {bookingDetails.reschedule && (
+                              <div className="flex flex-col items-center w-full space-y-2">
+                                
+                                {/* If the reschedule request is rejected by the user and has rejection details */}
+                                {bookingDetails.reschedule.rejectedBy === "user" &&
+                                  bookingDetails.reschedule.rejectionNewDate &&
+                                  bookingDetails.reschedule.rejectionNewTime &&
+                                  bookingDetails.reschedule.rejectionReason && (
+                                    <>
+                                      <p className="text-red-500 text-sm">
+                                        Your reschedule request was rejected by {bookingDetails.addressDetails.name}. 
+                                      </p>
+                                      <button
+                                        className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors w-full md:w-auto"
+                                        onClick={() => setResheduleModal(bookingDetails)}
+                                      >
+                                        View Rejection
+                                      </button>
+                                    </>
+                                  )}
 
-                    {/* Bottom Centered Button */}
-                    <div className="flex justify-center">
-                      <button className="px-6 py-2 bg-green-600 lg:ml-10 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto">
-                        Work Completed
-                      </button>
-                    </div>
-                  </div>
-                )}
+                                {/* If the user sends a new reschedule request and rejection details are null */}
+                                {bookingDetails.reschedule.requestSentBy === "user" &&
+                                  !bookingDetails.reschedule.rejectedBy &&
+                                  !bookingDetails.reschedule.rejectionNewDate &&
+                                  !bookingDetails.reschedule.rejectionNewTime &&
+                                  !bookingDetails.reschedule.rejectionReason && (
+                                    <>
+                                      <p className="text-blue-500 text-sm">
+                                        You have received a new reschedule request. 
+                                      </p>
+                                      <button
+                                        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                                        onClick={() => setResheduleModal(bookingDetails)}
+                                      >
+                                        View Request
+                                      </button>
+                                    </>
+                                  )}
+
+                                {/* Check if the labor request is pending approval */}
+                                {bookingDetails.reschedule.requestSentBy === "labor" &&
+                                  !bookingDetails.reschedule.acceptedBy &&
+                                  !bookingDetails.reschedule.rejectedBy && (
+                                    <p className="text-yellow-500 text-sm">
+                                      Your reschedule request is pending. Waiting for  {bookingDetails.addressDetails.name} approval.
+                                    </p>
+                                  )}
+
+                                {/* If request was rejected by the labor */}
+                                {bookingDetails.reschedule.rejectedBy === "labor" && (
+                                  <p className="text-red-500 text-sm">
+                                    Your reschedule rejection requast was pending .Waiting for  {bookingDetails.addressDetails.name} approval.
+                                  </p>
+                                )}
+
+                                {/* If labor sent a new reschedule request and it was accepted */}
+                                {bookingDetails.reschedule.requestSentBy === "labor" &&
+                                  bookingDetails.reschedule.acceptedBy && (
+                                    <p className="text-green-500 text-sm">
+                                      Your reschedule request has been approved.
+                                    </p>
+                                )}
+                              
+
+                              
+                              </div>
+                            )}
+                        </div>
+
+                        {/* Work Completion Handling */}
+                        <div className="flex justify-center">
+                          {bookingDetails?.isLaborCompletionReported &&
+                          !bookingDetails?.isUserCompletionReported ? (
+                            <p className="text-gray-600 font-medium mb-2">
+                              You have reported work completion. Waiting for user confirmation.
+                            </p>
+                          ) : !bookingDetails?.isLaborCompletionReported &&
+                            bookingDetails?.isUserCompletionReported ? (
+                            <button
+                              className="px-6 py-2 bg-[#1e40af] text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                              onClick={() => setWorkCompleteModal(bookingDetails.bookingId)}
+                            >
+                              Confirm Work Completion
+                            </button>
+                          ) : bookingDetails?.isUserCompletionReported &&
+                            bookingDetails?.isLaborCompletionReported ? (
+                            <button
+                              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto"
+                            >
+                              Proceed to Pay
+                            </button>
+                          ) : (
+                            <button
+                              className="px-6 py-2 bg-[#1e40af] text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                              onClick={() => setWorkCompleteModal(bookingDetails.bookingId)}
+                            >
+                              Work Completed
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
               </div>
 
               {/* Footer */}
@@ -521,12 +589,13 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
                   </h1>
                 </div>
                 <p className="text-blue-100">ID: {bookingId}</p>
-              </div>
-
-              {/* Status Banner */}
+                </div>
+                
+                
+                {/* Status Banner */}
               <div
                 className={`px-6 py-2 ${
-                  status === "confirmed"
+                  status === "confirmed" || status === "completed"
                     ? "bg-green-100 text-green-800"
                     : status === "canceled"
                     ? "bg-red-100 text-red-800"
@@ -642,112 +711,149 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
                     bookingId={booking.bookingId}
                   />
                 )}
-                {booking.status === "canceled" ? (
-                  <div className="bg-red-600 text-white text-center p-4 rounded-lg">
-                    <p className="font-bold text-lg">Booking Cancelled</p>
-                  </div>
-                ) : (
-                  // Action Buttons
-                  <div className="flex flex-col gap-4">
-  {/* Top Row Buttons (Responsive) */}
-  <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-    {/* Cancel Booking Button */}
-    <div className="w-full md:w-auto">
-      <button
-        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full"
-        onClick={() => setCancelBooking(true)}
-      >
-        Cancel Booking
-      </button>
-    </div>
+                {bookingDetails?.status === "canceled" ? (
+                      <div className="bg-red-600 text-white text-center p-4 rounded-lg">
+                        <p className="font-bold text-lg">Booking Cancelled</p>
+                      </div>
+                    ) : bookingDetails?.status === "completed" ? (
+                      <div className="flex justify-center">
+                        <button className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto">
+                          Proceed to Pay
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-4">
+                        {/* Top Row Buttons */}
+                         <div className="flex flex-wrap gap-4 justify-center md:justify-between">
+                          {/* Cancel Booking Button */}
+                          <button
+                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full md:w-auto"
+                            onClick={() => setCancelBooking(true)}
+                          >
+                            Cancel Booking
+                          </button>
 
-    {/* Additional Charge Section */}
-    <div className="w-full md:w-auto flex flex-col items-center md:items-start">
-      {bookingDetails?.additionalChargeRequest?.status === "pending" && 
-      bookingDetails?.additionalChargeRequest?.amount > 0 && 
-      !bookingDetails?.additionalChargeRequest?.reason ? (
-        <div className="text-center md:text-left w-full">
-          <p className='text-yellow-500 text-sm'>
-            <strong>Note:</strong> Your request has been sent to {bookingDetails?.userId?.firstName} and additional charges will only apply if they accept it. 
-            The original estimated cost will remain unchanged until then.
-          </p>
-        </div>
-      ) : (
-        <button
-          className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full"
-          onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
-        >
-          Request Additional Charge
-        </button>
-      )}
-    </div>
+                          {/* Additional Charge Request */}
+                          <button
+                            className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
+                            onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
+                          >
+                            Request Additional Charge
+                          </button>
 
-    {/* Reschedule and Rejection Section */}
-    <div className="w-full md:w-auto flex flex-col items-center">
-      {hasRejectionDetails(bookingDetails.reschedule) && (
-        <div className="flex flex-col items-center w-full space-y-2">
-          <button 
-            className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full"
-            onClick={() => setResheduleModal(bookingDetails)}
-          >
-            {bookingDetails.reschedule.rejectedBy === "user" ? "View Rejection" : "View Request"}
-          </button>
-          {(() => {
-            if (bookingDetails.reschedule.rejectedBy === "user") {
-              return (
-                <p className="text-red-500 text-sm text-center">
-                  Your reschedule request was rejected by{" "}
-                  {bookingDetails.userId.firstName}{" "}
-                  {bookingDetails.userId.lastName}
-                </p>
-              );
-            } else if (bookingDetails.reschedule.requestSentBy === "user") {
-              return (
-                <p className="text-yellow-500 text-sm text-center">
-                  User sent a new reschedule request
-                </p>
-              );
-            }
-            return null;
-          })()}
-        </div>
-      )}
+                          {isRescheduleReset(bookingDetails.reschedule) && (
+                                <button
+                                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                                  onClick={() => setResheduleModalOpen(bookingDetails.bookingId)}
+                                >
+                                  Reschedule
+                                </button>
+                              )}
+                      
+                          {/* Reschedule Handling */}
+                            {bookingDetails.reschedule && (
+                              <div className="flex flex-col items-center w-full space-y-2">
+                                
+                                {/* If the reschedule request is rejected by the user and has rejection details */}
+                                {bookingDetails.reschedule.rejectedBy === "user" &&
+                                  bookingDetails.reschedule.rejectionNewDate &&
+                                  bookingDetails.reschedule.rejectionNewTime &&
+                                  bookingDetails.reschedule.rejectionReason && (
+                                    <>
+                                      <p className="text-red-500 text-sm">
+                                        Your reschedule request was rejected by {bookingDetails.addressDetails.name}. 
+                                      </p>
+                                      <button
+                                        className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors w-full md:w-auto"
+                                        onClick={() => setResheduleModal(bookingDetails)}
+                                      >
+                                        View Rejection
+                                      </button>
+                                    </>
+                                  )}
 
-      {/* Pending Reschedule Request */}
-      {((bookingDetails.reschedule.requestSentBy === "labor" &&
-        bookingDetails.reschedule.acceptedBy === null &&
-        bookingDetails.reschedule.rejectedBy === null) ||
-        (bookingDetails.reschedule.requestSentBy === "labor" &&
-          bookingDetails.reschedule.rejectedBy === "labor")) && (
-        <div className="w-full text-center">
-          <p className="text-yellow-500 text-sm">
-            {bookingDetails.reschedule.rejectedBy === "labor"
-              ? "Your reschedule rejection request is pending. Please wait for user approval."
-              : "Your reschedule request is pending. Please wait for user approval."}
-          </p>
-        </div>
-      )}
+                                {/* If the user sends a new reschedule request and rejection details are null */}
+                                {bookingDetails.reschedule.requestSentBy === "user" &&
+                                  !bookingDetails.reschedule.rejectedBy &&
+                                  !bookingDetails.reschedule.rejectionNewDate &&
+                                  !bookingDetails.reschedule.rejectionNewTime &&
+                                  !bookingDetails.reschedule.rejectionReason && (
+                                    <>
+                                      <p className="text-blue-500 text-sm">
+                                        You have received a new reschedule request. 
+                                      </p>
+                                      <button
+                                        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                                        onClick={() => setResheduleModal(bookingDetails)}
+                                      >
+                                        View Request
+                                      </button>
+                                    </>
+                                  )}
 
-      {/* Reschedule Button */}
-      {isRescheduleReset(bookingDetails.reschedule) && (
-        <button 
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full"
-          onClick={() => setResheduleModalOpen(bookingDetails.bookingId)}
-        >
-          Reschedule
-        </button>
-      )}
-    </div>
-  </div>
+                                {/* Check if the labor request is pending approval */}
+                                {bookingDetails.reschedule.requestSentBy === "labor" &&
+                                  !bookingDetails.reschedule.acceptedBy &&
+                                  !bookingDetails.reschedule.rejectedBy && (
+                                    <p className="text-yellow-500 text-sm">
+                                      Your reschedule request is pending. Waiting for  {bookingDetails.addressDetails.name} approval.
+                                    </p>
+                                  )}
 
-  {/* Bottom Centered Button */}
-  <div className="flex justify-center">
-    <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto">
-      Work Completed
-    </button>
-  </div>
-</div>
-                )}
+                                {/* If request was rejected by the labor */}
+                                {bookingDetails.reschedule.rejectedBy === "labor" && (
+                                  <p className="text-red-500 text-sm">
+                                    Your reschedule rejection requast was pending .Waiting for  {bookingDetails.addressDetails.name} approval.
+                                  </p>
+                                )}
+
+                                {/* If labor sent a new reschedule request and it was accepted */}
+                                {bookingDetails.reschedule.requestSentBy === "labor" &&
+                                  bookingDetails.reschedule.acceptedBy && (
+                                    <p className="text-green-500 text-sm">
+                                      Your reschedule request has been approved.
+                                    </p>
+                                )}
+                              
+
+                              
+                              </div>
+                            )}
+                        </div>
+
+                        {/* Work Completion Handling */}
+                        <div className="flex justify-center">
+                          {bookingDetails?.isLaborCompletionReported &&
+                          !bookingDetails?.isUserCompletionReported ? (
+                            <p className="text-yellow-400 font-medium mb-2">
+                              You have reported work completion. Waiting for user confirmation.
+                            </p>
+                          ) : !bookingDetails?.isLaborCompletionReported &&
+                            bookingDetails?.isUserCompletionReported ? (
+                            <button
+                              className="px-6 py-2 bg-[#1e40af] text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                              onClick={() => setWorkCompleteModal(bookingDetails.bookingId)}
+                            >
+                              Confirm Work Completion
+                            </button>
+                          ) : bookingDetails?.isUserCompletionReported &&
+                            bookingDetails?.isLaborCompletionReported ? (
+                            <button
+                              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto"
+                            >
+                              Proceed to Pay
+                            </button>
+                          ) : (
+                            <button
+                              className="px-6 py-2 bg-[#1e40af] text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                              onClick={() => setWorkCompleteModal(bookingDetails.bookingId)}
+                            >
+                              Work Completed
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
               </div>
 
               {/* Footer */}
