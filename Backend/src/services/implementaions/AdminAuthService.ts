@@ -1,5 +1,5 @@
 import  bcrypt  from 'bcrypt';
-import { IAdmin } from "../../entities/adminEntity";
+import { IAdmin } from "../../controllers/entities/adminEntity";
 import { ApiError } from "../../middleware/errorHander";
 import { IAdminAuthRepositoy } from "../../repositories/interface/IAdminAuthRepositoy";
 import { IAdminAuthService } from "../interface/IAdminAuthService";

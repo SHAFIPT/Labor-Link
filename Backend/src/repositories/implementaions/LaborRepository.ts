@@ -1,9 +1,9 @@
-import { ILaborer } from "../../entities/LaborEntity";
+import { ILaborer } from "../../controllers/entities/LaborEntity";
 import { ILaborRepository } from "../../repositories/interface/ILaborRepository";
 import { ApiError } from "../../middleware/errorHander";
 import Labor from "../../models/LaborModel";
 import otpModel from "../../models/otpModel";
-import { IOTP } from "../../entities/OtpEntity";
+import { IOTP } from "../../controllers/entities/OtpEntity";
 
 export class LaborRepository implements ILaborRepository {
   async findByEmail(email: string): Promise<ILaborer | null> {

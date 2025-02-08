@@ -1,8 +1,8 @@
-import { IAboutMe, ILaborer } from "entities/LaborEntity";
+import { IAboutMe, ILaborer } from "controllers/entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import Labor from "../../models/LaborModel";
 import { SortOrder } from "mongoose";
-import { IBooking } from "../../entities/bookingEntity";
+import { IBooking } from "../../controllers/entities/bookingEntity";
 import Booking from "../../models/BookingModal";
 
 export class LaborSideRepository implements ILaborSidRepository {

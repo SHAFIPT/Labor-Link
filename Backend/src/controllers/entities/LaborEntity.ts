@@ -3,6 +3,7 @@ import { Schema, Document } from 'mongoose';
 export interface IReview {
   reviewerName: string;
   reviewText: string;
+  imageUrl: string[]; 
   rating: number;  // Rating score (e.g., 1 to 5)
   createdAt: Date;
 }

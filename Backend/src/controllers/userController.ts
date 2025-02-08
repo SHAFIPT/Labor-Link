@@ -4,13 +4,42 @@ import { IUserServices } from "../services/interface/IUserServices";
 import { Request, Response, NextFunction } from "express"
 import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
-import { IBooking } from "../entities/bookingEntity";
+import { IBooking } from "./entities/bookingEntity";
+import Booking from "../models/BookingModal";
 interface DecodedToken {
   id: string;
   role: string;
   iat: number;
   exp: number;
 }
+interface IBookingResponse {
+  bookingId: string;
+  status: string;
+  quote: {
+    description: string;
+    estimatedCost: number;
+    arrivalTime: Date;
+  };
+  laborId: {
+    firstName: string;
+    lastName: string;
+    profilePicture: string;
+    reviews?: any[];
+    rating?: number;
+  };
+}
+interface ReviewFields {
+  rating: string | string[];
+  feedback: string | string[];
+}
+
+import Stripe from 'stripe';
+
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-01-27.acacia',
+});
+
 
 export class userController {
   private userService: IUserServices;
@@ -53,264 +82,303 @@ export class userController {
   };
 
   public profileUpdate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  console.log('Starting profile update...');
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    console.log("Starting profile update...");
 
-  const form = formidable({ multiples: false });
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      console.error("Error parsing form data:", err);
-      return res.status(500).json({ error: "Error parsing form data." });
-    }
-
-    try {
-      const { firstName, lastName, email } = fields;
-      const imageFile = files.image ? files.image[0] : null;
-      let imageUrl;
-
-      // Upload image to Cloudinary if provided
-      if (imageFile) {
-        const uploadResult = await cloudinary.uploader.upload(imageFile.filepath, {
-          folder: "user_profiles",
-        });
-        imageUrl = uploadResult.secure_url;
+    const form = formidable({ multiples: false });
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        console.error("Error parsing form data:", err);
+        return res.status(500).json({ error: "Error parsing form data." });
       }
 
-      console.log('Data to be passed:', {
-        firstName : firstName[0],
-        lastName : lastName[0],
-        email : email[0],
-        imageUrl
-      });
+      try {
+        const { firstName, lastName, email } = fields;
+        const imageFile = files.image ? files.image[0] : null;
+        let imageUrl;
 
-      const response = await this.userService.UpdateUser({
-        firstName: firstName[0],
-        lastName: lastName[0],
-        email: email[0],
-        ProfilePic: imageUrl,
-      });
+        // Upload image to Cloudinary if provided
+        if (imageFile) {
+          const uploadResult = await cloudinary.uploader.upload(
+            imageFile.filepath,
+            {
+              folder: "user_profiles",
+            }
+          );
+          imageUrl = uploadResult.secure_url;
+        }
+
+        console.log("Data to be passed:", {
+          firstName: firstName[0],
+          lastName: lastName[0],
+          email: email[0],
+          imageUrl,
+        });
+
+        const response = await this.userService.UpdateUser({
+          firstName: firstName[0],
+          lastName: lastName[0],
+          email: email[0],
+          ProfilePic: imageUrl,
+        });
 
         if (response) {
-            return res.status(200).json({
-                message: "Profile updated successfully!",
-                updatedUser: response
-            });
+          return res.status(200).json({
+            message: "Profile updated successfully!",
+            updatedUser: response,
+          });
         }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        next(error);
+      }
+    });
+  };
+  public UpdatePassword = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        throw new Error("Email and Password is missing...!");
+      }
+
+      const response = await this.userService.updatePassword(email, password);
+
+      if (response) {
+        return res.status(200).json({
+          message: "Password updated successfully!",
+          updatedUser: response,
+        });
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       next(error);
     }
-  });
-};
-    public UpdatePassword = async (req: Request, res: Response, next: NextFunction) => {
-        try {
-           
-            const { email, password } = req.body
-            
-            if (!email || !password) {
-                throw new Error('Email and Password is missing...!')
-            }
-
-            const response = await this.userService.updatePassword(email, password)
-            
-            if (response) {
-            return res.status(200).json({
-                message: "Password updated successfully!",
-                updatedUser: response
-            });
-        }
-        
-       } catch (error) {
-        console.error("Error updating profile:", error);
-         next(error);
-       }
-   }
-  public bookingLabor = async (req: Request, res: Response, next: NextFunction) => {
+  };
+  public bookingLabor = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-       
-      const { userId, laborId, quote , addressDetails} = req.body;
+      const { userId, laborId, quote, addressDetails } = req.body;
 
       console.log("This is the Boooking data ", {
         userId,
         laborId,
-        quote, 
-        addressDetails
-      })
-
+        quote,
+        addressDetails,
+      });
 
       if (!quote?.description || !quote?.estimatedCost || !quote?.arrivalTime) {
-            return res.status(400).json({ message: "Missing required quote fields" });
+        return res
+          .status(400)
+          .json({ message: "Missing required quote fields" });
       }
 
-        if (
-          !addressDetails?.district ||
-          !addressDetails?.place ||
-          !addressDetails?.address ||
-          !addressDetails?.pincode ||
-          !addressDetails?.phone ||
-          !addressDetails?.name
-        ) {
-          return res
-            .status(400)
-            .json({ message: "Missing required address fields" });
-        }
-
-        const bookingDetails: Partial<IBooking> = {
-          userId,
-          laborId,
-          quote: {
-            description: quote.description,
-            estimatedCost: quote.estimatedCost,
-            arrivalTime: quote.arrivalTime,
-          },
-          addressDetails: {
-            ...addressDetails,
-            Userlatitude: addressDetails.latitude,
-            Userlongitude: addressDetails.longitude,
-          },
-        };
-      
-      console.log("This si erhe boooikingDetails...................",bookingDetails)
-
-        if (!userId || !laborId || !quote) {
-            return res.status(400).json({ message: "Missing required fields" });
+      if (
+        !addressDetails?.district ||
+        !addressDetails?.place ||
+        !addressDetails?.address ||
+        !addressDetails?.pincode ||
+        !addressDetails?.phone ||
+        !addressDetails?.name
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Missing required address fields" });
       }
-      
-      const BookingResponse = await this.userService.bookingLabor(bookingDetails)
-      
+
+      const bookingDetails: Partial<IBooking> = {
+        userId,
+        laborId,
+        quote: {
+          description: quote.description,
+          estimatedCost: quote.estimatedCost,
+          arrivalTime: quote.arrivalTime,
+        },
+        addressDetails: {
+          ...addressDetails,
+          Userlatitude: addressDetails.latitude,
+          Userlongitude: addressDetails.longitude,
+        },
+      };
+
+      // console.log("This si erhe boooikingDetails...................",bookingDetails)
+
+      if (!userId || !laborId || !quote) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const BookingResponse = await this.userService.bookingLabor(
+        bookingDetails
+      );
+
       if (BookingResponse) {
-        res.status(201).json({ message: "Booking created successfully", booking: BookingResponse });
+        res
+          .status(201)
+          .json({
+            message: "Booking created successfully",
+            booking: BookingResponse,
+          });
       }
-
-     } catch (error) {
-      console.error("Error in booking labor:", error);
-         next(error);
-     }
-  }
-  
-  public fetchLaborId = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-
-      const { email } = req.params
-      
-      if (!email) {
-        throw new Error("Email is not found...........")
-      }
-
-      email as string
-
-      const laborId = await this.userService.fetchLaborId(email)
-      if (laborId) {
-        res.status(200).json({laborId})
-      } 
-      
     } catch (error) {
-       console.error("Error in booking labor:", error);
-         next(error);
+      console.error("Error in booking labor:", error);
+      next(error);
     }
-  }
+  };
 
-  public fetchBookings = async (req: Request & { user: { id: string } }, res: Response, next: NextFunction) => {
+  public fetchLaborId = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
+      const { email } = req.params;
 
+      if (!email) {
+        throw new Error("Email is not found...........");
+      }
+
+      email as string;
+
+      const laborId = await this.userService.fetchLaborId(email);
+      if (laborId) {
+        res.status(200).json({ laborId });
+      }
+    } catch (error) {
+      console.error("Error in booking labor:", error);
+      next(error);
+    }
+  };
+
+  public fetchBookings = async (
+    req: Request & { user: { id: string } },
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      console.log("fetchboooking......");
       const userId = req.user.id;
-      const page = parseInt(req.query.page as string) || 1
-      const limit = parseInt(req.query.limit as string) || 10
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
       const status = req.query.status as string;
 
-
+      // console.log('jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
 
       if (!userId) {
-        throw new Error("User is not found.")
+        throw new Error("User is not found.");
       }
 
       const filter = status ? { status } : {};
 
-      const {bookings ,total}  = await this.userService.fetchBooking(userId , page ,limit ,filter)
+      const { bookings, total } = await this.userService.fetchBooking(
+        userId,
+        page,
+        limit,
+        filter
+      );
 
-      if (bookings ) {
+      if (bookings) {
         res.status(200).json({
-          message: 'fetching booking succesfully ..',
+          message: "fetching booking succesfully ..",
           bookings,
           total,
           page,
           limit,
-          totalPages : Math.ceil(total / limit)
-        })
+          totalPages: Math.ceil(total / limit),
+        });
       }
-      
     } catch (error) {
-        console.error("Error in fetch booking....:", error);
-        next(error);
+      console.error("Error in fetch booking....:", error);
+      next(error);
     }
-  }
+  };
 
-  public cancelBooking = async (req: Request, res: Response, next: NextFunction) => {
+  public cancelBooking = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-
-      const { bookingId, reason, comments, isWithin30Minutes, canceledBy } = req.body;
+      const { bookingId, reason, comments, isWithin30Minutes, canceledBy } =
+        req.body;
 
       if (!bookingId) {
-        throw new Error ('No booking id is found...')
+        throw new Error("No booking id is found...");
       }
-
 
       const cancelledBooking = await this.userService.cancelBooking({
         bookingId,
         reason,
         comments,
         isWithin30Minutes,
-        canceledBy
-      })
-      
+        canceledBy,
+      });
+
       if (!cancelledBooking) {
-      throw new Error('Failed to cancel booking.');
-    }
+        throw new Error("Failed to cancel booking.");
+      }
 
-    res.status(200).json({
-      message: 'Booking canceled successfully',
-      booking: cancelledBooking,
-    });
-
-      
+      res.status(200).json({
+        message: "Booking canceled successfully",
+        booking: cancelledBooking,
+      });
     } catch (error) {
-        console.error("Error in cancell booking", error);
-        next(error);
-    }
-  }
-  public updateReadStatus = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { bookingId } = req.params; 
-        const { isUserRead } = req.body; 
-
-        if (!bookingId) {
-            return res.status(400).json({ message: "Booking ID is required" });
-        }
-
-    
-        const updatedBooking  = await this.userService.updateReadStatus(bookingId, isUserRead);
-
-        return res.status(200).json({ message: "Read status updated successfully", data: updatedBooking  });
-
-    } catch (error) {
-        console.error("Error in updating read status", error);
-        next(error);
+      console.error("Error in cancell booking", error);
+      next(error);
     }
   };
-  public reshedulRequest = async (req: Request, res: Response, next: NextFunction) => {
+  public updateReadStatus = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
+      const { bookingId } = req.params;
+      const { isUserRead } = req.body;
 
-      const { bookingId , newDate, newTime, reason , requestSentBy } = req.body
-      
+      if (!bookingId) {
+        return res.status(400).json({ message: "Booking ID is required" });
+      }
+
+      const updatedBooking = await this.userService.updateReadStatus(
+        bookingId,
+        isUserRead
+      );
+
+      return res
+        .status(200)
+        .json({
+          message: "Read status updated successfully",
+          data: updatedBooking,
+        });
+    } catch (error) {
+      console.error("Error in updating read status", error);
+      next(error);
+    }
+  };
+  public reshedulRequest = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { bookingId, newDate, newTime, reason, requestSentBy } = req.body;
+
       console.log("this is the reonsponse data aa :", {
-        newDate, 
-        newTime,           
+        newDate,
+        newTime,
         reason,
-        bookingId
-      })
+        bookingId,
+      });
 
       const resheduleRequst = await this.userService.resheduleRequst(
         bookingId,
@@ -318,21 +386,259 @@ export class userController {
         newTime,
         reason,
         requestSentBy
-      )
+      );
 
-      console.log("HHHHHHHHHHHHHHHIIIIIIIIIIIIIIIIIIIII",resheduleRequst)
+      console.log("HHHHHHHHHHHHHHHIIIIIIIIIIIIIIIIIIIII", resheduleRequst);
 
       if (resheduleRequst) {
+        return res
+          .status(200)
+          .json({
+            message: "resheduleRequst has been sent....",
+            reshedule: resheduleRequst,
+          });
+      }
+    } catch (error) {
+      console.error("Error in reshedule request.", error);
+      next(error);
+    }
+  };
+
+  public workCompletion = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      console.log("This is the request Body lllll", req.body);
+
+      const { bookingId } = req.params;
+      const updateData = req.body;
+
+      console.log("This is geting dataaa :;;", {
+        bookingId,
+        updateData,
+      });
+      console.log("hiiiiiiiiiiiiiiiiiiiiiiiiii");
+
+      if (!bookingId || !updateData) {
+        return res.status(400).json({ message: "missing nesssory fields...." });
+      }
+
+      const response = await this.userService.workCompletion(
+        bookingId,
+        updateData
+      );
+
+      console.log("thsi sie th repsnses :::", response);
+
+      if (response) {
+        return res
+          .status(200)
+          .json({
+            message: "resheduleRequst has been sent....",
+            reshedule: response,
+          });
+      }
+    } catch (error) {
+      console.error("Error in workCompletions.", error);
+      next(error);
+    }
+  };
+  public pymnetSuccess = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      console.log("The is the bodyyyyyyyyyyy", req.body);
+
+      const { bookingId, laborId, userId } = req.body;
+
+      console.log("this is the bookingId detisl ll................", {
+        bookingId,
+        laborId,
+        userId,
+      });
+
+      if (!bookingId || !laborId || !userId) {
+        return res
+          .status(404)
+          .json({ message: "missing Requaerud Fields ....." });
+      }
+
+      const successResponse = await this.userService.pymentSuccess(
+        bookingId,
+        laborId,
+        userId
+      );
+
+      if (successResponse) {
+        return res
+          .status(200)
+          .json({
+            message: "Payment is succcessfullll........",
+            pymentRespnose: successResponse,
+          });
+      }
+    } catch (error) {
+      console.error("Error in pyment section.", error);
+      next(error);
+    }
+  };
+  public handleStripeWebhook = async (req: Request, res: Response) => {
+    console.log("hooook calledddddddddddddddddddddddd");
+
+    console.log("Webhook called");
+    console.log("signature", req.headers);
+    const sig = req.headers["stripe-signature"] as string;
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        "whsec_8fed201d762c6c7205f81574e77174f99eab11a6ebb18b1d2aed78baec8395af" as string
+      );
+      console.log(event, "event");
+
+      if (event.type == "checkout.session.completed") {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const metadata = session.metadata || {};
+        const { bookingId, laborId, userId } = metadata;
+
+        // Find the booking
+        const booking = await Booking.findOne({ bookingId });
+
+        if (!booking) {
+          throw new Error("Booking not found");
+        }
+
+        const estimatedCost = booking.quote.estimatedCost;
+        const commissionAmount = 100; // Your commission logic
+        const laborAmount = estimatedCost - commissionAmount;
+
+        // Update booking with payment details
+        const updatedBooking = await Booking.findOneAndUpdate(
+          { bookingId },
+          {
+            $set: {
+              paymentStatus: "paid",
+              paymentDetails: {
+                totalAmount: estimatedCost,
+                commissionAmount,
+                laborEarnings: laborAmount,
+                transactionId: "paymentIntent.id",
+              },
+            },
+          },
+          { new: true }
+        );
+
+        if (!updatedBooking) {
+          throw new Error("Failed to update booking with payment details");
+        }
+
+        if (updatedBooking) return true;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  public fetchBookingWithId = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { bookingId } = req.params
+      
+      if (!bookingId) {
+        return res.status(404)
+        .json({message : 'Booking id is not found'})
+      }
+
+      const fetchedBooking = await this.userService.fetchBookinById(bookingId)
+
+
+      console.log('myyyyyyyyyyyyyyyyyyyyyy',fetchedBooking)
+
+      if (!fetchedBooking) {
+          throw new Error("Failed to fetch booking");
+        }
+
+      if (fetchedBooking) {
         return res.status(200)
-        .json({message : 'resheduleRequst has been sent....', reshedule : resheduleRequst})
+        .json({message : 'fetched succefuluy',fetchedBooking })
       }
       
     } catch (error) {
-      console.error("Error in reshedule request.", error);
-        next(error);
+      console.log(error);
+    }
+  }
+  public reviewSubmit = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { bookingId } = req.params
+      
+      if (!bookingId) {
+        return res.status(404)
+        .json({message : 'Booking id is not found'})
+      }
+
+      const form = formidable({ multiples: false });   
+    
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          return res.status(500)
+          .json({error : 'Error parsing form data'})
+        }
+
+        const rating = Array.isArray(fields.rating) ? fields.rating[0] : fields.rating;
+        const feedback = Array.isArray(fields.feedback) ? fields.feedback[0] : fields.feedback;
+
+
+        const images: string[] = [];
+
+        if (files.image1) {
+          const uploadResult1 = await cloudinary.uploader.upload(
+            files.image1[0].filepath,
+            {
+              folder: "review_images",
+            }
+          );
+          images.push(uploadResult1.secure_url);
+        }
+
+        if (files.image2) {
+          const uploadResult2 = await cloudinary.uploader.upload(
+            files.image2[0].filepath,
+            {
+              folder: "review_images",
+            }
+          );
+          images.push(uploadResult2.secure_url);
+        }
+
+        const reiveSubmiting = await this.userService.reviewUpload(
+          bookingId,
+          rating,
+          feedback,
+          images
+        )
+
+        if (!reiveSubmiting) {
+          return res.status(500)
+          .json({error : 'Error in reivew sumbinting.....'})
+        }
+
+        return res.status(200)
+        .json({message : 'Review sumbitted succefullly',reiveSubmiting})
+
+
+      })
+      
+    } catch (error) {
+      console.log(error);
     }
   }
 }
-
 
 export default userController;

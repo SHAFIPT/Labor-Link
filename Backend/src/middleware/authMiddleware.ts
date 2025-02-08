@@ -15,6 +15,90 @@ interface DecodedToken extends JwtPayload {
   exp: number;
 }
 
+// export const authenticateUserOrLabor = async (
+//   req: Request & Partial<{ user: string | jwt.JwtPayload; labor: string | jwt.JwtPayload }>,
+//   res: Response,
+//   next: NextFunction
+// ): Promise<void> => {
+  
+//   // Public routes that do not require authentication
+//   const publicRoutes = [
+//     '/api/auth/login',
+//     '/api/auth/register',
+//     '/api/auth/google-sign-in',
+//   ];
+  
+//   if (publicRoutes.includes(req.path)) {
+//     return next();
+//   }
+
+//   // Get token from header
+//   const token = req.headers['authorization']?.split(' ')[1] || req.header('authorization');
+
+//   if (!token) {
+//     res.status(401).json(new ApiResponse(401, null, 'Access denied. No token provided.'));
+//     return;
+//   }
+
+//   try {
+//     const decoded = verifyAccessToken(token) as { id: string; role: string };
+
+//     if (!decoded || !decoded.id || !decoded.role) {
+//       res.status(401).json(new ApiResponse(401, null, 'Invalid token structure.'));
+//       return;
+//     }
+
+//     let userOrLabor;
+
+//     if (decoded.role === 'user') {
+//       const user = await User.findById(decoded.id);
+//       if (!user) {
+//         res.status(404).json(new ApiResponse(404, null, 'User not found.'));
+//         return;
+//       }
+//       if (user.isBlocked) {
+//         res.status(403).json(new ApiResponse(403, null, 'Your account has been blocked. Please contact support.'));
+//         return;
+//       }
+//       req.user = decoded;
+//       userOrLabor = user;
+//     } 
+//     else if (decoded.role === 'labor') {
+//       const labor = await Labor.findById(decoded.id);
+//       if (!labor) {
+//         res.status(404).json(new ApiResponse(404, null, 'Labor not found.'));
+//         return;
+//       }
+//       if (labor.isBlocked) {
+//         res.status(403).json(new ApiResponse(403, null, 'Your account has been blocked. Please contact support.'));
+//         return;
+//       }
+//       if (labor.status === 'rejected') {
+//         res.status(403).json(new ApiResponse(403, null, 'You are rejected by the authorized team. Please contact support.'));
+//         return;
+//       }
+//       req.labor = decoded;
+//       userOrLabor = labor;
+//     } 
+//     else {
+//       res.status(401).json(new ApiResponse(401, null, 'Invalid role.'));
+//       return;
+//     }
+
+//     console.log('Authenticated:', {
+//       id: decoded.id,
+//       role: decoded.role,
+//       userOrLabor,
+//     });
+
+//     next();
+//   } catch (err) {
+//     console.error('Authentication Error:', err);
+//     res.status(401).json(new ApiResponse(401, null, 'Invalid token or expired.'));
+//   }
+// };
+
+
 
 export const authenticateLabor = async (
   req: Request & Partial<{ labor: string | jwt.JwtPayload }>,
@@ -212,38 +296,36 @@ export const decodedUserRefreshToken = (
 
 
 export const decodedLaborRefreshToken = (
-  req: Request & Partial<{ labor: string | jwt.JwtPayload }>, 
-  res: Response, 
+  req: Request & { labor?: any },
+  res: Response,
   next: NextFunction
-): void => {  // Return type should be void, not Response
-  console.log('Iam arraive here')
-  const refreshToken = req.cookies['LaborRefreshToken'] || req.header('LaborRefreshToken');
-
-  if (!refreshToken) {
-    // Sending response and ending the request-response cycle here
-    res.status(401).json(new ApiResponse(
-      401,
-      null,
-      "Access Denied"
-    ));
-    return; // Make sure to return here after sending the response
-  }
-
+): void => {
   try {
+    console.log('Arriving at refresh token middleware');
+    const refreshToken = req.cookies['LaborRefreshToken'] || req.header('authorization')?.replace('Bearer ', '');
+
+    if (!refreshToken) {
+      res.status(401).json(new ApiResponse(401, null, "Access Denied"));
+      return;
+    }
+
     const decoded = decodeToken(refreshToken);
+    if (!decoded || typeof decoded !== 'object' || !decoded.id) {
+      res.status(401).json(new ApiResponse(401, null, "Invalid Token Format"));
+      return;
+    }
 
-    req.labor = { ...decoded, rawToken: refreshToken };
+    // Store only necessary information
+    req.labor = {
+      id: decoded.id,
+      role: decoded.role,
+      rawToken: refreshToken
+    };
 
-    // If everything is fine, pass control to the next middleware/route handler
     next();
   } catch (err) {
-    // Sending response for invalid token
-    res.status(401).json(new ApiResponse(
-      401,
-      null,
-      "Invalid Token"
-    ));
-    return; // Return after sending the response to prevent next() from being called
+    console.error('Token decode error:', err);
+    res.status(401).json(new ApiResponse(401, null, "Invalid Token"));
   }
 };
 

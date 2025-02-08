@@ -1,7 +1,7 @@
-import { ILaborer } from "../../entities/LaborEntity";
-import { IBooking } from "../../entities/bookingEntity";
-import { IUser } from "../../entities/UserEntity";
-
+import { ILaborer } from "../../controllers/entities/LaborEntity";
+import { IBooking } from "../../controllers/entities/bookingEntity";
+import { IUser } from "../../controllers/entities/UserEntity";
+import Stripe from 'stripe';
 
 export interface IUserServices {
   fetchUserDetails(userId: string): Promise<IUser | null>;
@@ -26,6 +26,8 @@ export interface IUserServices {
     bookingId: string,
     isUserRead: boolean
   ): Promise<IBooking | null>;
+  fetchBookinById(bookingId : string) : Promise<IBooking | null>
+  workCompletion(bookingId: string, updateData: { isUserCompletionReported?: boolean; isLaborCompletionReported?: boolean }): Promise<IBooking | null>;
   resheduleRequst(
     bookingId: string,
     newDate: string,
@@ -33,5 +35,7 @@ export interface IUserServices {
     reason: string,
     requestSentBy: string
   ): Promise<IBooking | null>;
+  pymentSuccess(bookingId: string, laborId: string, userId: string): Promise<Stripe.PaymentIntent> 
+  reviewUpload(bookingId : string , rating :string , feedback : string , imageUrls: string[]):Promise<IBooking | null>
 }
 

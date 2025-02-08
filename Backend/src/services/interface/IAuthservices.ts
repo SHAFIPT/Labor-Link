@@ -1,4 +1,4 @@
-import { IUser } from "entities/UserEntity";
+import { IUser } from "controllers/entities/UserEntity";
 import jwt, { JwtPayload } from 'jsonwebtoken';
 export interface IAuthService{
     register(user: Partial<IUser>): Promise<{ user: IUser; accessToken: string; refreshToken: string }>

@@ -1,5 +1,5 @@
-import { IBooking } from "../../entities/bookingEntity";
-import { IAboutMe, ILaborer } from "../../entities/LaborEntity";
+import { IBooking } from "../../controllers/entities/bookingEntity";
+import { IAboutMe, ILaborer } from "../../controllers/entities/LaborEntity";
 
 
 export interface ILaborSidRepository{

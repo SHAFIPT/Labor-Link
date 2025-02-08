@@ -1,4 +1,4 @@
-import { IAdmin } from "../../entities/adminEntity";
+import { IAdmin } from "../../controllers/entities/adminEntity";
 
 export interface IAdminAuthRepositoy {
     findByEmail(admin: Partial<IAdmin>): Promise<IAdmin | null>

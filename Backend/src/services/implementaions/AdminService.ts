@@ -1,8 +1,8 @@
-import { IUser } from "../../entities/UserEntity";
+import { IUser } from "../../controllers/entities/UserEntity";
 import { IAdminService } from "../../services/interface/IAdminService";
 import { ApiError } from "../../middleware/errorHander";
 import { IAdminRepository } from "../../repositories/interface/IAdminRepository";
-import { ILaborer } from "../../entities/LaborEntity";
+import { ILaborer } from "../../controllers/entities/LaborEntity";
 import { sendRejectionEmail } from "../../utils/emailService";
 
 export class AdminService implements IAdminService {

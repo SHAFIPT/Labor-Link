@@ -1,4 +1,4 @@
-import { IAdmin } from "../../entities/adminEntity";
+import { IAdmin } from "../../controllers/entities/adminEntity";
 import { ApiError } from "../../middleware/errorHander";
 import Admin from "../../models/AdminModal";
 import { IAdminAuthRepositoy } from "../interface/IAdminAuthRepositoy";

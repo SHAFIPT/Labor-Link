@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer"
-import { IUser } from "entities/UserEntity"
+import { IUser } from "controllers/entities/UserEntity"
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',

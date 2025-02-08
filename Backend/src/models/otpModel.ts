@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IOTP } from "entities/OtpEntity";
+import { IOTP } from "controllers/entities/OtpEntity";
 import User from "./userModel";
 
 const OTPSchema: Schema<IOTP> = new Schema({

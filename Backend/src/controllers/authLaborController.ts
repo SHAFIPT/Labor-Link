@@ -6,7 +6,7 @@ import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
 import { ApiError } from "../middleware/errorHander";
 import ApiResponse from "../utils/Apiresponse";
-import { ILaborer } from "../entities/LaborEntity";
+import { ILaborer } from "./entities/LaborEntity";
 
 
 export class AuthLaborController {

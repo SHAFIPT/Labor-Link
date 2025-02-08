@@ -1,4 +1,6 @@
 import { Document, Types } from 'mongoose';
+import { ILaborer } from './LaborEntity';
+import { IUser } from './UserEntity';
 
 export interface IAddressDetails {
   name: string;
@@ -27,8 +29,8 @@ export interface IReschedule {
 
 export interface IBooking extends Document {
   bookingId: string;
-  userId: Types.ObjectId;
-  laborId: Types.ObjectId;
+  userId: Types.ObjectId |  IUser
+  laborId: Types.ObjectId | ILaborer;
 
   quote: {
     description: string;
@@ -43,6 +45,8 @@ export interface IBooking extends Document {
   };
 
   status: 'confirmed' | 'in-progress' | 'pending-approval' | 'completed' | 'canceled';
+  isUserCompletionReported?: boolean
+  isLaborCompletionReported?: boolean
   paymentStatus: 'pending' | 'paid' | 'failed';
 
   cancellation?: {
@@ -53,6 +57,12 @@ export interface IBooking extends Document {
     cancellationFee?: number;
     isUserRead?: boolean
   };
+  paymentDetails?: {
+    totalAmount?: number
+    commissionAmount?: number
+    laborEarnings?: number
+    transactionId?:string
+  }
 
   addressDetails: IAddressDetails;
   reschedule?: IReschedule;

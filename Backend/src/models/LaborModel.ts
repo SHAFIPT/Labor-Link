@@ -1,6 +1,6 @@
 
 import mongoose, { Schema, ObjectId ,Types } from 'mongoose';
-import { ILaborer } from 'entities/LaborEntity';
+import { ILaborer } from 'controllers/entities/LaborEntity';
 import { string } from 'joi';
 
 const LaborersSchema: Schema = new Schema<ILaborer>({
@@ -85,7 +85,8 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
   reviews: [{
     reviewerName: { type: String},  // Reviewer's name
     reviewText: { type: String },   // Review text
-    rating: { type: Number},       // Rating score (e.g., 1-5)
+    rating: { type: Number },
+    imageUrl: { type: [String] },// Rating score (e.g., 1-5)
     createdAt: { type: Date, default: Date.now },   // Date of review
   }],
 });

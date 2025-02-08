@@ -1,5 +1,5 @@
-import { IUser } from "entities/UserEntity";
-import { IOTP } from "entities/OtpEntity"
+import { IUser } from "controllers/entities/UserEntity";
+import { IOTP } from "controllers/entities/OtpEntity"
 
 export interface IOTPservices{
     sendOtp(user: IUser): Promise<IOTP | null>

@@ -11,10 +11,8 @@ const app = express()
 const port = process.env.PORT || 5000
 connectDB()
 
-app.use(express.json())
 app.use(express.urlencoded({ extended: true })); 
 app.use(cookieParser())
-app.use(bodyParser.raw({ type: 'application/json' }));
 app.use(cores({
     origin: 'http://localhost:5173',
     credentials: true         

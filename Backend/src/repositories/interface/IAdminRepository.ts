@@ -1,5 +1,5 @@
-import { ILaborer } from "../../entities/LaborEntity";
-import { IUser } from "../../entities/UserEntity";
+import { ILaborer } from "../../controllers/entities/LaborEntity";
+import { IUser } from "../../controllers/entities/UserEntity";
 
 export interface IAdminRepository{
     fetch(query: string, skip: number, perPage: number): Promise<IUser[]>

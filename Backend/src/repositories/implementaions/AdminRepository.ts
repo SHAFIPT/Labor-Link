@@ -1,8 +1,8 @@
 import User from "../../models/userModel";
-import { IUser } from "../../entities/UserEntity";
+import { IUser } from "../../controllers/entities/UserEntity";
 import { ApiError } from "../../middleware/errorHander";
 import { IAdminRepository } from "../../repositories/interface/IAdminRepository";
-import { ILaborer } from "../../entities/LaborEntity";
+import { ILaborer } from "../../controllers/entities/LaborEntity";
 import Labor from "../../models/LaborModel";
 
 export class AdminRepositooy implements IAdminRepository {

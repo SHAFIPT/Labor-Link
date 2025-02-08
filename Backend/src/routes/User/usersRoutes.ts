@@ -1,7 +1,8 @@
 import userController from "../../controllers/userController";
-import { Router } from "express";
+import express, { Router } from "express";
 import { authenticateUser } from "../../middleware/authMiddleware";
 const userSideController = new userController()
+
 const usersRoutes = Router()
 usersRoutes.get('/fetchUser',authenticateUser ,userSideController.fetchUsers.bind(userSideController))
 usersRoutes.post('/profileUpdate',authenticateUser ,userSideController.profileUpdate.bind(userSideController))
@@ -12,4 +13,9 @@ usersRoutes.get('/fetchBookings',authenticateUser,userSideController.fetchBookin
 usersRoutes.post('/cancelBooking',userSideController.cancelBooking.bind(userSideController))
 usersRoutes.put('/update-read-status/:bookingId',userSideController.updateReadStatus.bind(userSideController))
 usersRoutes.post('/resheduleRequst',userSideController.reshedulRequest.bind(userSideController))
+usersRoutes.post('/workCompletion/:bookingId',userSideController.workCompletion.bind(userSideController))
+usersRoutes.post('/pymnetSuccess', userSideController.pymnetSuccess.bind(userSideController))
+usersRoutes.post('/payment/webhook', express.raw({ type: 'application/json' }), userSideController.handleStripeWebhook.bind(userSideController));
+usersRoutes.get('/fetchBookingWithId/:bookingId',authenticateUser,userSideController.fetchBookingWithId.bind(userSideController))
+usersRoutes.post('/reviewSubmit/:bookingId', authenticateUser,userSideController.reviewSubmit.bind(userSideController))
 export default usersRoutes

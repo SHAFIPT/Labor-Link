@@ -6,7 +6,7 @@ import UserRepository from "../repositories/implementaions/UserRepository";
 import { sendEmailOtp } from "../utils/emailService"; // Email sending function
 import { ApiError } from "../middleware/errorHander";
 import User from "../models/userModel";
-import { IUser } from "../entities/UserEntity";
+import { IUser } from "./entities/UserEntity";
 import OtpModel from "models/otpModel";
 import ApiResponse from "../utils/Apiresponse";
       

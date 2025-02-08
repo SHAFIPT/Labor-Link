@@ -1,5 +1,5 @@
-import { IOTP } from "../../entities/OtpEntity";
-import { ILaborer } from "../../entities/LaborEntity";
+import { IOTP } from "../../controllers/entities/OtpEntity";
+import { ILaborer } from "../../controllers/entities/LaborEntity";
 
 export interface ILaborRepository {
     createLabor(labor: Partial<ILaborer>): Promise<ILaborer | null>

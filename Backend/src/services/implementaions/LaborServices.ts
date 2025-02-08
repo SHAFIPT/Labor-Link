@@ -1,8 +1,8 @@
 import  bycript  from 'bcrypt';
-import { IAboutMe, ILaborer } from "entities/LaborEntity";
+import { IAboutMe, ILaborer } from "controllers/entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import { ILaborService } from "../../services/interface/ILaborServices";
-import { IBooking } from 'entities/bookingEntity';
+import { IBooking } from 'controllers/entities/bookingEntity';
 
 export class LaborServices implements ILaborService{
     private laborRepsitory: ILaborSidRepository

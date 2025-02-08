@@ -1,4 +1,4 @@
-import { ILaborer } from "../../entities/LaborEntity";
+import { ILaborer } from "../../controllers/entities/LaborEntity";
 import { ILaborAuthSerives } from "../../services/interface/ILaborAuthServies";
 import bycript from "bcrypt";
 import Labor from "../../models/LaborModel";
@@ -11,7 +11,7 @@ import {
 } from "../../utils/tokenUtils";
 import { ApiError } from "../../middleware/errorHander";
 import { sendEmailOtp } from "../../utils/emailService";
-import { IOTP } from "../../entities/OtpEntity";
+import { IOTP } from "../../controllers/entities/OtpEntity";
 
 export class LaborAuthServies implements ILaborAuthSerives {
   private laborRepository: ILaborRepository;

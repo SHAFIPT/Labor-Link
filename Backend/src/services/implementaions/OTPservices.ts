@@ -2,8 +2,8 @@ import { IOTPservices } from "services/interface/IOTPservices";
 import OTPRepository from "repositories/implementaions/OTPRepository";
 import { IOTPRepository } from "repositories/interface/IOTPRepository";
 import { sendEmailOtp } from "utils/emailService";
-import { IOTP } from 'entities/OtpEntity';
-import { IUser } from 'entities/UserEntity';
+import { IOTP } from 'controllers/entities/OtpEntity';
+import { IUser } from 'controllers/entities/UserEntity';
 
 export default class OTPservices implements IOTPservices{
     private otpRepository: IOTPRepository;

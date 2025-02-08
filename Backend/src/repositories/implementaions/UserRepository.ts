@@ -1,4 +1,4 @@
-import { IUser } from "../../entities/UserEntity";
+import { IUser } from "../../controllers/entities/UserEntity";
 import { IUserRepository } from "../../repositories/interface/IUserRepository";
 import User from "../../models/userModel";
 import { ApiError } from "../../middleware/errorHander";

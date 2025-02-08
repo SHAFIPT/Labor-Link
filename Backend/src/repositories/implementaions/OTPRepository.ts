@@ -1,5 +1,5 @@
-import { IOTP } from "../../entities/OtpEntity";
-import { IUser } from "../../entities/UserEntity";
+import { IOTP } from "../../controllers/entities/OtpEntity";
+import { IUser } from "../../controllers/entities/UserEntity";
 import { IOTPRepository } from "../../repositories/interface/IOTPRepository";
 import otpModel from "../../models/otpModel";
 

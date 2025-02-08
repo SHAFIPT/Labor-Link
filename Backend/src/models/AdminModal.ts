@@ -1,4 +1,4 @@
-import { IAdmin } from "entities/adminEntity";
+import { IAdmin } from "controllers/entities/adminEntity";
 import mongoose, { Schema } from 'mongoose';
 
 const AdminSchema: Schema<IAdmin> = new Schema(
