@@ -145,3 +145,22 @@ export const reviewSubmit = async (formData , bookingId) => {
     throw error;
   }
 }
+export const fetchAllBooings = async (userId , page :number , limit : number , filter : string) => {
+  try {
+
+     const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    if (filter) {
+      queryParams.append("status", filter);
+    }
+    const response = await api.get(`/api/user/users/fetchAllBooings/${userId}?${queryParams.toString()}`)
+    return response
+    
+  } catch (error) {
+    console.error("Error in About me :", error);
+    throw error;
+  }
+}

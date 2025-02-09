@@ -18,4 +18,5 @@ usersRoutes.post('/pymnetSuccess', userSideController.pymnetSuccess.bind(userSid
 usersRoutes.post('/payment/webhook', express.raw({ type: 'application/json' }), userSideController.handleStripeWebhook.bind(userSideController));
 usersRoutes.get('/fetchBookingWithId/:bookingId',authenticateUser,userSideController.fetchBookingWithId.bind(userSideController))
 usersRoutes.post('/reviewSubmit/:bookingId', authenticateUser,userSideController.reviewSubmit.bind(userSideController))
+usersRoutes.get('/fetchAllBooings/:userId', authenticateUser,userSideController.fetchAllBooings.bind(userSideController))
 export default usersRoutes

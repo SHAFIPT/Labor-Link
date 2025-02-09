@@ -158,4 +158,18 @@ export default class UserServices implements IUserServices {
       console.error(error)
     }
   }
+  async fetchAllBookings(
+    userId: string,
+    page: number,
+    limit: number,
+    filter: object
+  ): Promise<{
+    bookings: IBooking[];
+    total: number;
+    completedBookings: number;
+    canceledBookings: number;
+    totalAmount :number
+  }>{
+     return await this.userRepository.fetchAllBookings(userId,page,limit,filter)
+  }
 }

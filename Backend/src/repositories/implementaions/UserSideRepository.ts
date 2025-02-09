@@ -8,6 +8,7 @@ import Booking from "../../models/BookingModal";
 import { ILaborer, IReview } from "../../controllers/entities/LaborEntity";
 import Labor from "../../models/LaborModel";
 import Stripe from 'stripe';
+import mongoose from "mongoose";
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -458,7 +459,80 @@ export default class UserSideRepository implements IUserSideRepository {
       const allRatings = [...labor.reviews.map(review => review.rating), newRating];
       const totalRating = allRatings.reduce((sum, rating) => sum + rating, 0);
       return Number((totalRating / allRatings.length).toFixed(1));
+  }
+  async fetchAllBookings(
+    userId: string,
+    page: number,
+    limit: number,
+    filter: object
+  ): Promise<{
+    bookings: IBooking[];
+    total: number;
+    completedBookings: number;
+    canceledBookings: number;
+    totalAmount :number
+  }> {
+    try {
+
+       const skip = (page - 1) * limit;
+
+      const bookings = await Booking.find({ userId, ...filter })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate({
+          path: "laborId", // Field to populate
+          select: "firstName lastName  phone  categories profilePicture address", // Fields to include from the Labor schema
+        })
+        .exec();
+      
+      const total = await Booking.countDocuments({
+        userId,
+        ...filter,
+      });
+
+      const completedBookings = await Booking.countDocuments({ 
+        userId, 
+        status: 'completed',
+        ...filter
+      });
+
+       const canceledBookings = await Booking.countDocuments({ 
+        userId, 
+         status: 'canceled',
+        ...filter
+       });
+      
+      const totalAmountResult = await Booking.aggregate([
+        {
+          $match: {
+            userId: new mongoose.Types.ObjectId(userId), // Convert userId to ObjectId
+            status: 'completed'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$quote.estimatedCost" } // Correct path to estimatedCost
+          } 
+        }
+      ]);
+
+      const totalAmount = totalAmountResult.length > 0 ? totalAmountResult[0].total : 0;
+      
+      return {
+        bookings,
+        total,
+        completedBookings,
+        canceledBookings,
+        totalAmount
+        };
+      
+    } catch (error) {
+      console.error('Error in fetchbookings:', error);
+      throw error;
     }
+  }
 }
 
 

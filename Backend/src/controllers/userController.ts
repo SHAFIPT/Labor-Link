@@ -287,7 +287,7 @@ export class userController {
       );
 
       if (bookings) {
-        res.status(200).json({
+        return res.status(200).json({
           message: "fetching booking succesfully ..",
           bookings,
           total,
@@ -637,6 +637,54 @@ export class userController {
       
     } catch (error) {
       console.log(error);
+    }
+  }
+  public fetchAllBooings = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      const { userId } = req.params
+      
+      if (!userId) {
+        return res.status(404)
+        .json({error : 'User id is miising .....'})
+      }
+
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const status = req.query.status as string | undefined;
+
+
+      const filter = status ? { status } : {};
+
+
+      const {
+        bookings,
+        total,
+        completedBookings,
+        canceledBookings,
+        totalAmount
+      } = await this.userService.fetchAllBookings(userId, page, limit, filter)
+
+      if (!bookings) {
+        return res.status(404)
+        .json({error : 'error in fetchBooking .....'})
+      }
+
+      return  res.status(200).json({
+          message: "fetching booking succesfully ..",
+          bookings,
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+          completedBookings,
+          canceledBookings,
+          totalAmount
+        });
+      
+    } catch (error) {
+      console.log(error);
+      next()
     }
   }
 }

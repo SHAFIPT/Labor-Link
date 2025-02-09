@@ -1191,6 +1191,72 @@ const LaborDashBoard = () => {
                 </div>
               </div>
             )}
+             {currentStage === "Works" && (
+  <div className="bg-gray-800 rounded-lg shadow-md overflow-x-auto w-full max-w-screen-lg mx-auto">
+    <table className="w-full min-w-[600px]">
+      <thead className="bg-gray-700">
+        <tr>
+          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
+            Date
+          </th>
+          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
+            Customer Name
+          </th>
+          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
+            Job Description
+          </th>
+          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
+            Status
+          </th>
+          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
+            Payment
+          </th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-gray-600">
+        {bookingDetails?.length > 0 ? (
+          bookingDetails.map((booking, index) => (
+            <tr key={booking?._id || index} className="hover:bg-gray-700">
+              <td className="px-4 py-4 whitespace-nowrap text-xs sm:text-sm text-white">
+                {new Date(booking?.createdAt).toLocaleDateString()}
+              </td>
+              <td className="px-4 py-4 text-xs sm:text-sm text-white">
+                {booking?.userId?.firstName || "N/A"} {booking?.userId?.lastName || ""}
+              </td>
+              <td className="px-4 py-4 text-xs sm:text-sm text-white">
+                {booking?.quote?.description || "N/A"}
+              </td>
+              <td className="px-4 py-4 whitespace-nowrap">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium inline-block
+                    ${
+                      booking?.status === "confirmed"
+                        ? "bg-yellow-800 text-yellow-100"
+                        : booking?.status === "canceled"
+                        ? "bg-red-800 text-red-100"
+                        : "bg-green-800 text-green-100"
+                    }`}
+                >
+                  {booking?.status || "Pending"}
+                </span>
+              </td>
+              <td className="px-4 py-4 whitespace-nowrap text-xs sm:text-sm text-white">
+                ₹{booking?.quote?.estimatedCost || "0"}
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan={5} className="text-center py-4 text-white">
+              No bookings available
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+)}
+
           </>
         )}
       </div>

@@ -50,7 +50,7 @@ const LaborListingPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // console.log("This is the Chats of the user :::::::::::", chats)
+  console.log("This is the laborsList", laborsList)
 
   {
     /* Define pagination variables */
@@ -1026,20 +1026,18 @@ useEffect(() => {
                                   {user.categories[0]}
                                 </span>
                                 <div className="flex items-center gap-1">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star
-                                      key={i}
-                                      className={`w-4 h-4 ${
-                                        i < user.rating
-                                          ? "fill-yellow-400 text-yellow-400"
-                                          : "text-gray-300"
-                                      }`}
-                                    />
-                                  ))}
-                                  <span className="text-sm text-gray-600 ml-1">
-                                    {user.rating}.0 ({user.reviews} reviews)
-                                  </span>
-                                </div>
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`w-4 h-4 ${
+                                      i < Math.round(user.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                                <span className="text-sm text-gray-600 ml-1">
+                                  {user.rating.toFixed(1)} ({user.reviews?.length || 0} reviews)
+                                </span>
+                              </div>
                                 <div className="text-sm sm:text-base md:text-lg lg:text-[12px]">
                                   <p className="text-gray-600 mt-2">
                                     I am {user?.firstName},<br />a highly
@@ -1146,20 +1144,18 @@ useEffect(() => {
                                   {user.categories[0]}
                                 </span>
                                 <div className="flex items-center gap-1">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star
-                                      key={i}
-                                      className={`w-4 h-4 ${
-                                        i < user.rating
-                                          ? "fill-yellow-400 text-yellow-400"
-                                          : "text-gray-300"
-                                      }`}
-                                    />
-                                  ))}
-                                  <span className="text-sm  ml-1">
-                                    {user.rating}.0 ({user.reviews} reviews)
-                                  </span>
-                                </div>
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`w-4 h-4 ${
+                                      i < Math.round(user.rating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                                <span className="text-sm text-gray-600 ml-1">
+                                  {user.rating.toFixed(1)} ({user.reviews?.length || 0} reviews)
+                                </span>
+                              </div>
                                 <div className="text-sm sm:text-base md:text-lg lg:text-[12px]">
                                   <p className=" mt-2 ">
                                     I am {user?.firstName},<br></br> a highly

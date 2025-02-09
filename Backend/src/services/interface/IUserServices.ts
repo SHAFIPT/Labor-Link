@@ -26,8 +26,14 @@ export interface IUserServices {
     bookingId: string,
     isUserRead: boolean
   ): Promise<IBooking | null>;
-  fetchBookinById(bookingId : string) : Promise<IBooking | null>
-  workCompletion(bookingId: string, updateData: { isUserCompletionReported?: boolean; isLaborCompletionReported?: boolean }): Promise<IBooking | null>;
+  fetchBookinById(bookingId: string): Promise<IBooking | null>;
+  workCompletion(
+    bookingId: string,
+    updateData: {
+      isUserCompletionReported?: boolean;
+      isLaborCompletionReported?: boolean;
+    }
+  ): Promise<IBooking | null>;
   resheduleRequst(
     bookingId: string,
     newDate: string,
@@ -35,7 +41,28 @@ export interface IUserServices {
     reason: string,
     requestSentBy: string
   ): Promise<IBooking | null>;
-  pymentSuccess(bookingId: string, laborId: string, userId: string): Promise<Stripe.PaymentIntent> 
-  reviewUpload(bookingId : string , rating :string , feedback : string , imageUrls: string[]):Promise<IBooking | null>
+  pymentSuccess(
+    bookingId: string,
+    laborId: string,
+    userId: string
+  ): Promise<Stripe.PaymentIntent>;
+  reviewUpload(
+    bookingId: string,
+    rating: string,
+    feedback: string,
+    imageUrls: string[]
+  ): Promise<IBooking | null>;
+  fetchAllBookings(
+    userId: string,
+    page: number,
+    limit: number,
+    filter: object
+  ): Promise<{
+    bookings: IBooking[];
+    total: number;
+    completedBookings: number;
+    canceledBookings: number;
+    totalAmount :number
+  }>;
 }
 

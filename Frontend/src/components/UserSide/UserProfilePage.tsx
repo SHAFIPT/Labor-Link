@@ -81,7 +81,7 @@ const UserProfile = () => {
   console.log("Thiis is the BoookingDETAilssssssssssssss :", bookingDetails);
 
 
-  console.log('this is the neeeeeeeeewwwwwww bbbbbbboke3ee ,',updatedBookingDetails)
+  // console.log('this is the neeeeeeeeewwwwwww bbbbbbboke3ee ,',updatedBookingDetails?.[0]?.bookingId)
   // console.log("Thiis is the llllllllllllllll :", booking.bookingId);
 
   // const { bookingId } = bookingDetails
@@ -115,7 +115,7 @@ const UserProfile = () => {
         // console.log("This is the data:::::::::::::",fetchUserResponse)
         setUser(fetchUserResponse);
         setUserData(fetchUserResponse);
-      } catch (error: any) {
+      } catch (error) {
         if (error.response && error.response.status === 403) {
           toast.error("Your account has been blocked.");
           localStorage.removeItem("UserAccessToken");
@@ -756,7 +756,7 @@ const UserProfile = () => {
       )}
 
  
-      <div className="w-full relative">
+      <div className="w-full  relative">
         <div className="relative">
           <img
             src={BgImage}
@@ -933,7 +933,7 @@ const UserProfile = () => {
             <>
               {bookingDetails && bookingDetails.length > 0 ? (
                 bookingDetails.map((booking) => (
-                  <div className="border-2 border-gray-700 rounded-lg p-6 mb-5 bg-gray-800 shadow-md">
+                  <div className="border-2  border-gray-700 rounded-lg p-6 mb-5 bg-gray-800 shadow-md">
                     <div
                       key={booking?._id}
                       className="border-2 border-gray-600 rounded-lg p-5 mb-5 bg-gray-900"
@@ -991,21 +991,6 @@ const UserProfile = () => {
                             )}
                         </div>
 
-                        {/* Status */}
-                        <div>
-                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
-                            Status:
-                          </h3>
-                          <p
-                            className={`border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] px-4 py-2 ${
-                              booking?.status === "canceled"
-                                ? "text-red-500"
-                                : "text-gray-300"
-                            }`}
-                          >
-                            {booking?.status || "N/A"}
-                          </p>
-                        </div>
 
                         {/* Scheduled Date and Time */}
                         <div>
@@ -1039,6 +1024,37 @@ const UserProfile = () => {
                           </h3>
                           <p className="border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] text-gray-300 px-4 py-2">
                             {booking?.laborId?.phone || "N/A"}
+                          </p>
+                        </div>
+                        {/* Status */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                            Work Status:
+                          </h3>
+                          <p
+                            className={`border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] px-4 py-2 ${
+                              booking?.status === "canceled"
+                                ? "text-red-500"
+                                : "text-green-400"
+                            }`}
+                          >
+                            {booking?.status || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* payment Status */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#32eae0] mb-2">
+                            Payment Status:
+                          </h3>
+                          <p
+                            className={`border border-gray-600 p-2 rounded-full text-sm font-[RobotoMono] px-4 py-2 ${
+                              booking?.paymentStatus === "paid"
+                                ? "text-green-500"
+                                : "text-yellow-500"
+                            }`}
+                          >
+                            {booking?.paymentStatus || "N/A"}
                           </p>
                         </div>
 
@@ -1159,67 +1175,62 @@ const UserProfile = () => {
                       />
                     )}
 
-                    {/* Work Completed Button */}
                     <div className="text-center mt-6">
-                      {booking?.status === "canceled" ? (
-                        // If the booking is canceled, show the cancel details button
-                        <span
-                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-red-500 text-white"
-                          onClick={() => setCancelDetilsModal(true)}
-                        >
-                          View Cancel Details
-                        </span>
-                      ) : booking?.isUserCompletionReported &&
-                        !booking?.isLaborCompletionReported ? (
-                        // Case 1: User has reported work completion, waiting for labor
-                        <p className="text-red-600 font-medium">
-                          Your work completion request is uploaded. Please wait
-                          for the labor's work completion report.
-                        </p>
-                      ) : !booking?.isUserCompletionReported &&
-                        booking?.isLaborCompletionReported ? (
-                        // Case 2: Labor has reported work completion, waiting for user
-                        <>
-                          <p className="text-gray-600 font-medium mb-2">
-                            The labor has updated their work completion. Now, we
-                            are waiting for your response.
+                        {booking?.status === "canceled" ? (
+                          // If the booking is canceled, show the cancel details button
+                          <span
+                            className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-red-500 text-white"
+                            onClick={() => setCancelDetilsModal(true)}
+                          >
+                            View Cancel Details
+                          </span>
+                        ) : booking?.isUserCompletionReported &&
+                          !booking?.isLaborCompletionReported ? (
+                          // Case 1: User has reported work completion, waiting for labor
+                          <p className="text-red-600 font-medium">
+                            Your work completion request is uploaded. Please wait for the labor's work completion report.
                           </p>
+                        ) : !booking?.isUserCompletionReported &&
+                          booking?.isLaborCompletionReported ? (
+                          // Case 2: Labor has reported work completion, waiting for user
+                          <>
+                            <p className="text-gray-600 font-medium mb-2">
+                              The labor has updated their work completion. Now, we are waiting for your response.
+                            </p>
+                            <span
+                              className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
+                              onClick={() => setWorkCompleteModal(booking.bookingId)}
+                            >
+                              Confirm Work Completion
+                            </span>
+                          </>
+                        ) : booking?.isUserCompletionReported && booking?.isLaborCompletionReported ? (
+                          // Case 3: Both user and labor reported completion → Show "Proceed to Pay" button
+                          booking?.paymentStatus === "paid" ? (
+                            <span className="text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-gray-400 text-white cursor-not-allowed">
+                              Payment Completed
+                            </span>
+                          ) : (
+                            <span
+                              className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-green-500 text-white"
+                              onClick={() =>
+                                handleProceedToPay(booking.bookingId, booking.laborId?._id, booking.userId)
+                              }
+                            >
+                              Proceed to Pay
+                            </span>
+                          )
+                        ) : (
+                          // Default Case: Show normal "Work Completed" button
                           <span
                             className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
-                            onClick={() =>
-                              setWorkCompleteModal(booking.bookingId)
-                            }
+                            onClick={() => setWorkCompleteModal(booking.bookingId)}
                           >
-                            Confirm Work Completion
+                            Work Completed
                           </span>
-                        </>
-                      ) : booking?.isUserCompletionReported &&
-                        booking?.isLaborCompletionReported ? (
-                        // Case 3: Both user and labor reported completion → Show "Proceed to Pay" button
-                        <span
-                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-green-500 text-white"
-                          onClick={() =>
-                            handleProceedToPay(
-                              booking.bookingId,
-                              booking.laborId?._id,
-                              booking.userId
-                            )
-                          }
-                        >
-                          Proceed to Pay
-                        </span>
-                      ) : (
-                        // Default Case: Show normal "Work Completed" button
-                        <span
-                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
-                          onClick={() =>
-                            setWorkCompleteModal(booking.bookingId)
-                          }
-                        >
-                          Work Completed
-                        </span>
-                      )}
-                    </div>
+                        )}
+                      </div>
+
                   </div>
                 ))
               ) : (
@@ -1286,7 +1297,7 @@ const UserProfile = () => {
                         </div>
 
                         {/* Status */}
-                        <div>
+                        {/* <div>
                           <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
                             Status:
                           </h3>
@@ -1299,7 +1310,7 @@ const UserProfile = () => {
                           >
                             {booking?.status || "N/A"}
                           </p>
-                        </div>
+                        </div> */}
 
                         {/* Scheduled Date and Time */}
                         <div>
@@ -1333,6 +1344,39 @@ const UserProfile = () => {
                           </h3>
                           <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
                             {booking?.laborId?.phone || "N/A"}
+                          </p>
+                        </div>
+
+
+                        {/* Status */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
+                            Work Status:
+                          </h3>
+                          <p
+                            className={`border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] px-4 py-2 ${
+                              booking?.status === "canceled"
+                                ? "text-red-500"
+                                : "text-green-400"
+                            }`}
+                          >
+                            {booking?.status || "N/A"}
+                          </p>
+                        </div>
+
+                        {/* payment Status */}
+                        <div>
+                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
+                            Payment Status:
+                          </h3>
+                          <p
+                            className={`border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] px-4 py-2 ${
+                              booking?.paymentStatus === "paid"
+                                ? "text-green-500"
+                                : "text-yellow-500"
+                            }`}
+                          >
+                            {booking?.paymentStatus || "N/A"}
                           </p>
                         </div>
 
@@ -1461,65 +1505,60 @@ const UserProfile = () => {
                     )}
 
                     <div className="text-center mt-6">
-                      {booking?.status === "canceled" ? (
-                        // If the booking is canceled, show the cancel details button
-                        <span
-                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-red-500 text-white"
-                          onClick={() => setCancelDetilsModal(true)}
-                        >
-                          View Cancel Details
-                        </span>
-                      ) : booking?.isUserCompletionReported &&
-                        !booking?.isLaborCompletionReported ? (
-                        // Case 1: User has reported work completion, waiting for labor
-                        <p className="text-gray-600 font-medium">
-                          Your work completion request is uploaded. Please wait
-                          for the labor's work completion report.
-                        </p>
-                      ) : !booking?.isUserCompletionReported &&
-                        booking?.isLaborCompletionReported ? (
-                        // Case 2: Labor has reported work completion, waiting for user
-                        <>
-                          <p className="text-gray-600 font-medium mb-2">
-                            The labor has updated their work completion. Now, we
-                            are waiting for your response.
+                        {booking?.status === "canceled" ? (
+                          // If the booking is canceled, show the cancel details button
+                          <span
+                            className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-red-500 text-white"
+                            onClick={() => setCancelDetilsModal(true)}
+                          >
+                            View Cancel Details
+                          </span>
+                        ) : booking?.isUserCompletionReported &&
+                          !booking?.isLaborCompletionReported ? (
+                          // Case 1: User has reported work completion, waiting for labor
+                          <p className="text-red-600 font-medium">
+                            Your work completion request is uploaded. Please wait for the labor's work completion report.
                           </p>
+                        ) : !booking?.isUserCompletionReported &&
+                          booking?.isLaborCompletionReported ? (
+                          // Case 2: Labor has reported work completion, waiting for user
+                          <>
+                            <p className="text-gray-600 font-medium mb-2">
+                              The labor has updated their work completion. Now, we are waiting for your response.
+                            </p>
+                            <span
+                              className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
+                              onClick={() => setWorkCompleteModal(booking.bookingId)}
+                            >
+                              Confirm Work Completion
+                            </span>
+                          </>
+                        ) : booking?.isUserCompletionReported && booking?.isLaborCompletionReported ? (
+                          // Case 3: Both user and labor reported completion → Show "Proceed to Pay" button
+                          booking?.paymentStatus === "paid" ? (
+                            <span className="text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-gray-400 text-white cursor-not-allowed">
+                              Payment Completed
+                            </span>
+                          ) : (
+                            <span
+                              className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-green-500 text-white"
+                              onClick={() =>
+                                handleProceedToPay(booking.bookingId, booking.laborId?._id, booking.userId)
+                              }
+                            >
+                              Proceed to Pay
+                            </span>
+                          )
+                        ) : (
+                          // Default Case: Show normal "Work Completed" button
                           <span
                             className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
-                            onClick={() =>
-                              setWorkCompleteModal(booking.laborId)
-                            }
+                            onClick={() => setWorkCompleteModal(booking.bookingId)}
                           >
-                            Confirm Work Completion
+                            Work Completed
                           </span>
-                        </>
-                      ) : booking?.isUserCompletionReported &&
-                        booking?.isLaborCompletionReported ? (
-                        // Case 3: Both user and labor reported completion → Show "Proceed to Pay" button
-                        <span
-                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-green-500 text-white"
-                          onClick={() =>
-                            handleProceedToPay(
-                              booking.bookingId,
-                              booking.laborId?._id,
-                              booking.userId
-                            )
-                          }
-                        >
-                          Proceed to Pay
-                        </span>
-                      ) : (
-                        // Default Case: Show normal "Work Completed" button
-                        <span
-                          className="cursor-pointer text-lg font-medium md:w-[280px] inline-block px-6 py-3 rounded-full bg-[#1e40af] text-white"
-                          onClick={() =>
-                            setWorkCompleteModal(booking.bookingId)
-                          }
-                        >
-                          Work Completed
-                        </span>
-                      )}
-                    </div>
+                        )}
+                      </div>
                   </div>
                 ))
               ) : (

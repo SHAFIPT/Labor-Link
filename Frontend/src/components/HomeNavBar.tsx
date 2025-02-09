@@ -27,6 +27,7 @@ import NotificaionModal from "./UserSide/notificaionModal";
 import { auth, db } from "../utils/firbase";
 import { collection, doc, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { Bell } from "lucide-react";
 
 interface ChatDocument {
   laborId: string;
@@ -70,6 +71,8 @@ const HomeNavBar = () => {
   const laborer = useSelector((state: RootState) => state.labor.laborer)
   const loading = useSelector((state: RootState) => state.user.loading)
   const bookingDetails = useSelector((state: RootState) => state.booking.bookingDetails)
+  // const [isOpens, setIsOpens] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
   // console.log("This is the bookingDetails..................", bookingDetails)
@@ -91,6 +94,18 @@ const HomeNavBar = () => {
     
   //   console.log("This is the locaiton fo the userLocation :",locationOfUser)
   // },[locationOfUser])
+
+  // const toggleMenu = () => setIsOpens(!isOpen);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check if page is scrolled more than 50px
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
    const handleLaborList = () => {
     // Check if either latitude or longitude is null
@@ -625,145 +640,191 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           </div>
         </Link>
 
-        <div className="rightSide flex items-center p-5 space-x-4 md:space-x-6 md:p-4 lg:space-x-16 lg:p-16 ">
-          <div className="lg:block hidden">
-            <div className="searchBox h-[23px] lg:h-[50px] lg:w-[630px] flex items-center border shadow-lg rounded-xl px-4 transition-all group ">
-              <input
-                type="search"
-                name="search"
-                className="flex-1 h-full px-4 bg-transparent outline-none"
-                placeholder="Search..."
-              />
-              <svg
-                className="w-6 h-6"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                ></path>
-              </svg>
-            </div>
-          </div>
-
-          <div
-            className={`rightDarkLighMode lg:pl-0 m-6 lg:m-0 pl-[114px] md:pl-[590px] sm:pl-16 -mr-32 sm:mr-1 md:mr-6 lg:mr-0 ${
-              theme === "dark"
-                ? "bg-darkBg text-darkText"
-                : "bg-lightBg text-lightText"
-            }`}
-          >
-            <label className="toggle" htmlFor="switch" onClick={toggleDarkMode}>
-              <input
-                id="switch"
-                className="input"
-                type="checkbox"
-                checked={theme === "dark"} // Check if the theme is dark
-                onChange={toggleDarkMode}
-              />
-              {theme === "dark" ? (
-                <div className="icon icon--sun">
-                  {/* Sun Icon */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 47.5 47.5"
-                    className="w-[20px] h-[20px]"
-                  >
-                    <g fill="#ffac33" transform="matrix(1.25 0 0 -1.25 0 47.5)">
-                      <path d="M17 35s0 2 2 2 2-2 2-2v-2s0-2-2-2-2 2-2 2v2zM35 21s2 0 2-2-2-2-2-2h-2s-2 0-2 2 2 2 2 2h2zM5 21s2 0 2-2-2-2-2-2H3s-2 0-2 2 2 2 2 2h2zM10.121 29.706s1.414-1.414 0-2.828-2.828 0-2.828 0l-1.415 1.414s-1.414 1.414 0 2.829c1.415 1.414 2.829 0 2.829 0l1.414-1.415ZM31.121 8.707s1.414-1.414 0-2.828-2.828 0-2.828 0l-1.414 1.414s-1.414 1.414 0 2.828 2.828 0 2.828 0l1.414-1.414ZM30.708 26.879s-1.414-1.414-2.828 0 0 2.828 0 2.828l1.414 1.414s1.414 1.414 2.828 0 0-2.828 0-2.828l-1.414-1.414ZM9.708 5.879s-1.414-1.414-2.828 0 0 2.828 0 2.828l1.414 1.414s1.414 1.414 2.828 0 0-2.828 0-2.828L9.708 5.879ZM17 5s0 2 2 2 2-2 2-2V3s0-2-2-2-2 2-2 2v2zM29 19c0 5.523-4.478 10-10 10-5.523 0-10-4.477-10-10 0-5.522 4.477-10 10-10 5.522 0 10 4.478 10 10"></path>
-                    </g>
-                  </svg>
-                </div>
-              ) : (
-                <div className="icon icon--moon">
-                  {/* Moon Icon */}
-                  <svg
-                    height="32"
-                    width="32"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-[20px] h-[20px]"
-                  >
-                    <path
-                      clipRule="evenodd"
-                      d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"
-                      fillRule="evenodd"
-                    ></path>
-                  </svg>
-                </div>
-              )}
-            </label>
-          </div>
-
-          <button
-            className="BrowserButton bg-[#21A391] focus:outline-none hidden lg:block md:hidden text-white p-3 w-[220px] rounded-xl"
-            onClick={handleLaborList}
-          >
-            Brouse all labors
-          </button>
-
-          <div className="relative">
-            {/* Menu Icon - Now with higher z-index to stay on top */}
-            <div className="lg:hidden md:hidden sm:hidden fixed top-9 right-1 z-50">
-              <button
-                onClick={toggleMenu}
-                className="p-2 focus:outline-none"
-                aria-label="Toggle menu"
-              >
-                <i
-                  className={`fas ${isOpen ? "fa-times" : "fa-bars"} text-2xl ${
-                    isOpen ? "text-white" : "text-black"
-                  }`}
-                ></i>
-              </button>
+          <div className="rightSide flex items-center p-5 space-x-4 md:space-x-6 md:p-4 lg:space-x-16 lg:p-16 ">
+            <div className="lg:block hidden">
+              <div className="searchBox h-[23px] lg:h-[50px] lg:w-[630px] flex items-center border shadow-lg rounded-xl px-4 transition-all group ">
+                <input
+                  type="search"
+                  name="search"
+                  className="flex-1 h-full px-4 bg-transparent outline-none"
+                  placeholder="Search..."
+                />
+                <svg
+                  className="w-6 h-6"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                  ></path>
+                </svg>
+              </div>
             </div>
 
-            {/* Overlay Menu */}
             <div
-              className={`fixed inset-x-0 top-0 h-1/2 bg-[#184242] transform transition-transform duration-300 ease-in-out z-40 ${
-                isOpen ? "translate-y-0" : "-translate-y-full"
+              className={`rightDarkLighMode  ${
+                theme === "dark"
+                  ? "bg-darkBg text-darkText"
+                  : "bg-lightBg text-lightText"
               }`}
             >
-              <nav className="flex flex-col items-center justify-center h-full space-y-6">
+              <label className="toggle" htmlFor="switch" onClick={toggleDarkMode}>
+                <input
+                  id="switch"
+                  className="input"
+                  type="checkbox"
+                  checked={theme === "dark"} // Check if the theme is dark
+                  onChange={toggleDarkMode}
+                />
+                {theme === "dark" ? (
+                  <div className="icon icon--sun">
+                    {/* Sun Icon */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 47.5 47.5"
+                      className="w-[20px] h-[20px]"
+                    >
+                      <g fill="#ffac33" transform="matrix(1.25 0 0 -1.25 0 47.5)">
+                        <path d="M17 35s0 2 2 2 2-2 2-2v-2s0-2-2-2-2 2-2 2v2zM35 21s2 0 2-2-2-2-2-2h-2s-2 0-2 2 2 2 2 2h2zM5 21s2 0 2-2-2-2-2-2H3s-2 0-2 2 2 2 2 2h2zM10.121 29.706s1.414-1.414 0-2.828-2.828 0-2.828 0l-1.415 1.414s-1.414 1.414 0 2.829c1.415 1.414 2.829 0 2.829 0l1.414-1.415ZM31.121 8.707s1.414-1.414 0-2.828-2.828 0-2.828 0l-1.414 1.414s-1.414 1.414 0 2.828 2.828 0 2.828 0l1.414-1.414ZM30.708 26.879s-1.414-1.414-2.828 0 0 2.828 0 2.828l1.414 1.414s1.414 1.414 2.828 0 0-2.828 0-2.828l-1.414-1.414ZM9.708 5.879s-1.414-1.414-2.828 0 0 2.828 0 2.828l1.414 1.414s1.414 1.414 2.828 0 0-2.828 0-2.828L9.708 5.879ZM17 5s0 2 2 2 2-2 2-2V3s0-2-2-2-2 2-2 2v2zM29 19c0 5.523-4.478 10-10 10-5.523 0-10-4.477-10-10 0-5.522 4.477-10 10-10 5.522 0 10 4.478 10 10"></path>
+                      </g>
+                    </svg>
+                  </div>
+                ) : (
+                  <div className="icon icon--moon">
+                    {/* Moon Icon */}
+                    <svg
+                      height="32"
+                      width="32"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-[20px] h-[20px]"
+                    >
+                      <path
+                        clipRule="evenodd"
+                        d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"
+                        fillRule="evenodd"
+                      ></path>
+                    </svg>
+                  </div>
+                )}
+              </label>
+            </div>
+
+            <button
+              className="BrowserButton bg-[#21A391] focus:outline-none hidden lg:block md:hidden text-white p-3 w-[220px] rounded-xl"
+              onClick={handleLaborList}
+            >
+              Brouse all labors
+            </button>
+
+            {/* Navigation Container */}
+            <div className="">
+            {/* Menu Toggle Button for Mobile */}
+        <div
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+              isOpen 
+                ? 'bg-transparent' 
+                : isScrolled 
+                  ? theme === 'dark' 
+                    ? 'bg-gray-900 shadow-md '  // Dark mode background color
+                    : 'bg-white shadow-md'  // Light mode background color
+                  : 'bg-transparent'
+            } lg:hidden`}
+          >
+
+          <div className="p-4 flex justify-end">
+            <button
+              onClick={toggleMenu}
+              className="p-2 focus:outline-none transition-colors duration-300"
+              aria-label="Toggle menu"
+              aria-expanded={isOpen}
+            >
+              <i
+                className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-2xl ${
+                  isOpen ? 'text-white' : isScrolled ? 'text-white' : 'text-white'
+                }`}
+              ></i>
+            </button>
+          </div>
+        </div>
+
+        {/* Overlay Menu for Mobile */}
+        <div
+          className={`fixed inset-0 h-screen bg-black bg-opacity-50 transform transition-all duration-500 ease-in-out z-40 ${
+            isOpen ? 'translate-y-0' : '-translate-y-full'
+          }`}
+          onClick={toggleMenu} // Close menu when clicking outside
+        >
+          <div
+            className={`fixed inset-x-0 top-0 h-[50vh] bg-gradient-to-b from-teal-900 to-teal-800 
+                        transform transition-all duration-500 ease-in-out z-40
+                        ${isOpen ? 'translate-y-0' : '-translate-y-full'} 
+                        shadow-2xl`}
+          >
+            <nav className="container mx-auto px-4 h-full flex flex-col items-center justify-center space-y-1 relative">
+              {/* Notification Icon */}
+              <div className="absolute top-6 left-8">
+                <button className="relative group">
+                  <Bell className="w-6 h-6 text-white transition-colors duration-200 group-hover:text-teal-300" />
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    3
+                  </span>
+                </button>
+              </div>
+
+              {/* Menu Items */}
+              <div className="flex flex-col items-center space-y-8 w-full max-w-md mt-16">
                 <button
-                  className="text-white text-xl hover:text-gray-300 transition-colors "
+                  className="w-full py-3 px-6 text-white text-xl font-medium tracking-wide rounded-lg 
+                            bg-teal-700/30 hover:bg-teal-700/50 transition-all duration-200 
+                            transform hover:scale-105 hover:shadow-lg
+                            flex items-center justify-center space-x-2"
                   onClick={handleLaborList}
                 >
-                  Browse all Labors
+                  <span>Browse all Labors</span>
                 </button>
+
                 <button
-                  onClick={() => handleViewProfile}
-                  className="text-white text-xl hover:text-gray-300 transition-colors"
+                  className="w-full py-3 px-6 text-white text-xl font-medium tracking-wide rounded-lg 
+                            bg-teal-700/30 hover:bg-teal-700/50 transition-all duration-200 
+                            transform hover:scale-105 hover:shadow-lg
+                            flex items-center justify-center space-x-2"
+                  onClick={handleViewProfile}
                 >
-                  View Profile page
+                  <span>View Profile Page</span>
                 </button>
+
                 {shouldShowUserName && (
                   <button
-                    className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
+                    className="group flex items-center justify-center w-full max-w-xs h-12 
+                              bg-gradient-to-r from-red-600 to-red-700 rounded-lg 
+                              hover:from-red-700 hover:to-red-800
+                              transition-all duration-300 transform hover:scale-105
+                              shadow-lg hover:shadow-xl"
                     onClick={handleLogout}
                   >
-                    <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
+                    <div className="flex items-center justify-center space-x-3 px-4">
                       <svg
-                        className="w-4 h-4"
+                        className="w-5 h-5 text-white"
                         viewBox="0 0 512 512"
-                        fill="white"
+                        fill="currentColor"
                       >
-                        <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"></path>
+                        <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
                       </svg>
-                    </div>
-                    <div className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-                      Logout
+                      <span className="text-white text-lg font-semibold">Logout</span>
                     </div>
                   </button>
                 )}
-              </nav>
-            </div>
+              </div>
+            </nav>
+          </div>
+          </div>
             {/* 
 
             {shouldShowUserName && (
@@ -778,19 +839,90 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 bookingDetails={bookingDetails}
               />
             )}
-          
+
             {shouldShowUserName && (
+              <div className="di" onClick={() => setNotificaionOn(true)}>
+                <div className="relative cursor-pointer hidden md:block lg:block">
+                  {/* Notification Bell Icon */}
+                  <i className="fas fa-bell text-2xl"></i>
 
-            <div className="di" onClick={() => setNotificaionOn(true)}>
-              <div className="relative cursor-pointer">
-                {/* Notification Bell Icon */}
-                <i className="fas fa-bell text-2xl"></i>
+                  {bookingDetails?.length > 0 &&
+                    bookingDetails[0]?.additionalChargeRequest?.status ===
+                      "pending" &&
+                    bookingDetails[0]?.additionalChargeRequest?.amount > 0 &&
+                    bookingDetails[0]?.additionalChargeRequest?.reason && (
+                      <div className="absolute -top-2 -right-2">
+                        <div className="relative">
+                          {/* Static Red Dot */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
 
-                {bookingDetails?.length > 0 &&
-                  bookingDetails[0]?.additionalChargeRequest?.status ===
-                    "pending" &&
-                  bookingDetails[0]?.additionalChargeRequest?.amount > 0 &&
-                  bookingDetails[0]?.additionalChargeRequest?.reason && (
+                          {/* Pulsating Glow Effect */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                        </div>
+                      </div>
+                    )}
+
+                  {bookingDetails?.length > 0 &&
+                    bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
+                    bookingDetails[0]?.reschedule?.rejectedBy === "user" && (
+                      <div className="absolute -top-2 -right-2">
+                        <div className="relative">
+                          {/* Static Red Dot */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                          {/* Pulsating Glow Effect */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                        </div>
+                      </div>
+                    )}
+
+                  {bookingDetails?.length > 0 &&
+                    bookingDetails[0]?.reschedule &&
+                    hasRejectionDetails(bookingDetails[0]?.reschedule) && (
+                      <div className="absolute -top-2 -right-2">
+                        <div className="relative">
+                          {/* Static Red Dot */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                          {/* Pulsating Glow Effect */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                        </div>
+                      </div>
+                    )}
+
+                  {bookingDetails?.length > 0 &&
+                    bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
+                    bookingDetails[0]?.reschedule?.acceptedBy === null &&
+                    bookingDetails[0]?.reschedule?.rejectedBy === null && (
+                      <div className="absolute -top-2 -right-2">
+                        <div className="relative">
+                          {/* Static Red Dot */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                          {/* Pulsating Glow Effect */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                        </div>
+                      </div>
+                    )}
+
+                  {bookingDetails?.length &&
+                    bookingDetails[0]?.status === "canceled" &&
+                    bookingDetails[0].cancellation?.canceledBy === "labor" &&
+                    !bookingDetails[0].cancellation?.isUserRead &&
+                    isUserAthenticated && (
+                      <div className="absolute -top-2 -right-2">
+                        <div className="relative">
+                          {/* Static Red Dot */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
+
+                          {/* Pulsating Glow Effect */}
+                          <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Glowing Red Notification Indicator */}
+                  {hasUnreadMessages && isUserAthenticated && (
                     <div className="absolute -top-2 -right-2">
                       <div className="relative">
                         {/* Static Red Dot */}
@@ -801,80 +933,8 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                       </div>
                     </div>
                   )}
-
-                {bookingDetails?.length > 0 &&
-                  bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
-                  bookingDetails[0]?.reschedule?.rejectedBy === "user" && (
-                    <div className="absolute -top-2 -right-2">
-                      <div className="relative">
-                        {/* Static Red Dot */}
-                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
-
-                        {/* Pulsating Glow Effect */}
-                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
-                      </div>
-                    </div>
-                  )}
-
-                {bookingDetails?.length > 0 &&
-                  bookingDetails[0]?.reschedule &&
-                  hasRejectionDetails(bookingDetails[0]?.reschedule) && (
-                    <div className="absolute -top-2 -right-2">
-                      <div className="relative">
-                        {/* Static Red Dot */}
-                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
-
-                        {/* Pulsating Glow Effect */}
-                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
-                      </div>
-                    </div>
-                  )}
-
-                {bookingDetails?.length > 0 &&
-                  bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
-                  bookingDetails[0]?.reschedule?.acceptedBy === null &&
-                  bookingDetails[0]?.reschedule?.rejectedBy === null && (
-                    <div className="absolute -top-2 -right-2">
-                      <div className="relative">
-                        {/* Static Red Dot */}
-                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
-
-                        {/* Pulsating Glow Effect */}
-                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
-                      </div>
-                    </div>
-                  )}
-
-                {bookingDetails?.length &&
-                  bookingDetails[0]?.status === "canceled" &&
-                  bookingDetails[0].cancellation?.canceledBy === "labor" &&
-                  !bookingDetails[0].cancellation?.isUserRead &&
-                  isUserAthenticated && (
-                    <div className="absolute -top-2 -right-2">
-                      <div className="relative">
-                        {/* Static Red Dot */}
-                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
-
-                        {/* Pulsating Glow Effect */}
-                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
-                      </div>
-                    </div>
-                  )}
-
-                {/* Glowing Red Notification Indicator */}
-                {hasUnreadMessages && isUserAthenticated && (
-                  <div className="absolute -top-2 -right-2">
-                    <div className="relative">
-                      {/* Static Red Dot */}
-                      <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center absolute top-0 right-0"></div>
-
-                      {/* Pulsating Glow Effect */}
-                      <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75 right-0"></div>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
             )}
 
             {/* </>

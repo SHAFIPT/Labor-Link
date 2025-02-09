@@ -16,7 +16,7 @@ import char from '../../../assets/happy-female-electrician.avif'
 import { persistor } from '../../../redux/store/store';
 import { CalendarDaysIcon } from "@heroicons/react/24/solid";
 import '../../Auth/LoadingBody.css'
-import { Phone, Mail, MapPin, Clock, Date ,Globe, Heart, Star, Edit, Wallet , ChevronRight, Home, User ,
+import { Phone, Mail, MapPin, Clock,Globe, Heart, Star, Edit, Wallet , ChevronRight, Home, User ,
   Calendar, 
   CheckSquare, 
   Lock,
@@ -191,7 +191,7 @@ const error: {
     const fetchUser = async () => {
       try {
         const data = await laborFetch();
-        // console.log("This is the Data LLLLLLLLLLLLLLLLLLLLLLLLLL", data);
+        console.log("This is the Data LLLLLLLLLLLLLLLLLLLLLLLLLL", data);
   
         const { fetchUserResponse } = data
         
@@ -799,12 +799,27 @@ const findLaborIdByEmail = async (email) => {
       { label: 'LaborProfile Page', link: null }, // No link for the current page
     ];
 
+
+   const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+
+  const LaborDetails = user ? user : Laborer ? Laborer : null;
+
+
+  console.log('This si the usek kkkkkkkk',LaborDetails)
   
 
   return (
     <>
       {loading && <div className="loader"></div>}
-      
+
       {openChangePassword && (
         <div
           className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 `}
@@ -868,673 +883,683 @@ const findLaborIdByEmail = async (email) => {
           </div>
         </div>
       )}
-      {theam === 'light' ? (
+      {theam === "light" ? (
         <>
-        {openEditProfile && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                <Edit className="mr-2 text-[#5560A8]" /> Edit Profile
-              </h2>
-              <button
-                onClick={() => setOpenEditProfile(false)}
-                className="text-gray-500 hover:text-gray-800"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Personal Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
-                  Personal Information
-                </h3>
-                <div className="flex space-x-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <User className="mr-2 text-[#5560A8]" /> First Name
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                    />
-                    {error?.firstName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {error.firstName}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <User className="mr-2 text-[#5560A8]" /> Last Name
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                    />
-                    {error?.lastName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {error.lastName}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Mail className="mr-2 text-[#5560A8]" /> Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={laborData?.email}
-                    readOnly
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none cursor-default focus:ring-2 focus:ring-[#5560A8]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Phone className="mr-2 text-[#5560A8]" /> Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                  />
-                  {error?.phone && (
-                    <p className="text-red-500 text-sm mt-1">{error.phone}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-2 text-[#5560A8]">Start Time</span>
-                  </label>
-                  <input
-                    type="time"
-                    name="startTime"
-                    value={formData.startTime}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                  />
-                  {error?.startTime && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {error.startTime}
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-2 text-[#5560A8]">End Time</span>
-                  </label>
-                  <input
-                    type="time"
-                    name="endTime"
-                    value={formData.endTime}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                  />
-                  {error?.endTime && (
-                    <p className="text-red-500 text-sm mt-1">{error.endTime}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Profile Image and Additional Details */}
-              <div className="space-y-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-32 h-32 bg-gray-200 rounded-full mb-4 flex items-center justify-center">
-                    <img
-                      src={
-                        formData.image
-                          ? URL.createObjectURL(formData.image)
-                          : laborData?.profilePicture || ""
-                      }
-                      alt="Profile"
-                      className="rounded-full border w-full h-full object-cover"
-                    />
-                  </div>
-                  <label
-                    htmlFor="imageUpload"
-                    className="bg-[#5560A8] text-white px-4 py-2 rounded-full text-sm cursor-pointer"
+          {openEditProfile && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                    <Edit className="mr-2 text-[#5560A8]" /> Edit Profile
+                  </h2>
+                  <button
+                    onClick={() => setOpenEditProfile(false)}
+                    className="text-gray-500 hover:text-gray-800"
                   >
-                    Upload Profile Picture
-                  </label>
-                  <input
-                    id="imageUpload"
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <MapPin className="mr-2 text-[#5560A8]" /> Address
-                  </label>
-                  <textarea
-                    name="address"
-                    value={formData.address}
-                    readOnly
-                    className="w-full px-3 py-2 border cursor-not-allowed rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                    rows="3"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Globe className="mr-2 text-[#5560A8]" /> Language
-                  </label>
-                  <select
-                    name="language"
-                    value={formData.language}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                  >
-                    <option value="">Select Language</option>
-                    <option value="English">English</option>
-                    <option value="Kannada">Kannada</option>
-                    <option value="Tamil">Tamil</option>
-                    <option value="Malayalam">Malayalam</option>
-                    <option value="Hindi">Hindi</option>
-                    <option value="Arabic">Arabic</option>
-                    {/* Add more languages as needed */}
-                  </select>
-                  {error?.language && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {error.language}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {  /* Availability */}
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 flex items-center">
-                <Calendar className="mr-2 text-[#5560A8]" /> Availability
-              </h3>
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                {[
-                  "Monday",
-                  "Tuesday",
-                  "Wednesday",
-                  "Thursday",
-                  "Friday",
-                  "Saturday",
-                  "Sunday",
-                ].map((day) => (
-                  <label key={day} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.availability[day]}
-                      onChange={() => handleAvailabilityChange(day)}
-                      className="form-checkbox text-[#5560A8]"
-                    />
-                    <span>{day}</span>
-                  </label>
-                ))}
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.availability.All}
-                    onChange={handleAllDaysChange}
-                    className="form-checkbox text-[#5560A8]"
-                  />
-                  <span>All Days</span>
-                </label>
-                {error?.availability && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {error.availability}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Additional Details */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Categories
-                </label>
-                <input
-                  type="text"
-                  name="categories"
-                  value={laborData?.categories}
-                  readOnly
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                />
-              </div>
-             
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Responsibilities
-                </label>
-                <input
-                  type="text"
-                  name="responsibilities"
-                  value={formData.responsibilities}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                />
-              </div>
-            </div>
-
-             <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Skills</h3>
-                
-                {/* Skills List */}
-                <div className="space-y-2">
-              {Array.isArray(formData.skills) && formData.skills.map((skill, index) => (
-                <div 
-                  key={index} 
-                  className="flex justify-between items-center bg-gray-100 p-2 rounded-md"
-                >
-                  <span>{skill}</span>
-                  <button 
-                    type="button"
-                    onClick={() => handleRemoveSkill(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X size={20} />
+                    ✕
                   </button>
                 </div>
-              ))}
-            </div>
 
-                {/* Add Skill Input */}
-                <input
-                  type="text"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyDown={handleAddSkill}
-                  placeholder="Add a new skill (press Enter to add)"
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Personal Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
+                      Personal Information
+                    </h3>
+                    <div className="flex space-x-4">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <User className="mr-2 text-[#5560A8]" /> First Name
+                        </label>
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                        />
+                        {error?.firstName && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {error.firstName}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <User className="mr-2 text-[#5560A8]" /> Last Name
+                        </label>
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                        />
+                        {error?.lastName && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {error.lastName}
+                          </p>
+                        )}
+                      </div>
+                    </div>
 
-                {/* Error Display */}
-                {error?.skills && (
-                  <p className="text-red-500 text-sm">{error.skills}</p>
-                )}
-              </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <Mail className="mr-2 text-[#5560A8]" /> Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={laborData?.email}
+                        readOnly
+                        className="w-full px-3 py-2 border rounded-md focus:outline-none cursor-default focus:ring-2 focus:ring-[#5560A8]"
+                      />
+                    </div>
 
-            {/* Change Password */}
-            <div className="mt-6 flex justify-center">
-              <button
-                className="flex items-center bg-[#5560A8] text-white px-4 py-2 rounded-full"
-                onClick={() => setOpenChangePasswod(true)}
-              >
-                <Lock className="mr-2" /> Change Password
-              </button>
-            </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <Phone className="mr-2 text-[#5560A8]" /> Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                      />
+                      {error?.phone && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {error.phone}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <span className="mr-2 text-[#5560A8]">Start Time</span>
+                      </label>
+                      <input
+                        type="time"
+                        name="startTime"
+                        value={formData.startTime}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                      />
+                      {error?.startTime && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {error.startTime}
+                        </p>
+                      )}
+                    </div>
 
-            {/* Save Changes */}
-            <div className="mt-6 flex justify-center space-x-4">
-              <button
-                onClick={() => setOpenEditProfile(false)}
-                className="px-6 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                className="px-6 py-2 bg-[#5560A8] text-white rounded-full hover:bg-opacity-90"
-                onClick={handleSubmitEditProfile}
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-        
-        </>
-      ) : (
-          <>
-          {openEditProfile && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-[#74c5c6] rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                <Edit className="mr-2 text-[#5560A8]" /> Edit Profile
-              </h2>
-              <button
-                onClick={() => setOpenEditProfile(false)}
-                className="text-gray-500 hover:text-gray-800"
-              >
-                ✕
-              </button>
-            </div>
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <span className="mr-2 text-[#5560A8]">End Time</span>
+                      </label>
+                      <input
+                        type="time"
+                        name="endTime"
+                        value={formData.endTime}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                      />
+                      {error?.endTime && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {error.endTime}
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Personal Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
-                  Personal Information
-                </h3>
-                <div className="flex space-x-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <User className="mr-2 text-[#5560A8]" /> First Name
+                  {/* Profile Image and Additional Details */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-32 h-32 bg-gray-200 rounded-full mb-4 flex items-center justify-center">
+                        <img
+                          src={
+                            formData.image
+                              ? URL.createObjectURL(formData.image)
+                              : laborData?.profilePicture || ""
+                          }
+                          alt="Profile"
+                          className="rounded-full border w-full h-full object-cover"
+                        />
+                      </div>
+                      <label
+                        htmlFor="imageUpload"
+                        className="bg-[#5560A8] text-white px-4 py-2 rounded-full text-sm cursor-pointer"
+                      >
+                        Upload Profile Picture
+                      </label>
+                      <input
+                        id="imageUpload"
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <MapPin className="mr-2 text-[#5560A8]" /> Address
+                      </label>
+                      <textarea
+                        name="address"
+                        value={formData.address}
+                        readOnly
+                        className="w-full px-3 py-2 border cursor-not-allowed rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                        rows="3"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <Globe className="mr-2 text-[#5560A8]" /> Language
+                      </label>
+                      <select
+                        name="language"
+                        value={formData.language}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                      >
+                        <option value="">Select Language</option>
+                        <option value="English">English</option>
+                        <option value="Kannada">Kannada</option>
+                        <option value="Tamil">Tamil</option>
+                        <option value="Malayalam">Malayalam</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Arabic">Arabic</option>
+                        {/* Add more languages as needed */}
+                      </select>
+                      {error?.language && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {error.language}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Availability */}
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 flex items-center">
+                    <Calendar className="mr-2 text-[#5560A8]" /> Availability
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4 mt-4">
+                    {[
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday",
+                    ].map((day) => (
+                      <label key={day} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.availability[day]}
+                          onChange={() => handleAvailabilityChange(day)}
+                          className="form-checkbox text-[#5560A8]"
+                        />
+                        <span>{day}</span>
+                      </label>
+                    ))}
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.availability.All}
+                        onChange={handleAllDaysChange}
+                        className="form-checkbox text-[#5560A8]"
+                      />
+                      <span>All Days</span>
                     </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="w-full px-3 bg-[#0e5962] py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                    />
-                    {error?.firstName && (
+                    {error?.availability && (
                       <p className="text-red-500 text-sm mt-1">
-                        {error.firstName}
+                        {error.availability}
                       </p>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <User className="mr-2 text-[#5560A8]" /> Last Name
+                </div>
+
+                {/* Additional Details */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Categories
                     </label>
                     <input
                       type="text"
-                      name="lastName"
-                      value={formData.lastName}
+                      name="categories"
+                      value={laborData?.categories}
+                      readOnly
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Responsibilities
+                    </label>
+                    <input
+                      type="text"
+                      name="responsibilities"
+                      value={formData.responsibilities}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Skills</h3>
+
+                  {/* Skills List */}
+                  <div className="space-y-2">
+                    {Array.isArray(formData.skills) &&
+                      formData.skills.map((skill, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center bg-gray-100 p-2 rounded-md"
+                        >
+                          <span>{skill}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSkill(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X size={20} />
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+
+                  {/* Add Skill Input */}
+                  <input
+                    type="text"
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyDown={handleAddSkill}
+                    placeholder="Add a new skill (press Enter to add)"
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  />
+
+                  {/* Error Display */}
+                  {error?.skills && (
+                    <p className="text-red-500 text-sm">{error.skills}</p>
+                  )}
+                </div>
+
+                {/* Change Password */}
+                <div className="mt-6 flex justify-center">
+                  <button
+                    className="flex items-center bg-[#5560A8] text-white px-4 py-2 rounded-full"
+                    onClick={() => setOpenChangePasswod(true)}
+                  >
+                    <Lock className="mr-2" /> Change Password
+                  </button>
+                </div>
+
+                {/* Save Changes */}
+                <div className="mt-6 flex justify-center space-x-4">
+                  <button
+                    onClick={() => setOpenEditProfile(false)}
+                    className="px-6 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-6 py-2 bg-[#5560A8] text-white rounded-full hover:bg-opacity-90"
+                    onClick={handleSubmitEditProfile}
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {openEditProfile && (
+            <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-[#74c5c6] rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                    <Edit className="mr-2 text-[#5560A8]" /> Edit Profile
+                  </h2>
+                  <button
+                    onClick={() => setOpenEditProfile(false)}
+                    className="text-gray-500 hover:text-gray-800"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Personal Information */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
+                      Personal Information
+                    </h3>
+                    <div className="flex space-x-4">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <User className="mr-2 text-[#5560A8]" /> First Name
+                        </label>
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          className="w-full px-3 bg-[#0e5962] py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                        />
+                        {error?.firstName && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {error.firstName}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                          <User className="mr-2 text-[#5560A8]" /> Last Name
+                        </label>
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                        />
+                        {error?.lastName && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {error.lastName}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <Mail className="mr-2 text-[#5560A8]" /> Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={laborData?.email}
+                        readOnly
+                        className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none cursor-default focus:ring-2 focus:ring-[#5560A8]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <Phone className="mr-2 text-[#5560A8]" /> Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                      />
+                      {error?.phone && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {error.phone}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <span className="mr-2 text-[#5560A8]">Start Time</span>
+                      </label>
+                      <input
+                        type="time"
+                        name="startTime"
+                        value={formData.startTime}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                      />
+                      {error?.startTime && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {error.startTime}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <span className="mr-2 text-[#5560A8]">End Time</span>
+                      </label>
+                      <input
+                        type="time"
+                        name="endTime"
+                        value={formData.endTime}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                      />
+                      {error?.endTime && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {error.endTime}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Profile Image and Additional Details */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-32 h-32 bg-gray-200 rounded-full mb-4 flex items-center justify-center">
+                        <img
+                          src={
+                            formData.image
+                              ? URL.createObjectURL(formData.image)
+                              : laborData?.profilePicture || ""
+                          }
+                          alt="Profile"
+                          className="rounded-full bg-[#0e5962] w-full h-full object-cover"
+                        />
+                      </div>
+                      <label
+                        htmlFor="imageUpload"
+                        className="bg-[#5560A8] text-white px-4 py-2 rounded-full text-sm cursor-pointer"
+                      >
+                        Upload Profile Picture
+                      </label>
+                      <input
+                        id="imageUpload"
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <MapPin className="mr-2 text-[#5560A8]" /> Address
+                      </label>
+                      <textarea
+                        name="address"
+                        value={formData.address}
+                        readOnly
+                        className="w-full px-3 py-2 bg-[#0e5962] cursor-not-allowed rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                        rows="3"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <Globe className="mr-2 text-[#5560A8]" /> Language
+                      </label>
+                      <select
+                        name="language"
+                        value={formData.language}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                      >
+                        <option value="">Select Language</option>
+                        <option value="English">English</option>
+                        <option value="Kannada">Kannada</option>
+                        <option value="Tamil">Tamil</option>
+                        <option value="Malayalam">Malayalam</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Arabic">Arabic</option>
+                        {/* Add more languages as needed */}
+                      </select>
+                      {error?.language && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {error.language}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Availability */}
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 flex items-center">
+                    <Calendar className="mr-2 text-[#5560A8]" /> Availability
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4 mt-4 text-black">
+                    {[
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday",
+                    ].map((day) => (
+                      <label key={day} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.availability[day]}
+                          onChange={() => handleAvailabilityChange(day)}
+                          className="form-checkbox text-[#5560A8]"
+                        />
+                        <span>{day}</span>
+                      </label>
+                    ))}
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.availability.All}
+                        onChange={handleAllDaysChange}
+                        className="form-checkbox text-[#5560A8]"
+                      />
+                      <span>All Days</span>
+                    </label>
+                    {error?.availability && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {error.availability}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Additional Details */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Categories
+                    </label>
+                    <input
+                      type="text"
+                      name="categories"
+                      value={laborData?.categories}
+                      readOnly
+                      className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Responsibilities
+                    </label>
+                    <input
+                      type="text"
+                      name="responsibilities"
+                      value={formData.responsibilities}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
                     />
-                    {error?.lastName && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {error.lastName}
-                      </p>
-                    )}
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Mail className="mr-2 text-[#5560A8]" /> Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={laborData?.email}
-                    readOnly
-                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none cursor-default focus:ring-2 focus:ring-[#5560A8]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Phone className="mr-2 text-[#5560A8]" /> Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                  />
-                  {error?.phone && (
-                    <p className="text-red-500 text-sm mt-1">{error.phone}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-2 text-[#5560A8]">Start Time</span>
-                  </label>
-                  <input
-                    type="time"
-                    name="startTime"
-                    value={formData.startTime}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                  />
-                  {error?.startTime && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {error.startTime}
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <span className="mr-2 text-[#5560A8]">End Time</span>
-                  </label>
-                  <input
-                    type="time"
-                    name="endTime"
-                    value={formData.endTime}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                  />
-                  {error?.endTime && (
-                    <p className="text-red-500 text-sm mt-1">{error.endTime}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Profile Image and Additional Details */}
-              <div className="space-y-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-32 h-32 bg-gray-200 rounded-full mb-4 flex items-center justify-center">
-                    <img
-                      src={
-                        formData.image
-                          ? URL.createObjectURL(formData.image)
-                          : laborData?.profilePicture || ""
-                      }
-                      alt="Profile"
-                      className="rounded-full bg-[#0e5962] w-full h-full object-cover"
-                    />
-                  </div>
-                  <label
-                    htmlFor="imageUpload"
-                    className="bg-[#5560A8] text-white px-4 py-2 rounded-full text-sm cursor-pointer"
-                  >
-                    Upload Profile Picture
-                  </label>
-                  <input
-                    id="imageUpload"
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <MapPin className="mr-2 text-[#5560A8]" /> Address
-                  </label>
-                  <textarea
-                    name="address"
-                    value={formData.address}
-                    readOnly
-                    className="w-full px-3 py-2 bg-[#0e5962] cursor-not-allowed rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                    rows="3"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Globe className="mr-2 text-[#5560A8]" /> Language
-                  </label>
-                  <select
-                    name="language"
-                    value={formData.language}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                  >
-                    <option value="">Select Language</option>
-                    <option value="English">English</option>
-                    <option value="Kannada">Kannada</option>
-                    <option value="Tamil">Tamil</option>
-                    <option value="Malayalam">Malayalam</option>
-                    <option value="Hindi">Hindi</option>
-                    <option value="Arabic">Arabic</option>
-                    {/* Add more languages as needed */}
-                  </select>
-                  {error?.language && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {error.language}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {  /* Availability */}
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 flex items-center">
-                <Calendar className="mr-2 text-[#5560A8]" /> Availability
-              </h3>
-              <div className="grid grid-cols-3 gap-4 mt-4 text-black">
-                {[
-                  "Monday",
-                  "Tuesday",
-                  "Wednesday",
-                  "Thursday",
-                  "Friday",
-                  "Saturday",
-                  "Sunday",
-                ].map((day) => (
-                  <label key={day} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.availability[day]}
-                      onChange={() => handleAvailabilityChange(day)}
-                      className="form-checkbox text-[#5560A8]"
-                    />
-                    <span>{day}</span>
-                  </label>
-                ))}
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.availability.All}
-                    onChange={handleAllDaysChange}
-                    className="form-checkbox text-[#5560A8]"
-                  />
-                  <span>All Days</span>
-                </label>
-                {error?.availability && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {error.availability}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Additional Details */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Categories
-                </label>
-                <input
-                  type="text"
-                  name="categories"
-                  value={laborData?.categories}
-                  readOnly
-                  className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                />
-              </div>
-             
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Responsibilities
-                </label>
-                <input
-                  type="text"
-                  name="responsibilities"
-                  value={formData.responsibilities}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                />
-              </div>
-            </div>
-
-             <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-700">Skills</h3>
-                
-                {/* Skills List */}
                 <div className="space-y-2">
-              {Array.isArray(formData.skills) && formData.skills.map((skill, index) => (
-                <div 
-                  key={index} 
-                  className="flex justify-between items-center bg-[#0e5962] p-2 rounded-md"
-                >
-                  <span>{skill}</span>
-                  <button 
-                    type="button"
-                    onClick={() => handleRemoveSkill(index)}
-                    className="text-red-500 hover:text-red-700"
+                  <h3 className="text-lg font-semibold text-gray-700">
+                    Skills
+                  </h3>
+
+                  {/* Skills List */}
+                  <div className="space-y-2">
+                    {Array.isArray(formData.skills) &&
+                      formData.skills.map((skill, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center bg-[#0e5962] p-2 rounded-md"
+                        >
+                          <span>{skill}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSkill(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X size={20} />
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+
+                  {/* Add Skill Input */}
+                  <input
+                    type="text"
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyDown={handleAddSkill}
+                    placeholder="Add a new skill (press Enter to add)"
+                    className="w-full px-3  py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
+                  />
+
+                  {/* Error Display */}
+                  {error?.skills && (
+                    <p className="text-red-500 text-sm">{error.skills}</p>
+                  )}
+                </div>
+
+                {/* Change Password */}
+                <div className="mt-6 flex justify-center">
+                  <button
+                    className="flex items-center bg-[#5560A8] text-white px-4 py-2 rounded-full"
+                    onClick={() => setOpenChangePasswod(true)}
                   >
-                    <X size={20} />
+                    <Lock className="mr-2" /> Change Password
                   </button>
                 </div>
-              ))}
-            </div>
 
-                {/* Add Skill Input */}
-                <input
-                  type="text"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyDown={handleAddSkill}
-                  placeholder="Add a new skill (press Enter to add)"
-                  className="w-full px-3  py-2 bg-[#0e5962] rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                />
+                {/* Save Changes */}
+                <div className="mt-6 flex justify-center space-x-4">
+                  <button
+                    onClick={() => setOpenEditProfile(false)}
+                    className="px-6 py-2 border  bg-[#99362d] border-gray-300 rounded-full  "
+                  >
+                    Cancel
+                  </button>
 
-                {/* Error Display */}
-                {error?.skills && (
-                  <p className="text-red-500 text-sm">{error.skills}</p>
-                )}
+                  <button
+                    className="px-6 py-2 bg-[#5560A8] text-white rounded-full hover:bg-opacity-90"
+                    onClick={handleSubmitEditProfile}
+                  >
+                    Save Changes
+                  </button>
+                </div>
               </div>
-
-            {/* Change Password */}
-            <div className="mt-6 flex justify-center">
-              <button
-                className="flex items-center bg-[#5560A8] text-white px-4 py-2 rounded-full"
-                onClick={() => setOpenChangePasswod(true)}
-              >
-                <Lock className="mr-2" /> Change Password
-              </button>
             </div>
+          )}
+        </>
+      )}
 
-            {/* Save Changes */}
-            <div className="mt-6 flex justify-center space-x-4">
-              <button
-                onClick={() => setOpenEditProfile(false)}
-                className="px-6 py-2 border  bg-[#99362d] border-gray-300 rounded-full  "
-              >
-                Cancel
-              </button>
-              
-              <button
-                className="px-6 py-2 bg-[#5560A8] text-white rounded-full hover:bg-opacity-90"
-                onClick={handleSubmitEditProfile}
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-          
-          </>
-      )}
-      
       <div className="w-full relative">
         {/* Background Image */}
         <div className="relative">
@@ -1547,7 +1572,7 @@ const findLaborIdByEmail = async (email) => {
           {theam === "light" ? (
             <>
               <div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4">
-                  <Breadcrumb items={breadcrumbItems} currentPage={currentPage} />  
+                <Breadcrumb items={breadcrumbItems} currentPage={currentPage} />
                 <nav className=" py-3 px-4 sm:px-6 md:px-8 ">
                   {" "}
                   {/* chnge the px ------------------------*/}
@@ -1614,34 +1639,42 @@ const findLaborIdByEmail = async (email) => {
                   {/* Stars and Rating */}
                   <div className="flex items-center gap-2">
                     <div className="flex">
-                      {[...Array(5)].map((_, index) => (
+                      {[...Array(5)].map((_, i) => (
                         <Star
-                          key={index}
-                          className="w-5 h-5 fill-yellow-400 text-yellow-400"
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < Math.round(LaborDetails?.rating)
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-300"
+                          }`}
                         />
                       ))}
                     </div>
-                    <span className="text-lg font-semibold">5.0</span>
-                    <span className="">(23 reviews)</span>
+                    <span className="text-lg font-semibold">
+                      {LaborDetails?.rating?.toFixed(1)}
+                    </span>
+                    <span className="">
+                      ({LaborDetails?.reviews?.length || 0} reviews)
+                    </span>
                   </div>
                   {Laborer && Object.keys(Laborer).length > 0 && (
-                    <>   
-                  {/* Action Buttons */}
-                  <div className="flex flex-col gap-4">
-                    <button
-                      className="flex w-[200px]  items-center gap-2 px-4 py-2 text-sm font-medium  text-white bg-[#5560A8]  rounded-full  transition-colors"
-                      onClick={handleEditProfile}
-                    >
-                      <Edit className="w-4 h-4" />
-                      Edit Profile
-                    </button>
-                    <button className="flex w-[200px] items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#5560A8]   rounded-full  transition-colors">
-                      <Wallet className="w-4 h-4" />
-                      My Wallet
-                    </button>
-                  </div>
+                    <>
+                      {/* Action Buttons */}
+                      <div className="flex flex-col gap-4">
+                        <button
+                          className="flex w-[200px]  items-center gap-2 px-4 py-2 text-sm font-medium  text-white bg-[#5560A8]  rounded-full  transition-colors"
+                          onClick={handleEditProfile}
+                        >
+                          <Edit className="w-4 h-4" />
+                          Edit Profile
+                        </button>
+                        <button className="flex w-[200px] items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#5560A8]   rounded-full  transition-colors">
+                          <Wallet className="w-4 h-4" />
+                          My Wallet
+                        </button>
+                      </div>
                     </>
-                  )}    
+                  )}
                 </div>
               </div>
 
@@ -1679,19 +1712,19 @@ const findLaborIdByEmail = async (email) => {
                         <span className="text-gray-800">
                           {laborData?.address}
                         </span>
-                      </div>    
+                      </div>
                       <div className="flex flex-wrap items-center gap-4 md:gap-6">
                         {/* Availability */}
                         <div className="flex flex-wrap items-center gap-4 md:gap-6">
-                        <div className="flex items-center gap-2 w-full md:w-auto">
-                          <CalendarDaysIcon className="w-5 h-5 text-gray-600" />
-                          <span className="text-gray-800">
-                            {laborData?.availability 
-                            ? laborData.availability.join(", ")
-                            : "No availability"}
-                          </span>
+                          <div className="flex items-center gap-2 w-full md:w-auto">
+                            <CalendarDaysIcon className="w-5 h-5 text-gray-600" />
+                            <span className="text-gray-800">
+                              {laborData?.availability
+                                ? laborData.availability.join(", ")
+                                : "No availability"}
+                            </span>
+                          </div>
                         </div>
-                      </div>
 
                         {/* Start Time */}
                         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -1719,13 +1752,13 @@ const findLaborIdByEmail = async (email) => {
                     </div>
 
                     {/* Save Button */}
-                      {(Object.keys(Laborer).length === 0 && (user || Object.keys(user).length !== 0)) && (
-                       <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                      <Heart className="w-5 h-5 text-gray-600" />
-                      <span>Save</span>
-                    </button>
-                    )}
-                   
+                    {Object.keys(Laborer).length === 0 &&
+                      (user || Object.keys(user).length !== 0) && (
+                        <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                          <Heart className="w-5 h-5 text-gray-600" />
+                          <span>Save</span>
+                        </button>
+                      )}
                   </div>
                 </div>
               ) : (
@@ -1734,7 +1767,7 @@ const findLaborIdByEmail = async (email) => {
                     {/* Name Section */}
                     <div className="text-center lg:text-left">
                       <div className="font-semibold font-[Rockwell] lg:ml-0  text-[33px] md:text-[43px]">
-                         {laborData?.firstName} {laborData?.lastName}
+                        {laborData?.firstName} {laborData?.lastName}
                       </div>
                     </div>
 
@@ -1753,22 +1786,20 @@ const findLaborIdByEmail = async (email) => {
                       </div>
                       <div className="flex items-center gap-3">
                         <MapPin className="w-5 h-5 " />
-                        <span className="">
-                          {laborData?.address}
-                        </span>
+                        <span className="">{laborData?.address}</span>
                       </div>
-                       <div className="flex flex-wrap items-center gap-4 md:gap-6">
+                      <div className="flex flex-wrap items-center gap-4 md:gap-6">
                         {/* Availability */}
                         <div className="flex flex-wrap items-center gap-4 md:gap-6">
-                        <div className="flex items-center gap-2 w-full md:w-auto">
-                          <CalendarDaysIcon className="w-5 h-5" />
-                          <span className="">
-                            {laborData?.availability 
-                            ? laborData.availability.join(", ")
-                            : "No availability"}
-                          </span>
+                          <div className="flex items-center gap-2 w-full md:w-auto">
+                            <CalendarDaysIcon className="w-5 h-5" />
+                            <span className="">
+                              {laborData?.availability
+                                ? laborData.availability.join(", ")
+                                : "No availability"}
+                            </span>
+                          </div>
                         </div>
-                      </div>
 
                         {/* Start Time */}
                         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -1788,9 +1819,7 @@ const findLaborIdByEmail = async (email) => {
                       </div>
                       <div className="flex items-center gap-3">
                         <Globe className="w-5 h-5 " />
-                        <span className="">
-                          {laborData?.language}
-                        </span>
+                        <span className="">{laborData?.language}</span>
                       </div>
                     </div>
 
@@ -1813,32 +1842,35 @@ const findLaborIdByEmail = async (email) => {
                       Expert {laborData?.categories[0]}
                     </h2>
 
-                   <div>
-                    <h4 className="font-semibold mb-3">Expertise:</h4>
-                    <ul className="list-disc pl-5 font-[roboto] space-y-2 marker:text-[#21A391]">
-                      {parsedSkillsData.map((skill, index) => (
-                        <li key={index} className="md:text-base lg:text-lg font-medium">
-                          {skill}
-                        </li>
-                      ))}
-                    </ul>
+                    <div>
+                      <h4 className="font-semibold mb-3">Expertise:</h4>
+                      <ul className="list-disc pl-5 font-[roboto] space-y-2 marker:text-[#21A391]">
+                        {parsedSkillsData.map((skill, index) => (
+                          <li
+                            key={index}
+                            className="md:text-base lg:text-lg font-medium"
+                          >
+                            {skill}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    
+
                     {(!Laborer || Object.keys(Laborer).length === 0) && (
-
-                    <div className="flex justify-center pt-4">
-                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20" 
-                      onClick={() =>  handleChatPage(user)}>
-                        <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" >
-                          Booking & Start Chating
-                        </span>
-                        <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">
-                          <div className="relative h-full w-10 bg-white/20"></div>
-                        </div>
-                      </button>
-                    </div>
-                    )} 
-
+                      <div className="flex justify-center pt-4">
+                        <button
+                          className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20"
+                          onClick={() => handleChatPage(user)}
+                        >
+                          <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer">
+                            Booking & Start Chating
+                          </span>
+                          <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">
+                            <div className="relative h-full w-10 bg-white/20"></div>
+                          </div>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {Laborer && Object.keys(Laborer).length > 0 && (
@@ -1854,15 +1886,17 @@ const findLaborIdByEmail = async (email) => {
               </div>
             ) : (
               <div className="lg:w-[400px] lg:ml-36 sm:w-full">
-                <div className="border bg-[#0f7b73] rounded-xl p-4 sm:p-6 shadow-lg">
+                <div className="border bg-gray-800 rounded-xl p-4 sm:p-6 shadow-lg shadow-gray-900">
                   <div className="space-y-7">
-                    <h2 className="text-center font-[Rockwell] lg:text-[25px] md:text-[16px] sm:text-[12px] font-semibold border-b-2  pb-2">
+                    <h2 className="text-center font-[Rockwell] lg:text-[25px] md:text-[16px] sm:text-[12px] font-semibold border-b-2 border-gray-700 pb-2 text-gray-200">
                       Expert Electrician
                     </h2>
 
                     <div>
-                      <h4 className="font-semibold mb-3">Expertise:</h4>
-                      <ul className="list-disc pl-5 font-[roboto] space-y-2 marker:text-[#21A391]">
+                      <h4 className="font-semibold mb-3 text-gray-300">
+                        Expertise:
+                      </h4>
+                      <ul className="list-disc pl-5 font-[Roboto] space-y-2 marker:text-[#21A391] text-gray-300">
                         <li className="md:text-base lg:text-lg font-medium">
                           Residential Electrical Systems
                         </li>
@@ -1877,33 +1911,34 @@ const findLaborIdByEmail = async (email) => {
                         </li>
                       </ul>
                     </div>
-                      {(!Laborer || Object.keys(Laborer).length === 0) && (
-                        
-                    <div className="flex justify-center pt-4">
-                      <button className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#21A391] px-6 py-2 text-base font-semibold text-white transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 border border-white/20" 
-                      onClick={() =>  handleChatPage(user)}>
-                        <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer" >
-                          Booking & Start Chating
-                        </span>
-                        <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">
-                          <div className="relative h-full w-10 bg-white/20"></div>
-                        </div>
-                      </button>
-                    </div>
-                      )}
-                        
+
+                    {(!Laborer || Object.keys(Laborer).length === 0) && (
+                      <div className="flex justify-center pt-4">
+                        <button
+                          className="group/button relative inline-flex items-center justify-center overflow-hidden rounded-md bg-[#1E3A8A] dark:bg-[#0F172A] px-6 py-2 text-base font-semibold text-white dark:text-gray-200 transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl hover:shadow-gray-600/50 dark:hover:shadow-blue-900/50 border border-white/20 dark:border-blue-500/30"
+                          onClick={() => handleChatPage(user)}
+                        >
+                          <span className="md:text-base lg:text-lg font-[Roboto] cursor-pointer">
+                            Booking & Start Chatting
+                          </span>
+                          <div className="absolute inset-0 flex h-full w-full justify-center [transform:skew(-13deg)_translateX(-100%)] group-hover/button:duration-1000 group-hover/button:[transform:skew(-13deg)_translateX(100%)]">
+                            <div className="relative h-full w-10 bg-white/20 dark:bg-blue-400/20"></div>
+                          </div>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
+
                 {Laborer && Object.keys(Laborer).length > 0 && (
-                  
-                <div className="flex flex-col sm:flex-row sm:space-x-9 space-y-4 sm:space-y-0 lg:mt-[195px] md:mt-[34px] sm:mt-[34px] mt-[45px]">
-                  <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
-                    Total Works and Earnings
-                  </button>
-                  <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
-                    View Current Status
-                  </button>
-                </div>
+                  <div className="flex flex-col sm:flex-row sm:space-x-9 space-y-4 sm:space-y-0 lg:mt-[195px] md:mt-[34px] sm:mt-[34px] mt-[45px]">
+                    <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
+                      Total Works and Earnings
+                    </button>
+                    <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
+                      View Current Status
+                    </button>
+                  </div>
                 )}
               </div>
             )}
@@ -1915,12 +1950,9 @@ const findLaborIdByEmail = async (email) => {
       <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12">
         <div className="sm:max-w-3xl md:max-w-[1200px] mx-auto">
           {/* About Me Header */}
-           <h2 className="font-sans text-xl sm:text-2xl md:text-3xl lg:text-[19px] font-semibold  mb-6">
+          <h2 className="font-sans text-xl sm:text-2xl md:text-3xl lg:text-[19px] font-semibold  mb-6">
             About Me
           </h2>
-         
-
-          
 
           {/* {Laborer && Object.keys(Laborer).length > 0 ? (
             <>
@@ -1938,7 +1970,7 @@ const findLaborIdByEmail = async (email) => {
                 </p>
               </div> 
           )} */}
-{/*           
+          {/*           
           {laborData?.aboutMe ? (
             <>
               <div className="space-y-4 lg:space-y-0">
@@ -1968,25 +2000,26 @@ const findLaborIdByEmail = async (email) => {
 
           <div className="space-y-4 lg:space-y-0">
             <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
-              I am { Laborer?.aboutMe?.name ||  user?.aboutMe?.name}, a highly skilled and experienced
-              professional with over {Laborer?.aboutMe?.experience || user?.aboutMe?.experience} of
+              I am {Laborer?.aboutMe?.name || user?.aboutMe?.name}, a highly
+              skilled and experienced professional with over{" "}
+              {Laborer?.aboutMe?.experience || user?.aboutMe?.experience} of
               experience in the field.
             </p>
             <p className="text-sm sm:text-base md:text-lg lg:text-[12px]">
-              { Laborer?.aboutMe?.description || user?.aboutMe?.description}
+              {Laborer?.aboutMe?.description || user?.aboutMe?.description}
             </p>
           </div>
-          
 
-          {(!submittedData && (!Laborer?.aboutMe || Object.keys(Laborer?.aboutMe).length === 0) && (!user || Object.keys(user).length === 0)) && (
-            <button
-              onClick={() => setOpenAbout(true)}
-              className="bg-[#21A391] text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
-            >
-              Add About You
-            </button>
-          )}
-
+          {!submittedData &&
+            (!Laborer?.aboutMe || Object.keys(Laborer?.aboutMe).length === 0) &&
+            (!user || Object.keys(user).length === 0) && (
+              <button
+                onClick={() => setOpenAbout(true)}
+                className="bg-[#21A391] text-white px-4 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105"
+              >
+                Add About You
+              </button>
+            )}
 
           {/* {submittedData  ? (
             <>
@@ -2062,10 +2095,10 @@ const findLaborIdByEmail = async (email) => {
           )}
 
           {/* Read More Button */}
-  {/* console.log("This is the user object length ++___))((((()))))::", )
+          {/* console.log("This is the user object length ++___))((((()))))::", )
   console.log("This is the user object length ++___))((((()))))::", ) */}
           {Object.keys(Laborer).length !== 0 && (
-              <div className="mt-8">
+            <div className="mt-8">
               <button
                 className="group relative inline-block text-[#21A391] text-sm sm:text-base md:text-lg lg:text-[17px] font-semibold transition-colors duration-300 hover:text-[#1a8275]"
                 onClick={handleEdit}
@@ -2076,11 +2109,9 @@ const findLaborIdByEmail = async (email) => {
             </div>
           )}
 
-
           {/* {(submittedData && (!Laborer?.aboutMe || Object.keys(Laborer?.aboutMe).length > 0) && (Object.keys(user).length === 0)) && (
              
           )} */}
-
         </div>
       </div>
 
@@ -2088,119 +2119,67 @@ const findLaborIdByEmail = async (email) => {
 
       {/* ReviewSeciotn  */}
 
-      {/* Review Section */}
       <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12">
-        <div className="sm:max-w-3xl md:max-w-[1200px] mx-auto">
-          <h2 className="font-sans text-xl sm:text-2xl md:text-3xl lg:text-[19px] font-semibold mb-12">
-            What Clients Say:
-          </h2>
-          <div className="space-y-6 lg:space-y-4">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center">
-              {/* Container for image and user info in mobile */}
-              <div className="w-full flex items-start mb-4 lg:mb-0">
-                {/* User Image */}
-                <div className="flex-shrink-0 lg:mr-4">
-                  <img
-                    className="w-16 h-16 rounded-full object-cover"
-                    src={char}
-                    alt="User Avatar"
-                  />
-                </div>
-
-                {/* User Info Container */}
-                <div className="ml-4 flex-grow">
-                  <h3 className="text-lg font-semibold ">Alexander</h3>
-                  <div className="flex items-center space-x-3 mb-2">
-                    {/* Star Rating */}
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, index) => (
-                        <svg
-                          key={index}
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 text-[#21A391]"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      ))}
+        {LaborDetails?.reviews && LaborDetails.reviews.length > 0 ? (
+          LaborDetails.reviews.map((review, index) => (
+            <div key={index} className="sm:max-w-3xl md:max-w-[1200px] mx-auto">
+              <div className="space-y-6 lg:space-y-4">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center">
+                  {/* Container for image and user info in mobile */}
+                  <div className="w-full flex items-start mb-4 lg:mb-0">
+                    {/* User Image */}
+                    <div className="flex-shrink-0 lg:mr-4">
+                      {review.imageUrl?.[0] && (
+                        <img
+                          className="w-16 h-16 rounded-full object-cover"
+                          src={review.imageUrl[0]}
+                          alt="User Avatar"
+                        />
+                      )}
                     </div>
-                    <span className="text-sm ">May 08, 2024</span>
+
+                    {/* User Info Container */}
+                    <div className="ml-4 flex-grow">
+                      <h3 className="text-lg font-semibold">
+                        {review.reviewerName}
+                      </h3>
+                      <div className="flex items-center space-x-3 mb-2">
+                        {/* Star Rating */}
+                        <div className="flex items-center space-x-1">
+                          {[...Array(5)].map((_, i) => (
+                            <svg
+                              key={i}
+                              xmlns="http://www.w3.org/2000/svg"
+                              className={`w-5 h-5 ${
+                                i < Math.round(LaborDetails.rating) ? "fill-[#FFD700] text-[#FFD700]" : "fill-gray-300 text-gray-300"
+                              }`}
+                              viewBox="0 0 20 20"
+                              aria-hidden="true"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          ))}
+                        </div>
+                        <span className="text-sm">{formatDate(review.createdAt)}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
+                <p className="text-sm sm:text-base md:text-lg lg:text-[12px] mt-2">
+                  {review.reviewText}
+                </p>
               </div>
             </div>
-            <p className="text-sm sm:text-base md:text-lg lg:text-[12px] ">
-              John has been our go-to electrician for several years now. Whether
-              it's routine maintenance or emergency repairs, he is always
-              prompt, courteous, and gets the job done right the first time. His
-              commitment to safety and quality is unmatched, and we trust him
-              completely with all our electrical needs.
-            </p>
-          </div>
-        </div>
-      </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500">No reviews available.</p>
+        )}
 
-      <div className="underLine h-[3px] bg-[#ECECEC] flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1200px] my-4"></div>
-
-      <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12">
-        <div className="sm:max-w-3xl md:max-w-[1200px] mx-auto">
-          <div className="space-y-6 lg:space-y-4">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center">
-              {/* Container for image and user info in mobile */}
-              <div className="w-full flex items-start mb-4 lg:mb-0">
-                {/* User Image */}
-                <div className="flex-shrink-0 lg:mr-4">
-                  <img
-                    className="w-16 h-16 rounded-full object-cover"
-                    src={char}
-                    alt="User Avatar"
-                  />
-                </div>
-
-                {/* User Info Container */}
-                <div className="ml-4 flex-grow">
-                  <h3 className="text-lg font-semibold ">Alexander</h3>
-                  <div className="flex items-center space-x-3 mb-2">
-                    {/* Star Rating */}
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, index) => (
-                        <svg
-                          key={index}
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 text-[#21A391]"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      ))}
-                    </div>
-                    <span className="text-sm ">May 08, 2024</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p className="text-sm sm:text-base md:text-lg lg:text-[12px] ">
-              John has been our go-to electrician for several years now. Whether
-              it's routine maintenance or emergency repairs, he is always
-              prompt, courteous, and gets the job done right the first time. His
-              commitment to safety and quality is unmatched, and we trust him
-              completely with all our electrical needs.
-            </p>
-          </div>
-        </div>
-        <div className="mt-8">
+        <div className="mt-8 text-center">
           <button className="group relative inline-block text-[#21A391] text-sm sm:text-base md:text-lg lg:text-[17px] font-semibold transition-colors duration-300 hover:text-[#1a8275]">
             More Reviews
             <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#21A391] transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>

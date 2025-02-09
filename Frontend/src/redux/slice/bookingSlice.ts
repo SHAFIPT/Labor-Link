@@ -9,6 +9,13 @@ export interface User {
   firstName: string;
   lastName: string;
 }
+export interface IReview {
+  reviewerName: string;
+  reviewText: string;
+  imageUrl: string[]; 
+  rating: number;  // Rating score (e.g., 1 to 5)
+  createdAt: Date;
+}
 export interface Labor {
   _id : string
   ProfilePic: string;
@@ -30,13 +37,6 @@ export interface Quote {
   arrivalTime: string;
 }
 
-export interface IReview {
-  reviewerName: string;
-  reviewText: string;
-  imageUrl: string[]; 
-  rating: number;  // Rating score (e.g., 1 to 5)
-  createdAt: Date;
-}
 
 
 export interface BookingDetails {
@@ -73,6 +73,7 @@ export interface BookingDetails {
     newDate: string;
     reasonForReschedule: string;
   };
+  // paymentStatus : boolean
 
   addressDetails: {
     name: string;
