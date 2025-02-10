@@ -141,12 +141,19 @@ export default class UserServices implements IUserServices {
       }
 
       const labor = booking.laborId as unknown as ILaborer;
+      const user = booking.userId as unknown as IUser;
 
       if (!labor) {
         throw new Error('Labor not found');
       }
 
-      const updatedReivew = this.userRepository.reviewSubmiting(labor, rating, feedback ,imageUrls)
+      const updatedReivew = this.userRepository.reviewSubmiting(
+        labor,
+        user,
+        rating,
+        feedback,
+        imageUrls
+      )
       
       if (!updatedReivew) {
          throw new Error('Errorn in update reivew and rating ');

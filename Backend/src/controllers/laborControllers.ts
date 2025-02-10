@@ -284,19 +284,31 @@ class laborSideController {
       const laborId = req.labor.id;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
+      const status = req.query.filter as string | undefined;
+
+      const filter = status ? { status } : {};
+
+      console.log('hllllllll',filter)
 
       if (!laborId) {
         res.status(404).json({ message: "Labor not Found." });
       }
 
-      const { bookings, total } = await this.laborService.fetchBookings(
+      const {
+        bookings,
+        total,
+        completedBookings,
+        canceledBookings,
+        pendingBookings ,
+        totalAmount } = await this.laborService.fetchBookings(
         laborId,
         page,
-        limit
+        limit,
+        filter
       );
 
       if (!bookings) {
-        res.status(404).json({ message: "No bookings found by labor" });
+        res.status(404).json({ message: "No bookings found by labor" });  
       }
 
       res.status(200).json({
@@ -306,6 +318,10 @@ class laborSideController {
         page,
         limit,
         totalPages: Math.ceil(total / limit),
+        completedBookings,
+        canceledBookings,
+        totalAmount,
+        pendingBookings
       });
     } catch (error) {
       console.error("Error labor:", error);
@@ -400,7 +416,7 @@ class laborSideController {
   } catch (error) {
     console.error("Error fetching bookings:", error);
     next(error);
-  }
+  }      
   };
   
   public submitRejection = async (req: Request, res: Response, next: NextFunction) => {
@@ -410,7 +426,7 @@ class laborSideController {
       
       console.log("this is the reonsponse data aa :", {
         newDate, 
-        newTime,
+        newTime,  
         rejectionReason,
         bookingId,
         requestSentBy

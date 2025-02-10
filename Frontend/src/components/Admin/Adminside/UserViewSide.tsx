@@ -2,7 +2,9 @@ import { toast } from "react-toastify";
 import { ArrowLeft } from 'lucide-react';
 import { useLocation } from "react-router-dom";
 import { blockUser, UnblockUser } from "../../../services/AdminAuthServices";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchAllBooings } from "../../../services/UserSurvice";
+import { IBooking } from "../../../@types/IBooking";
 
 
 const UserViewSide = () => {
@@ -12,9 +14,38 @@ const UserViewSide = () => {
   const location = useLocation()
   const user = location.state?.user
 
-    const [isBlocked, setIsBlocked] = useState(user?.isBlocked);
+  const [isBlocked, setIsBlocked] = useState(user?.isBlocked);
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null) 
+  const [currentPage, setCurrnetPage] = useState(6)
+  const [limit, setLimit] = useState(1)
+  const [filter, setFilter] = useState('')
 
-  console.log("this is the user :", user)
+  console.log("this is the user :", user?._id)
+  const userId = user?._id
+
+
+  const fetchBookings = async () => {
+    try {
+      const resoponse = await fetchAllBooings(
+        userId,
+        currentPage,
+        limit,
+        filter
+      );
+
+      if (resoponse.status === 200) {
+        const {bookings} = resoponse.data
+        console.log(bookings);
+        setBookingDetils(bookings)
+      }
+    } catch (error) {
+      console.error("Error in About me :", error);
+      throw error;
+    }
+  };
+  useEffect(() => {
+    fetchBookings()
+  },[])
   
   const bookings = [
     {
@@ -365,7 +396,7 @@ const UserViewSide = () => {
             {/* Booking Headings */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4 items-center bg-gray-200 p-3 rounded-lg shadow">
               <div className="text-sm font-semibold text-gray-700 text-center">
-                Booking ID
+                No
               </div>
               <div className="text-sm font-semibold text-gray-700 text-center">
                 Laborer
@@ -386,20 +417,26 @@ const UserViewSide = () => {
 
             {/* Booking List */}
             <div className="grid gap-4 mt-4">
-              {bookings.map((booking) => (
+              {bookingDetils?.map((booking,index) => (
                 <div
-                  key={booking.id}
+                  key={booking._id}
                   className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4 bg-[#ABA0A0] rounded-lg shadow-md p-3 items-center"
                 >
                   <div className="text-sm font-medium text-white text-center">
-                    {booking.id}
+                   {index + 1} 
                   </div>
                   <div className="text-sm font-medium text-white text-center">
-                    {booking.laborer}
+                    {booking?.laborId?.firstName}
                   </div>
-                  <div className="text-sm font-medium text-white text-center">
-                    {booking.date}
-                  </div>
+                <div className="text-sm font-medium text-white text-center">
+                      {new Date(booking?.quote?.arrivalTime).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
                   <div className="text-sm font-medium text-white text-center">
                     <span
                       className={`px-2 py-1 text-xs rounded-full ${
@@ -412,11 +449,21 @@ const UserViewSide = () => {
                     </span>
                   </div>
                   <div className="text-sm font-medium text-white text-center">
-                    ₹{booking.cost}/-
+                    ₹{booking?.quote?.estimatedCost}/-
                   </div>
-                  <div className="text-sm font-medium text-white text-center">
-                    {booking.payment}
-                  </div>
+                  <div
+                  className={`px-2 py-1 text-xs font-medium rounded-full text-center ${
+                    booking?.paymentStatus === "paid"
+                      ? "bg-green-500 text-white"
+                      : booking?.paymentStatus === "pending"
+                      ? "bg-yellow-500 text-black"
+                      : booking?.paymentStatus === "failed"
+                      ? "bg-red-500 text-white"
+                      : "bg-gray-500 text-white"
+                  }`}
+                >
+                  {booking?.paymentStatus}
+                </div>
                 </div>
               ))}
             </div>

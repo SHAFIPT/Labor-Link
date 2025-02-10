@@ -65,10 +65,10 @@ export const aboutMe = async (data) => {
     throw error;
   }
 }
-export const fetchLaborBookings = async (page : number, limit : number) => {
+export const fetchLaborBookings = async (page: number, limit: number, filter : string) => {
   try {
     
-    const response = await api.get(`/api/labor/labors/fetchBooking?page=${page}&limit=${limit}`)
+    const response = await api.get(`/api/labor/labors/fetchBooking?page=${page}&limit=${limit}&filter=${filter}`)
     return response
   } catch (error) {
     console.error("Error in About me :", error);

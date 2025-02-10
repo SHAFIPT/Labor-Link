@@ -11,7 +11,8 @@ import { acceptReshedule, rejectReshedule } from '../../../services/LaborService
 const RescheduleRequestModal = ({ 
   isOpen, 
   onClose,
-  bookingDetails 
+  bookingDetails,
+  onUpdateBooking
 }) => {
 
     console.log("This is the bookingDetails;;;;;;;;;;;;;;", bookingDetails)
@@ -27,6 +28,7 @@ const RescheduleRequestModal = ({
     const bookingDetailss = useSelector((state: RootState) => state.booking.bookingDetails);
     const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
     const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
+    // const [updatedBooking , setUpdatedBooking] = useState(null)
     console.log("iaaaaaaaaaaaaaaa heeeeeeeeeeeeeee",bookingDetailss)
     const loading  = useSelector((state: RootState) => state.labor.loading)
     const dispatch = useDispatch()
@@ -75,8 +77,9 @@ const RescheduleRequestModal = ({
                   
                   const {reshedule} = response.data
                   console.log("This si tthe reshedule...PPPPPPPPPPPP............", reshedule)
-                  dispatch(setBookingDetails(reshedule))
-                  onClose()
+                  // dispatch(setBookingDetails(reshedule))
+                onClose()
+                onUpdateBooking(reshedule);
                   toast.success('Rejeect submitted succesfully....')
               }
             
@@ -94,8 +97,9 @@ const RescheduleRequestModal = ({
         if (response.status === 200) {
           const { reshedule } = response.data
           
-          console.log("Thanveeeeeeeeraaaaaaaaaaaaaa>>>>>>",reshedule)
-          dispatch(updateSingleBooking(reshedule))
+          console.log("Thanveeeeeeeeraaaaaaaaaaaaaa>>>>>>", reshedule)
+          onUpdateBooking(reshedule);
+          // dispatch(updateSingleBooking(reshedule))
           onClose();
           toast.success("reshedule requst accepted succesfully....");
 

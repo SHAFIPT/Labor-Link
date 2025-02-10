@@ -43,7 +43,7 @@ const BookingSchema: Schema = new Schema<IBooking>({
     default: "pending",
   },
   paymentDetails: {
-    totalAmount: { type: Number, required: true }, // Final cost
+    totalAmount: { type: 'number'}, // Final cost
     commissionAmount: { type: Number, default: 0 }, // Platform's cut
     laborEarnings: { type: Number, default: 0 }, // Amount sent to labor
     transactionId: { type: String }, // Stripe transaction ID

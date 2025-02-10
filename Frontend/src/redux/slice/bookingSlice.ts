@@ -45,7 +45,7 @@ export interface BookingDetails {
   userId: User;  // Changed from User object to string
   laborId: Labor; // Changed from Labor object to string
   status: string;
-  paymentStatus: string;
+  paymentStatus: "pending" | "paid" | "failed";
   createdAt: string;
   updatedAt: string;
   isUserRead?: boolean; 

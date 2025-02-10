@@ -41,8 +41,15 @@ export class LaborServices implements ILaborService{
             throw new Error('Failed to Aboute me.');
         }
     }
-    async fetchBookings(laborId: string, page: number, limit: number): Promise<{ bookings: IBooking[]; total: number; }> {
-        return await this.laborRepsitory.fetchBooking(laborId, page, limit);
+    async fetchBookings(laborId: string, page: number, limit: number, filter: object): Promise<{
+        bookings: IBooking[];
+        total: number;
+        completedBookings: number;
+        canceledBookings: number;
+        totalAmount: number;
+        pendingBookings : number
+    }> {
+        return await this.laborRepsitory.fetchBooking(laborId, page, limit ,filter);
     }
     async fetchSimilorLabors(latitude: number, logitude: number, categorie: string , laborId: string) {
         return await this.laborRepsitory.fetchSimilorLabors(latitude,logitude,categorie , laborId)

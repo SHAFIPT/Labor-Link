@@ -40,7 +40,7 @@ export interface IUserSideRepository {
   foundBookingById(bookingId : string) : Promise <IBooking | null>
   findLabor(bookingId : string) : Promise <IBooking | null>
   paymentSuccess(bookingId: string, laborId: string, userId: string): Promise<Stripe.PaymentIntent> 
-  reviewSubmiting(labor: ILaborer, rating: string, feedback: string, imageUrls: string[]): Promise<IBooking | null>
+  reviewSubmiting(labor: ILaborer,user: IUser, rating: string, feedback: string, imageUrls: string[]): Promise<IBooking | null>
   fetchAllBookings(
     userId: string,
     page: number,

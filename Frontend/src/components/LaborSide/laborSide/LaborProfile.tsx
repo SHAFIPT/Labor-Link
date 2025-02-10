@@ -2121,73 +2121,74 @@ const findLaborIdByEmail = async (email) => {
 
       <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12">
         {LaborDetails?.reviews && LaborDetails.reviews.length > 0 ? (
-          LaborDetails.reviews.map((review, index) => (
-            <div key={index} className="sm:max-w-3xl md:max-w-[1200px] mx-auto">
-              <div className="space-y-6 lg:space-y-4">
-                <div className="flex flex-col lg:flex-row items-start lg:items-center">
-                  {/* Container for image and user info in mobile */}
-                  <div className="w-full flex items-start mb-4 lg:mb-0">
-                    {/* User Image */}
-                    <div className="flex-shrink-0 lg:mr-4">
-                      {review.imageUrl?.[0] && (
-                        <img
-                          className="w-16 h-16 rounded-full object-cover"
-                          src={review.imageUrl[0]}
-                          alt="User Avatar"
-                        />
-                      )}
-                    </div>
+    LaborDetails.reviews.map((review, index) => (
+      <div key={index} className="sm:max-w-3xl md:max-w-[1200px] mx-auto mb-8"> {/* Added mb-8 for spacing */}
+        <div className="space-y-6 lg:space-y-4">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center">
+            {/* Container for image and user info in mobile */}
+            <div className="w-full flex items-start mb-4 lg:mb-0">
+              {/* User Image */}
+              <div className="flex-shrink-0 lg:mr-4">
+                {review.imageUrl?.[0] && (
+                  <img
+                    className="w-16 h-16 rounded-full object-cover"
+                    src={review.imageUrl[0]}
+                    alt="User Avatar"
+                  />
+                )}
+              </div>
 
-                    {/* User Info Container */}
-                    <div className="ml-4 flex-grow">
-                      <h3 className="text-lg font-semibold">
-                        {review.reviewerName}
-                      </h3>
-                      <div className="flex items-center space-x-3 mb-2">
-                        {/* Star Rating */}
-                        <div className="flex items-center space-x-1">
-                          {[...Array(5)].map((_, i) => (
-                            <svg
-                              key={i}
-                              xmlns="http://www.w3.org/2000/svg"
-                              className={`w-5 h-5 ${
-                                i < Math.round(LaborDetails.rating) ? "fill-[#FFD700] text-[#FFD700]" : "fill-gray-300 text-gray-300"
-                              }`}
-                              viewBox="0 0 20 20"
-                              aria-hidden="true"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          ))}
-                        </div>
-                        <span className="text-sm">{formatDate(review.createdAt)}</span>
-                      </div>
-                    </div>
+              {/* User Info Container */}
+              <div className="ml-4 flex-grow">
+                <h3 className="text-lg font-semibold">{review.reviewerName}</h3>
+                <div className="flex items-center space-x-3 mb-2">
+                  {/* Star Rating */}
+                  <div className="flex items-center space-x-1">
+                    {[...Array(5)].map((_, i) => (
+                      <svg
+                        key={i} 
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`w-5 h-5 ${
+                          i < Math.round(LaborDetails.rating) ? "fill-[#FFD700] text-[#FFD700]" : "fill-gray-300 text-gray-300"
+                        }`}
+                        viewBox="0 0 20 20"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    ))}
                   </div>
+                  <span className="text-sm">{formatDate(review.createdAt)}</span>
                 </div>
-                <p className="text-sm sm:text-base md:text-lg lg:text-[12px] mt-2">
-                  {review.reviewText}
-                </p>
               </div>
             </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500">No reviews available.</p>
-        )}
+          </div>
+          <p className="text-sm sm:text-base md:text-lg lg:text-[12px] mt-2">
+            {review.reviewText}
+          </p>
+        </div>
+        {/* Increased space below underline */}
+        <div className="underLine h-[3px] bg-[#ECECEC] flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1200px] my-6"></div> 
+      </div>
+    ))
+  ) : (
+    <p className="text-center text-gray-500">No reviews available.</p>
+  )}
 
+{/* 
         <div className="mt-8 text-center">
           <button className="group relative inline-block text-[#21A391] text-sm sm:text-base md:text-lg lg:text-[17px] font-semibold transition-colors duration-300 hover:text-[#1a8275]">
             More Reviews
             <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#21A391] transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
           </button>
-        </div>
+        </div> */}
       </div>
 
-      <div className="underLine h-[3px] bg-[#ECECEC] flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1200px] my-4"></div>
+      {/* <div className="underLine h-[3px] bg-[#ECECEC] flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1200px] my-4"></div> */}
 
       <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12">
         <div className="sm:max-w-3xl md:max-w-[1200px] mx-auto">

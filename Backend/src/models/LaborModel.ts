@@ -48,7 +48,19 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
   }],
   role: { type: String, default: 'labor' },
   createdAt: { type: Date, default: Date.now },
-  walletBalance: { type: Number },
+  
+  wallet: {
+    balance: { type: Number, default: 0 },
+    transactions: [{
+      amount: { type: Number},
+      type: { type: String, enum: ['credit', 'debit'], required: true },
+      description: { type: String},
+      bookingId: { type: Schema.Types.ObjectId, ref: 'Booking' },
+      originalAmount: { type: Number },  // Amount before commission
+      commissionAmount: { type: Number }, // Commission deducted
+      createdAt: { type: Date, default: Date.now }
+    }]
+  },
   updatedAt: { type: Date, default: Date.now },
   lastLogin: { type: Date, default: null },
   isBlocked: { type: Boolean, default: false },
@@ -83,6 +95,7 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
   },
   rating: { type: Number, default: 0 },  // Average rating (e.g., 4.5)
   reviews: [{
+    userId: { type: Schema.Types.ObjectId, ref: "Users", required: true },
     reviewerName: { type: String},  // Reviewer's name
     reviewText: { type: String },   // Review text
     rating: { type: Number },

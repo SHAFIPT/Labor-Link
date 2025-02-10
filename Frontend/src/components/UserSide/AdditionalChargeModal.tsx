@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { acceptRequst, rejectRequst } from '../../services/LaborServices';
 import { XCircle } from 'lucide-react';
 
-const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails }) => {
+const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails ,onUpdateBooking}) => {
     const dispatch = useDispatch()
   if (!isOpen || !bookingDetails || bookingDetails.length === 0) return null;
 
@@ -22,10 +22,11 @@ const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails }) => {
         const response = await acceptRequst(bookingId);
 
         if (response.status === 200) {
-          const { rejectRequst } = response.data;
+          const { acceptRequst } = response.data;
 
-          console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:", rejectRequst);
-          dispatch(setBookingDetails(rejectRequst))
+          console.log("additional charge for acccept resonponose :", acceptRequst);
+          // dispatch(setBookingDetails(rejectRequst))
+          onUpdateBooking(acceptRequst)
           // dispatch(updateSingleBooking(rejectRequst));
           toast.success("reshedule successfull");
           onClose();
@@ -41,9 +42,10 @@ const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails }) => {
         if (response.status === 200) {
           const { rejectRequst } = response.data;
 
-          console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:", rejectRequst);
-          dispatch(setBookingDetails(rejectRequst))
+          console.log("additional charge for reject resonponose :", response);
+          // dispatch(setBookingDetails(rejectRequst))
           // dispatch(updateSingleBooking(rejectRequst));
+          onUpdateBooking(rejectRequst)
           toast.success("reshedule successfull");
           onClose();
         }

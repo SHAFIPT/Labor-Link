@@ -1,7 +1,7 @@
 import { IAboutMe, ILaborer } from "controllers/entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import Labor from "../../models/LaborModel";
-import { SortOrder } from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 import { IBooking } from "../../controllers/entities/bookingEntity";
 import Booking from "../../models/BookingModal";
 
@@ -146,12 +146,20 @@ export class LaborSideRepository implements ILaborSidRepository {
   async fetchBooking(
     laborId: string,
     page: number,
-    limit: number
-  ): Promise<{ bookings: IBooking[]; total: number }> {
+    limit: number,
+    filter: object
+  ): Promise<{
+    bookings: IBooking[];
+    total: number;
+    completedBookings: number;
+    canceledBookings: number;
+    totalAmount: number
+    pendingBookings : number
+  }> {
     try {
       const skip = (page - 1) * limit;
 
-      const bookings = await Booking.find({ laborId })
+      const bookings = await Booking.find({ laborId , ...filter })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -167,9 +175,54 @@ export class LaborSideRepository implements ILaborSidRepository {
 
       const total = await Booking.countDocuments({
         laborId,
+        ...filter
       });
 
-      return { bookings, total };
+      const completedBookings = await Booking.countDocuments({ 
+        laborId, 
+        status: 'completed',
+        ...filter
+      });
+
+       const canceledBookings = await Booking.countDocuments({ 
+        laborId, 
+         status: 'canceled',
+        ...filter
+       });
+      
+       const pendingBookings = await Booking.countDocuments({ 
+        laborId, 
+         status: 'pending',
+        ...filter
+       });
+      
+      const totalAmountResult = await Booking.aggregate([
+        {
+          $match: {
+            laborId: new mongoose.Types.ObjectId(laborId), // Convert userId to ObjectId
+            status: 'completed'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: "$quote.estimatedCost" } // Correct path to estimatedCost
+          } 
+        }
+      ]);
+
+      const totalAmount = totalAmountResult.length > 0 ? totalAmountResult[0].total : 0;
+      
+      return {
+        bookings,
+        total,
+        completedBookings,
+        canceledBookings,
+        totalAmount,
+        pendingBookings
+      };
+      
+
     } catch (error) {
       console.error("Error fetch bookings:", error);
       throw new Error("Failed to fetch bookings");

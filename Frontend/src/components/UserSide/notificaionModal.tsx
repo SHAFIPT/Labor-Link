@@ -163,31 +163,31 @@ const NotificationModal = ({
 
   const hasRejectionDetails = (reschedule) => {
     const hasRejection = 
-      reschedule.rejectedBy === "labor" &&
-      reschedule.rejectionNewDate &&
-      reschedule.rejectionNewTime &&
-      reschedule.rejectionReason;
+      reschedule?.rejectedBy === "labor" &&
+      reschedule?.rejectionNewDate &&
+      reschedule?.rejectionNewTime &&
+      reschedule?.rejectionReason;
 
     const hasRequest = 
-      reschedule.requestSentBy === "labor" &&
-      reschedule.newDate &&
-      reschedule.newTime &&
-      reschedule.reasonForReschedule;
+      reschedule?.requestSentBy === "labor" &&
+      reschedule?.newDate &&
+      reschedule?.newTime &&
+      reschedule?.reasonForReschedule;
 
     return hasRejection || hasRequest;
   };
 
 
    const isRescheduleReset = (reschedule) => {
-    return reschedule.isReschedule === true &&
-      !reschedule.newTime &&
-      !reschedule.newDate &&
-      !reschedule.reasonForReschedule &&
-      !reschedule.requestSentBy &&
-      !reschedule.rejectedBy &&
-      !reschedule.rejectionNewDate &&
-      !reschedule.rejectionNewTime &&
-      !reschedule.rejectionReason;
+    return reschedule?.isReschedule === true &&
+      !reschedule?.newTime &&
+      !reschedule?.newDate &&
+      !reschedule?.reasonForReschedule &&
+      !reschedule?.requestSentBy &&
+      !reschedule?.rejectedBy &&
+      !reschedule?.rejectionNewDate &&
+      !reschedule?.rejectionNewTime &&
+      !reschedule?.rejectionReason;
   };
 
   return (

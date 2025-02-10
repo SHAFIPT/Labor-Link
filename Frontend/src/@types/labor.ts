@@ -6,6 +6,21 @@ interface IAboutMe {
 }
 
 
+export interface WalletTransaction {
+    amount: number;
+    type: 'credit' | 'debit';
+    description: string;
+    bookingId?: Types.ObjectId;
+    originalAmount?: number;
+    commissionAmount?: number;
+    createdAt: Date;
+}
+
+export interface Wallet {
+    balance: number;
+    transactions: WalletTransaction[];
+}
+
 
 export interface ILaborer {
   _id: string;
@@ -27,6 +42,7 @@ export interface ILaborer {
     type: 'Point'; // GeoJSON type
     coordinates: [number, number]; // [longitude, latitude]
   };
+  wallet: Wallet;
   password: string;
   role: 'labor';
   image: string;

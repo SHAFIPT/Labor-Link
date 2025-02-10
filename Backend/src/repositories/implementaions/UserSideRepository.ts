@@ -403,7 +403,12 @@ export default class UserSideRepository implements IUserSideRepository {
       throw error;
     }
   }
-  async reviewSubmiting(labor: ILaborer, rating: string, feedback: string ,imageUrls: string[]): Promise<IBooking | null> {
+  async reviewSubmiting(
+    labor: ILaborer,
+    user : IUser,
+    rating: string,
+    feedback: string,
+    imageUrls: string[]): Promise<IBooking | null> {
     try {
 
        const numericRating = parseFloat(rating);
@@ -415,18 +420,19 @@ export default class UserSideRepository implements IUserSideRepository {
       const booking = await Booking.findOne({
         laborId: labor?._id,
         status: { $ne: 'canceled' },
-      }).populate('userId')
+      })
 
        if (!booking) {
-        throw new Error('Active booking not found');
+        throw new Error('Active booking not found');  
       }
 
-      const user = booking.userId as IUser;
-      if (!user) {
-        throw new Error('User details not found');
-      }
+      // const user = booking.userId as IUser;
+      // if (!user) {
+      //   throw new Error('User details not found');
+      // }
 
-      const newReview : IReview = {
+      const newReview: IReview = {
+        userId: user._id,
         reviewerName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
         reviewText: feedback,
         rating: numericRating,

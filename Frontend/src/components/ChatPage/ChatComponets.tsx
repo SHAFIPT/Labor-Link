@@ -23,6 +23,8 @@ import { setBookingDetails } from '../../redux/slice/bookingSlice';
 import bgImage from '../../assets/toole.avif'        
 import AddressModal from './AddressModal';
 import { toggleMobileChatList } from '../../redux/slice/laborSlice';
+import { validateNewDate } from '../../utils/userRegisterValidators';
+import { validateDate } from '../../utils/laborRegisterValidators';
 
 interface ChatComponentProps {
   chatId?: any; // Make chatId optional
@@ -451,6 +453,14 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   // Send quote function
   const handleSubmitQuote = async () => {
     try {
+
+         const arrivalTimeError = validateDate(quoteData.arrivalTime);
+          if (arrivalTimeError) {
+            toast.error(arrivalTimeError)
+            return; // Stop execution if validation fails
+          }
+
+
       const quoteMessage = {
         type: "quote",
         content: {
@@ -835,62 +845,58 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
               const senderProfilePic = isLabor
                 ? participants.labor.profilePicture
                 : participants.user.profilePicture;
+                 const isQuoteMessage = message.type === "quote";
 
               return (
-                <div
+                  <div
                   key={message.id}
-                  className={`flex items-end gap-2 ${
-                    isCurrentUser ? "flex-row-reverse" : "flex-row"
-                  }`}
+                  className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
                 >
                   <div
-                    className={`flex flex-col ${
-                      isCurrentUser ? "items-end" : "items-start"
-                    } max-w-[75%]`}
+                    className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[75%]`}
                   >
-                    <div
-                      className={`flex items-end gap-2 ${
-                        isCurrentUser ? "flex-row-reverse" : "flex-row"
-                      }`}
-                    >
-                      <img
-                        src={senderProfilePic || "/default-avatar.png"}
-                        alt="Profile"
-                        className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
+                    {/* Render QuoteMessage only if it's a quote */}
+                    {isQuoteMessage && (
+                      <QuoteMessage
+                        message={message}
+                        isCurrentUser={isCurrentUser}
+                        formatTimestamp={formatTimestamp}
+                        participants={participants}
+                        onAcceptQuote={handleAcceptQuote}
+                        isLabor={isLabor}
                       />
+                    )}
 
-                      <div
-                        className={`
-                  px-4 py-2 rounded-2xl shadow-sm
-                  ${
-                    isCurrentUser
-                      ? "bg-[#cdffcd] rounded-tr-none"
-                      : "bg-white rounded-tl-none"
-                  }
-                `}
-                      >
-                        {message.type === "text" ? (
-                          <p className="text-gray-800 text-sm">
-                            {message.content}
-                          </p>
-                        ) : message.type === "image" ? (
+                    {message.type !== "quote" && (
+                      <>
+                        <div className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}>
                           <img
-                            src={message.mediaUrl}
-                            alt="Shared"
-                            className="rounded-lg max-w-full h-auto"
+                            src={senderProfilePic || "/default-avatar.png"}
+                            alt="Profile"
+                            className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
                           />
-                        ) : message.type === "video" ? (
-                          <video
-                            src={message.mediaUrl}
-                            controls
-                            className="rounded-lg max-w-full"
-                          />
-                        ) : null}
-                      </div>
-                    </div>
-                    <span className="text-xs text-gray-500 mt-1 px-12">
-                      {formatTimestamp(message.timestamp)}
-                    </span>
+
+                          <div
+                            className={`
+                              px-4 py-2 rounded-2xl shadow-sm
+                              ${isCurrentUser ? "bg-[#cdffcd] rounded-tr-none" : "bg-[#b0b0f4] rounded-tl-none"}
+                            `}
+                          >
+                            {message.type === "text" ? (
+                              <p className="text-gray-800 text-sm">{message.content}</p>
+                            ) : message.type === "image" ? (
+                              <img src={message.mediaUrl} alt="Shared" className="rounded-lg max-w-full h-auto" />
+                            ) : message.type === "video" ? (
+                              <video src={message.mediaUrl} controls className="rounded-lg max-w-full" />
+                            ) : null}
+                          </div>
+                        </div>
+
+                        <span className="text-xs text-gray-500 mt-1 px-12">
+                          {formatTimestamp(message.timestamp)}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               );
@@ -986,9 +992,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         </div>
       ) : (
         <div className="flex flex-col h-full bg-slate-50">
-          {/* Header */}
-
-          {/* flex items-center px-4 py-3 bg-[#373749] text-white shadow-md border-b border-gray-700 */}
+            {/* Header */}
           <div
             className={`flex items-center px-4 py-3 shadow-md border-gray-200 
             ${
@@ -996,7 +1000,14 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                 ? "bg-gray-700 text-white"
                 : "bg-[#373749] border-gray-200 "
             }`}
-          >
+            >
+               {/* Back Arrow Button (Only visible on screens ≥ 768px) */}
+              <button 
+                onClick={() => window.history.back()} 
+                className="hidden md:block text-white px-2 py-1 rounded-lg"
+              >
+                ← Back
+              </button>
             {!isMobileChatListOpen && (
               <button
                 onClick={() => dispatch(toggleMobileChatList())}
@@ -1074,74 +1085,58 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
               
           
               return (
-                <div
+               <div
                   key={message.id}
-                  className={`flex items-end gap-2  ${
-                    isCurrentUser ? "flex-row-reverse" : "flex-row"
-                  }`}
+                  className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
                 >
                   <div
-                    className={`flex flex-col ${
-                      isCurrentUser ? "items-end" : "items-start"
-                    } max-w-[75%]`}
+                    className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[75%]`}
                   >
-
-                     {/* Render QuoteMessage only if it's a quote */}
-                      {isQuoteMessage && (
-                        <QuoteMessage
-                          message={message}
-                          isCurrentUser={isCurrentUser}
-                          formatTimestamp={formatTimestamp}
-                          participants={participants}
-                          onAcceptQuote={handleAcceptQuote}
-                          isLabor={isLabor}
-                        />
-                      )}
-                    <div
-                      className={`flex items-end gap-2 ${
-                        isCurrentUser ? "flex-row-reverse" : "flex-row"
-                      }`}
-                    >
-                      <img
-                        src={senderProfilePic || "/default-avatar.png"}
-                        alt="Profile"
-                        className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
+                    {/* Render QuoteMessage only if it's a quote */}
+                    {isQuoteMessage && (
+                      <QuoteMessage
+                        message={message}
+                        isCurrentUser={isCurrentUser}
+                        formatTimestamp={formatTimestamp}
+                        participants={participants}
+                        onAcceptQuote={handleAcceptQuote}
+                        isLabor={isLabor}
                       />
+                    )}
 
-                      <div
-                        className={`
-                  px-4 py-2 rounded-2xl shadow-sm
-                  ${
-                    isCurrentUser
-                      ? "bg-[#cdffcd] rounded-tr-none"
-                      : "bg-[#b0b0f4] rounded-tl-none"
-                  }
-                `}
-                      >
-                        {message.type === "text" ? (
-                          <p className="text-gray-800 text-sm">
-                            {message.content}
-                          </p>
-                        ) : message.type === "image" ? (
+                    {message.type !== "quote" && (
+                      <>
+                        <div className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}>
                           <img
-                            src={message.mediaUrl}
-                            alt="Shared"
-                            className="rounded-lg max-w-full h-auto"
+                            src={senderProfilePic || "/default-avatar.png"}
+                            alt="Profile"
+                            className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
                           />
-                        ) : message.type === "video" ? (
-                          <video
-                            src={message.mediaUrl}
-                            controls
-                            className="rounded-lg max-w-full"
-                          />
-                        ) : null}
-                      </div>
-                    </div>
-                    <span className="text-xs text-gray-500 mt-1 px-12">
-                      {formatTimestamp(message.timestamp)}
-                    </span>
+
+                          <div
+                            className={`
+                              px-4 py-2 rounded-2xl shadow-sm
+                              ${isCurrentUser ? "bg-[#cdffcd] rounded-tr-none" : "bg-[#b0b0f4] rounded-tl-none"}
+                            `}
+                          >
+                            {message.type === "text" ? (
+                              <p className="text-gray-800 text-sm">{message.content}</p>
+                            ) : message.type === "image" ? (
+                              <img src={message.mediaUrl} alt="Shared" className="rounded-lg max-w-full h-auto" />
+                            ) : message.type === "video" ? (
+                              <video src={message.mediaUrl} controls className="rounded-lg max-w-full" />
+                            ) : null}
+                          </div>
+                        </div>
+
+                        <span className="text-xs text-gray-500 mt-1 px-12">
+                          {formatTimestamp(message.timestamp)}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
+
               );
             })}
             <div ref={messagesEndRef} />

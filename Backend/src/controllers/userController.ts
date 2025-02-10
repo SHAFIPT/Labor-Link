@@ -34,6 +34,7 @@ interface ReviewFields {
 }
 
 import Stripe from 'stripe';
+import Labor from "../models/LaborModel";
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -487,7 +488,7 @@ export class userController {
     }
   };
   public handleStripeWebhook = async (req: Request, res: Response) => {
-    console.log("hooook calledddddddddddddddddddddddd");
+    console.log("hooook calledddddddddddddddddddddddd ffffffffffffffffffff");
 
     console.log("Webhook called");
     console.log("signature", req.headers);
@@ -527,7 +528,7 @@ export class userController {
                 totalAmount: estimatedCost,
                 commissionAmount,
                 laborEarnings: laborAmount,
-                transactionId: "paymentIntent.id",
+                transactionId: session.payment_intent as string,
               },
             },
           },
@@ -538,7 +539,30 @@ export class userController {
           throw new Error("Failed to update booking with payment details");
         }
 
-        if (updatedBooking) return true;
+        const updatedLabor = await Labor.findByIdAndUpdate(
+          laborId,
+          {
+            $inc: { "wallet.balance": laborAmount },
+            $push: {
+                "wallet.transactions": {
+                amount: laborAmount,
+                type: "credit",
+                description: `Earnings from booking ${bookingId}`,
+                bookingId: booking._id,
+                originalAmount: estimatedCost,
+                commissionAmount: commissionAmount,
+                createdAt: new Date()
+              }
+            }
+          },
+          {new : true}
+        )
+
+         if (!updatedLabor) {
+          throw new Error("Failed to update labor wallet");
+        }
+
+        return res.json({ received: true });
       }
     } catch (error) {
       console.log(error);

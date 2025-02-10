@@ -6,7 +6,7 @@ import { updateSingleBooking } from "../../../redux/slice/bookingSlice";
 import { toast } from "react-toastify";
 import { submitAdditionalCharge } from "../../../services/LaborServices";
 
-const AdditionalCharge = ({ onClose, bookingId, booking }) => {
+const AdditionalCharge = ({ onClose, bookingId, booking ,onUpdateBooking}) => {
   const [formData, setFormData] = useState({
     amount: "", 
     reason: "",
@@ -35,7 +35,8 @@ const AdditionalCharge = ({ onClose, bookingId, booking }) => {
             additionalChargeRequest: additnalChageAdd.additionalChargeRequest,
             status: additnalChageAdd.status,
             updatedAt: additnalChageAdd.updatedAt
-        };
+         };
+         onUpdateBooking(updatedBooking)
 
         dispatch(updateSingleBooking(updatedBooking));
         toast.success("Additional charge added successfully");

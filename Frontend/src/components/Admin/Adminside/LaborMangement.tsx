@@ -104,20 +104,6 @@ const LaborMangement = () => {
               Labor Management
             </h1>
           </div>
-
-          {/* Button section */}
-          {/* <div className="flex justify-center sm:justify-end">
-            <button className="group relative w-32 bg-gradient-to-b from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 shadow-md px-4 py-2 rounded-xl border border-gray-400 text-white font-medium transition-all duration-300">
-              <div className="relative overflow-hidden h-6">
-                <span className="block group-hover:-translate-y-full transition-transform duration-300 ease-in-out">
-                  Add Labor
-                </span>
-                <span className="absolute inset-x-0 top-full group-hover:-translate-y-full transition-transform duration-300 ease-in-out flex justify-center">
-                  <UserPlus className="w-5 h-5" />
-                </span>
-              </div>
-            </button>
-          </div> */}
         </div>
 
         <div className="w-full">

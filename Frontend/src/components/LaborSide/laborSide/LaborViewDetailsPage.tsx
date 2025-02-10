@@ -19,8 +19,15 @@ import WorkCompleteModal from '../../UserSide/workCompleteModal';
 const LaborViewDetailsPage = () => {
   const location = useLocation();
   const booking = location.state?.booking;
-  console.log("This is BBBBBBBBBBBBBB",booking)
+  // console.log("This is BBBBBBBBBBBBBB",booking)
   const bookingdetislss = useSelector((state: RootState) => state.booking.bookingDetails);
+  const [updatedBooking, setUpdatedBooking] = useState(null);
+
+  console.log('this ist eh resheudelullll',updatedBooking)
+
+  const handleRescheduleUpdate = (newBooking) => {
+    setUpdatedBooking(newBooking); // Update state when reschedule is accepted
+  };
 
   const [cancelBooking, setCancelBooking] = useState(false)
   const loading = useSelector((state: RootState) => state.user.loading);
@@ -36,10 +43,12 @@ const LaborViewDetailsPage = () => {
   console.log("rrrrrrrrrrrrrrrrrrrrrrrrrrrrr", bookingdetislss)
   console.log("55555555555rrrrrkaaaaaaaaabolarrrrrrrrrrrrrd", updatedBookingDetails)
   
-  const bookingDetails = Array.isArray(bookingdetislss) 
-  ? bookingdetislss.find(b => b.bookingId === booking?.bookingId)
-  : booking;
-  
+ const bookingDetails = updatedBooking 
+  ? updatedBooking  // Use the updated booking details if rescheduled
+  : (Array.isArray(bookingdetislss) 
+      ? bookingdetislss.find(b => b.bookingId === booking?.bookingId) 
+      : booking);
+
   console.log("ppppppppppppppppppp", bookingDetails)
   const navigate = useNavigate();
   const dispatch = useDispatch()
@@ -225,8 +234,8 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
   
 const isRescheduleReset = (reschedule) => {
   return (
-    reschedule?.isReschedule === false || // Initial state
-    (reschedule?.isReschedule === true &&
+    // reschedule?.isReschedule === false || // Initial state
+    (reschedule?.isReschedule === true || reschedule?.isReschedule === false &&
       !reschedule?.newTime &&
       !reschedule?.newDate &&
       !reschedule?.reasonForReschedule &&
@@ -263,23 +272,27 @@ const isRescheduleReset = (reschedule) => {
         <ResheduleModal
           onClose={() => setResheduleModalOpen(false)}
           bookingId={resheduleModal}
+          onUpdateBooking={handleRescheduleUpdate} 
         />
       )}
       <RescheduleRequestModal
         isOpen={resheduleModals !== null}
         onClose={() => setResheduleModal(null)}
         bookingDetails={resheduleModals ? [resheduleModals] : []}
+        onUpdateBooking={handleRescheduleUpdate} 
       />
       {additionalCharge && (
         <AdditionalCharge
           onClose={() => setAdditionalCharge(null)}
           bookingId={additionalCharge}
           booking={booking}
+          onUpdateBooking={handleRescheduleUpdate} 
         />
       )}
       {workCompleteModal && <WorkCompleteModal
         onClose={() => setWorkCompleteModal(null)}
         bookingId={workCompleteModal}
+        onUpdateBooking={handleRescheduleUpdate} 
       />}
       {theme === "light" ? (
         <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -424,9 +437,9 @@ const isRescheduleReset = (reschedule) => {
                       </div>
                     ) : bookingDetails?.status === "completed" ? (
                       <div className="flex justify-center">
-                        <button className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto">
-                          Proceed to Pay
-                        </button>
+                         <p className="text-green-600 font-semibold text-lg text-center">
+                          Your work has been completed
+                        </p>
                       </div>
                     ) : (
                       <div className="flex flex-col gap-4">
@@ -441,12 +454,30 @@ const isRescheduleReset = (reschedule) => {
                           </button>
 
                           {/* Additional Charge Request */}
-                          <button
-                            className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
-                            onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
-                          >
-                            Request Additional Charge
-                          </button>
+                          { 
+                            bookingDetails.additionalChargeRequest ? (
+                              bookingDetails.additionalChargeRequest?.status === "pending" &&
+                              bookingDetails.additionalChargeRequest?.amount > 0 &&
+                              bookingDetails.additionalChargeRequest?.reason ? (
+                                <p className="text-yellow-500 font-medium">
+                                  Your additional charge request is pending. Please wait for user approval.
+                                </p>
+                              ) : (
+                                <button
+                                  className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
+                                  onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
+                                >
+                                  Request Additional Charge
+                                </button>
+                              )
+                            ) : (
+                              <button
+                                className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
+                                onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
+                              >
+                                Request Additional Charge
+                              </button>
+                            )}
 
                           {isRescheduleReset(bookingDetails.reschedule) && (
                                 <button
@@ -545,11 +576,9 @@ const isRescheduleReset = (reschedule) => {
                             </button>
                           ) : bookingDetails?.isUserCompletionReported &&
                             bookingDetails?.isLaborCompletionReported ? (
-                            <button
-                              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto"
-                            >
-                              Proceed to Pay
-                            </button>
+                             <p className="text-green-600 font-semibold text-lg text-center">
+                                Your work has been completed
+                              </p>
                           ) : (
                             <button
                               className="px-6 py-2 bg-[#1e40af] text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
@@ -717,9 +746,10 @@ const isRescheduleReset = (reschedule) => {
                       </div>
                     ) : bookingDetails?.status === "completed" ? (
                       <div className="flex justify-center">
-                        <button className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto">
-                          Proceed to Pay
-                        </button>
+                        <p className="text-green-600 font-semibold text-lg text-center">
+                          Your work has been completed
+                        </p>
+
                       </div>
                     ) : (
                       <div className="flex flex-col gap-4">
@@ -733,13 +763,30 @@ const isRescheduleReset = (reschedule) => {
                             Cancel Booking
                           </button>
 
-                          {/* Additional Charge Request */}
-                          <button
-                            className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
-                            onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
-                          >
-                            Request Additional Charge
-                          </button>
+                          { 
+                            bookingDetails.additionalChargeRequest ? (
+                              bookingDetails.additionalChargeRequest?.status === "pending" &&
+                              bookingDetails.additionalChargeRequest?.amount > 0 &&
+                              bookingDetails.additionalChargeRequest?.reason ? (
+                                <p className="text-yellow-500 font-medium">
+                                  Your additional charge request is pending. Please wait for user approval.
+                                </p>
+                              ) : (
+                                <button
+                                  className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
+                                  onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
+                                >
+                                  Request Additional Charge
+                                </button>
+                              )
+                            ) : (
+                              <button
+                                className="px-6 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors w-full md:w-auto"
+                                onClick={() => setAdditionalCharge(bookingDetails.bookingId)}
+                              >
+                                Request Additional Charge
+                              </button>
+                            )}
 
                           {isRescheduleReset(bookingDetails.reschedule) && (
                                 <button
@@ -838,11 +885,9 @@ const isRescheduleReset = (reschedule) => {
                             </button>
                           ) : bookingDetails?.isUserCompletionReported &&
                             bookingDetails?.isLaborCompletionReported ? (
-                            <button
-                              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition-colors w-full md:w-auto"
-                            >
-                              Proceed to Pay
-                            </button>
+                             <p className="text-green-600 font-semibold text-lg text-center">
+                              Your work has been completed
+                            </p>
                           ) : (
                             <button
                               className="px-6 py-2 bg-[#1e40af] text-white rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"

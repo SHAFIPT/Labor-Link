@@ -1,58 +1,181 @@
-import AdminSideRow from "./AdminSideRow"
-import { resetAdmin , setFormData , setAdmin , setIsAdminAuthenticated } from '../../../redux/slice/adminSlice'
-import { useDispatch , useSelector } from "react-redux"
-import { toast } from "react-toastify"
-import { logout } from "../../../services/AdminAuthServices"
-import { RootState } from "../../../redux/store/store"
+import React from 'react';
+// import { Users, Briefcase, Calendar, DollarSign } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import AdminSideRow from './AdminSideRow';
+import User from '../../../assets/UserKing.png'
+import Labor from '../../../assets/LaborKing.png'
+import Booking from '../../../assets/BookingsKing.png'
+import Payment from '../../../assets/paymentEarnigsKing.png'
+
 const AdminDashBoard = () => {
+  // Sample data for charts and stats
+  // const statsData = [
+  //   { icon: User, title: 'Total Users', value: '12,000', color: 'text-blue-600' },
+  //   { icon: Briefcase, title: 'Total Labors', value: '1,600', color: 'text-green-600' },
+  //   { icon: Calendar, title: 'Total Bookings', value: '300', color: 'text-purple-600' },
+  //   { icon: DollarSign, title: 'Total Earnings', value: '$45,000', color: 'text-red-600' }
+  // ];
 
-    const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
-  const isLaborAthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-  const { laborer } = useSelector((state: RootState) => state.labor)
-  const { user } = useSelector((state: RootState) => state.user)
+  const pieData1 = [
+    { name: 'Active', value: 400 },
+    { name: 'Inactive', value: 200 }
+  ];
 
-  console.log('this is isAthenticated', isUserAthenticated)  
-    console.log('this is laborer',laborer)
-  console.log('this is user',user)
-  console.log('this is isLaborAthenticated',isLaborAthenticated)
+  const pieData2 = [
+    { name: 'Pending', value: 300 },
+    { name: 'Completed', value: 500 }
+  ];
 
-  const dispatch = useDispatch()
+  const barData = [
+    { month: 'Jan', earnings: 4000 },
+    { month: 'Feb', earnings: 3000 },
+    { month: 'Mar', earnings: 5000 },
+    { month: 'Apr', earnings: 4500 },
+    { month: 'May', earnings: 6000 }
+  ];
 
-  const handleLogout = async() => {
-    const response = await logout()
-    if (response.status === 200) {
-      localStorage.removeItem('accessToken')
-      dispatch(resetAdmin())
-      dispatch(setAdmin({}))
-      dispatch(setIsAdminAuthenticated(false))
-      dispatch(setFormData({}))
-      toast.success('Admin logout successfully....!')
-    } else {
-      toast.error('error occued in admin logout...!')
-    }
-  }
-
-
-  //  const clearLaborDetails = () => {
-  //    dispatch(resetAdmin());
-  //    dispatch(setIsAdminAuthenticated(false))
-  //    dispatch(setAdmin({}))
-  //    dispatch(setFormData({}))
-  //   };
+  const COLORS1 = ['#0088FE', '#FF8042'];
+  const COLORS2 = ['#00C49F', '#FFBB28'];
 
   return (
-    <div className="flex h-screen ">
-{/* 
-     <button onClick={clearLaborDetails}>
-      Clear Labor Details
-    </button> */}
-
+    <div className="flex min-h-screen bg-[#D6CCCC]">
+      {/* Sidebar - You can replace AdminSideRow with your actual sidebar component */}
+      {/* <div className="w-64 bg-white shadow-md">
+      </div> */}
       <AdminSideRow />
-      <div className="righdi w-full bg-[#D6CCCC] flex justify-between">
-        <div className="text">
-          <h1>jdfjsfsdf</h1>
+      
+
+      {/* Main Content */}
+      <div className="flex-1 p-6">  
+      <div className="text-center lg:p-7 md:p-7 p-6 sm:p-7 sm:text-left mb-4 sm:mb-0">
+            <h1 className="font-serif text-4xl sm:text-3xl md:text-4xl lg:text-5xl">
+              DashBoard
+            </h1>
+          </div>
+        {/* Top Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Box 1: Total Users */}
+          <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+            <img src={User} alt="Total Users" className="w-[62px] h-[56px] mr-4" />
+            <div>
+              <h2 className="text-lg font-semibold">Total Users</h2>
+              <p className="text-3xl  font-[benne]">600</p>
+            </div>
+          </div>
+
+          {/* Box 2: Total Labors */}
+          <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+            <img src={Labor} alt="Total Labors" className="w-[52px] h-[56px]  mr-4" />
+            <div>
+              <h2 className="text-lg font-semibold">Total Labors</h2>
+              <p className="text-3xl  font-[benne]">1,600</p>
+            </div>
+          </div>
+
+          {/* Box 3: Total Bookings */}
+          <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+            <img src={Booking} alt="Total Bookings" className="w-12 h-12 mr-4" />
+            <div>
+              <h2 className="text-lg font-semibold">Total Bookings</h2>
+              <p className="text-3xl  font-[benne]">300</p>
+            </div>
+          </div>
+
+          {/* Box 4: Total Earnings */}
+          <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+            <img src={Payment} alt="Total Earnings" className="w-12 h-12 mr-4" />
+            <div>
+              <h2 className="text-lg font-semibold">Total Earnings</h2>
+              <p className="text-3xl  font-[benne]">₹ 12,000</p>
+            </div>
+          </div>
         </div>
-           <div className="logout">
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Pie Charts */}
+          <div className="bg-white shadow-md rounded-lg p-6 flex flex-col">
+            <h3 className="text-lg font-semibold mb-4 text-center">Labor Status</h3>
+            <div className="flex justify-between">
+              <ResponsiveContainer width="48%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData1}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieData1.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS1[index % COLORS1.length]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <ResponsiveContainer width="48%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData2}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieData2.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS2[index % COLORS2.length]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-around mt-4">
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-blue-500 mr-2"></div>
+                <span>Active</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-orange-500 mr-2"></div>
+                <span>Inactive</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bar Chart */}
+          <div className="bg-white shadow-md rounded-lg p-6 lg:col-span-2">
+            <h3 className="text-lg font-semibold mb-4">Earnings Overview</h3>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={barData}>
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="earnings" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashBoard;
+
+
+
+
+
+
+
+
+
+
+
+
+ {/* <div className="logout">
         <button
         onClick={handleLogout}
           className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
@@ -73,11 +196,4 @@ const AdminDashBoard = () => {
           </div>
         </button>
 
-      </div>
-      </div>
-   
-    </div>
-  )
-}
-
-export default AdminDashBoard
+      </div> */}

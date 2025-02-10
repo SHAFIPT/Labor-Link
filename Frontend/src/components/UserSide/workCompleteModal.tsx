@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
 import { toast } from 'react-toastify';
 import { workCompletion } from '../../services/UserSurvice'
-const WorkCompleteModal = ({ onClose, bookingId }) => {
+const WorkCompleteModal = ({ onClose, bookingId,onUpdateBooking }) => {
     const theme = useSelector((state: RootState) => state.theme.mode);
     const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
     const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
@@ -25,7 +25,10 @@ const WorkCompleteModal = ({ onClose, bookingId }) => {
             
             const response = await workCompletion(updateData, bookingId)
             
-            if (response.status === 200) {
+          if (response.status === 200) {
+            console.log('hellowww', response)
+            const { reshedule } = response.data
+            onUpdateBooking(reshedule)
                 toast.success('work has been completd succesfully')
                 onClose()
             } else {

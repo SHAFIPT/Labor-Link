@@ -55,9 +55,16 @@ const UserProfile = () => {
   const [cancelDetilsModal , setCancelDetilsModal] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("");
   const location = useLocation();
-  const [updatedBookingDetails , setUpdatedBookingDetails] = useState("")
+  // const [updatedBookingDetails , setUpdatedBookingDetails] = useState("")
   const currentPages = location.pathname.split("/").pop();
   const [currentPage, setCurrentPage] = useState(1);
+  const [updatedBooking, setUpdatedBooking] = useState(null);
+  
+    console.log('this ist eh resheudelullll',updatedBooking)
+  
+    const handleRescheduleUpdate = (newBooking) => {
+      setUpdatedBooking(newBooking); // Update state when reschedule is accepted
+    };
   const [filter, setFilter] = useState(""); 
   const [limit, setLimit] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -74,11 +81,19 @@ const UserProfile = () => {
     lastName?: string;
     password?: string;
   } = useSelector((state: RootState) => state.user.error);
-  const bookingDetails = useSelector(
-    (state: RootState) => state.booking.bookingDetails
-  );
+  const bookingFromStore = useSelector(
+  (state: RootState) => state.booking.bookingDetails
+);
 
-  console.log("Thiis is the BoookingDETAilssssssssssssss :", bookingDetails);
+  console.log("Thiis is the BoookingDETAilssssssssssssss vavaaa:", bookingFromStore);
+  console.log("Thiis is the updatedBooking:", updatedBooking);
+
+  const bookingDetails = updatedBooking
+    ? Array.isArray(updatedBooking) 
+      ? updatedBooking 
+      : [updatedBooking] // Convert to an array if it's an object
+    : bookingFromStore;
+
 
 
   // console.log('this is the neeeeeeeeewwwwwww bbbbbbboke3ee ,',updatedBookingDetails?.[0]?.bookingId)
@@ -105,7 +120,7 @@ const UserProfile = () => {
   //         }, [])
 
   useEffect(() => {
-    console.log('hlooooooooooooooooooooooooooo')
+    // console.log('hlooooooooooooooooooooooooooo')
     const fetchUser = async () => {
       try {
         const data = await userFetch();
@@ -207,7 +222,7 @@ const UserProfile = () => {
   };
 
   const handleSave = async () => {
-    console.log("Starting handleSave function"); // Add this to verify function is called
+    // console.log("Starting handleSave function");
     dispatch(setLoading(true));
 
     try {
@@ -329,7 +344,7 @@ const UserProfile = () => {
 
           console.log("Thsi si eth BookingDATAAAAAAAAAAAAA:", bookings);
           dispatch(setBookingDetails(bookings));
-          setUpdatedBookingDetails(bookings);
+          setUpdatedBooking(bookings);
           setTotalPages(totalPages);
         } else {
           console.error("Failed to fetch bookings:", response);
@@ -416,6 +431,7 @@ const UserProfile = () => {
 
   const handleProceedToPay = async (bookingId , laborId ,userId) => {
     try {
+      dispatch(setLoading(true))
 
       //  const stripePromise = loadStripe("pk_test_51QptmEJLpjNdl80OuFdHAnnBNJazlv9gHMbHgUaRgXFy2cjgIkMUDml6y9GDga07mC7cgP3T47wFRCDsXMfKN8Qu008iPGiYpz"); 
 
@@ -439,7 +455,7 @@ const UserProfile = () => {
       const pymnetResponse = await pymnetSuccess(pymnetData)
 
       if (pymnetResponse.status === 200) {
-
+           dispatch(setLoading(false))
 //         console.log(pymnetResponse.data.pymentRespnose
 // .url)
         console.log("this si the succesfully payment ;;;;", pymnetResponse)
@@ -453,7 +469,7 @@ const UserProfile = () => {
     } catch (error) {
       console.error(error)
       toast.error('Error in the pyament')
-    }
+    }finally{ dispatch(setLoading(false))}
   }
 
   return (
@@ -463,23 +479,27 @@ const UserProfile = () => {
         <ResheduleModal
           onClose={() => setResheduleModalOpen(false)}
           bookingId={resheduleModal}
+          onUpdateBooking={handleRescheduleUpdate} 
         />
       )}
       <RescheduleRequestModal
         isOpen={resheduleModals !== null}
         onClose={() => setResheduleModal(null)}
         bookingDetails={resheduleModals ? [resheduleModals] : []}
+        onUpdateBooking={handleRescheduleUpdate} 
       />
       <AdditionalChargeModal
         isOpen={additionalChageModal !== null}
         onClose={() => setAdditionalChageModal(null)}
         bookingDetails={additionalChageModal ? [additionalChageModal] : []}
+        onUpdateBooking={handleRescheduleUpdate} 
       />
 
       {workCompleteModal && (
         <WorkCompleteModal
           onClose={() => setWorkCompleteModal(null)}
           bookingId={workCompleteModal}
+          onUpdateBooking={handleRescheduleUpdate} 
         />
       )}
 

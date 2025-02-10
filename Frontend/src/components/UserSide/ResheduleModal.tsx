@@ -8,7 +8,7 @@ import '../Auth/LoadingBody.css'
 import { setBookingDetails, updateSingleBooking } from "../../redux/slice/bookingSlice";
 import { handleRescheduleWork } from "../../services/UserSurvice";
 
-const ResheduleModal = ({ onClose, bookingId }) => {
+const ResheduleModal = ({ onClose, bookingId , onUpdateBooking }) => {
   
 
   console.log("Thsi is the bookingId.....",bookingId)
@@ -64,7 +64,8 @@ const ResheduleModal = ({ onClose, bookingId }) => {
           if (resheduleResponse.status === 200) {
             const { reshedule } = resheduleResponse.data
             
-            console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:",reshedule)
+            console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:", reshedule)
+            onUpdateBooking(reshedule);
               // dispatch(setBookingDetails(resheduleResponse.data.reshedule))
                 // dispatch(updateSingleBooking(reshedule));
                 toast.success("reshedule successfull")

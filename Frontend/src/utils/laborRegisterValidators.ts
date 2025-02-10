@@ -235,6 +235,14 @@ const availabilitySchema = Joi.array() // Adjust with your valid options
 //     }),
 // });
 
+const arrivalTimeSchema = Joi.date()
+  .greater('now') // Ensure the date is in the future
+  .required()
+  .messages({
+    'date.greater': 'Arrival time must be in the future.',
+    'any.required': 'Arrival time is required.',
+  });
+
 
   const startDateSchema = Joi.date()
   .less('now')
@@ -306,6 +314,10 @@ export const validateLastName = (lastName: string) => {
 
 export const validateEmail = (email: string) => {
   const { error } = emailSchema.validate(email);
+  return error ? error.details[0].message : null;
+};
+export const validateDate = (date: string) => {
+  const { error } = arrivalTimeSchema.validate(date);
   return error ? error.details[0].message : null;
 };
 

@@ -1,6 +1,8 @@
-import { Schema, Document } from 'mongoose';
+
+import { Schema, Document ,Types } from 'mongoose';
 
 export interface IReview {
+  userId: Schema.Types.ObjectId;
   reviewerName: string;
   reviewText: string;
   imageUrl: string[]; 
@@ -14,6 +16,20 @@ export interface IAboutMe {
   description?: string;
 }
 
+export interface WalletTransaction {
+    amount: number;
+    type: 'credit' | 'debit';
+    description: string;
+    bookingId?: Types.ObjectId;
+    originalAmount?: number;
+    commissionAmount?: number;
+    createdAt: Date;
+}
+
+export interface Wallet {
+    balance: number;
+    transactions: WalletTransaction[];
+}
 
 export interface ILaborer extends Document {
     _id?: string;
@@ -21,7 +37,7 @@ export interface ILaborer extends Document {
   lastName: string;
   email: string;
   password: string;
-    phone: string;
+    phone: string;   
   address: {
     city: string,
     state: string,
@@ -50,11 +66,13 @@ export interface ILaborer extends Document {
     startDate: string,
     currentlyWorking : boolean
   } 
+  wallet: Wallet;
   workHistory: {
     bookingId: Schema.Types.ObjectId;
     status: string;
     lastUpdated: Date; 
   }[];
+  
   rating: number;  // Average rating
   reviews: IReview[];  // List of reviews
   createdAt: Date;

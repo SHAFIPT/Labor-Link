@@ -1,7 +1,7 @@
 import LaborDashBoardNav from "./LaborDashBoardNav"
 
 import React, { useEffect, useState } from 'react';
-import { HomeIcon, MessageSquare, Receipt, Briefcase, User, LogOut, DollarSign, MessageCircle, MenuIcon } from 'lucide-react';
+import { HomeIcon, MessageSquare, Receipt, Briefcase, User, LogOut, DollarSign, MessageCircle, MenuIcon, Filter, Clock, XCircle, CheckCircle, IndianRupee } from 'lucide-react';
 import { FaCalendarCheck } from "react-icons/fa"; 
 import { Phone, MapPin } from 'lucide-react';
 import { useDispatch, useSelector } from "react-redux";
@@ -21,6 +21,8 @@ import { ClockIcon } from "@heroicons/react/24/solid";
 import ResheduleRequstModal from "./resheduleRequstModal";
 import RescheduleRequestModal from "./resheduleRequstModal";
 import ChatComponents from "../../ChatPage/ChatComponets";
+import { IBooking } from "../../../@types/IBooking";
+import { ILaborer } from "../../../@types/labor";
 
 interface ChatDocument {
   laborId: string;
@@ -68,29 +70,73 @@ const LaborDashBoard = () => {
   const email = useSelector((state: RootState) => state.labor.laborer.email);
   const laborer = useSelector((state: RootState) => state.labor.laborer);
   const loading = useSelector((state: RootState) => state.labor.loading);
-  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-  const isMobileChatListOpen = useSelector((state: RootState) => state.labor.isMobileChatListOpen);
+  const isLaborAuthenticated = useSelector(
+    (state: RootState) => state.labor.isLaborAuthenticated
+  );
+  const isMobileChatListOpen = useSelector(
+    (state: RootState) => state.labor.isMobileChatListOpen
+  );
 
-
-  console.log('this is the laborer ,,',laborer)
-  console.log('this is the authenitcted ,,',isLaborAuthenticated)
+  console.log("this is the laborer ,,", laborer);
+  // console.log("this is the authenitcted ,,", isLaborAuthenticated);
 
   const [currentStage, setCurrentStage] = useState("Dashboard");
   const [resheduleModal, setResheduleModal] = useState(null);
   const [unreadChats, setUnreadChats] = useState({});
   const [chats, setChats] = useState<Chat[]>([]);
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
+
+  console.log("Thiss is the boooking thanveeeraaa", bookingDetils);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [limit, setLimit] = useState(2);
-  const currentPages = location.pathname.split('/').pop();
+  const [laborerDetils ,setLaborDetils] = useState<ILaborer>(null)
+  const [filter, setFilter] = useState("");
+  const currentPages = location.pathname.split("/").pop();
   const [totalPages, setTotalPages] = useState(1);
+  const transactionsPerPage = 5;
+  const [stats, setStats] = useState([
+    { title: "Total Bookings", value: "0", icon: Briefcase },
+    { title: "Total Work Completed", value: "0", icon: CheckCircle },
+    { title: "Total Cancellations", value: "0", icon: XCircle },
+    { title: "Total Amount Pay", value: "₹0", icon: IndianRupee },
+    { title: "Pending Tasks", value: "0", icon: Clock },
+  ]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [updatedBooking, setUpdatedBooking] = useState(null);
 
-  console.log('99999999999999',currentPages)
-  console.log("Gthis si the chats :::::", chats);
+  const sortedTransactions = laborer?.wallet?.transactions 
+    ? [...laborer.wallet.transactions].sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    : [];
+  
+    // Pagination calculations
+    const indexOfLastTransaction = currentPage * transactionsPerPage;
+    const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+    const currentTransactions = sortedTransactions.slice(
+      indexOfFirstTransaction, 
+      indexOfLastTransaction
+    );
 
-  console.log("thsis eth labo data :A", email);
+    // Pagination handlers
+    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+    // Calculate total pages
+    const totalPagess = Math.ceil(
+      (laborer?.wallet?.transactions?.length || 0) / transactionsPerPage
+    );
+    
+    console.log('this ist eh resheudelullll',updatedBooking)
+  
+    const handleRescheduleUpdate = (newBooking) => {
+      setUpdatedBooking(newBooking); // Update state when reschedule is accepted
+    };
+  // console.log("99999999999999", currentPages);
+  // console.log("Gthis si the chats :::::", chats);
+
+  // console.log("thsis eth labo data :A", email);
 
   const bookingDetails = useSelector(
     (state: RootState) => state.booking.bookingDetails
@@ -107,17 +153,17 @@ const LaborDashBoard = () => {
     { name: "Dashboard", icon: HomeIcon, stage: "Dashboard" },
     { name: "Bookings", icon: FaCalendarCheck, stage: "Bookings" },
     { name: "Chats", icon: MessageSquare, stage: "Chats" },
-    { name: "Total Works ", icon: Briefcase, stage: "Works" },
-    { name: "Billing History", icon: Receipt, stage: "Billing" },
+    { name: "  Bookings & History ", icon: Briefcase, stage: "Works" },
+    { name: "My Wallet", icon: Receipt, stage: "Wallet" },
     { name: "View Profile", icon: User, stage: "Profile" },
   ];
 
-  const stats = [
-    { title: "Total Work Taken", value: "24", icon: Briefcase },
-    { title: "Work Completed", value: "18", icon: Receipt },
-    { title: "Total Earnings", value: "$2,450", icon: DollarSign },
-    { title: "Pending Tasks", value: "6", icon: MessageSquare },
-  ];
+  // const stats = [
+  //   { title: "Total Work Taken", value: total, icon: Briefcase },
+  //   { title: "Work Completed", value: "18", icon: Receipt },
+  //   { title: "Total Earnings", value: "$2,450", icon: DollarSign },
+  //   { title: "Pending Tasks", value: "6", icon: MessageSquare },
+  // ];
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -169,91 +215,97 @@ const LaborDashBoard = () => {
   }, [currentStage]);
 
   const fetchChats = (userUid) => {
-  if (!userUid) {
-    throw new Error("Missing user credentials");
-  }
+    if (!userUid) {
+      throw new Error("Missing user credentials");
+    }
 
-  const auth = getAuth();
-  const currentLabor = auth.currentUser;
+    const auth = getAuth();
+    const currentLabor = auth.currentUser;
 
-  if (!currentLabor || !currentLabor.uid) {
-    throw new Error("User is not authenticated");
-  }
+    if (!currentLabor || !currentLabor.uid) {
+      throw new Error("User is not authenticated");
+    }
 
-  const laborUid = currentLabor.uid;
+    const laborUid = currentLabor.uid;
 
-  const chatCollection = collection(db, "Chats");
-  const chatQuery = query(chatCollection, where("laborId", "==", laborUid));
+    const chatCollection = collection(db, "Chats");
+    const chatQuery = query(chatCollection, where("laborId", "==", laborUid));
 
-  const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
-    const chatData = await Promise.all(
-      chatSnapshot.docs.map(async (doc) => {
-        const chatData = doc.data() as ChatDocument;
+    const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
+      const chatData = await Promise.all(
+        chatSnapshot.docs.map(async (doc) => {
+          const chatData = doc.data() as ChatDocument;
 
-        // Get the latest message for sorting
-        const messagesCollection = collection(db, "Chats", doc.id, "messages");
-        const latestMessageQuery = query(
-          messagesCollection,
-          orderBy("timestamp", "desc"),
-          limitToLast(1)
-        );
-        const latestMessageSnapshot = await getDocs(latestMessageQuery);
-        const latestMessage = latestMessageSnapshot.docs[0]?.data();
-        const latestMessageTime = latestMessage?.timestamp || new Timestamp(0, 0);
-
-        // Calculate unread count
-        let unreadCount = 0;
-        if (chatData.lastMessageSender === "user") {
-          const unreadQuery = query(
-            messagesCollection,
-            where(
-              "timestamp",
-              ">",
-              chatData.lastReadTimestamp || new Timestamp(0, 0)
-            )
+          // Get the latest message for sorting
+          const messagesCollection = collection(
+            db,
+            "Chats",
+            doc.id,
+            "messages"
           );
-          const unreadSnapshot = await getCountFromServer(unreadQuery);
-          unreadCount = unreadSnapshot.data().count;
+          const latestMessageQuery = query(
+            messagesCollection,
+            orderBy("timestamp", "desc"),
+            limitToLast(1)
+          );
+          const latestMessageSnapshot = await getDocs(latestMessageQuery);
+          const latestMessage = latestMessageSnapshot.docs[0]?.data();
+          const latestMessageTime =
+            latestMessage?.timestamp || new Timestamp(0, 0);
+
+          // Calculate unread count
+          let unreadCount = 0;
+          if (chatData.lastMessageSender === "user") {
+            const unreadQuery = query(
+              messagesCollection,
+              where(
+                "timestamp",
+                ">",
+                chatData.lastReadTimestamp || new Timestamp(0, 0)
+              )
+            );
+            const unreadSnapshot = await getCountFromServer(unreadQuery);
+            unreadCount = unreadSnapshot.data().count;
+          }
+
+          return {
+            id: doc.id,
+            ...chatData,
+            latestMessageTime,
+            unreadCount,
+          };
+        })
+      );
+
+      // Fetch user data and sort by latest message
+      const userPromises = chatData.map(async (chat) => {
+        try {
+          const userDocRef = doc(db, "Users", chat.userId);
+          const userSnapshot = await getDoc(userDocRef);
+          const userData = userSnapshot.exists() ? userSnapshot.data() : null;
+
+          return {
+            ...chat,
+            userData,
+          };
+        } catch (error) {
+          console.error(`Error fetching user data for chat ${chat.id}:`, error);
+          return { ...chat, userData: null };
         }
+      });
 
-        return {
-          id: doc.id,
-          ...chatData,
-          latestMessageTime,
-          unreadCount,
-        };
-      })
-    );
+      const chatsWithUserData = await Promise.all(userPromises);
 
-    // Fetch user data and sort by latest message
-    const userPromises = chatData.map(async (chat) => {
-      try {
-        const userDocRef = doc(db, "Users", chat.userId);
-        const userSnapshot = await getDoc(userDocRef);
-        const userData = userSnapshot.exists() ? userSnapshot.data() : null;
+      // Sort chats by latest message timestamp
+      const sortedChats = chatsWithUserData.sort((a, b) => {
+        return b.latestMessageTime.seconds - a.latestMessageTime.seconds;
+      });
 
-        return {
-          ...chat,
-          userData,
-        };
-      } catch (error) {
-        console.error(`Error fetching user data for chat ${chat.id}:`, error);
-        return { ...chat, userData: null };
-      }
+      setChats(sortedChats);
     });
 
-    const chatsWithUserData = await Promise.all(userPromises);
-    
-    // Sort chats by latest message timestamp
-    const sortedChats = chatsWithUserData.sort((a, b) => {
-      return b.latestMessageTime.seconds - a.latestMessageTime.seconds;
-    });
-
-    setChats(sortedChats);
-  });
-
-  return unsubscribe;
-};
+    return unsubscribe;
+  };
   useEffect(() => {
     const auth = getAuth();
 
@@ -290,22 +342,71 @@ const LaborDashBoard = () => {
   // Modify the navigation handler to mark messages as read
   const handleNavigateChatpage = async (chatId) => {
     await markChatAsRead(chatId);
-    navigate(`/chatingPage` , {state : chatId});
+    navigate(`/chatingPage`, { state: chatId });
   };
 
-  console.log("this is the chat coutn :;;;;;;;;;;;;", unreadChats);
+  // console.log("this is the chat coutn :;;;;;;;;;;;;", unreadChats);
+
+  useEffect(() => {
+    // Define limits for each stage
+    const stageLimits = {
+      // Dashboard: 2,
+      Bookings: 2,
+      // Chats: 10,
+      Works: 7,
+      // Wallet: 3,
+      // Profile: 1,
+    };
+
+    // Update limit based on the current stage
+    setLimit(stageLimits[currentStage] || 2); // Default to 2 if stage not found
+  }, [currentStage]);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
+        console.log("this si the filter.....", filter);
         // dispatch(resetLaborer())
-        const responseInBacked = await fetchLaborBookings(currentPage, limit);
+        const responseInBacked = await fetchLaborBookings(
+          currentPage,
+          limit,
+          filter
+        );
 
         if (responseInBacked.status == 200) {
-          const { bookings, totalPages } =
-            responseInBacked.data;
+          const {
+            bookings,
+            totalPages,
+            totalAmount,
+            completedBookings,
+            canceledBookings,
+            total,
+            pendingBookings,
+          } = responseInBacked.data;
+
+          console.log("brrrrrrrrrronoddddddddddddn", responseInBacked);
           setTotalPages(totalPages);
           dispatch(setBookingDetails(bookings));
+          setBookingDetils(bookings);
+          setStats([
+            { title: "Total Bookings", value: total, icon: Briefcase },
+            {
+              title: "Total Work Completed",
+              value: completedBookings,
+              icon: CheckCircle,
+            },
+            {
+              title: "Total Cancellations",
+              value: canceledBookings,
+              icon: XCircle,
+            },
+            {
+              title: "Total Amount Pay",
+              value: `₹${totalAmount.toLocaleString()}`,
+              icon: IndianRupee,
+            },
+            { title: "Pending Tasks", value: pendingBookings, icon: Clock },
+          ]);
           // toast.success("Booking fetched succesfully")
         }
       } catch (error) {
@@ -313,10 +414,13 @@ const LaborDashBoard = () => {
         toast.error("Error to fetch booking....!");
       }
     };
-     if (currentStage === "Bookings") {
-        fetchBookings();
-      }
-  }, [currentStage,currentPage, limit, dispatch]);
+
+    fetchBookings();
+  }, [currentStage, currentPage, limit, dispatch, filter]);
+
+  const handleFilterChange = (value) => {
+    setFilter(value);
+  };
 
   // const sortedBookings = [...bookingDetails].sort(
   //   (a, b) =>
@@ -325,14 +429,28 @@ const LaborDashBoard = () => {
   // );
 
   const handelViewDetails = (booking) => {
-    navigate('/labor/viewBookingDetials' ,{state : {booking}})
-  }
+    navigate("/labor/viewBookingDetials", { state: { booking } });
+  };
 
-    const handleChatSelect = (chatId) => {
+  const handleChatSelect = (chatId) => {
     setSelectedChatId(chatId);
     markChatAsRead(chatId);
   };
+useEffect(() => {
+    const fetchLabors = async () => {
+      try {
+        const fetchLabor = await laborFetch();
+        const { fetchUserResponse } = fetchLabor
+        setLaborDetils(fetchUserResponse)
+        console.log("Fetched Labors:", fetchUserResponse);
+      } catch (error) {
+        console.error(error);
+        toast.error("Error in fetching labor");
+      }
+    };
 
+    fetchLabors();
+  }, []); 
 
   // useEffect(() => {
   //   dispatch(resetLaborer())
@@ -346,10 +464,8 @@ const LaborDashBoard = () => {
   //         dispatch(resetLaborer());
   //         dispatch(setIsLaborAuthenticated(false));
 
-  //         navigate("/"); 
+  //         navigate("/");
   // },[])
-
- 
 
   return (
     <div>
@@ -357,6 +473,7 @@ const LaborDashBoard = () => {
         isOpen={resheduleModal !== null}
         onClose={() => setResheduleModal(null)}
         bookingDetails={resheduleModal ? [resheduleModal] : []}
+        onUpdateBooking={handleRescheduleUpdate} 
       />
       {loading && <div className="loader"></div>}
       <LaborDashBoardNav setCurrentStage={setCurrentStage} />
@@ -442,78 +559,171 @@ const LaborDashBoard = () => {
             )}
             {/* Sidebar and other content */}
             {currentStage === "Chats" ? (
-              <div className="p-4 w-full max-w-5xl mx-auto">
-                <h1 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
-                  Chats
-                </h1>
+              <div className="p-4  w-full max-w-6xl mx-auto lg:mt-3">
+                <div className="rounded-xl border  md:h-[740px] h-screen bg-[#F8F9FA] text-[#212529] overflow-hidden">
+                  <div className="flex h-full">
+                    {/* Chat List Sidebar */}
+                    <div
+                      className={`
+            h-auto
+            lg:w-[400px]
+            flex-shrink-0
+            bg-[#FFFFFF] 
+            transition-all
+            duration-300
+            ${isMobileChatListOpen ? "w-80" : "w-0"}
+            lg:w-[400px]
+            overflow-hidden
+          `}
+                    >
+                      {/* Chat List Header */}
+                      <div className="sticky top-0  z-10 bg-[#FFFFFF] border-b border-[#DEE2E6]">
+                        <div className="p-4 flex items-center justify-between">
+                          <h1 className="text-xl font-bold text-[#212529]">
+                            Labor Chats
+                          </h1>
 
-                <div className="bodyPart space-y-2">
-                  {chats.length > 0 ? (
-                    chats
-                      .slice()
-                      .sort(
-                        (a, b) =>
-                          b.lastUpdated.toMillis() - a.lastUpdated.toMillis()
-                      )
-                      .map((chat) => (
-                        <div
-                          key={chat.id}
-                          onClick={() => {
-                            handleChatSelect(chat.id);
-                            markChatAsRead(chat.id);
-                          }}
-                          className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-white cursor-pointer"
-                        >
-                          {/* First Row: User Image, Name, Time, Status */}
-                          <div className="flex justify-between items-center">
-                            {/* Left Section: User Image + Name */}
-                            <div className="flex items-center space-x-4">
-                              <img
-                                src={
-                                  chat.userData?.profilePicture ||
-                                  "default-profile-picture.jpg"
-                                }
-                                alt="User Profile"
-                                className="w-[50px] h-[50px] rounded-full object-cover"
-                              />
+                          <button
+                            onClick={() => dispatch(toggleMobileChatList())}
+                            className="lg:hidden p-2 hover:bg-[#E2E6EA] rounded-full"
+                          >
+                            <MenuIcon className="w-5 h-5 text-[#495057]" />
+                          </button>
+                        </div>
 
-                              <span className="font-semibold text-gray-800">
-                                {chat.userData?.name || "Unknown User"}
-                              </span>
-                            </div>
-                            <div className="mt-1 text-gray-700 text-sm truncate">
-                              {chat.lastMessage || "No message"}
-                            </div>
+                        {/* Search Bar */}
+                        <div className="px-4 pb-2">
+                          <input
+                            type="text"
+                            placeholder="Search..."
+                            className="w-full px-4 py-2 bg-[#FFFFFF] border border-[#CED4DA] rounded-lg text-[#212529] focus:ring-2 focus:ring-[#3ab3bc]"
+                          />
+                        </div>
+                      </div>
 
-                            {/* Right Section: Time + Read Status */}
-                            <div className="flex items-center space-x-3 text-sm text-gray-600">
-                              <span>
-                                {chat.lastUpdated &&
-                                  format(chat.lastUpdated.toDate(), "h:mm a")}
-                              </span>
-                              {chat.lastMessageSender === "user" &&
-                              chat.unreadCount > 0 ? (
-                                <span className="bg-red-500 text-white px-2 py-1 text-xs font-medium rounded-full">
-                                  {chat.unreadCount}
-                                </span>
-                              ) : (
-                                <span className="text-green-500 font-medium">
-                                  Read
-                                </span>
-                              )}
+                      {/* Chat List */}
+                      <div className="h-[calc(100%-8rem)] overflow-y-auto">
+                        <div className="divide-y divide-[#DEE2E6]">
+                          {chats.length > 0 ? (
+                            chats.map((chat) => (
+                              <div
+                                key={chat.id}
+                                onClick={() => {
+                                  handleChatSelect(chat.id);
+                                  dispatch(toggleMobileChatList());
+                                }}
+                                className={`
+                      flex items-center p-4
+                      hover:bg-[#E2E6EA]
+                      cursor-pointer
+                      transition-colors
+                      duration-150
+                      ease-in-out
+                      ${selectedChatId === chat.id ? "bg-[#DEE2E6]" : ""}
+                    `}
+                              >
+                                {/* Notification Badge for Unread Chats */}
+                                {chat.unreadCount > 0 && (
+                                  <div className="right-0 top-1/2 -translate-y-1/2">
+                                    <span className="bg-[#D9534F] text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
+                                      {chat.unreadCount}
+                                    </span>
+                                  </div>
+                                )}
+
+                                {/* Chat item content */}
+                                <div className="relative">
+                                  <img
+                                    src={
+                                      chat.userData?.profilePicture ||
+                                      "default-profile-picture.jpg"
+                                    }
+                                    alt="User"
+                                    className="w-12 h-12 rounded-full object-cover ring-2 ring-[#CED4DA]"
+                                  />
+                                  <div
+                                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#FFFFFF] ${
+                                      chat.userData?.online
+                                        ? "bg-[#28A745]"
+                                        : "bg-[#CED4DA]"
+                                    }`}
+                                  />
+                                </div>
+
+                                <div className="ml-4 flex-1 min-w-0">
+                                  <div className="flex justify-between items-center mb-1">
+                                    <h3 className="font-semibold text-[#212529] truncate">
+                                      {chat.userData?.name || "Unknown User"}
+                                    </h3>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-12 text-[#6C757D]">
+                              No chats available
                             </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Chat Area */}
+                    <div className="flex-1 flex flex-col bg-[#E9ECEF] min-w-0">
+                      {selectedChatId ? (
+                        <ChatComponents
+                          chatId={selectedChatId}
+                          onMenuClick={() => dispatch(toggleMobileChatList())}
+                          currentPage={currentPages}
+                        />
+                      ) : (
+                        <div className="flex-1 flex flex-col bg-[#F8F9FA]">
+                          {/* Header with menu button */}
+                          <div className="p-4 flex items-center">
+                            {!isMobileChatListOpen && (
+                              <button
+                                onClick={() => dispatch(toggleMobileChatList())}
+                                className="lg:hidden p-2 hover:bg-[#E2E6EA] rounded-full"
+                              >
+                                <MenuIcon className="w-5 h-5 text-[#495057]" />
+                              </button>
+                            )}
                           </div>
 
-                          {/* Second Row: Last Message */}
+                          {/* Centered content with responsive margin */}
+                          <div
+                            className={`
+                            flex-1 
+                            flex 
+                            items-center 
+                            justify-center 
+                            p-8
+                            transition-all
+                            duration-300
+                            ${isMobileChatListOpen ? "ml-80 lg:ml-0" : "ml-0"}
+                          `}
+                          >
+                            <div className="text-center max-w-md mx-auto">
+                              <div className="bg-[#FFFFFF] p-6 rounded-xl shadow-sm border border-[#DEE2E6]">
+                                <div className="bg-[#DEE2E6] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                  <MessageCircle
+                                    size={32}
+                                    className="text-[#6C757D]"
+                                  />
+                                </div>
+                                <h3 className="text-xl font-semibold text-[#212529] mb-2">
+                                  Select a Conversation
+                                </h3>
+                                <p className="text-[#6C757D]">
+                                  Choose a chat to start messaging
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      ))
-                  ) : (
-                    <div className="text-center py-12 bg-gray-50 rounded-lg">
-                      <p className="text-gray-500 text-lg">
-                        No chats available
-                      </p>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -632,12 +842,12 @@ const LaborDashBoard = () => {
                                   null && ( // Not yet rejected
                                   <button
                                     className={`relative flex items-center justify-center text-white 
-                              bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 
-                              font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
-                              text-xs sm:text-sm md:text-base lg:text-sm
-                              ${
-                                booking ? "animate-bounce shadow-blue-500" : ""
-                              }`}
+                                    bg-gradient-to-r from-blue-500 to-orange-800 hover:from-blue-600 hover:to-orange-800 
+                                    font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
+                                    text-xs sm:text-sm md:text-base lg:text-sm
+                                    ${
+                                      booking ? "animate-bounce shadow-blue-500" : ""
+                                    }`}
                                     onClick={() => setResheduleModal(booking)}
                                   >
                                     <ClockIcon className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2 text-white" />
@@ -673,7 +883,7 @@ const LaborDashBoard = () => {
                               <span
                                 className={`inline-block px-3 py-1 rounded-full text-sm font-medium 
                                 ${
-                                  booking.paymentStatus === "Paid"
+                                  booking.paymentStatus === "paid"
                                     ? "bg-green-100 text-green-800"
                                     : "bg-yellow-100 text-yellow-800"
                                 }`}
@@ -728,6 +938,265 @@ const LaborDashBoard = () => {
                 </div>
               </div>
             )}
+
+            {currentStage === "Works" && (
+              <div className="p-4 w-full max-w-screen-lg mx-auto  text-[#333]">
+                <div className="flex justify-between items-center mb-8">
+                  <h1 className="text-2xl font-bold text-[#333] border-b pb-3">
+                    Bookings & History
+                  </h1>
+                  <button className="flex items-center gap-2 px-4 py-2 bg-[#007bff] text-white rounded-lg hover:bg-[#0056b3] transition-colors shadow-md">
+                    <Filter className="w-5 h-5 text-white" />
+                    <span className="text-white">Filters</span>
+                    <select
+                      className="bg-white text-[#333] border border-gray-400 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#007bff]"
+                      onChange={(e) => handleFilterChange(e.target.value)}
+                    >
+                      <option value="" className="bg-white text-[#333]">
+                        Filter by Status
+                      </option>
+                      <option value="canceled" className="bg-white text-[#333]">
+                        Cancelled
+                      </option>
+                      <option
+                        value="confirmed"
+                        className="bg-white text-[#333]"
+                      >
+                        Confirmed
+                      </option>
+                      <option
+                        value="completed"
+                        className="bg-white text-[#333]"
+                      >
+                        Completed
+                      </option>
+                    </select>
+                  </button>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md overflow-x-auto w-full max-w-screen-lg mx-auto">
+                  <table className="w-full min-w-[600px]">
+                    <thead className="bg-[#e3f2fd] text-[#333]">
+                      <tr>
+                        {[
+                          "Date",
+                          "Customer Name",
+                          "Job Description",
+                          "Status",
+                          "Payment",
+                          "Payment Status",
+                          "Customer Details",
+                        ].map((head) => (
+                          <th
+                            key={head}
+                            className="px-4 py-3 text-left text-xs sm:text-sm font-medium uppercase tracking-wider border-b"
+                          >
+                            {head}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-300">
+                      {bookingDetils?.length > 0 ? (
+                        bookingDetils.map((booking, index) => (
+                          <tr
+                            key={booking?._id || index}
+                            className="hover:bg-[#f1f1f1]"
+                          >
+                            <td className="px-4 py-4 text-xs sm:text-sm">
+                              {new Date(
+                                booking?.createdAt
+                              ).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-4 text-xs sm:text-sm">
+                              {booking?.userId?.firstName || "N/A"}{" "}
+                              {booking?.userId?.lastName || ""}
+                            </td>
+                            <td className="px-4 py-4 text-xs sm:text-sm">
+                              {booking?.quote?.description || "N/A"}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium inline-block ${
+                                  booking?.status === "confirmed"
+                                    ? "bg-[#fff3cd] text-[#856404]"
+                                    : booking?.status === "canceled"
+                                    ? "bg-[#f8d7da] text-[#721c24]"
+                                    : "bg-[#d4edda] text-[#155724]"
+                                }`}
+                              >
+                                {booking?.status || "Pending"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 text-xs sm:text-sm">
+                              ₹{booking?.quote?.estimatedCost || "0"}
+                            </td>
+                            <td className="px-4 py-4 text-xs sm:text-sm">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium inline-block ${
+                                  booking?.paymentStatus === "paid"
+                                    ? "bg-[#d4edda] text-[#155724]" // Green for Paid
+                                    : booking?.paymentStatus === "pending"
+                                    ? "bg-[#fff3cd] text-[#856404]" // Yellow for Pending
+                                    : "bg-[#f8d7da] text-[#721c24]" // Red for Failed
+                                }`}
+                              >
+                                {booking?.paymentStatus || "Unknown"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-500">
+                                  <img
+                                    src={
+                                      booking?.userId?.ProfilePic ||
+                                      "/default-profile.png"
+                                    }
+                                    className="w-full h-full object-cover"
+                                    alt="Customer Profile"
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">
+                                    {booking?.userId?.address?.city || "N/A"}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={6}
+                            className="text-center py-4 text-[#333]"
+                          >
+                            No bookings available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex justify-center gap-4 mt-6 mb-4">
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-[#007bff] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-4 text-[#333] py-2">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="px-4 py-2 bg-[#007bff] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+           {currentStage === "Wallet" ? (
+      laborer?.wallet ? ( // Check if wallet exists
+        <div className="p-4 w-full max-w-screen-lg mx-auto">
+          <div className="rounded-lg bg-white p-6 shadow-lg">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">My Wallet</h1>
+              <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
+                Withdraw Money
+              </button>
+            </div>
+
+            <div className="mb-8 text-center">
+              <p className="text-gray-500 text-lg mb-2 uppercase tracking-wide">
+                Available Balance
+              </p>
+              <p className="text-5xl font-extrabold text-green-600 drop-shadow-lg">
+                ₹{laborer.wallet.balance?.toLocaleString("en-IN")}
+              </p>
+            </div>
+
+            <div className="border-t border-gray-300 pt-4">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                Recent Transactions
+              </h2>
+
+              <div className="space-y-4">
+                {currentTransactions.length > 0 ? (
+                  currentTransactions.map((transaction) => (
+                    <div
+                      key={transaction._id}
+                      className="flex justify-between items-center p-4 bg-gray-200 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="text-gray-900">
+                          <p className="font-medium">LaborLink</p>
+                          <p className="text-sm text-gray-600">
+                            {new Date(transaction.createdAt).toLocaleString(
+                              "en-US",
+                              {
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                              }
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-green-600 font-medium">
+                          +₹{transaction.amount.toLocaleString("en-IN")}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {new Date(transaction.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center">No recent transactions.</p>
+                )}
+              </div>
+            </div>
+
+          </div>
+            <div className="flex justify-center gap-4 mt-6 mb-4">
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="px-4  py-2">
+                Page {currentPage} of {totalPagess}
+              </span>
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage >= totalPagess}
+                className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+        </div>
+      ) : (
+        // Else case when there is no wallet
+        <div className="rounded-lg bg-white p-6 shadow-lg text-center">
+          <h2 className="text-2xl font-bold text-gray-900">No Wallet Found</h2>
+          <p className="text-gray-500 mt-2">It looks like you don't have a wallet yet.</p>
+          <button className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
+            Create Wallet
+          </button>
+        </div>
+      )
+    ) : null}
+
           </>
         ) : (
           <>
@@ -826,10 +1295,9 @@ const LaborDashBoard = () => {
                       <div className="sticky top-0 z-10 bg-gray-800 border-b border-gray-700">
                         <div className="p-4 flex items-center justify-between">
                           <h1 className="text-xl font-bold text-[#E0E0E0]">
-                            Labor Chats
+                            My Chats
                           </h1>
-                       
-                            
+
                           <button
                             onClick={() => dispatch(toggleMobileChatList())}
                             className="lg:hidden p-2 hover:bg-gray-700 rounded-full"
@@ -850,34 +1318,37 @@ const LaborDashBoard = () => {
 
                       {/* Chat List */}
                       <div className="h-[calc(100%-8rem)] overflow-y-auto">
-                    <div className=" divide-y divide-[#3B3B4F]">
-                      {chats.length > 0 ? (
-                        chats
-                          .map((chat) => (
-                            <div
-                              key={chat.id}
-                              onClick={() => {
-                                handleChatSelect(chat.id); // Handle selecting the chat
-                                dispatch(toggleMobileChatList()); // Close chat list when selecting a chat
-                              }}
-                              className={`
+                        <div className=" divide-y divide-[#3B3B4F]">
+                          {chats.length > 0 ? (
+                            chats.map((chat) => (
+                              <div
+                                key={chat.id}
+                                onClick={() => {
+                                  handleChatSelect(chat.id); // Handle selecting the chat
+                                  dispatch(toggleMobileChatList()); // Close chat list when selecting a chat
+                                }}
+                                className={`
                                 flex items-center p-4
                                 hover:bg-gray-600
                                 cursor-pointer
                                 transition-colors
                                 duration-150
                                 ease-in-out
-                                ${selectedChatId === chat.id ? "bg-gray-600" : ""}
+                                ${
+                                  selectedChatId === chat.id
+                                    ? "bg-gray-600"
+                                    : ""
+                                }
                               `}
-                            >
-                              {/* Notification Badge for Unread Chats */}
-                              {chat.unreadCount > 0 && (
-                                <div className=" right-0 top-1/2 -translate-y-1/2">
-                                  <span className="bg-red-500 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                                    {chat.unreadCount}
-                                  </span>
-                                </div>
-                              )}
+                              >
+                                {/* Notification Badge for Unread Chats */}
+                                {chat.unreadCount > 0 && (
+                                  <div className=" right-0 top-1/2 -translate-y-1/2">
+                                    <span className="bg-red-500 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
+                                      {chat.unreadCount}
+                                    </span>
+                                  </div>
+                                )}
 
                                 {/* Chat item content */}
                                 <div className="relative">
@@ -926,21 +1397,20 @@ const LaborDashBoard = () => {
                       {selectedChatId ? (
                         <ChatComponents
                           chatId={selectedChatId}
-                            onMenuClick={() => dispatch(toggleMobileChatList())
-                            }
-                            currentPage={currentPages}
+                          onMenuClick={() => dispatch(toggleMobileChatList())}
+                          currentPage={currentPages}
                         />
                       ) : (
                         <div className="flex-1 flex flex-col bg-[#1E1E2E]">
                           {/* Header with menu button */}
                           <div className="p-4 flex items-center">
-                             {!isMobileChatListOpen && (
-                            <button
-                              onClick={() => dispatch(toggleMobileChatList())}
-                              className="lg:hidden p-2 hover:bg-gray-700 rounded-full"
-                            >
-                              <MenuIcon className="w-5 h-5 text-gray-300" />
-                            </button>
+                            {!isMobileChatListOpen && (
+                              <button
+                                onClick={() => dispatch(toggleMobileChatList())}
+                                className="lg:hidden p-2 hover:bg-gray-700 rounded-full"
+                              >
+                                <MenuIcon className="w-5 h-5 text-gray-300" />
+                              </button>
                             )}
                           </div>
 
@@ -1136,7 +1606,7 @@ const LaborDashBoard = () => {
                               <span
                                 className={`inline-block px-3 py-1 rounded-full text-sm font-medium 
                       ${
-                        booking.paymentStatus === "Paid"
+                        booking.paymentStatus === "paid"
                           ? "bg-green-100 text-green-800"
                           : "bg-yellow-100 text-yellow-800"
                       }`}
@@ -1191,72 +1661,273 @@ const LaborDashBoard = () => {
                 </div>
               </div>
             )}
-             {currentStage === "Works" && (
-  <div className="bg-gray-800 rounded-lg shadow-md overflow-x-auto w-full max-w-screen-lg mx-auto">
-    <table className="w-full min-w-[600px]">
-      <thead className="bg-gray-700">
-        <tr>
-          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
-            Date
-          </th>
-          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
-            Customer Name
-          </th>
-          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
-            Job Description
-          </th>
-          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
-            Status
-          </th>
-          <th className="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-300 uppercase tracking-wider border-b">
-            Payment
-          </th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-600">
-        {bookingDetails?.length > 0 ? (
-          bookingDetails.map((booking, index) => (
-            <tr key={booking?._id || index} className="hover:bg-gray-700">
-              <td className="px-4 py-4 whitespace-nowrap text-xs sm:text-sm text-white">
-                {new Date(booking?.createdAt).toLocaleDateString()}
-              </td>
-              <td className="px-4 py-4 text-xs sm:text-sm text-white">
-                {booking?.userId?.firstName || "N/A"} {booking?.userId?.lastName || ""}
-              </td>
-              <td className="px-4 py-4 text-xs sm:text-sm text-white">
-                {booking?.quote?.description || "N/A"}
-              </td>
-              <td className="px-4 py-4 whitespace-nowrap">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium inline-block
-                    ${
-                      booking?.status === "confirmed"
-                        ? "bg-yellow-800 text-yellow-100"
-                        : booking?.status === "canceled"
-                        ? "bg-red-800 text-red-100"
-                        : "bg-green-800 text-green-100"
-                    }`}
-                >
-                  {booking?.status || "Pending"}
-                </span>
-              </td>
-              <td className="px-4 py-4 whitespace-nowrap text-xs sm:text-sm text-white">
-                ₹{booking?.quote?.estimatedCost || "0"}
-              </td>
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan={5} className="text-center py-4 text-white">
-              No bookings available
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
-  </div>
-)}
+            {currentStage === "Works" && (
+              <div className="p-4 w-full max-w-screen-lg mx-auto">
+                <div className="flex justify-between items-center mb-8">
+                  <h1 className="text-2xl font-bold text-white border-b pb-3">
+                    Bookings & History
+                  </h1>
+                  <button className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors shadow-md">
+                    <Filter className="w-5 h-5 text-gray-300" />
+                    <span className="text-gray-200">Filters</span>
+                    <select
+                      className="bg-gray-900 text-gray-300 border border-gray-700 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      onChange={(e) => handleFilterChange(e.target.value)}
+                    >
+                      <option value="" className="bg-gray-800 text-white">
+                        Filter by Status
+                      </option>
+                      <option
+                        value="canceled"
+                        className="bg-gray-800 text-white"
+                      >
+                        Cancelled
+                      </option>
+                      <option
+                        value="confirmed"
+                        className="bg-gray-800 text-white"
+                      >
+                        Confirmed
+                      </option>
+                      <option
+                        value="completed"
+                        className="bg-gray-800 text-white"
+                      >
+                        Completed
+                      </option>
+                    </select>
+                  </button>
+                </div>
 
+                <div className="bg-gray-800 rounded-lg shadow-md overflow-x-auto w-full max-w-screen-lg mx-auto">
+                  <table className="w-full min-w-[600px]">
+                    <thead className="bg-gray-700">
+                      <tr>
+                        {[
+                          "Date",
+                          "Customer Name",
+                          "Job Description",
+                          "Status",
+                          "Payment",
+                          "Payment Status",
+                          "Customer Details",
+                        ].map((head) => (
+                          <th
+                            key={head}
+                            className="px-4 py-3 text-left text-xs sm:text-sm font-medium uppercase tracking-wider border-b"
+                          >
+                            {head}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-600">
+                      {bookingDetils?.length > 0 ? (
+                        bookingDetils.map((booking, index) => (
+                          <tr
+                            key={booking?._id || index}
+                            className="hover:bg-gray-700"
+                          >
+                            <td className="px-4 py-4 whitespace-nowrap text-xs sm:text-sm text-white">
+                              {new Date(
+                                booking?.createdAt
+                              ).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-4 text-xs sm:text-sm text-white">
+                              {booking?.userId?.firstName || "N/A"}{" "}
+                              {booking?.userId?.lastName || ""}
+                            </td>
+                            <td className="px-4 py-4 text-xs sm:text-sm text-white">
+                              {booking?.quote?.description || "N/A"}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium inline-block
+                        ${
+                          booking?.status === "confirmed"
+                            ? "bg-yellow-800 text-yellow-100"
+                            : booking?.status === "canceled"
+                            ? "bg-red-800 text-red-100"
+                            : "bg-green-800 text-green-100"
+                        }`}
+                              >
+                                {booking?.status || "Pending"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-xs sm:text-sm text-white">
+                              ₹{booking?.quote?.estimatedCost || "0"}
+                            </td>
+                            <td className="px-4 py-4 text-xs sm:text-sm">
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium inline-block ${
+                                  booking?.paymentStatus === "paid"
+                                    ? "bg-[#d4edda] text-[#155724]" // Green for Paid
+                                    : booking?.paymentStatus === "pending"
+                                    ? "bg-[#fff3cd] text-[#856404]" // Yellow for Pending
+                                    : "bg-[#f8d7da] text-[#721c24]" // Red for Failed
+                                }`}
+                              >
+                                {booking?.paymentStatus || "Unknown"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-500">
+                                  <img
+                                    src={
+                                      booking?.userId?.ProfilePic ||
+                                      "/default-profile.png"
+                                    }
+                                    className="w-full h-full object-cover"
+                                    alt="Customer Profile"
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-400">
+                                    {booking?.userId?.address?.city || "N/A"}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={6}
+                            className="text-center py-4 text-white"
+                          >
+                            No bookings available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex justify-center gap-4 mt-6 mb-4">
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-4 text-white py-2">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {currentStage === "Wallet" ? (
+              laborer?.wallet ? ( // Check if wallet exists
+                <div className="p-4 w-full max-w-screen-lg mx-auto bg-gray-900">
+                  <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
+                    <div className="flex justify-between items-center mb-6">
+                      <h1 className="text-2xl font-bold text-white">
+                        My Wallet
+                      </h1>
+                      <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                        Withdraw Money
+                      </button>
+                    </div>
+                    <div className="mb-8 text-center">
+                      <p className="text-gray-400 text-lg mb-2 uppercase tracking-wide">
+                        Available Balance
+                      </p>
+                      <p className="text-5xl font-extrabold text-emerald-400 drop-shadow-lg">
+                        ₹{laborer.wallet.balance?.toLocaleString("en-IN")}
+                      </p>
+                    </div>
+
+                    <div className="border-t border-gray-700 pt-4">
+                      <h2 className="text-lg font-semibold text-gray-300 mb-4">
+                        Recent Transactions
+                      </h2>
+
+                      <div className="space-y-4">
+                          {currentTransactions.length > 0 ? (
+                            currentTransactions.map((transaction) => (
+                              <div
+                                key={transaction._id}
+                                className="flex justify-between items-center p-4 bg-gray-700/30 rounded-lg"
+                              >
+                                <div className="flex items-center space-x-4">
+                                  <div className="text-white">
+                                    <p className="font-medium">LaborLink</p>
+                                    <p className="text-sm text-gray-400">
+                                      {new Date(transaction.createdAt).toLocaleString("en-US", {
+                                        month: "long",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-green-600 font-medium">
+                                    +₹
+                                    {transaction.amount.toLocaleString("en-IN")}
+                                  </p>
+                                  <p className="text-sm text-gray-400">
+                                    {new Date(
+                                      transaction.createdAt
+                                    ).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-gray-400 text-center">
+                              No recent transactions.
+                            </p>
+                          )}
+                        </div>
+                    </div>
+                  </div>
+                          {/* Pagination Controls */}
+                      <div className="flex justify-center gap-4 mt-6 mb-4">
+                        <button
+                          onClick={() => paginate(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          Previous
+                        </button>
+                        <span className="px-4 text-white py-2">
+                          Page {currentPage} of {totalPagess}
+                        </span>
+                        <button
+                          onClick={() => paginate(currentPage + 1)}
+                          disabled={currentPage >= totalPagess}
+                          className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          Next
+                        </button>
+                      </div>
+                </div>
+              ) : (
+                <div className="p-6 w-full max-w-screen-md mx-auto bg-gray-900 rounded-lg shadow-lg text-center">
+                  <h2 className="text-2xl font-bold text-white">
+                    No Wallet Found
+                  </h2>
+                  <p className="text-gray-400 mt-2">
+                    It looks like you don't have a wallet yet.
+                  </p>
+                  <button className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                    Create Wallet
+                  </button>
+                </div>
+              )
+            ) : null}
           </>
         )}
       </div>

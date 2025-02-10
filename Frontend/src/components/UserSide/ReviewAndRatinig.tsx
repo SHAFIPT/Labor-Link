@@ -23,11 +23,11 @@ const ReviewAndRating = () => {
 
     console.log("Booking ID:", bookingId);
 
-    useEffect(() => {
-        if (bookingDetils?.laborId?.reviews && bookingDetils?.laborId?.reviews.length > 0) {
-            navigate('/');
-        }
-    }, [bookingDetils]);
+    // useEffect(() => {
+    //     if (bookingDetils?.laborId?.reviews && bookingDetils?.laborId?.reviews.length > 0) {
+    //         navigate('/');
+    //     }
+    // }, [bookingDetils]);
     
     const validateForm = () => {
         let isValid = true;
