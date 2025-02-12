@@ -15,16 +15,16 @@ export const logout = async () => {
   return response
 }
 
-export const fetchUser = async (query, pageNumber) => {
+export const fetchUser = async (query, pageNumber,selectedFilter) => {
   const resonse = await api.get('/api/admin/user/usersFetch', {
-    params: { query, page: pageNumber },
+    params: { query, page: pageNumber , filter : selectedFilter },
   })
   return resonse
 }
 
-export const fetchLabor = async (query, pageNumber) => {
+export const fetchLabor = async (query, pageNumber,selectedFilter) => {
   const response = await api.get('/api/admin/user/laborsFetch', {
-    params: { query, page: pageNumber },
+    params: { query, page: pageNumber,filter : selectedFilter },
   });
   return response;
 };
@@ -59,5 +59,25 @@ export const Approve = async ({ email }) => {
 
 export const rejection = async ({ reason , email }) => {
   const response = await api.post('/api/admin/user/rejectionReson', { reason  , email})
+  return response
+}
+export const fetchAllBookings = async (
+  page: number,
+  limit: number,
+  filter: string
+) => {
+  const response = await api.get(`/api/admin/user/fetchAllBookins?page=${page}&limit=${limit}&filter=${filter}`)
+  return response
+}
+
+export const fetchLaborAllBookings = async (
+  laborId : string,
+  page: number,
+  limit: number,
+  filter: string
+) => {
+  const response = await api.get(
+    `/api/admin/user/fetchLaborBookins/${laborId}?page=${page}&limit=${limit}&filter=${filter}`
+  )
   return response
 }

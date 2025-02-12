@@ -4,6 +4,7 @@ import { AdminService } from "../services/implementaions/AdminService";
 import { IAdminService } from "../services/interface/IAdminService";
 import { Request , Response ,NextFunction } from "express"
 import { ApiError } from "../middleware/errorHander";
+import { error } from "console";
 
 class adminController {
     private adminService: IAdminService
@@ -14,14 +15,17 @@ class adminController {
     }
 
     public fetchUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+        try {
+        console.log('this is the Request.qury',req.query)
         const query = req.query.query as string || '';
+        const filter = req.query.filter as string || '';
         const page = parseInt(req.query.page as string || '1');
         const perPage = 6;
         const skip = (page - 1) * perPage;
+        console.log('koooooooooooooooooiii',filter)
 
         const totalCount = await this.adminService.getTotalUsersCount(query);
-        const usersFound = await this.adminService.fetchUsers(query, skip, perPage);
+        const usersFound = await this.adminService.fetchUsers(query, skip, perPage,filter);
 
         if (usersFound) {
             const totalPages = Math.ceil(totalCount / perPage);
@@ -45,12 +49,13 @@ class adminController {
         try {
 
             const query = req.query.query as string || '';
+            const filter = req.query.filter as string || '';
             const page = parseInt(req.query.page as string || '1');
             const perPage = 6;
             const skip = (page - 1) * perPage;
 
             const totalCount = await this.adminService.getTotalLaborsCount(query);
-            const laborFound = await this.adminService.fetchLabors(query, skip, perPage)
+            const laborFound = await this.adminService.fetchLabors(query, skip, perPage,filter)
     
               if (laborFound) {
                 const totalPages = Math.ceil(totalCount / perPage);
@@ -234,6 +239,81 @@ class adminController {
             
         } catch (error) {
             console.error("Error in labor deletion :", error);
+            next(error);
+        }
+    }
+    public fetchLaborBookins = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+        
+        const {laborId} = req.params    
+        
+        if(!laborId){
+            return res.status(404)
+            .json({error : 'laborid is missing...'})
+        }
+            
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+            const filter = req.query.filter as string | undefined;   
+        
+        const { bookings, total } =
+          await this.adminService.fetchLaborBookins(
+            laborId,
+            page,
+            limit,
+            filter
+          ); 
+        
+        if (!bookings) {
+            res.status(404).json({ message: "No bookings found by labor" });  
+            }
+
+        res.status(200).json({
+            message: "fetching booking succesfully ..",
+            bookings,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        });
+        } catch (error) {
+            console.error("Error in fetch labors... :", error);
+            next(error);
+        }
+    }
+    
+    public fetchAllBookins = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+       
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const filter = req.query.filter as string | undefined;    
+        
+        const {bookings,total, totalLabors, totalUsers, totalAmount,bookingStats} = await this.adminService.fetchAllBookings(
+            page,
+            limit,
+            filter
+        ) 
+        console.log('raaviiiiiiiii',bookingStats)
+        
+        if (!bookings) {
+            res.status(404).json({ message: "No bookings found " });  
+            }
+
+        res.status(200).json({
+            message: "fetching booking succesfully ..",
+            bookings,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+            totalLabors,
+            totalUsers,
+            totalAmount,
+            bookingStats
+        });
+        } catch (error) {
+            console.error("Error in fetch all bookings.. :", error);
             next(error);
         }
     }

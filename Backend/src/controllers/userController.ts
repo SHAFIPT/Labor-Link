@@ -693,6 +693,7 @@ export class userController {
         return res.status(404)
         .json({error : 'error in fetchBooking .....'})
       }
+      console.log('This is the bookings vinuuuuuuuuuuuu',bookings)
 
       return  res.status(200).json({
           message: "fetching booking succesfully ..",

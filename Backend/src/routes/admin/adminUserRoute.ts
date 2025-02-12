@@ -12,6 +12,10 @@ adminUserRoute.get('/usersFetch',authenticate,adminUserController.fetchUser.bind
 // labor fetch
 adminUserRoute.get('/laborsFetch', authenticate,adminUserController.fetchLabor.bind(adminUserController))
 
+adminUserRoute.get('/fetchLaborBookins/:laborId', authenticate, adminUserController.fetchLaborBookins.bind(adminUserController))
+
+adminUserRoute.get('/fetchAllBookins', authenticate, adminUserController.fetchAllBookins.bind(adminUserController))
+
 // user block and unBlock
 adminUserRoute.patch('/userBlock',authenticate,adminUserController.userBlock.bind(adminUserController))
 adminUserRoute.patch('/userUnblock',authenticate, adminUserController.userUnblock.bind(adminUserController))

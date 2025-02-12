@@ -16,9 +16,9 @@ const AdminSideRow = () => {
   };
 
   return (
-    <div className="flex relative">
+    <div className="flex relative ">
       {/* Sidebar with conditional classes for open/close */}
-      <div className={`flex flex-col items-center  LaftSideBar ${isOpen ? 'w-[320px]' : 'w-0'} transition-all h-full p-2 bg-white`}>
+      <div className={`flex flex-col items-center  LaftSideBar ${isOpen ? 'w-[320px]' : 'w-0'} transition-all min-h-screen p-2 bg-white`}>
         {/* Logo at the top */}
         <div className=" logo mb-4">
           <img src={logo} className={`w-32 ${isOpen ? 'opacity-100' : 'opacity-0'} transition-all`} alt="Logo" />
@@ -53,8 +53,8 @@ const AdminSideRow = () => {
             </div>
 
             <div className="flex items-center mb-4 space-x-3">
-              <Link to="/admin/bookingManagement" onClick={() => setCurrentPage("bookingManagement")}>
-                <div className={`flex items-center space-x-3 p-2 rounded-md ${currentPage === "bookingManagement" ? "bg-green-500 text-white" : "text-black"}`}>
+              <Link to="/admin/bookingListing" onClick={() => setCurrentPage("bookingListing")}>
+                <div className={`flex items-center space-x-3 p-2 rounded-md ${currentPage === "bookingListing" ? "bg-green-500 text-white" : "text-black"}`}>
                   <FaClipboardList className="text-[25px]" />
                   <p className="text-[15px]">Booking Management</p>
                 </div>
@@ -62,8 +62,8 @@ const AdminSideRow = () => {
             </div>
 
             <div className="flex items-center mb-4 space-x-3">
-              <Link to="/admin/paymentEarnings" onClick={() => setCurrentPage("paymentEarnings")}>
-                <div className={`flex items-center space-x-3 p-2 rounded-md ${currentPage === "paymentEarnings" ? "bg-green-500 text-white" : "text-black"}`}>
+              <Link to="/admin/paymentEarnigs" onClick={() => setCurrentPage("paymentEarnigs")}>
+                <div className={`flex items-center space-x-3 p-2 rounded-md ${currentPage === "paymentEarnigs" ? "bg-green-500 text-white" : "text-black"}`}>
                   <FaDollarSign className="text-[25px]" />
                   <p className="text-[15px]">Payment and Earnings</p>
                 </div>

@@ -4,6 +4,7 @@ import { ApiError } from "../../middleware/errorHander";
 import { IAdminRepository } from "../../repositories/interface/IAdminRepository";
 import { ILaborer } from "../../controllers/entities/LaborEntity";
 import { sendRejectionEmail } from "../../utils/emailService";
+import { IBooking } from "../../controllers/entities/bookingEntity";
 
 export class AdminService implements IAdminService {
   private adminRepositery: IAdminRepository;
@@ -12,9 +13,9 @@ export class AdminService implements IAdminService {
     this.adminRepositery = adminRepositery;
   }
 
-  async fetchUsers(query: string = '', skip: number, perPage: number): Promise<IUser[]> {
+  async fetchUsers(query: string = '', skip: number, perPage: number,filter : string): Promise<IUser[]> {
     try {
-      const userFouned = await this.adminRepositery.fetch(query, skip, perPage);
+      const userFouned = await this.adminRepositery.fetch(query, skip, perPage ,filter);
       if (!userFouned) {
         throw new ApiError(404, "User not found for fetch ...!");
       }
@@ -26,9 +27,9 @@ export class AdminService implements IAdminService {
     }
   }
 
-  async fetchLabors(query: string = '', skip: number, perPage: number): Promise<ILaborer[]> {
+  async fetchLabors(query: string = '', skip: number, perPage: number ,filter : string): Promise<ILaborer[]> {
     try {
-      const laborFound = await this.adminRepositery.laborFound(query, skip, perPage);
+      const laborFound = await this.adminRepositery.laborFound(query, skip, perPage,filter);
       if (!laborFound) {
         throw new ApiError(404, "Labor not found for fetch ...!");
       }
@@ -116,5 +117,39 @@ export class AdminService implements IAdminService {
   }
   async deleteLabor(email: string): Promise<ILaborer | null> {
     return this.adminRepositery.deleteLabor(email)
+  }
+  async fetchLaborBookins(laborId: string, page: number, limit: number, filter?: string): Promise<{
+      bookings: IBooking[];
+      total: number;
+    }> {
+    return this.adminRepositery.fetchLaborBookins(
+      laborId,
+      page,
+      limit,
+      filter
+    )
+  }
+  async fetchAllBookings(page: number, limit: number, filter?: string): Promise<{
+    bookings: IBooking[];
+    total: number;
+    totalLabors: number;
+    totalUsers: number;
+    totalAmount: number;
+    bookingStats: {
+      completed: number;
+      inProgress: number;
+      pending: number;
+      cancelled: number;
+      paid: number;
+      paymentPending: number;
+      paymentFailed: number;
+      monthlyEarnings: Array<{ month: string; earnings: number }>;
+    };
+  }>  {
+    return this.adminRepositery.fetchAllBookings(
+      page,
+      limit,
+      filter
+    )
   }
 }

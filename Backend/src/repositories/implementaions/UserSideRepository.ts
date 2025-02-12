@@ -181,6 +181,7 @@ export default class UserSideRepository implements IUserSideRepository {
 
       // Update booking status and cancellation details
       bookingFound.status = "canceled";
+      bookingFound.paymentStatus = 'failed';
       bookingFound.cancellation = {
         reason,
         comments,
@@ -489,6 +490,10 @@ export default class UserSideRepository implements IUserSideRepository {
         .populate({
           path: "laborId", // Field to populate
           select: "firstName lastName  phone  categories profilePicture address", // Fields to include from the Labor schema
+        })
+        .populate({
+          path: "userId", // Field to populate
+          select: "addressDetails", // Fields to include from the Labor schema
         })
         .exec();
       

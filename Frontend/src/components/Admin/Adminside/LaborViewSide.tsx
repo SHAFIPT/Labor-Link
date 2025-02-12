@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
-import { Approve, blockLabor, fetchLabor, rejection, unApprove, UnblockLabor } from "../../../services/AdminAuthServices";
+import { Approve, blockLabor, fetchLabor, fetchLaborAllBookings, rejection, unApprove, UnblockLabor } from "../../../services/AdminAuthServices";
 import { ArrowLeft } from 'lucide-react';
 import logo from '../../../assets/char1.jpeg'
 import './Labor.css'
@@ -10,6 +10,7 @@ import { RootState } from "../../../redux/store/store";
 import {
     setLoading
 } from '../../../redux/slice/adminSlice'
+import { IBooking } from "../../../@types/IBooking";
 const LaborViewSide = () => {
   const location = useLocation();
   const dispatch = useDispatch()
@@ -17,17 +18,48 @@ const LaborViewSide = () => {
   const labor = location.state.labor || {};
   console.log("thsi the evaasdfkkkkkkkkkkkkkkkkkkkkkkkkkkkkk :", labor);
   console.log("thsi the labor status :", labor.status);
+  const laborId = labor?._id
 
+  console.log('vijaaay',laborId)
   const [isBlocked, setIsBlocked] = useState(labor.isBlocked);
   const [isApproved, setIsApproved] = useState(labor.isApproved);
   const [rejfectModal, setRejectModal] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
-  const [updatedLabor, setUpdatedLabor] = useState(null); 
-   const loading = useSelector((state : RootState) => state.admin.loading)
+  const [updatedLabor, setUpdatedLabor] = useState(null);
+  const [bookingDetils , setBookingDetils] = useState<IBooking[]>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [limit, setLimit] = useState(6);
+  const [filter, setFilter] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+  const loading = useSelector((state : RootState) => state.admin.loading)
 
   console.log("this is the isBlocked :", isBlocked);
   console.log("this is the updatedLabor :", updatedLabor?.status);
 
+const fetchLaborBooings = async () => {
+  try {
+    const response = await fetchLaborAllBookings(laborId, currentPage, limit, ''); // Removed incorrect filter syntax
+    if (response.status === 200) {
+      console.log(response);
+      const {
+        bookings,
+        total,
+        totalPages
+      } = response.data
+
+      setTotalPages(totalPages)
+      setBookingDetils(bookings)
+    }
+  } catch (error) {
+    console.error("Error fetching labor bookings:", error);
+  }
+};
+
+useEffect(() => {
+  fetchLaborBooings();
+}, [currentPage, limit, filter, laborId]);
+  
+  
   const categoryIcons = {
     plumber: (
       <svg
@@ -62,40 +94,7 @@ const LaborViewSide = () => {
     // Add other categories here with their corresponding SVG icons
   };
 
-  const bookings = [
-    {
-      id: 101,
-      laborer: "Ram Kumar",
-      date: "2025-01-05",
-      status: "completed",
-      cost: 1400,
-      payment: "success",
-    },
-    {
-      id: 102,
-      laborer: "Shyam Verma",
-      date: "2025-01-07",
-      status: "pending",
-      cost: 2000,
-      payment: "pending",
-    },
-    {
-      id: 103,
-      laborer: "Amit Singh",
-      date: "2025-01-09",
-      status: "completed",
-      cost: 1200,
-      payment: "success",
-    },
-    {
-      id: 104,
-      laborer: "Rajesh Mehra",
-      date: "2025-01-11",
-      status: "cancelled",
-      cost: 0,
-      payment: "failed",
-    },
-  ];
+ 
 
   const category = labor && labor.categories[0];
   // console.log(certificate)
@@ -541,13 +540,14 @@ const LaborViewSide = () => {
                 <>
                   {isApproved ? (
                     // Show "View All" Button
-                    <button
-                      className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white border border-blue-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group"
-                      // onClick={handleViewAll}
-                    >
-                      <span className="bg-blue-300 shadow-blue-500 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(72,145,255,0.5)]"></span>
-                      View All
-                    </button>
+                    // <button
+                    //   className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white border border-blue-500 border-b-4 font-semibold overflow-hidden relative px-4 py-2 rounded-md hover:brightness-110 hover:border-t-4 hover:border-b-2 active:opacity-90 outline-none duration-300 group"
+                    //   // onClick={handleViewAll}
+                    // >
+                    //   <span className="bg-blue-300 shadow-blue-500 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(72,145,255,0.5)]"></span>
+                    //   View All
+                      // </button>
+                  null
                   ) : (
                     // Show "Approve" and "Reject" Buttons
                     <div className="flex space-x-4">
@@ -602,19 +602,25 @@ const LaborViewSide = () => {
             {/* Booking List */}
             {isApproved ? (
                 <div className="grid gap-4 mt-4">
-              {bookings.map((booking) => (
+              {bookingDetils?.map((booking,index) => (
                 <div
-                  key={booking.id}
+                  key={booking?._id}
                   className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4 bg-[#ABA0A0] rounded-lg shadow-md p-3 items-center"
                 >
                   <div className="text-sm font-medium text-white text-center">
-                    {booking.id}
+                   {index + 1} 
                   </div>
                   <div className="text-sm font-medium text-white text-center">
-                    {booking.laborer}
+                    {booking?.addressDetails?.name}
                   </div>
                   <div className="text-sm font-medium text-white text-center">
-                    {booking.date}
+                    {new Date(booking?.quote?.arrivalTime).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                   </div>
                   <div className="text-sm font-medium text-white text-center">
                     <span
@@ -628,11 +634,21 @@ const LaborViewSide = () => {
                     </span>
                   </div>
                   <div className="text-sm font-medium text-white text-center">
-                    ₹{booking.cost}/-
+                    ₹{booking?.quote?.estimatedCost}/-
                   </div>
-                  <div className="text-sm font-medium text-white text-center">
-                    {booking.payment}
-                  </div>
+                  <div
+                  className={`px-2 py-1 text-xs font-medium rounded-full text-center ${
+                    booking?.paymentStatus === "paid"
+                      ? "bg-green-500 text-white"
+                      : booking?.paymentStatus === "pending"
+                      ? "bg-yellow-500 text-black"
+                      : booking?.paymentStatus === "failed"
+                      ? "bg-red-500 text-white"
+                      : "bg-gray-500 text-white"
+                  }`}
+                >
+                  {booking?.paymentStatus}
+                </div>
                 </div>
               ))}
             </div>
@@ -667,7 +683,28 @@ const LaborViewSide = () => {
             )}
             
           </div>
+         {/* Pagination controls */}
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 p-4">
+            <button
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50 transition hover:bg-gray-300 disabled:hover:bg-gray-200"
+            >
+              Previous
+            </button>
+            <span className="px-4 py-2 text-sm sm:text-base font-medium">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50 transition hover:bg-gray-300 disabled:hover:bg-gray-200"
+            >
+              Next
+            </button>
+          </div>
         </div>
+        {!isApproved && (
 
         <div className="certifiacts p-12 space-y-11 sm:p-12 md:p-12 lg:p-0">
           <article className="card">
@@ -718,6 +755,9 @@ const LaborViewSide = () => {
             </div>
           </article>
         </div>
+        )}    
+
+
       </div>
     </div>
   );

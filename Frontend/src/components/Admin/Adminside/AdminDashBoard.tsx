@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 // import { Users, Briefcase, Calendar, DollarSign } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import AdminSideRow from './AdminSideRow';
 import User from '../../../assets/UserKing.png'
 import Labor from '../../../assets/LaborKing.png'
 import Booking from '../../../assets/BookingsKing.png'
 import Payment from '../../../assets/paymentEarnigsKing.png'
+import { IBooking } from '../../../@types/IBooking';
+import { fetchAllBookings } from '../../../services/AdminAuthServices';
 
 const AdminDashBoard = () => {
   // Sample data for charts and stats
@@ -16,26 +18,95 @@ const AdminDashBoard = () => {
   //   { icon: DollarSign, title: 'Total Earnings', value: '$45,000', color: 'text-red-600' }
   // ];
 
-  const pieData1 = [
-    { name: 'Active', value: 400 },
-    { name: 'Inactive', value: 200 }
-  ];
+  // const pieData1 = [
+  //   { name: 'Active', value: 400 },
+  //   { name: 'Inactive', value: 200 }
+  // ];
 
-  const pieData2 = [
-    { name: 'Pending', value: 300 },
-    { name: 'Completed', value: 500 }
-  ];
+  // const pieData2 = [
+  //   { name: 'Pending', value: 300 },
+  //   { name: 'Completed', value: 500 }
+  // ];
 
-  const barData = [
-    { month: 'Jan', earnings: 4000 },
-    { month: 'Feb', earnings: 3000 },
-    { month: 'Mar', earnings: 5000 },
-    { month: 'Apr', earnings: 4500 },
-    { month: 'May', earnings: 6000 }
-  ];
+  // const barData = [
+  //   { month: 'Jan', earnings: 4000 },
+  //   { month: 'Feb', earnings: 3000 },
+  //   { month: 'Mar', earnings: 5000 },
+  //   { month: 'Apr', earnings: 4500 },
+  //   { month: 'May', earnings: 6000 }
+  // ];
 
   const COLORS1 = ['#0088FE', '#FF8042'];
   const COLORS2 = ['#00C49F', '#FFBB28'];
+
+
+ 
+
+    const [currentPage, setCurrentPage] = useState(1)
+    const [limit, setLimit] = useState(200);
+    const [filter, setFilter] = useState("");
+    const [totalPages, setTotalPages] = useState(1);
+    const [bookingDetils , setBookingDetils] = useState<IBooking[]>(null)
+    const [totalUsers, setTotalUsers] = useState(0); // Add state for total users
+    const [totalLabors, setTotalLabors] = useState(0);
+    const [totalBooking, setTotalBookings] = useState(0);
+    const [totalAmount, setTotalAmount] = useState(0);
+    const [bookingStats, setbookingStats] = useState('');
+    console.log('This si eht bookingStatas',bookingStats)
+    
+     const statusData = [
+    { name: 'Completed', value: bookingStats?.completed || 0, color: '#10B981' },
+    { name: 'In Progress', value: bookingStats?.inProgress || 0, color: '#3B82F6' },
+    { name: 'Pending', value: bookingStats?.pending || 0, color: '#F59E0B' },
+    { name: 'Cancelled', value: bookingStats?.cancelled || 0, color: '#EF4444' }
+  ];
+
+  const total = statusData.reduce((acc, item) => acc + item.value, 0);
+  const statusDataWithPercentage = statusData.map(item => ({
+    ...item,
+    percentage: ((item.value / total) * 100).toFixed(1)
+  }));
+
+  const paymentData = [
+    { name: 'Paid', value: bookingStats?.paid || 0, color: '#059669' },
+    { name: 'Pending', value: bookingStats?.paymentPending || 0, color: '#D97706' },
+    { name: 'Failed', value: bookingStats?.paymentFailed || 0, color: '#DC2626' }
+  ];
+
+  const monthlyData = bookingStats?.monthlyEarnings || [];
+
+
+  const fetchBooings = async () => {
+    try {
+      const response = await fetchAllBookings(currentPage, limit, ''); // Removed incorrect filter syntax
+      if (response.status === 200) {
+        console.log('Thsi si teh preosnf',response);
+        const {
+          bookings,
+          totalPages,
+          totalAmount,
+          totalLabors,
+          totalUsers,
+          total,
+          bookingStats
+        } = response.data
+  
+        setTotalPages(totalPages)
+        setBookingDetils(bookings)
+        setTotalUsers(totalUsers)
+        setTotalLabors(totalLabors)
+        setTotalBookings(total)
+        setTotalAmount(totalAmount)
+        setbookingStats(bookingStats)
+      }
+    } catch (error) {
+      console.error("Error fetching labor bookings:", error);
+    }
+  };
+  
+  useEffect(() => {
+    fetchBooings();
+  }, [currentPage, limit, filter]);
 
   return (
     <div className="flex min-h-screen bg-[#D6CCCC]">
@@ -59,7 +130,7 @@ const AdminDashBoard = () => {
             <img src={User} alt="Total Users" className="w-[62px] h-[56px] mr-4" />
             <div>
               <h2 className="text-lg font-semibold">Total Users</h2>
-              <p className="text-3xl  font-[benne]">600</p>
+              <p className="text-3xl  font-[Rockwell]">{totalUsers}</p>
             </div>
           </div>
 
@@ -68,7 +139,7 @@ const AdminDashBoard = () => {
             <img src={Labor} alt="Total Labors" className="w-[52px] h-[56px]  mr-4" />
             <div>
               <h2 className="text-lg font-semibold">Total Labors</h2>
-              <p className="text-3xl  font-[benne]">1,600</p>
+              <p className="text-3xl  font-[Rockwell]">{totalLabors}</p>
             </div>
           </div>
 
@@ -77,7 +148,7 @@ const AdminDashBoard = () => {
             <img src={Booking} alt="Total Bookings" className="w-12 h-12 mr-4" />
             <div>
               <h2 className="text-lg font-semibold">Total Bookings</h2>
-              <p className="text-3xl  font-[benne]">300</p>
+              <p className="text-3xl  font-[Rockwell]">{totalBooking}</p>
             </div>
           </div>
 
@@ -86,77 +157,119 @@ const AdminDashBoard = () => {
             <img src={Payment} alt="Total Earnings" className="w-12 h-12 mr-4" />
             <div>
               <h2 className="text-lg font-semibold">Total Earnings</h2>
-              <p className="text-3xl  font-[benne]">₹ 12,000</p>
+              <p className="text-3xl  font-[Rockwell]">
+                ₹ {totalAmount.toLocaleString('en-IN')}</p>
             </div>
           </div>
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Pie Charts */}
-          <div className="bg-white shadow-md rounded-lg p-6 flex flex-col">
-            <h3 className="text-lg font-semibold mb-4 text-center">Labor Status</h3>
-            <div className="flex justify-between">
-              <ResponsiveContainer width="48%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={pieData1}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {pieData1.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS1[index % COLORS1.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <ResponsiveContainer width="48%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={pieData2}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {pieData2.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS2[index % COLORS2.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex justify-around mt-4">
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-blue-500 mr-2"></div>
-                <span>Active</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-orange-500 mr-2"></div>
-                <span>Inactive</span>
-              </div>
-            </div>
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Booking Status Chart */}
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Booking Status Distribution</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={statusDataWithPercentage}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {statusDataWithPercentage.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  content={({ payload }) => {
+                    if (payload && payload[0]) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white px-3 py-2 shadow-lg rounded-lg border border-gray-200">
+                          <p className="font-medium text-gray-900">{data.name}</p>
+                          <p className="text-sm text-gray-600">{data.value} bookings ({data.percentage}%)</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
+        </div>
 
-          {/* Bar Chart */}
-          <div className="bg-white shadow-md rounded-lg p-6 lg:col-span-2">
-            <h3 className="text-lg font-semibold mb-4">Earnings Overview</h3>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={barData}>
+        {/* Payment Status Chart */}
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Status</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={paymentData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {paymentData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  content={({ payload }) => {
+                    if (payload && payload[0]) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white px-3 py-2 shadow-lg rounded-lg border border-gray-200">
+                          <p className="font-medium text-gray-900">{data.name}</p>
+                          <p className="text-sm text-gray-600">{data.value} payments</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Monthly Earnings Chart */}
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Earnings</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyData}>
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip />
-                <Bar dataKey="earnings" fill="#8884d8" />
+                <Tooltip
+                  content={({ payload, label }) => {
+                    if (payload && payload[0]) {
+                      return (
+                        <div className="bg-white px-3 py-2 shadow-lg rounded-lg border border-gray-200">
+                          <p className="font-medium text-gray-900">{label}</p>
+                          <p className="text-sm text-gray-600">₹{payload[0].value.toLocaleString()}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="earnings" fill="#3B82F6" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

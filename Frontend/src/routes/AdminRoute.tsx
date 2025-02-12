@@ -8,6 +8,8 @@ import AdminLaborManagement from '../pages/adminSide/AdminLaborManagement';
 import UserViewPage from '../pages/adminSide/UserViewPage';
 import LaborViewPage from '../pages/adminSide/LaborViewPage';
 import LaborViewAllDetials from '../pages/adminSide/LaborViewAllDetials';
+import BookingListingPage from '../pages/adminSide/BookingListingPage';
+import PaymentEarnigsPage from '../pages/adminSide/PaymentEarnigs';
 
 const AdminRoute = () => {
   return (
@@ -19,6 +21,8 @@ const AdminRoute = () => {
       <Route path='/userView' element={<AdminPrivateRoute><UserViewPage/></AdminPrivateRoute>}/>
       <Route path='/laborView' element={<AdminPrivateRoute><LaborViewPage/></AdminPrivateRoute>}/>
       <Route path='/viewAllDetails' element={<AdminPrivateRoute><LaborViewAllDetials/></AdminPrivateRoute>}/>
+      <Route path='/bookingListing' element={<AdminPrivateRoute><BookingListingPage/></AdminPrivateRoute>}/>
+      <Route path='/paymentEarnigs' element={<AdminPrivateRoute><PaymentEarnigsPage/></AdminPrivateRoute>}/>
     </Routes>
   )
 }
