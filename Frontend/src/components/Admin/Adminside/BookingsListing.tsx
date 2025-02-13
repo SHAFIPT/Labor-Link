@@ -173,22 +173,22 @@ const BookingsListing = () => {
                         className="grid grid-cols-8 gap-4 items-center bg-[#ABA0A0] rounded-lg shadow-md p-3 hover:bg-[#998F8F] transition-colors"
                       >
                         {/* Number */}
-                        <div className="text-center text-xs sm:text-sm font-medium text-white">
+                        <div className="text-center text-xs sm:text-sm font-medium text-white font-bold">
                           {index + 1}
                         </div>
 
                         {/* User Name */}
-                        <div className="text-center text-xs sm:text-sm font-medium text-white truncate">
+                        <div className="text-center text-xs sm:text-sm font-medium text-white truncate font-bold">
                           {booking?.addressDetails?.name}
                         </div>
 
                         {/* Labor Name */}
-                        <div className="text-center text-xs sm:text-sm text-white truncate">
+                        <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
                           {booking?.laborId?.firstName}
                         </div>
 
                         {/* Job Description */}
-                        <div className="text-center text-xs sm:text-sm text-white truncate">
+                        <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
                           {booking?.quote?.description}
                         </div>
 
@@ -211,7 +211,7 @@ const BookingsListing = () => {
                           </span>
                         </div>
 
-                        <div className="text-center text-xs sm:text-sm text-white truncate">
+                        <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
                         {booking.quote.arrivalTime 
                             ? new Date(booking.quote.arrivalTime).toLocaleString('en-US', { 
                                 year: 'numeric', 
@@ -225,12 +225,12 @@ const BookingsListing = () => {
                         </div>
 
                         {/* Amount */}
-                        <div className="text-center text-xs sm:text-sm text-white truncate ">
+                        <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
                           ₹{booking.quote.estimatedCost}
                         </div>
 
                         {/* Payment Status */}
-                        <div className={`text-center text-xs px-2.5 py-0.5 sm:text-sm font-medium w-20 text-white truncate rounded-full ${
+                        <div className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium w-20 ${
                               booking.paymentStatus === "failed"
                                 ? "bg-red-500 text-white"
                                 : booking.paymentStatus === "paid"

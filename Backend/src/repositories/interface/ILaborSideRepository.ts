@@ -39,5 +39,6 @@ export interface ILaborSidRepository{
   ): Promise<IBooking | null>
   additionalCharge(bookingId: string, amount: number, reason: string): Promise<IBooking | null>
   acceptRequst(bookingId :string) : Promise<IBooking| null>
-  rejectRequst(bookingId :string) : Promise<IBooking| null>
+  rejectRequst(bookingId: string): Promise<IBooking | null>
+  fetchExistBooking(data: { userEmail: string; laborEmail: string; }): Promise<IBooking | null> 
 }

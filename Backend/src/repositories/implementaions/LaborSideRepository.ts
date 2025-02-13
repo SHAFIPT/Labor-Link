@@ -4,6 +4,7 @@ import Labor from "../../models/LaborModel";
 import mongoose, { SortOrder } from "mongoose";
 import { IBooking } from "../../controllers/entities/bookingEntity";
 import Booking from "../../models/BookingModal";
+import User from "../../models/userModel";
 
 export class LaborSideRepository implements ILaborSidRepository {
   async fetchLabor(laborId: string): Promise<ILaborer | null> {
@@ -473,4 +474,37 @@ export class LaborSideRepository implements ILaborSidRepository {
       throw error;
     }
   }
+  async fetchExistBooking(data: { userEmail: string; laborEmail: string; }): Promise<IBooking | null> {
+    try {
+        const { userEmail, laborEmail } = data;
+
+        // Find the user by userEmail
+        const user = await User.findOne({ email: userEmail });
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Find the labor by laborEmail
+        const labor = await Labor.findOne({ email: laborEmail });
+        if (!labor) {
+            throw new Error("Labor not found");
+        }
+
+        // Find the booking where userId and laborId match, and status is "confirmed"
+        const existingBooking = await Booking.findOne({
+            userId: user._id,
+            laborId: labor._id,
+            status: "confirmed"
+        });
+
+        if (!existingBooking) {
+            throw new Error("No confirmed booking found");
+        }
+
+        return existingBooking;
+    } catch (error) {
+        console.error("Error in existing booking fetching...", error);
+        throw error;
+    }
+}
 }

@@ -126,8 +126,9 @@ useEffect(() => {
     }
   }
 
-  const handleBlockTheUser = async () => {
+  const handleBlockTheUser = async (e : React.FormEvent) => {
     try {
+      e.preventDefault()
       dispatch(setLoading(true))
       // Decide which API to call based on the current block status
       const response = isBlocked
@@ -138,9 +139,9 @@ useEffect(() => {
         // Toggle the state on success
         setIsBlocked(!isBlocked);
         dispatch(setLoading(false))
-        toast.success(
-          `labor blocked  successfully ${isBlocked ? "unblocked" : "blocked"}!`
-        );
+        // toast.success(
+        //   `labor blocked  successfully ${isBlocked ? "unblocked" : "blocked"}!`
+        // );
       } else {
         dispatch(setLoading(false))
         toast.error("An error occurred. Please try again.");
@@ -169,7 +170,7 @@ useEffect(() => {
       setRejectModal(false)
       dispatch(setLoading(false))
       
-      toast.success('you rejection Approval succesfully Done')
+      // toast.success('you rejection Approval succesfully Done')
     } else {
       dispatch(setLoading(false))
       toast.error('Error in reason submission..!')
@@ -684,7 +685,7 @@ useEffect(() => {
             
           </div>
          {/* Pagination controls */}
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 p-4">
+          {/* <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 p-4">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
@@ -702,7 +703,7 @@ useEffect(() => {
             >
               Next
             </button>
-          </div>
+          </div> */}
         </div>
         {!isApproved && (
 

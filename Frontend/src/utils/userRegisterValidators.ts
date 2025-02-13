@@ -66,16 +66,7 @@ const editProfileSchema = Joi.object({
       "string.empty": "First name is required",
     }),
   lastName: Joi.string()
-    .pattern(new RegExp("^[A-Za-z]+$"))
-    .min(2)
-    .max(30)
-    .required()
-    .messages({
-      "string.pattern.base": "Last name should only contain letters",
-      "string.min": "Last name should be at least 2 characters long",
-      "string.max": "Last name should not exceed 30 characters",
-      "string.empty": "Last name is required",
-    }),
+    .required(),
 })
 
 const registerSchema = Joi.object({
@@ -91,16 +82,7 @@ const registerSchema = Joi.object({
       "string.empty": "First name is required",
     }),
   lastName: Joi.string()
-    .pattern(new RegExp("^[A-Za-z]+$"))
-    .min(2)
-    .max(30)
-    .required()
-    .messages({
-      "string.pattern.base": "Last name should only contain letters",
-      "string.min": "Last name should be at least 2 characters long",
-      "string.max": "Last name should not exceed 30 characters",
-      "string.empty": "Last name is required",
-    }),
+    .required(),
   email: Joi.string()
     // .email({ tlds: { allow: false } })x
     .required()

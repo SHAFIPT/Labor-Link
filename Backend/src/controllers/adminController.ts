@@ -254,7 +254,7 @@ class adminController {
             
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
-            const filter = req.query.filter as string | undefined;   
+        const filter = req.query.filter as string | undefined;   
         
         const { bookings, total } =
           await this.adminService.fetchLaborBookins(
@@ -289,7 +289,7 @@ class adminController {
         const limit = parseInt(req.query.limit as string) || 10;
         const filter = req.query.filter as string | undefined;    
         
-        const {bookings,total, totalLabors, totalUsers, totalAmount,bookingStats} = await this.adminService.fetchAllBookings(
+        const {bookings,total, totalLabors, totalUsers, totalAmount,bookingStats ,totalLaborErnigs ,totalCompnyProfit} = await this.adminService.fetchAllBookings(
             page,
             limit,
             filter
@@ -310,7 +310,9 @@ class adminController {
             totalLabors,
             totalUsers,
             totalAmount,
-            bookingStats
+            bookingStats,
+            totalLaborErnigs,
+            totalCompnyProfit
         });
         } catch (error) {
             console.error("Error in fetch all bookings.. :", error);
@@ -321,3 +323,6 @@ class adminController {
 }
 
 export default adminController
+
+// totalLaborErnigs: number;
+//     totalCompnyProfit : number

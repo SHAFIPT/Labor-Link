@@ -336,7 +336,7 @@ export const decodedAdminRefreshToken = (
   next: NextFunction
 ): void => {
   console.log('Checking admin refresh token')
-  const refreshToken = req.cookies['adminRefreshToken'] || req.header('adminRefreshToken');
+  const refreshToken = req.cookies['adminRefreshToken'] || req.header('authorization');
 
   if (!refreshToken) {
     res.status(401).json(new ApiResponse(

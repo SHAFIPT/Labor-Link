@@ -25,6 +25,7 @@ import AddressModal from './AddressModal';
 import { toggleMobileChatList } from '../../redux/slice/laborSlice';
 import { validateNewDate } from '../../utils/userRegisterValidators';
 import { validateDate } from '../../utils/laborRegisterValidators';
+import { fetchIsBookingExist } from '../../services/LaborServices';
 
 interface ChatComponentProps {
   chatId?: any; // Make chatId optional
@@ -38,8 +39,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   const LaborLogin = useSelector((state: RootState) => state.labor.laborer);
   const isMobileChatListOpen = useSelector((state: RootState) => state.labor.isMobileChatListOpen);
 
-  console.log('jjjjjjjjjjjjjjj',userLogin.email)
-  console.log('kkkkkkkkkkkk',LaborLogin.email)
+  console.log('jjjjjjjjjjjjjjj',userLogin)
+  console.log('kkkkkkkkkkkk',LaborLogin)
 
 
   // const { chatId } = useParams();
@@ -65,6 +66,9 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [fetchedLaborId, setFetchedLaborId] = useState(null);
   const [chatData, setChatData] = useState(null);
+  const [bookingData ,setBookingData] = useState(null)
+  console.log('This is th4echata Data ;;;', chatData)
+  console.log('Thsis it eh llokingg diillyy',bookingData)
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const theam = useSelector((state: RootState) => state.theme.mode);
   const [userAddress, setUserAddress] = useState({
@@ -588,6 +592,37 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       fileInputRef.current.value = "";
     }
   };
+
+  const userEmail = participants?.user?.email
+  const laborEmail = participants?.labor?.email
+
+  // const participentsData = {
+  //   userEmail,
+  //   laborEmail
+  // }
+
+  // console.log('this is the my shafi participentsData',participentsData)
+
+  useEffect(() => {
+  if (userEmail && laborEmail) {  // Ensure both values exist
+    const isBookingExist = async () => {
+      try {
+        const response = await fetchIsBookingExist({ userEmail, laborEmail });
+        if (response.status === 200) {
+          console.log('thsis ie the response :',
+            response
+          )
+          const {fetchBookings} = response.data
+          setBookingData(fetchBookings);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error('Error in booking Exist');
+      }
+    };
+    isBookingExist();
+  }
+}, [userEmail, laborEmail]); 
 
   // console.log("This is the selected Queet4e in chat page leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",)
 
@@ -1190,7 +1225,9 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                 </div>
               </div>
 
-              {Object.keys(userLogin).length === 0 && (
+                {Object.keys(userLogin).length === 0 &&
+                 bookingData?.status !== "confirmed" &&
+                  (
                 <div className="flex items-center gap-2">
                   <button
                     type="button"

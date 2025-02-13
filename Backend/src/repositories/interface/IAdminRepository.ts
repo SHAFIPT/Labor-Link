@@ -36,6 +36,8 @@ export interface IAdminRepository{
     totalLabors: number;
     totalUsers: number;
     totalAmount: number;
+    totalLaborErnigs: number;
+    totalCompnyProfit : number
     bookingStats: {
       completed: number;
       inProgress: number;

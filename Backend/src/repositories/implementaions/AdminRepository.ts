@@ -334,6 +334,8 @@ export class AdminRepositooy implements IAdminRepository {
     totalLabors: number;
     totalUsers: number;
     totalAmount: number;
+    totalLaborErnigs: number;
+    totalCompnyProfit : number
     bookingStats: {
       completed: number;
       inProgress: number;
@@ -394,7 +396,7 @@ export class AdminRepositooy implements IAdminRepository {
       {
         $match: { 
           status: 'completed',
-          'paymentDetails.totalAmount': { $exists: true }
+          'paymentDetails.commissionAmount': { $exists: true }
         }
       },
       {
@@ -403,7 +405,7 @@ export class AdminRepositooy implements IAdminRepository {
             year: { $year: '$createdAt' },
             month: { $month: '$createdAt' }
           },
-          earnings: { $sum: '$paymentDetails.totalAmount' }
+          earnings: { $sum: '$paymentDetails.commissionAmount' }
         }
       },
       {
@@ -455,8 +457,44 @@ export class AdminRepositooy implements IAdminRepository {
         }
       ]);
 
+      const totalLaborEarnings = await Booking.aggregate([
+        {
+          $match: {
+            status: 'completed',
+            'paymentDetails.laborEarnings': { $exists: true }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total : {$sum : '$paymentDetails.laborEarnings'}
+          }
+        }
+      ])
+
+      const totalCommissionAmount = await Booking.aggregate([
+        {
+          $match: {
+            status: 'completed',
+            'paymentDetails.commissionAmount': { $exists: true }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total : {$sum : '$paymentDetails.commissionAmount'}
+          } 
+        }
+      ])
+
       const totalAmount =
         totalAmountResult.length > 0 ? totalAmountResult[0].total : 0;
+      
+      const totalLaborErnigs =
+        totalLaborEarnings.length > 0 ? totalLaborEarnings[0].total : 0;
+      
+      const totalCompnyProfit =
+        totalCommissionAmount.length > 0 ? totalCommissionAmount[0].total : 0;
 
       const totalUsers = await User.countDocuments();
 
@@ -481,7 +519,9 @@ export class AdminRepositooy implements IAdminRepository {
         totalLabors,
         totalUsers,
         totalAmount,
-        bookingStats
+        bookingStats,
+        totalLaborErnigs,
+        totalCompnyProfit
       };
     } catch (error) {
       console.error("Repository error fetching bookings:", error);

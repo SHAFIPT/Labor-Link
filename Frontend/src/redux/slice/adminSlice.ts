@@ -37,7 +37,8 @@ const adminSlice = createSlice({
     },
     setModal(state,action){
       state.modal = action.payload
-    },setFormData(state,action){
+    },
+    setFormData(state, action) {
       state.formData = action.payload
     },
     setPageTitle(state,action){

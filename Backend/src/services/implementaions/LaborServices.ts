@@ -79,4 +79,7 @@ export class LaborServices implements ILaborService{
     async rejectRequst(bookingId: string): Promise<IBooking | null> {
         return await this.laborRepsitory.rejectRequst(bookingId)
     }
+    async fetchExistBooking(data: { userEmail: string; laborEmail: string; }): Promise<IBooking | null> {
+        return this.laborRepsitory.fetchExistBooking(data)
+    }
 }

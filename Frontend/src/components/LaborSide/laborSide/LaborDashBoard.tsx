@@ -77,16 +77,19 @@ const LaborDashBoard = () => {
     (state: RootState) => state.labor.isMobileChatListOpen
   );
 
-  console.log("this is the laborer ,,", laborer);
+
+
+  // console.log("this is the laborer ,,", laborer);
   // console.log("this is the authenitcted ,,", isLaborAuthenticated);
 
   const [currentStage, setCurrentStage] = useState("Dashboard");
   const [resheduleModal, setResheduleModal] = useState(null);
   const [unreadChats, setUnreadChats] = useState({});
   const [chats, setChats] = useState<Chat[]>([]);
+  console.log('This sie th chatssssssssssssssssss',chats)
   const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
 
-  console.log("Thiss is the boooking thanveeeraaa", bookingDetils);
+  // console.log("Thiss is the boooking thanveeeraaa", bookingDetils);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [limit, setLimit] = useState(2);
@@ -128,7 +131,7 @@ const LaborDashBoard = () => {
       (laborer?.wallet?.transactions?.length || 0) / transactionsPerPage
     );
     
-    console.log('this ist eh resheudelullll',updatedBooking)
+    // console.log('this ist eh resheudelullll',updatedBooking)
   
     const handleRescheduleUpdate = (newBooking) => {
       setUpdatedBooking(newBooking); // Update state when reschedule is accepted
@@ -142,7 +145,7 @@ const LaborDashBoard = () => {
     (state: RootState) => state.booking.bookingDetails
   );
 
-  console.log("Thiis is the BoookingDETAilssssssssssssss :", bookingDetails);
+  // console.log("Thiis is the BoookingDETAilssssssssssssss :", bookingDetails);
 
   const totalUnreadCount = chats.reduce(
     (sum, chat) => sum + (chat.unreadCount || 0),
@@ -164,6 +167,23 @@ const LaborDashBoard = () => {
   //   { title: "Total Earnings", value: "$2,450", icon: DollarSign },
   //   { title: "Pending Tasks", value: "6", icon: MessageSquare },
   // ];
+
+  // useEffect(() => {
+  //    localStorage.removeItem("LaborAccessToken");
+
+  //         // Reset User State
+  //         dispatch(setUser({}));
+  //         dispatch(resetUser());
+  //         dispatch(setisUserAthenticated(false));
+  //         dispatch(setAccessToken(""));
+
+  //         // Reset Labor State
+  //         dispatch(setLaborer({}));
+  //         dispatch(resetLaborer());
+  //         dispatch(setIsLaborAuthenticated(false));
+
+  //         navigate("/"); // Redirect to login page
+  // },[])
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -213,8 +233,9 @@ const LaborDashBoard = () => {
     // Save the current stage to localStorage whenever it changes
     localStorage.setItem("currentStage", currentStage);
   }, [currentStage]);
-
   const fetchChats = (userUid) => {
+    console.log('HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH')
+    
     if (!userUid) {
       throw new Error("Missing user credentials");
     }
@@ -222,20 +243,24 @@ const LaborDashBoard = () => {
     const auth = getAuth();
     const currentLabor = auth.currentUser;
 
+    console.log('111111111111111111',currentLabor)
+
     if (!currentLabor || !currentLabor.uid) {
       throw new Error("User is not authenticated");
     }
 
     const laborUid = currentLabor.uid;
+    console.log('this it s the laborUIddddddddddddddd',laborUid)
 
     const chatCollection = collection(db, "Chats");
     const chatQuery = query(chatCollection, where("laborId", "==", laborUid));
+    console.log('77777777777777777',chatQuery)
 
     const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
       const chatData = await Promise.all(
         chatSnapshot.docs.map(async (doc) => {
           const chatData = doc.data() as ChatDocument;
-
+         
           // Get the latest message for sorting
           const messagesCollection = collection(
             db,
@@ -384,7 +409,7 @@ const LaborDashBoard = () => {
             pendingBookings,
           } = responseInBacked.data;
 
-          console.log("brrrrrrrrrronoddddddddddddn", responseInBacked);
+          // console.log("brrrrrrrrrronoddddddddddddn", responseInBacked);
           setTotalPages(totalPages);
           dispatch(setBookingDetails(bookings));
           setBookingDetils(bookings);

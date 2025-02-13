@@ -6,6 +6,8 @@ import User from '../../../assets/UserKing.png'
 import Labor from '../../../assets/LaborKing.png'
 import Booking from '../../../assets/BookingsKing.png'
 import Payment from '../../../assets/paymentEarnigsKing.png'
+import totialIMaes from '../../../assets/totalImages.jpg'
+import laborEarnings from '../../../assets/LaborEranigs.jpg'
 import { IBooking } from '../../../@types/IBooking';
 import { fetchAllBookings } from '../../../services/AdminAuthServices';
 
@@ -51,6 +53,8 @@ const AdminDashBoard = () => {
     const [totalLabors, setTotalLabors] = useState(0);
     const [totalBooking, setTotalBookings] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
+    const [totalLaborErnigs, setTotalLaborErnigs] = useState(0);
+    const [totalCompnyProfit, setTotalCompnyProfit] = useState(0);
     const [bookingStats, setbookingStats] = useState('');
     console.log('This si eht bookingStatas',bookingStats)
     
@@ -88,7 +92,9 @@ const AdminDashBoard = () => {
           totalLabors,
           totalUsers,
           total,
-          bookingStats
+          bookingStats,
+          totalLaborErnigs,
+          totalCompnyProfit
         } = response.data
   
         setTotalPages(totalPages)
@@ -98,6 +104,8 @@ const AdminDashBoard = () => {
         setTotalBookings(total)
         setTotalAmount(totalAmount)
         setbookingStats(bookingStats)
+        setTotalLaborErnigs(totalLaborErnigs)
+        setTotalCompnyProfit(totalCompnyProfit)
       }
     } catch (error) {
       console.error("Error fetching labor bookings:", error);
@@ -124,7 +132,7 @@ const AdminDashBoard = () => {
             </h1>
           </div>
         {/* Top Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Box 1: Total Users */}
           <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
             <img src={User} alt="Total Users" className="w-[62px] h-[56px] mr-4" />
@@ -154,11 +162,30 @@ const AdminDashBoard = () => {
 
           {/* Box 4: Total Earnings */}
           <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
-            <img src={Payment} alt="Total Earnings" className="w-12 h-12 mr-4" />
+            <img src={totialIMaes} alt="Total Earnings" className="w-[64px] h-[64px] mr-4" />
             <div>
-              <h2 className="text-lg font-semibold">Total Earnings</h2>
+              <h2 className="text-lg font-semibold">Total Amount</h2>
               <p className="text-3xl  font-[Rockwell]">
                 ₹ {totalAmount.toLocaleString('en-IN')}</p>
+            </div>
+          </div>
+
+
+          <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+            <img src={laborEarnings} alt="Total Earnings" className="w-[64px] h-[64px] mr-4" />
+            <div>
+              <h2 className="text-lg font-semibold">Labors Earnings</h2>
+              <p className="text-3xl  font-[Rockwell]">
+                ₹ {totalLaborErnigs.toLocaleString('en-IN')}</p>
+            </div>
+          </div>  
+
+          <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+            <img src={Payment} alt="Total Earnings" className="w-12 h-12 mr-4" />
+            <div>
+              <h2 className="text-lg font-semibold">Total Company Profit</h2>
+              <p className="text-3xl  font-[Rockwell]">
+                ₹ {totalCompnyProfit.toLocaleString('en-IN')}</p>
             </div>
           </div>
         </div>

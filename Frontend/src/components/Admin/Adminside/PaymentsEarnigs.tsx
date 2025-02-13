@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import AdminSideRow from './AdminSideRow';
+import { IBooking } from '../../../@types/IBooking';
+import { fetchAllBookings } from '../../../services/AdminAuthServices';
 
 const PaymentsEarnigs = () => {
     const [page, setPage] = useState(1);
-  const totalPages = 2; // Replace with dynamic value
+  // const totalPages = 2; // Replace with dynamic value
 
   const payments = [
     {
@@ -26,13 +28,62 @@ const PaymentsEarnigs = () => {
     (acc, payment) => acc + payment.remainingAmount,
     0
   );
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("Filter");
+  const [limit, setLimit] = useState(70);
+  const [filter, setFilter] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null)  
+  console.log('this is eth bookingDetils ::',bookingDetils)
+  const filterOptions = [
+    { value: "All", label: "All", color: "bg-gray-500" },
+    { value: "confirmed", label: "confirmed", color: "bg-yellow-500" },
+    { value: "completed", label: "completed", color: "bg-green-500" },
+    { value: "canceled", label: "canceled", color: "bg-red-500" },
+  ];
 
-  const handlePreviousPage = () => {
-    if (page > 1) setPage(page - 1);
+  const paymnetCompleted = bookingDetils?.filter((booking) => {
+    return booking.paymentStatus === 'paid'
+  })
+
+
+
+  const fetchBooings = async () => {
+          try {
+            const response = await fetchAllBookings(page, limit, selectedFilter); // Removed incorrect filter syntax
+            if (response.status === 200) {
+              console.log('Thsi si teh preosnf',response);
+              const {
+                bookings,
+                totalPages,
+                totalCompnyProfit
+              } = response.data
+        
+              setTotalPages(totalPages)
+              setBookingDetils(bookings)
+              setTotalAmount(totalCompnyProfit)
+            }
+          } catch (error) {
+            console.error("Error fetching labor bookings:", error);
+          }
+        };
+        
+        useEffect(() => {
+          fetchBooings();
+        }, [page, limit,selectedFilter]);
+  
+
+   const handlePreviousPage = () => {
+    if (page > 1) {
+      setPage(prev => prev - 1);
+    }
   };
 
   const handleNextPage = () => {
-    if (page < totalPages) setPage(page + 1);
+    if (page < totalPages) {
+      setPage(prev => prev + 1);
+    }
   };
 
   return (
@@ -40,27 +91,28 @@ const PaymentsEarnigs = () => {
           <AdminSideRow/>
       <div className="w-full bg-[#D6CCCC]">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-center w-full p-4">
-          <h1 className="font-serif p- text-4xl sm:text-3xl md:text-4xl lg:text-5xl">
+        <div className="flex flex-col sm:flex-row justify-between items-center w-full p-4 ">
+          <h1 className="font-serif p-12 text-4xl sm:text-3xl md:text-4xl lg:text-5xl">
             Payment Listing
           </h1>
         </div>
 
         {/* Summary Section */}
-        <div className="w-full p-4">
-          <div className="bg-gray-200 p-4 rounded-lg shadow-md text-center">
-            <h2 className="text-xl font-semibold text-gray-700">
-              Total Pending Amount to be Credited: ₹{totalPendingAmount}
-            </h2>
-          </div>
+        <div className="w-full p-1">
+        <div className="bg-gradient-to-r from-green-400 to-green-800 p-6 rounded-lg shadow-lg text-center text-white">
+          <h2 className="text-2xl font-bold">
+            Total Amount Credited: ₹ {totalAmount}
+          </h2>
+          <p className="mt-2 text-lg opacity-90">Your total earnings so far</p>
         </div>
+      </div>
 
         {/* Payment List Section */}
         <div className="relative px-4 pt-5">
           <div className="overflow-x-auto">
             <div className="min-w-[600px]">
               {/* List Headings */}
-              <div className="grid grid-cols-6 gap-4 items-center bg-gray-200 p-3 rounded-lg shadow">
+              <div className="grid grid-cols-7 gap-4 items-center bg-gray-200 p-3 rounded-lg shadow">
                 <div className="text-center text-xs sm:text-sm font-semibold text-gray-700">
                   No
                 </div>
@@ -68,46 +120,59 @@ const PaymentsEarnigs = () => {
                   Labor Name
                 </div>
                 <div className="text-center text-xs sm:text-sm font-semibold text-gray-700">
-                  Amount Credited
+                Total Amount 
                 </div>
                 <div className="text-center text-xs sm:text-sm font-semibold text-gray-700">
                   Commission Amount
                 </div>
                 <div className="text-center text-xs sm:text-sm font-semibold text-gray-700">
-                  Remaining Amount
+                  Labor Earnings
                 </div>
                 <div className="text-center text-xs sm:text-sm font-semibold text-gray-700">
                   Date & Time
+                </div>
+                <div className="text-center text-xs sm:text-sm font-semibold text-gray-700">
+                  Paymnet Status
                 </div>
               </div>
 
               {/* Payment Data */}
               <div className="space-y-2 mt-4">
-                {payments.map((payment, index) => (
+                {paymnetCompleted?.map((payment, index) => (
                   <div
                     key={index}
-                    className="grid grid-cols-6 gap-4 items-center bg-[#ABA0A0] rounded-lg shadow-md p-3 hover:bg-[#998F8F] transition-colors"
+                    className="grid grid-cols-7 gap-4 items-center bg-[#ABA0A0] rounded-lg shadow-md p-3 hover:bg-[#998F8F] transition-colors"
                   >
-                    <div className="text-center text-xs sm:text-sm font-medium text-white">
+                    <div className="text-center text-xs sm:text-sm font-medium text-white font-bold">
                       {index + 1}
                     </div>
-                    <div className="text-center text-xs sm:text-sm font-medium text-white truncate">
-                      {payment.laborName}
+                    <div className="text-center text-xs sm:text-sm font-medium text-white truncate font-bold">
+                      {payment?.laborId?.firstName}
                     </div>
-                    <div className="text-center text-xs sm:text-sm text-white truncate">
-                      ₹{payment.creditedAmount}
+                    <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
+                      ₹{payment?.paymentDetails?.totalAmount}
                     </div>
-                    <div className="text-center text-xs sm:text-sm text-white truncate">
-                      ₹{payment.commission}
+                    <div className="text-center text-xs sm:text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
+                    + ₹{payment?.paymentDetails?.commissionAmount}
+                  </div>
+
+                    <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
+                      ₹{payment?.paymentDetails?.laborEarnings}
                     </div>
-                    <div className="text-center text-xs sm:text-sm text-white truncate">
-                      ₹{payment.remainingAmount}
-                    </div>
-                    <div className="text-center text-xs sm:text-sm text-white truncate">
-                      {payment.dateTime}
+                    <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
+                  {new Date(payment.updatedAt).toLocaleString()}
+                </div>
+                    <div
+                      className={`text-center text-xs sm:text-sm font-bold px-2 py-1 rounded-lg ${
+                        payment?.paymentStatus === "paid"
+                          ? "text-green-100 bg-green-700"
+                          : "text-white"
+                      }`}
+                    >
+                      {payment?.paymentStatus}
                     </div>
                   </div>
-                ))}
+                ))} 
               </div>
             </div>
           </div>

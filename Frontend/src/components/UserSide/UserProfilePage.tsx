@@ -474,6 +474,7 @@ const UserProfile = () => {
 
   return (
     <>
+      
       {/* Reschedule Modal */}
       {resheduleModal && (
         <ResheduleModal
@@ -775,8 +776,10 @@ const UserProfile = () => {
         </>
       )}
 
- 
-      <div className="w-full  relative">
+     <div
+        className={`min-h-screen ${theam === "dark" ? "bg-[#111826]" : "bg-white"}`}
+      >
+      <div className="w-full relative">
         <div className="relative">
           <img
             src={BgImage}
@@ -835,40 +838,33 @@ const UserProfile = () => {
                 } rounded-xl p-4 sm:p-6`}
               >
                 <div className="flex flex-col sm:flex-row justify-between gap-6">
-                  <div className="space-y-4 w-full sm:w-1/2">
-                    <div className="text-center lg:text-left">
-                      <div className="font-semibold font-[Rockwell] text-[28px] sm:text-[33px] md:text-[43px]">
-                        {userData?.firstName || "First Name"}{" "}
-                        {userData?.lastName || "Last Name"}
-                      </div>
+                 <div className="space-y-4 w-full sm:w-1/2">
+                  <div className="text-center lg:text-left">
+                    <div className={`font-semibold font-[Rockwell] text-[28px] sm:text-[33px] md:text-[43px] ${theam === "dark" ? "text-white" : "text-gray-900"}`}>
+                      {userData?.firstName || "First Name"} {userData?.lastName || "Last Name"}
                     </div>
-
-                    <div className="h-px bg-gray-200 my-4"></div>
-
-                    <div className="flex items-center gap-3">
-                      <Mail
-                        className={`w-5 h-5 ${
-                          theam === "light" ? "text-gray-600" : ""
-                        }`}
-                      />
-                      <span
-                        className={theam === "light" ? "text-gray-800" : ""}
-                      >
-                        {userData?.email || "user@example.com"}
-                      </span>
-                    </div>
-
-                    <button
-                      className={`mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border ${
-                        theam === "light"
-                          ? "border-gray-300 hover:bg-gray-50"
-                          : "hover:bg-gray-500"
-                      } rounded-md transition-colors`}
-                    >
-                      <Heart className="w-5 h-5" />
-                      <span>Save</span>
-                    </button>
                   </div>
+
+                  <div className={`h-px my-4 ${theam === "dark" ? "bg-gray-600" : "bg-gray-200"}`}></div>
+
+                  <div className="flex items-center gap-3">
+                    <Mail className={`w-5 h-5 ${theam === "dark" ? "text-white" : "text-gray-600"}`} />
+                    <span className={`${theam === "dark" ? "text-white" : "text-gray-800"}`}>
+                      {userData?.email || "user@example.com"}
+                    </span>
+                  </div>
+
+                  <button
+                    className={`mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border rounded-md transition-colors ${
+                      theam === "dark" 
+                        ? "border-gray-500 text-white hover:bg-gray-700" 
+                        : "border-gray-300 text-gray-900 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Heart className="w-5 h-5" />
+                    <span>Save</span>
+                  </button>
+                </div>
 
                   <div className="flex flex-col   gap-3 w-full lg:pl-36 sm:w-1/2">
                     <button
@@ -941,7 +937,10 @@ const UserProfile = () => {
             </div>
           </div>
           <div className="flex justify-center">
-            <h2 className="text-xl font-semibold text-center mb-4 border rounded-full w-[200px] py-1">
+            <h2
+              className={`text-xl font-semibold text-center mb-4 border rounded-full w-[200px] py-1 
+                ${theam === "dark" ? "text-white border-white" : "text-gray-900 border-gray-900"}`}
+            >
               Current Status
             </h2>
               </div>
@@ -1591,7 +1590,7 @@ const UserProfile = () => {
         </div>
       </div>
 
-      <div className="flex justify-center gap-4 mt-6 mb-4">
+      <div className="flex justify-center gap-4 mt-6 pb-6">
         <button
           onClick={() => setCurrentPage(currentPage - 1)}
           disabled={currentPage === 1}
@@ -1599,7 +1598,7 @@ const UserProfile = () => {
         >
           Previous
         </button>
-        <span className="px-4 py-2">
+       <span className={`px-4 py-2 ${theam === "dark" ? "text-white" : "text-gray-900"}`}>
           Page {currentPage} of {totalPages}
         </span>
         <button
@@ -1609,7 +1608,8 @@ const UserProfile = () => {
         >
           Next
         </button>
-      </div>
+        </div>
+        </div>
     </>
   );
 };

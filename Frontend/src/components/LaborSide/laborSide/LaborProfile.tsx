@@ -797,7 +797,9 @@ const findLaborIdByEmail = async (email) => {
       { label: 'Home', link: '/' },
       { label: 'LaborListing Page', link: '/laborListing' }, // No link for the current page
       { label: 'LaborProfile Page', link: null }, // No link for the current page
-    ];
+  ];
+  
+   const currentPages = location.pathname.split("/").pop();
 
 
    const formatDate = (dateString) => {
@@ -813,7 +815,13 @@ const findLaborIdByEmail = async (email) => {
   const LaborDetails = user ? user : Laborer ? Laborer : null;
 
 
-  console.log('This si the usek kkkkkkkk',LaborDetails)
+  console.log('This si the usek kkkkkkkk', LaborDetails)
+  
+  // const breadcrumbItems = [
+  //   { label: "Home", link: "/" },
+  //   { label: "LaborProfilePage", link: null }, // No link for the current page
+  // ];
+
   
 
   return (
@@ -1581,34 +1589,11 @@ const findLaborIdByEmail = async (email) => {
             </>
           ) : (
             <div className="absolute top-2 sm:top-3 md:top-4 left-2 sm:left-3 md:left-4">
-              <nav className=" py-3 px-4 sm:px-6 md:px-8 ">
-                <div className="max-w-7xl mx-auto">
-                  <ol className="flex items-center space-x-2 text-sm sm:text-base">
-                    <li className="flex items-center">
-                      <a
-                        href="/"
-                        className=" transition-colors duration-200 flex items-center"
-                      >
-                        <Home className="w-4 h-4 sm:w-5 sm:h-5 " />
-                        <span className="ml-1 hidden sm:inline">Home</span>
-                      </a>
-                    </li>
-
-                    <li className="flex items-center ">
-                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </li>
-
-                    <li className="flex items-center">
-                      <a
-                        href="/profile"
-                        className="  transition-colors duration-200 flex items-center"
-                      >
-                        <User className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span className="ml-1">Profile</span>
-                      </a>
-                    </li>
-                  </ol>
-                </div>
+              <nav className="py-3 px-4 sm:px-6 md:px-8">
+                <Breadcrumb
+                  items={breadcrumbItems}
+                  currentPage={currentPages}
+                />
               </nav>
             </div>
           )}
@@ -2049,7 +2034,60 @@ const findLaborIdByEmail = async (email) => {
           )} */}
 
           {/* Modal */}
-          {openAbout && (
+          
+
+
+          {theam === 'dark' ? (
+            <>
+            {openAbout && (
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+            <div className="bg-[#1E1E1E] p-6 rounded-lg shadow-lg w-11/12 sm:w-96 text-[#E0E0E0]">
+              <h3 className="text-xl font-semibold mb-4">Add About You</h3>
+              <input
+                type="text"
+                name="name"
+                placeholder="Name"
+                value={AboutFromData.name}
+                onChange={handleInputChangeAbout}
+                className="w-full p-2 mb-3 border border-gray-600 rounded-lg bg-[#2A2A2A] text-white"
+              />
+              <input
+                type="number"
+                name="experience"
+                placeholder="Experience (e.g., 10 years)"
+                value={AboutFromData.experience}
+                onChange={handleInputChangeAbout}
+                className="w-full p-2 mb-3 border border-gray-600 rounded-lg bg-[#2A2A2A] text-white"
+              />
+              <textarea
+                name="description"
+                placeholder="Description"
+                value={AboutFromData.description}
+                onChange={handleInputChangeAbout}
+                className="w-full p-2 mb-3 border border-gray-600 rounded-lg bg-[#2A2A2A] text-white"
+              />
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setOpenAbout(false)}
+                  className="px-4 py-2 text-gray-400 hover:text-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="bg-[#21A391] hover:bg-[#1C8576] text-white px-4 py-2 rounded-lg"
+                >
+                  {isEditing ? "Update" : "Submit"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          )}
+            </>
+          ): (
+            <>
+            {openAbout && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
               <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 sm:w-96">
                 <h3 className="text-xl font-semibold mb-4">Add About You</h3>
@@ -2092,6 +2130,8 @@ const findLaborIdByEmail = async (email) => {
                 </div>
               </div>
             </div>
+          )}
+            </>  
           )}
 
           {/* Read More Button */}

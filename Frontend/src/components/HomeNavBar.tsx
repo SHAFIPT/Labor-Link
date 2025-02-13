@@ -667,7 +667,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
             </div>
 
             <div
-              className={`rightDarkLighMode  ${
+              className={`rightDarkLighMode relative z-[60] md:z-0  ${
                 theme === "dark"
                   ? "bg-darkBg text-darkText"
                   : "bg-lightBg text-lightText"
@@ -726,33 +726,33 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
             {/* Navigation Container */}
             <div className="">
             {/* Menu Toggle Button for Mobile */}
-        <div
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-              isOpen 
-                ? 'bg-transparent' 
-                : isScrolled 
-                  ? theme === 'dark' 
-                    ? 'bg-gray-900 shadow-md '  // Dark mode background color
-                    : 'bg-white shadow-md'  // Light mode background color
-                  : 'bg-transparent'
-            } lg:hidden`}
-          >
+               <div
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isOpen 
+            ? 'bg-transparent' 
+            : isScrolled 
+              ? theme === 'dark' 
+                ? 'bg-gray-900 shadow-md' 
+                : 'bg-white shadow-md'
+              : 'bg-transparent'
+        } lg:hidden`}
+      >
 
-          <div className="p-4 flex justify-end">
-            <button
-              onClick={toggleMenu}
-              className="p-2 focus:outline-none transition-colors duration-300"
-              aria-label="Toggle menu"
-              aria-expanded={isOpen}
-            >
-              <i
-                className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-2xl ${
-                  isOpen ? 'text-white' : isScrolled ? 'text-white' : 'text-white'
-                }`}
-              ></i>
-            </button>
-          </div>
-        </div>
+                  <div className="p-4 flex justify-end ">
+                    <button
+                      onClick={toggleMenu}
+                      className="p-2 focus:outline-none transition-colors duration-300 gap-3"
+                      aria-label="Toggle menu"
+                      aria-expanded={isOpen}
+                    >
+                      <i
+                        className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-2xl ${
+                          theme === 'dark' ? 'text-gray-300' : 'text-black'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
 
         {/* Overlay Menu for Mobile */}
         <div

@@ -552,7 +552,38 @@ class laborSideController {
       next(error);
     }
   }
-  
+  public fetchIsBookingExist = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+      console.log('this is requsags :',req.query)
+
+      // const { userEmail, laborEmail } = req.query
+      
+      
+      const userEmail = req.query.userEmail as string;
+      const laborEmail = req.query.laborEmail as string;
+      
+      if (!userEmail || !laborEmail) {
+           return res.status(400).json({ message: "Missing userId or laborId" });
+     }
+      const bookingData = {
+        userEmail,
+        laborEmail
+      }
+
+      console.log('This is the Baaabuu0',bookingData)
+      
+      const fetchBookings = await this.laborService.fetchExistBooking(bookingData)
+
+      return res.status(200)
+      .json({messsage : 'bookingFetchsucceffluuly',fetchBookings})
+
+        
+    } catch (error) {
+      console.error("Error in exitst bookings ", error);
+      next(error);
+    }
+  }
 
 }
 

@@ -27,6 +27,9 @@ import { RootState } from "../../../redux/store/store";
 import { ExperiencePage } from "../../../services/LaborAuthServices";
 import "../../Auth/LoadingBody.css";
 import Card from "./LaborRequestModal";
+import { auth, db } from "../../../utils/firbase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 
 interface Certificate {
@@ -58,6 +61,10 @@ const LaborRegisterExperience = () => {
   const email = useSelector((state: RootState) => state.labor.formData.email);
   const formData = useSelector((state: RootState) => state.labor.formData);
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
+  const password = useSelector((state: RootState) => state.labor.formData.password)
+  const firstName = useSelector((state: RootState) => state.labor.formData.firstName)
+  const lastName = useSelector((state: RootState) => state.labor.formData.lastName)
+  
 
   useEffect(() => {
     if (isLaborAuthenticated) {
@@ -265,6 +272,26 @@ const LaborRegisterExperience = () => {
       console.log("response is this :", response);
 
       if (response.status === 200) {
+
+        // const firebaseUser = await createUserWithEmailAndPassword(
+        //   auth,
+        //   email,
+        //   password
+        // );
+
+        // if (firebaseUser) {
+        //   console.log("User registered in Firebase: ", firebaseUser.user);
+
+        //   const fullName = `${firstName} ${lastName}`;
+
+        //   await setDoc(doc(db, "Labors", firebaseUser.user.uid), {
+        //     name: fullName,
+        //     email,
+        //     role: "labor",
+        //   });
+        // }
+
+
         const experienceData = {
           ...formData, // Other form data
           certificates: certificatesData,

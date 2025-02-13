@@ -190,24 +190,24 @@ const UserMangement = () => {
                       className="grid grid-cols-11 gap-4 items-center bg-[#ABA0A0] rounded-lg shadow-md p-3 hover:bg-[#998F8F] transition-colors"
                     >
                       {/* Number */}
-                      <div className="col-span-1 text-center text-xs sm:text-sm font-medium text-white">
+                      <div className="col-span-1 text-center text-xs sm:text-sm font-medium text-white font-bold">
                         {index + 1}
                       </div>
 
                       {/* Name */}
-                      <div className="col-span-3 text-center sm:text-left text-xs sm:text-sm font-medium text-white truncate">
+                      <div className="col-span-3 text-center sm:text-left text-xs sm:text-sm font-bold text-white truncate">
                         {user.firstName ?? "User"}
                       </div>
 
                       {/* Email */}
-                      <div className="col-span-4 text-center sm:text-left text-xs sm:text-sm text-white truncate">
+                      <div className="col-span-4 text-center sm:text-left text-xs sm:text-sm text-white truncate font-bold">
                         {user.email}
                       </div>
 
                       {/* Status */}
                       <div className="col-span-2 text-center">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium font-bold ${
                             user.isBlocked
                               ? "bg-red-500 text-white"
                               : "bg-green-500 text-white"

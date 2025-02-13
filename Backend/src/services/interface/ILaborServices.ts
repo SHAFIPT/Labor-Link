@@ -39,5 +39,6 @@ export interface ILaborService{
     rejectedBy: string,
     requestSentBy : string
   ): Promise<IBooking | null>
-  additionalCharge(bookingId: string, amount : number , reason : string) : Promise<IBooking | null>
+  additionalCharge(bookingId: string, amount: number, reason: string): Promise<IBooking | null>
+  fetchExistBooking(data: { userEmail: string; laborEmail: string }): Promise<IBooking | null>;
 }

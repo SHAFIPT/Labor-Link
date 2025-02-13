@@ -232,22 +232,22 @@ const LaborMangement = () => {
                     className="grid grid-cols-12 gap-4 items-center bg-[#ABA0A0] rounded-lg shadow-md p-3 hover:bg-[#998F8F] transition-colors"
                   >
                     {/* Number */}
-                    <div className="col-span-1 text-center text-xs sm:text-sm font-medium text-white">
+                    <div className="col-span-1 text-center text-xs sm:text-sm text-white font-bold">
                       {index + 1}
                     </div>
 
                     {/* Name */}
-                    <div className="col-span-2 text-center text-xs sm:text-sm font-medium text-white truncate">
+                    <div className="col-span-2 text-center text-xs sm:text-sm  text-white truncate font-bold">
                       {labor.firstName ?? "User"}
                     </div>
 
                     {/* Email */}
-                    <div className="col-span-3 text-center text-xs sm:text-sm text-white truncate">
-                      {labor.email}
+                    <div className="col-span-3 text-center text-xs sm:text-sm text-white truncate font-bold">
+                      {labor.email}      
                     </div>
 
                     {/* Expertise */}
-                    <div className="col-span-2 text-center text-xs sm:text-sm text-white truncate">
+                    <div className="col-span-2 text-center text-xs sm:text-sm text-white truncate font-bold">
                       {labor.categories[0] || "N/A"}
                     </div>
 

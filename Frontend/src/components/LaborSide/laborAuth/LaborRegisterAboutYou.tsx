@@ -51,9 +51,21 @@ const LaborRegister = () => {
   const [showErrors, setShowErrors] = useState(false)
   const loading  = useSelector((state: RootState) => state.labor.loading)
   const formData = useSelector((state: RootState) => state.labor.formData)
+  const laobrPassowrd = useSelector((state: RootState) => state.labor.formData.password)
+  const laborEmail = useSelector((state: RootState) => state.labor.formData.email)
+
+
+  console.log('heloooo gggggggggggggggg', {
+    laborEmail,
+    laobrPassowrd
+  })
+
   const unsavedChanges = useSelector((state: RootState) => state.labor.unsavedChanges)
   // console.log('this is loading :',loading)
-       console.log('Thsi is showErrors showErrors : ',showErrors)
+  console.log('Thsi is showErrors showErrors : ', showErrors)
+  
+
+
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const error: {

@@ -135,6 +135,8 @@ export class AdminService implements IAdminService {
     totalLabors: number;
     totalUsers: number;
     totalAmount: number;
+    totalLaborErnigs: number;
+    totalCompnyProfit : number
     bookingStats: {
       completed: number;
       inProgress: number;
