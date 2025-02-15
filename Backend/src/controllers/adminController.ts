@@ -319,7 +319,59 @@ class adminController {
             next(error);
         }
     }
-    
+
+    public fetchPendingWidrowRequsts = async(
+        req: Request,
+        res: Response,
+        next : NextFunction
+    ) => {
+        try {
+
+            const fetchedResponse = await this.adminService.fetchAllWithrowRequst()
+
+            res.status(200)
+            .json({message : 'Withdrow fetched succeffully///',fetchedResponse})
+            
+        } catch (error) {
+            console.error("Error in fetch all widrow penings.. :", error);
+            next(error);
+        }
+    }
+    public submitAcitons = async(
+        req: Request,
+        res: Response,
+        next : NextFunction
+    ) => {
+        try {
+
+            const { id } = req.params
+
+            if(!id){
+                return res.status(404)
+                .json({error : 'widtro id is missing...'})
+            }
+
+
+            const  {status}  = req.body
+            
+             if(!status){
+                return res.status(404)
+                .json({error : 'widtro status is missing...'})
+            }   
+
+            const response = await this.adminService.submitAction(
+                id,status
+            )
+
+            return res.status(200)
+            .json({message : 'action sumitted sussfully///',response})
+
+            
+        } catch (error) {
+            console.error("Error in submit acctions....:", error);
+            next(error);
+        }
+    }
 }
 
 export default adminController

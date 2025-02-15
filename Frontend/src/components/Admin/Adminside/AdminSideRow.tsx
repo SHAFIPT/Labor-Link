@@ -10,7 +10,7 @@ import { logout } from '../../../services/AdminAuthServices';
 import { useDispatch } from 'react-redux';
 import { resetAdmin, setAdmin, setIsAdminAuthenticated } from '../../../redux/slice/adminSlice';
 import { describe } from 'node:test';
-import { IndianRupee } from 'lucide-react';
+import { Clock, IndianRupee } from 'lucide-react';
 
 const AdminSideRow = () => {
   // State to control sidebar visibility
@@ -122,6 +122,15 @@ const AdminSideRow = () => {
                 <div className={`flex items-center space-x-3 p-2 rounded-md ${currentPage === "paymentEarnigs" ? "bg-green-500 text-white" : "text-black"}`}>
                   <IndianRupee className="text-[25px]" />
                   <p className="text-[15px]">Payment and Earnings</p>
+                </div>
+              </Link>
+            </div>
+
+            <div className="flex items-center mb-4 space-x-3">
+              <Link to="/admin/withdrowPendings" onClick={() => setCurrentPage("withdrowPendings")}>
+                <div className={`flex items-center space-x-3 p-2 rounded-md ${currentPage === "withdrowPendings" ? "bg-green-500 text-white" : "text-black"}`}>
+                  <Clock className="text-[25px]" />
+                  <p className="text-[15px]">Widrowall pendings</p>
                 </div>
               </Link>
             </div>

@@ -191,3 +191,17 @@ export const fetchIsBookingExist = async (participentsData) => {
     throw error;
   }
 }
+export const handlewithdrowAmount = async  ({ amount, bankDetails }) => {
+  try {
+
+    const response = await api.post('/api/labor/labors/witdrowWalletAmount', {
+      amount, 
+      bankDetails 
+    });
+    return response
+    
+  } catch (error) {
+    console.error("Error in withdrawal request:", error);
+    throw error;
+  }
+}

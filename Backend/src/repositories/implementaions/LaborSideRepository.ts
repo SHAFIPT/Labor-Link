@@ -5,6 +5,8 @@ import mongoose, { SortOrder } from "mongoose";
 import { IBooking } from "../../controllers/entities/bookingEntity";
 import Booking from "../../models/BookingModal";
 import User from "../../models/userModel";
+import { IWallet } from "controllers/entities/withdrawalRequstEntity";
+import WithdrawalRequest from "../../models/WithdrawalRequestModal";
 
 export class LaborSideRepository implements ILaborSidRepository {
   async fetchLabor(laborId: string): Promise<ILaborer | null> {
@@ -493,8 +495,7 @@ export class LaborSideRepository implements ILaborSidRepository {
         // Find the booking where userId and laborId match, and status is "confirmed"
         const existingBooking = await Booking.findOne({
             userId: user._id,
-            laborId: labor._id,
-            status: "confirmed"
+            laborId: labor._id
         });
 
         if (!existingBooking) {
@@ -505,6 +506,24 @@ export class LaborSideRepository implements ILaborSidRepository {
     } catch (error) {
         console.error("Error in existing booking fetching...", error);
         throw error;
+    } 
+  }
+  async walletWithrow(laborId: string, amount: number, bankDetails: { accountNumber: string; bankName: string; ifscCode: string; }): Promise<IWallet | null> {
+    try {
+
+      const withdrawalRequst = await WithdrawalRequest.create({
+        laborerId: laborId,
+        amount,
+        createdAt: new Date(),
+        paymentMethod: 'Bank Transfer',
+        paymentDetails : JSON.stringify(bankDetails)
+      })
+
+      return withdrawalRequst as IWallet;
+      
+    } catch (error) {
+      console.error("Error in wallet widhrow requst ...", error);
+        throw error;
     }
-}
+  }
 }

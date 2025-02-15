@@ -14,7 +14,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-toastify";
 import { format } from 'date-fns';
 import { useNavigate } from "react-router-dom";
-import { fetchLaborBookings, laborFetch } from "../../../services/LaborServices";
+import { fetchLaborBookings, handlewithdrowAmount, laborFetch } from "../../../services/LaborServices";
 import { resetUser, setAccessToken, setisUserAthenticated, setUser } from "../../../redux/slice/userSlice";
 import { setBookingDetails } from "../../../redux/slice/bookingSlice";
 import { ClockIcon } from "@heroicons/react/24/solid";
@@ -85,6 +85,13 @@ const LaborDashBoard = () => {
   const [currentStage, setCurrentStage] = useState("Dashboard");
   const [resheduleModal, setResheduleModal] = useState(null);
   const [unreadChats, setUnreadChats] = useState({});
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [bankDetails, setBankDetails] = useState({
+    accountNumber: "",
+    bankName: "",
+    ifscCode: "",
+  });
   const [chats, setChats] = useState<Chat[]>([]);
   console.log('This sie th chatssssssssssssssssss',chats)
   const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
@@ -105,9 +112,12 @@ const LaborDashBoard = () => {
     { title: "Total Amount Pay", value: "₹0", icon: IndianRupee },
     { title: "Pending Tasks", value: "0", icon: Clock },
   ]);
+  const theam = useSelector((state: RootState) => state.theme.mode)
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [updatedBooking, setUpdatedBooking] = useState(null);
+
+  console.log('kummmmmmmmmm2222222222222',updatedBooking)
 
   const sortedTransactions = laborer?.wallet?.transactions 
     ? [...laborer.wallet.transactions].sort((a, b) => 
@@ -492,13 +502,201 @@ useEffect(() => {
   //         navigate("/");
   // },[])
 
+  const handleWithdraw = async () => {
+    // Add withdrawal logic here
+    console.log("Withdrawing:", amount, bankDetails);
+    try {
+      
+      const response = await handlewithdrowAmount({ amount, bankDetails })
+      if (response.status === 200) {
+        // onUpdateBooking={handleRescheduleUpdate}
+        const {withdrawalResponse } = response.data
+        console.log('response setnd is this ', withdrawalResponse)
+        setUpdatedBooking(withdrawalResponse)
+        toast.success('withdrow amount succefflyll')
+      }
+
+    } catch (error) {
+      console.error(error)
+      toast.error('Error in the witdhow balance')
+    }
+    setIsWithdrawOpen(false);
+  };
+
   return (
     <div>
+      {isWithdrawOpen && (
+        <>
+          {theam === "light" ? (
+            <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                <h2 className="text-xl font-semibold mb-4">Withdraw Money</h2>
+
+                <label className="block mb-2">
+                  Amount:
+                  <input
+                    type="number"
+                    className="w-full p-2 border rounded mt-1"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="Enter amount"
+                  />
+                </label>
+
+                <label className="block mb-2">
+                  Account Number:
+                  <input
+                    type="text"
+                    className="w-full p-2 border rounded mt-1"
+                    value={bankDetails.accountNumber}
+                    onChange={(e) =>
+                      setBankDetails({
+                        ...bankDetails,
+                        accountNumber: e.target.value,
+                      })
+                    }
+                    placeholder="Enter account number"
+                  />
+                </label>
+
+                <label className="block mb-2">
+                  Bank Name:
+                  <input
+                    type="text"
+                    className="w-full p-2 border rounded mt-1"
+                    value={bankDetails.bankName}
+                    onChange={(e) =>
+                      setBankDetails({
+                        ...bankDetails,
+                        bankName: e.target.value,
+                      })
+                    }
+                    placeholder="Enter bank name"
+                  />
+                </label>
+
+                <label className="block mb-2">
+                  IFSC Code:
+                  <input
+                    type="text"
+                    className="w-full p-2 border rounded mt-1"
+                    value={bankDetails.ifscCode}
+                    onChange={(e) =>
+                      setBankDetails({
+                        ...bankDetails,
+                        ifscCode: e.target.value,
+                      })
+                    }
+                    placeholder="Enter IFSC code"
+                  />
+                </label>
+
+                <div className="flex justify-end gap-4 mt-4">
+                  <button
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                    onClick={() => setIsWithdrawOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    onClick={handleWithdraw}
+                  >
+                    Withdraw
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+              <div className="bg-gray-900 p-6 rounded-lg shadow-lg w-96 text-white">
+                <h2 className="text-xl font-semibold mb-4 text-gray-200">
+                  Withdraw Money
+                </h2>
+
+                <label className="block mb-2">
+                  Amount:
+                  <input
+                    type="number"
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded mt-1 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="Enter amount"
+                  />
+                </label>
+
+                <label className="block mb-2">
+                  Account Number:
+                  <input
+                    type="text"
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded mt-1 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500"
+                    value={bankDetails.accountNumber}
+                    onChange={(e) =>
+                      setBankDetails({
+                        ...bankDetails,
+                        accountNumber: e.target.value,
+                      })
+                    }
+                    placeholder="Enter account number"
+                  />
+                </label>
+
+                <label className="block mb-2">
+                  Bank Name:
+                  <input
+                    type="text"
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded mt-1 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500"
+                    value={bankDetails.bankName}
+                    onChange={(e) =>
+                      setBankDetails({
+                        ...bankDetails,
+                        bankName: e.target.value,
+                      })
+                    }
+                    placeholder="Enter bank name"
+                  />
+                </label>
+
+                <label className="block mb-2">
+                  IFSC Code:
+                  <input
+                    type="text"
+                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded mt-1 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500"
+                    value={bankDetails.ifscCode}
+                    onChange={(e) =>
+                      setBankDetails({
+                        ...bankDetails,
+                        ifscCode: e.target.value,
+                      })
+                    }
+                    placeholder="Enter IFSC code"
+                  />
+                </label>
+
+                <div className="flex justify-end gap-4 mt-4">
+                  <button
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                    onClick={() => setIsWithdrawOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                    onClick={handleWithdraw}
+                  >
+                    Withdraw
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
       <RescheduleRequestModal
         isOpen={resheduleModal !== null}
         onClose={() => setResheduleModal(null)}
         bookingDetails={resheduleModal ? [resheduleModal] : []}
-        onUpdateBooking={handleRescheduleUpdate} 
+        onUpdateBooking={handleRescheduleUpdate}
       />
       {loading && <div className="loader"></div>}
       <LaborDashBoardNav setCurrentStage={setCurrentStage} />
@@ -871,7 +1069,9 @@ useEffect(() => {
                                     font-medium px-3 py-1.5 md:px-4 md:py-2 rounded-md transition-all duration-300 shadow-lg
                                     text-xs sm:text-sm md:text-base lg:text-sm
                                     ${
-                                      booking ? "animate-bounce shadow-blue-500" : ""
+                                      booking
+                                        ? "animate-bounce shadow-blue-500"
+                                        : ""
                                     }`}
                                     onClick={() => setResheduleModal(booking)}
                                   >
@@ -1126,102 +1326,111 @@ useEffect(() => {
               </div>
             )}
 
-           {currentStage === "Wallet" ? (
-      laborer?.wallet ? ( // Check if wallet exists
-        <div className="p-4 w-full max-w-screen-lg mx-auto">
-          <div className="rounded-lg bg-white p-6 shadow-lg">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">My Wallet</h1>
-              <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
-                Withdraw Money
-              </button>
-            </div>
+            {currentStage === "Wallet" ? (
+              laborer?.wallet ? ( // Check if wallet exists
+                <div className="p-4 w-full max-w-screen-lg mx-auto">
+                  <div className="rounded-lg bg-white p-6 shadow-lg">
+                    <div className="flex justify-between items-center mb-6">
+                      <h1 className="text-2xl font-bold text-gray-900">
+                        My Wallet
+                      </h1>
+                      <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
+                      onClick={() => setIsWithdrawOpen(true)}
+                      >
+                        Withdraw Money
+                      </button>
+                    </div>
 
-            <div className="mb-8 text-center">
-              <p className="text-gray-500 text-lg mb-2 uppercase tracking-wide">
-                Available Balance
-              </p>
-              <p className="text-5xl font-extrabold text-green-600 drop-shadow-lg">
-                ₹{laborer.wallet.balance?.toLocaleString("en-IN")}
-              </p>
-            </div>
+                    <div className="mb-8 text-center">
+                      <p className="text-gray-500 text-lg mb-2 uppercase tracking-wide">
+                        Available Balance
+                      </p>
+                      <p className="text-5xl font-extrabold text-green-600 drop-shadow-lg">
+                        ₹{laborer.wallet.balance?.toLocaleString("en-IN")}
+                      </p>
+                    </div>
 
-            <div className="border-t border-gray-300 pt-4">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                Recent Transactions
-              </h2>
+                    <div className="border-t border-gray-300 pt-4">
+                      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                        Recent Transactions
+                      </h2>
 
-              <div className="space-y-4">
-                {currentTransactions.length > 0 ? (
-                  currentTransactions.map((transaction) => (
-                    <div
-                      key={transaction._id}
-                      className="flex justify-between items-center p-4 bg-gray-200 rounded-lg"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="text-gray-900">
-                          <p className="font-medium">LaborLink</p>
-                          <p className="text-sm text-gray-600">
-                            {new Date(transaction.createdAt).toLocaleString(
-                              "en-US",
-                              {
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric",
-                              }
-                            )}
+                      <div className="space-y-4">
+                        {currentTransactions.length > 0 ? (
+                          currentTransactions.map((transaction) => (
+                            <div
+                              key={transaction._id}
+                              className="flex justify-between items-center p-4 bg-gray-200 rounded-lg"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <div className="text-gray-900">
+                                  <p className="font-medium">LaborLink</p>
+                                  <p className="text-sm text-gray-600">
+                                    {new Date(
+                                      transaction.createdAt
+                                    ).toLocaleString("en-US", {
+                                      month: "long",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-green-600 font-medium">
+                                  +₹{transaction.amount.toLocaleString("en-IN")}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {new Date(
+                                    transaction.createdAt
+                                  ).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-gray-500 text-center">
+                            No recent transactions.
                           </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-green-600 font-medium">
-                          +₹{transaction.amount.toLocaleString("en-IN")}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {new Date(transaction.createdAt).toLocaleDateString()}
-                        </p>
+                        )}
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center">No recent transactions.</p>
-                )}
-              </div>
-            </div>
-
-          </div>
-            <div className="flex justify-center gap-4 mt-6 mb-4">
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <span className="px-4  py-2">
-                Page {currentPage} of {totalPagess}
-              </span>
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage >= totalPagess}
-                className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-        </div>
-      ) : (
-        // Else case when there is no wallet
-        <div className="rounded-lg bg-white p-6 shadow-lg text-center">
-          <h2 className="text-2xl font-bold text-gray-900">No Wallet Found</h2>
-          <p className="text-gray-500 mt-2">It looks like you don't have a wallet yet.</p>
-          <button className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
-            Create Wallet
-          </button>
-        </div>
-      )
-    ) : null}
-
+                  </div>
+                  <div className="flex justify-center gap-4 mt-6 mb-4">
+                    <button
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    <span className="px-4  py-2">
+                      Page {currentPage} of {totalPagess}
+                    </span>
+                    <button
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage >= totalPagess}
+                      className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // Else case when there is no wallet
+                <div className="rounded-lg bg-white p-6 shadow-lg text-center">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    No Wallet Found
+                  </h2>
+                  <p className="text-gray-500 mt-2">
+                    It looks like you don't have a wallet yet.
+                  </p>
+                  <button className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
+                    Create Wallet
+                  </button>
+                </div>
+              )
+            ) : null}
           </>
         ) : (
           <>
@@ -1860,9 +2069,28 @@ useEffect(() => {
                       <h1 className="text-2xl font-bold text-white">
                         My Wallet
                       </h1>
-                      <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                        Withdraw Money
-                      </button>
+                        {updatedBooking ? (
+                          updatedBooking.status === "pending" && updatedBooking.amount ? (
+                            <p className="text-yellow-600 font-semibold text-sm md:text-base">
+                              Your withdrawal request of ₹{updatedBooking.amount} is pending. Please be patient.
+                            </p>
+                          ) : updatedBooking.status === "approved" || updatedBooking.status === "rejected" ? (
+                            <button
+                              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm md:text-base"
+                              onClick={() => setIsWithdrawOpen(true)}
+                            >
+                              Withdraw Money
+                            </button>
+                          ) : null
+                        ) : (
+                          <button
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm md:text-base"
+                            onClick={() => setIsWithdrawOpen(true)}
+                          >
+                            Withdraw Money
+                          </button>
+                        )}
+
                     </div>
                     <div className="mb-8 text-center">
                       <p className="text-gray-400 text-lg mb-2 uppercase tracking-wide">
@@ -1879,65 +2107,73 @@ useEffect(() => {
                       </h2>
 
                       <div className="space-y-4">
-                          {currentTransactions.length > 0 ? (
-                            currentTransactions.map((transaction) => (
-                              <div
-                                key={transaction._id}
-                                className="flex justify-between items-center p-4 bg-gray-700/30 rounded-lg"
-                              >
-                                <div className="flex items-center space-x-4">
-                                  <div className="text-white">
-                                    <p className="font-medium">LaborLink</p>
-                                    <p className="text-sm text-gray-400">
-                                      {new Date(transaction.createdAt).toLocaleString("en-US", {
-                                        month: "long",
-                                        day: "numeric",
-                                        year: "numeric",
-                                      })}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-green-600 font-medium">
-                                    +₹
-                                    {transaction.amount.toLocaleString("en-IN")}
+                        {currentTransactions.length > 0 ? (
+                          currentTransactions.map((transaction) => (
+                            <div
+                              key={transaction._id}
+                              className="flex justify-between items-center p-4 bg-gray-700/30 rounded-lg"
+                            >
+                              <div className="flex items-center space-x-4">
+                                <div className="text-white">
+                                    <p className="font-medium">
+                                    {transaction.type === "debit"
+                                      ? "Amount is credited to your bank account"
+                                      : "LaborLink"}
                                   </p>
                                   <p className="text-sm text-gray-400">
                                     {new Date(
                                       transaction.createdAt
-                                    ).toLocaleDateString()}
+                                    ).toLocaleString("en-US", {
+                                      month: "long",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
                                   </p>
                                 </div>
                               </div>
-                            ))
-                          ) : (
-                            <p className="text-gray-400 text-center">
-                              No recent transactions.
-                            </p>
-                          )}
-                        </div>
+                              <div className="text-right">
+                                <p
+                                  className={`font-medium ${
+                                    transaction.type === "credit" ? "text-green-600" : "text-red-600"
+                                  }`}
+                                >
+                                  {transaction.type === "credit" ? "+₹" : "-₹"}
+                                  {transaction.amount.toLocaleString("en-IN")}
+                                </p>
+                                <p className="text-sm text-gray-400">
+                                  {new Date(transaction.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-gray-400 text-center">
+                            No recent transactions.
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                          {/* Pagination Controls */}
-                      <div className="flex justify-center gap-4 mt-6 mb-4">
-                        <button
-                          onClick={() => paginate(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                          Previous
-                        </button>
-                        <span className="px-4 text-white py-2">
-                          Page {currentPage} of {totalPagess}
-                        </span>
-                        <button
-                          onClick={() => paginate(currentPage + 1)}
-                          disabled={currentPage >= totalPagess}
-                          className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                          Next
-                        </button>
-                      </div>
+                  {/* Pagination Controls */}
+                  <div className="flex justify-center gap-4 mt-6 mb-4">
+                    <button
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    <span className="px-4 text-white py-2">
+                      Page {currentPage} of {totalPagess}
+                    </span>
+                    <button
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage >= totalPagess}
+                      className="px-4 py-2 bg-[#3ab3bc] text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="p-6 w-full max-w-screen-md mx-auto bg-gray-900 rounded-lg shadow-lg text-center">

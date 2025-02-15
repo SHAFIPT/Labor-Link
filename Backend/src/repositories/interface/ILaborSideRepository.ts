@@ -1,3 +1,4 @@
+import { IWallet } from "../../controllers/entities/withdrawalRequstEntity";
 import { IBooking } from "../../controllers/entities/bookingEntity";
 import { IAboutMe, ILaborer } from "../../controllers/entities/LaborEntity";
 
@@ -41,4 +42,9 @@ export interface ILaborSidRepository{
   acceptRequst(bookingId :string) : Promise<IBooking| null>
   rejectRequst(bookingId: string): Promise<IBooking | null>
   fetchExistBooking(data: { userEmail: string; laborEmail: string; }): Promise<IBooking | null> 
+  walletWithrow(
+      laborId :string,
+      amount: number,
+      bankDetails: { accountNumber: string; bankName: string; ifscCode: string }
+    ): Promise<IWallet | null>
 }

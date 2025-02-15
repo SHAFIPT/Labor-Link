@@ -126,7 +126,7 @@ const ReviewAndRating = () => {
                         {/* Labor Image */}
                         <div className="flex justify-center mb-2">
                             <img
-                                src={bookingDetils.laborId.profilePicture} // Replace with the actual image URL
+                                src={bookingDetils?.laborId?.profilePicture} // Replace with the actual image URL
                                 alt="Labor"
                                 className="w-24 h-24 rounded-full object-cover border-2 border-yellow-500"
                             />

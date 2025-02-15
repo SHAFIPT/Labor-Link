@@ -1,14 +1,9 @@
 
 import { Schema, Document ,Types } from 'mongoose';
+import { IReview } from './ReviewRatingEntity';
+import { Wallet } from './walletEntity';
 
-export interface IReview {
-  userId: Schema.Types.ObjectId;
-  reviewerName: string;
-  reviewText: string;
-  imageUrl: string[]; 
-  rating: number;  // Rating score (e.g., 1 to 5)
-  createdAt: Date;
-}
+
 
 export interface IAboutMe {
   name?: string;
@@ -16,20 +11,7 @@ export interface IAboutMe {
   description?: string;
 }
 
-export interface WalletTransaction {
-    amount: number;
-    type: 'credit' | 'debit';
-    description: string;
-    bookingId?: Types.ObjectId;
-    originalAmount?: number;
-    commissionAmount?: number;
-    createdAt: Date;
-}
 
-export interface Wallet {
-    balance: number;
-    transactions: WalletTransaction[];
-}
 
 export interface ILaborer extends Document {
     _id?: string;

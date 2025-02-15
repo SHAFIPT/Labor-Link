@@ -1,3 +1,4 @@
+import { IWallet } from "../../controllers/entities/withdrawalRequstEntity";
 import { IBooking } from "../../controllers/entities/bookingEntity";
 import { ILaborer } from "../../controllers/entities/LaborEntity";
 import { IUser } from "../../controllers/entities/UserEntity";
@@ -60,5 +61,7 @@ export interface IAdminService {
       paymentFailed: number;
       monthlyEarnings: Array<{ month: string; earnings: number }>;
     };
-  }> ;
+  }>;
+  fetchAllWithrowRequst(): Promise<IWallet[]> 
+  submitAction(id: string, status: "pending" | "approved" | "rejected"): Promise<{ message: string }>
 }

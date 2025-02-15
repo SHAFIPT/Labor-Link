@@ -16,6 +16,10 @@ adminUserRoute.get('/fetchLaborBookins/:laborId', authenticate, adminUserControl
 
 adminUserRoute.get('/fetchAllBookins', authenticate, adminUserController.fetchAllBookins.bind(adminUserController))
 
+adminUserRoute.get('/fetchPendingWidrowRequsts', authenticate, adminUserController.fetchPendingWidrowRequsts.bind(adminUserController))
+
+adminUserRoute.put('/submitAcitons/:id', authenticate, adminUserController.submitAcitons.bind(adminUserController))
+
 // user block and unBlock
 adminUserRoute.patch('/userBlock',authenticate,adminUserController.userBlock.bind(adminUserController))
 adminUserRoute.patch('/userUnblock',authenticate, adminUserController.userUnblock.bind(adminUserController))

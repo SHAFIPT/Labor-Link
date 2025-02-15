@@ -3,6 +3,7 @@ import { IAboutMe, ILaborer } from "controllers/entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import { ILaborService } from "../../services/interface/ILaborServices";
 import { IBooking } from 'controllers/entities/bookingEntity';
+import { IWallet } from 'controllers/entities/withdrawalRequstEntity';
 
 export class LaborServices implements ILaborService{
     private laborRepsitory: ILaborSidRepository
@@ -81,5 +82,12 @@ export class LaborServices implements ILaborService{
     }
     async fetchExistBooking(data: { userEmail: string; laborEmail: string; }): Promise<IBooking | null> {
         return this.laborRepsitory.fetchExistBooking(data)
+    }
+    async walletWithrow(laborId : string,amount: number, bankDetails: { accountNumber: string; bankName: string; ifscCode: string; }): Promise<IWallet | null> {
+        return this.laborRepsitory.walletWithrow(
+            laborId,
+            amount,
+            bankDetails
+        )
     }
 }

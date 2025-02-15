@@ -5,6 +5,7 @@ import { IAdminRepository } from "../../repositories/interface/IAdminRepository"
 import { ILaborer } from "../../controllers/entities/LaborEntity";
 import { sendRejectionEmail } from "../../utils/emailService";
 import { IBooking } from "../../controllers/entities/bookingEntity";
+import { IWallet } from "controllers/entities/withdrawalRequstEntity";
 
 export class AdminService implements IAdminService {
   private adminRepositery: IAdminRepository;
@@ -152,6 +153,15 @@ export class AdminService implements IAdminService {
       page,
       limit,
       filter
+    )
+  }
+  async fetchAllWithrowRequst(): Promise<IWallet[]>  {
+    return await this.adminRepositery.fetchAllWithrowRequst()
+  }
+  async submitAction(id: string, status: "pending" | "approved" | "rejected"): Promise<{ message: string; }> {
+    return await this.adminRepositery.submitAction(
+      id,
+      status
     )
   }
 }

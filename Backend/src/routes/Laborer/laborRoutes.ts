@@ -20,5 +20,6 @@ laborRoutes.post('/additionalCharge',authenticateLabor,laborSideContorller.addit
 laborRoutes.patch('/acceptRequst/:bookingId',laborSideContorller.acceptRequst.bind(laborSideContorller))
 laborRoutes.patch('/rejectRequst/:bookingId', laborSideContorller.rejectRequst.bind(laborSideContorller))
 laborRoutes.get('/fetchIsBookingExist', laborSideContorller.fetchIsBookingExist.bind(laborSideContorller))
+laborRoutes.post('/witdrowWalletAmount',authenticateLabor, laborSideContorller.witdrowWalletAmount.bind(laborSideContorller))
 
 export default laborRoutes             

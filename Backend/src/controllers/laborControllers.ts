@@ -5,6 +5,7 @@ import { LaborServices } from "../services/implementaions/LaborServices"
 import { Request , Response ,NextFunction } from "express"
 import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
+import { error } from "console";
 
 
 interface DecodedToken {
@@ -584,7 +585,50 @@ class laborSideController {
       next(error);
     }
   }
+  public witdrowWalletAmount = async(
+    req: Request & { labor: { id: string } },
+    res: Response,
+    next : NextFunction
+  ) => {
+    try {
+
+      const laborId = req.labor.id
+
+      if (!laborId) {
+        return res.status(404)
+        .json({error : 'Cannot get the labor id '})
+      }
+
+      const { amount, bankDetails } = req.body
+      
+      if (!amount || !bankDetails) {
+        return res.status(404)
+        .json({error : 'Amount and bankdetisl are missing '})
+      }
+
+      const withdrawalResponse  = await this.laborService.walletWithrow(
+        laborId,
+        amount,
+        bankDetails
+      )
+
+      res.status(200)
+      .json({message : 'wallet Withdrow requst send succeffuly....',withdrawalResponse })
+
+
+      
+    } catch (error) {
+      console.error("Error in withdrawal request: ", error);
+      next(error);
+    }
+  }
 
 }
+
+// public fetchBooking = async (
+//     req: Request & { labor: { id: string } },
+//     res: Response,
+//     next: NextFunction
+//   ) => {
 
 export default laborSideController;

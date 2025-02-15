@@ -6,6 +6,8 @@ import { ILaborer } from "../../controllers/entities/LaborEntity";
 import Labor from "../../models/LaborModel";
 import { IBooking } from "controllers/entities/bookingEntity";
 import Booking from "../../models/BookingModal";
+import { IWallet } from "controllers/entities/withdrawalRequstEntity";
+import WithdrawalRequest from "../../models/WithdrawalRequestModal";
 
 export class AdminRepositooy implements IAdminRepository {
   async fetch(
@@ -526,6 +528,63 @@ export class AdminRepositooy implements IAdminRepository {
     } catch (error) {
       console.error("Repository error fetching bookings:", error);
       throw new Error("Failed to fetch labor bookings");
+    }
+  }
+  async fetchAllWithrowRequst(): Promise<IWallet[]> {
+    try {
+      return await WithdrawalRequest.find({ amount: { $gt: 0 } })
+        .populate("laborerId") 
+        .sort({ createdAt: -1 });
+    } catch (error) {
+      console.error("Repository error fetching pending withdrawals:", error);
+      throw new Error("Failed to fetch pending withdrawal requests");
+    }
+  }
+  async submitAction(id: string, status: "pending" | "approved" | "rejected"): Promise<{ message: string; }> {
+    try {
+
+      const withdrawal = await WithdrawalRequest.findById(id)
+
+      if (!withdrawal) {
+            throw new Error("Withdrawal request not found");
+      }
+
+      const laborer = await Labor.findById(withdrawal.laborerId)
+
+       if (!laborer) {
+            throw new Error("Laborer not found");
+      }
+        
+      
+        if (status === "approved") {
+            if (laborer.wallet.balance < withdrawal.amount) {
+                throw new Error("Insufficient balance in laborer's wallet");
+            }
+
+            // Deduct amount from wallet balance
+            laborer.wallet.balance -= withdrawal.amount;
+
+            // Add transaction record
+            laborer.wallet.transactions.push({
+                amount: withdrawal.amount,
+                type: "debit",
+                description: "Withdrawal approved",
+                createdAt: new Date(),
+            });
+
+            await laborer.save();
+      }
+      
+        withdrawal.status = status;
+        withdrawal.processedAt = new Date();
+        await withdrawal.save();
+
+        return { message: `Withdrawal request ${status} successfully` };
+      
+      
+    } catch (error) {
+      console.error("Error in withdrawal status update:", error);
+        throw new Error("Error processing withdrawal request");
     }
   }
 }   

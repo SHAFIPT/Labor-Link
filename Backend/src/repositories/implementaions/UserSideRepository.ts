@@ -434,6 +434,7 @@ export default class UserSideRepository implements IUserSideRepository {
 
       const newReview: IReview = {
         userId: user._id,
+        reviewerProfile : user.ProfilePic,
         reviewerName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
         reviewText: feedback,
         rating: numericRating,

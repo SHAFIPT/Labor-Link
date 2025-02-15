@@ -80,4 +80,16 @@ export const fetchLaborAllBookings = async (
     `/api/admin/user/fetchLaborBookins/${laborId}?page=${page}&limit=${limit}&filter=${filter}`
   )
   return response
+}   
+
+export const fetchPending = async () => {
+  const response = await api.get('/api/admin/user/fetchPendingWidrowRequsts')
+  return response
+}
+
+export const submitData = async (id, status) => {
+  const response = await api.put(`/api/admin/user/submitAcitons/${id}`,
+    status
+  )
+  return response
 }

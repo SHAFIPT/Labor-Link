@@ -617,11 +617,11 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         }
       } catch (error) {
         console.error(error);
-        toast.error('Error in booking Exist');
+        // toast.error('Error in booking Exist');
       }
     };
     isBookingExist();
-  }
+  } 
 }, [userEmail, laborEmail]); 
 
   // console.log("This is the selected Queet4e in chat page leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",)
