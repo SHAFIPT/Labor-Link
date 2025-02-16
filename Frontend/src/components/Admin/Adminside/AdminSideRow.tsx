@@ -36,7 +36,8 @@ const AdminSideRow = () => {
           // Clear all auth-related data
           localStorage.removeItem('UserAccessToken');
           localStorage.removeItem('LaborAccessToken');
-          
+          localStorage.removeItem('AdminAccessToken');
+          // persistor.purge();
           dispatch(setAdmin({}))
           dispatch(resetAdmin())
           dispatch(setIsAdminAuthenticated(false))

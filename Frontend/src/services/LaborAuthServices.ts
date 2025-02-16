@@ -47,7 +47,7 @@ export const ExperiencePage = async (formData: FormData) => {
 export const logout = async () => {
   try {
 
-    const response = await api.patch('/api/labor/auth/logout' )
+    const response = await api.post('/api/auth/logout')
     return response
     
   } catch (error) {

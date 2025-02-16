@@ -48,8 +48,8 @@ const AdminAuth = () => {
         }
 
         try {
-
-            const response = await AdminLogin({ email, password })
+            const role = 'admin'
+            const response = await AdminLogin({ email, password },role)
 
             console.log('thsi si the front end response :',response)
             
@@ -57,13 +57,13 @@ const AdminAuth = () => {
               
             console.log("Thei is the resonse as admin :",response)
 
-            const { admin, accessToken } = response.data;
+            const { admin, accessToken } = response.data.data;
             
             console.log('Thsi is the  accessToken',accessToken)
             console.log('Thsi is the admin', admin)
             
 
-                localStorage.setItem('AdminAccessToken',accessToken)
+                localStorage.setItem("AdminAccessToken", accessToken);
                 dispatch(setAdmin(admin))
                 dispatch(setIsAdminAuthenticated(true))   
                 dispatch(setAccessToken(accessToken))

@@ -107,7 +107,7 @@ const OtpForm = ({ isVisible, onClose }) => {
             console.log('User Registered Successfully:', registernewUser);
 
             if (registernewUser.data) {
-              const { user, accessToken } = registernewUser.data;
+              const { user, accessToken } = registernewUser.data.data;
 
               localStorage.setItem("UserAccessToken", accessToken);
 
@@ -210,7 +210,7 @@ const OtpForm = ({ isVisible, onClose }) => {
         <div className="loader "></div>
     )}
 
-     <div className="modal-overlay fixed inset-0 flex justify-center items-center bg-black bg-opacity-80">
+     <div className="modal-overlay fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-80">
           <form className="otp-Form bg-white p-6 rounded-lg shadow-lg" onSubmit={handleSubmit}>
             <span className="mainHeading text-xl font-semibold">Enter OTP</span>
             <p className="otpSubheading text-gray-600">We have sent a verification code to your email</p>
@@ -226,10 +226,10 @@ const OtpForm = ({ isVisible, onClose }) => {
                     maxLength={1}
                     className="w-10 h-10 bg-white text-black text-center border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
                   />
-                ))}
+                ))}  
               </div>
             </div>
-            <button className="verifyButton bg-orange-500 text-white px-4 py-2 rounded-md mt-4" type="submit">
+            <button className="verifyButton bg-orange-500 text-white px-2 py-2 rounded-md mt-4 p-3" type="submit">
               Verify
             </button>
             <button className="exitBtn absolute top-2 right-2 text-xl" onClick={onClose}>×</button>

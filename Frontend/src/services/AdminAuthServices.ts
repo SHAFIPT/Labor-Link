@@ -3,15 +3,15 @@ import { adminAxiosInstance } from './instance/adminInstance'
 
 const api = adminAxiosInstance;
 
-export default api;
+// export default api;
 
-export const AdminLogin = async (credential: Partial<IAdmin>) => {
-    const response = await api.post('/api/admin/auth/adminLoginPage', credential)
+export const AdminLogin = async (credential: Partial<IAdmin>,role: string) => {
+    const response = await api.post('/api/auth/login', {...credential, role})
     return response
 }
 
 export const logout = async () => {
-  const response = await api.post('/api/admin/auth/logout')
+  const response = await api.post('/api/auth/logout')
   return response
 }
 

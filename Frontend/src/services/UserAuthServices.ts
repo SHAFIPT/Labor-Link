@@ -12,7 +12,8 @@ console.log('this is my api :', api)
 
 export const sendOtp = async (credentials: Partial<IUser>) => {
     try {
-        const responce = await api.post('/api/user/auth/send-otp', credentials)
+        const role = 'user'
+        const responce = await api.post('/api/auth/send-otp', {...credentials,role})
 
         // console.log(re)
     
@@ -29,7 +30,8 @@ export const sendOtp = async (credentials: Partial<IUser>) => {
 
 export const verifyOtp = async (email: string, otp: string) => {
     try {
-        const Response = await api.post('/api/user/auth/verify-otp', { email, otp })
+        const role = 'user'
+        const Response = await api.post('/api/auth/verify-otp', { email, otp,role })
         
         return Response
     } catch (error) {
@@ -47,8 +49,8 @@ export const registUser = async (user: Partial<IUser>) => {
     try {
 
         console.log('thsi is backend user',user)
-
-        const resoponce = await api.post('/api/user/auth/register', user )
+        const role = 'user'    
+        const resoponce = await api.post('/api/auth/register',{ ...user ,role})
         
         return resoponce
         
@@ -65,8 +67,8 @@ export const registUser = async (user: Partial<IUser>) => {
 
 export const resendOtp = async (credentials: Partial<IUser>) => {
     try {
-
-        const responce = await api.post('/api/user/auth/resend-otp', credentials)
+        const role = 'user'
+        const responce = await api.post('/api/auth/resend-otp', {...credentials , role})
 
         return responce
         
@@ -83,7 +85,8 @@ export const resendOtp = async (credentials: Partial<IUser>) => {
 
 export const googleAuth = async () => {
     try {
-       console.log('Ima first')
+        console.log('Ima first')
+      const role = 'user'
       const result = await signInWithPopup(auth, googleProvider);
       
     console.log('this is the google responce : ',result)
@@ -92,7 +95,7 @@ export const googleAuth = async () => {
       
        console.log('this is the google user : ',user)
 
-        const response = await api.post("/api/user/auth/google-sign-in", user);
+        const response = await api.post("/api/auth/google-sign-in", {...user,role});
         
     console.log('this is the google Response : ',response)
 
@@ -108,10 +111,10 @@ export const googleAuth = async () => {
 };
 
 
-export const Login = async (user: Partial<IUser>) => {
+export const Login = async (user: Partial<IUser>,role: string) => {
     try {
 
-        const loginResponse = await api.post('/api/user/auth/Userlogin', user)
+        const loginResponse = await api.post('/api/auth/login',{ ...user, role })
 
         return loginResponse
         
@@ -124,12 +127,11 @@ export const Login = async (user: Partial<IUser>) => {
     }
 }
 
-export const forgotPasswordSendOTP = async (email: string) => {
+export const forgotPasswordSendOTP = async (email: string, role : string) => {
     try {
 
         console.log('this is email :',email)
-
-        const ForgetResoponce = await api.post('/api/user/auth/forgettPassword', { email: email })
+        const ForgetResoponce = await api.post('/api/auth/forgettPassword', { email: email , role})
         
          console.log('this is ForgetResoponce :' ,ForgetResoponce)
     
@@ -145,10 +147,10 @@ export const forgotPasswordSendOTP = async (email: string) => {
     }
 }
 
-export const forgetPasswordVerify = async (otp : string,email: string) => {
+export const forgetPasswordVerify = async (otp : string,email: string,role : string) => {
     try {
-
-        const ForgetOtpverify = await api.post('/api/user/auth/ForgetVerify-otp', { email: email , otp : otp})
+        
+        const ForgetOtpverify = await api.post('/api/auth/ForgetVerify-otp', { email: email , otp : otp , role})
         
         return ForgetOtpverify
         
@@ -161,10 +163,10 @@ export const forgetPasswordVerify = async (otp : string,email: string) => {
     }
 }
 
-export const forgotPasswordReset = async (password: string, token:string) => {
+export const forgotPasswordReset = async (password: string, token:string,role : string) => {
     try {
         
-        const forgetPasswordResetresponse = await api.post('/api/user/auth/forgot-password-reset', { password , token })
+        const forgetPasswordResetresponse = await api.post('/api/auth/forgot-password-reset', { password , token, role })
         
         return forgetPasswordResetresponse
         
@@ -180,7 +182,7 @@ export const forgotPasswordReset = async (password: string, token:string) => {
 export const logout = async () => { 
     try {
 
-        const response = await api.patch('/api/user/auth/log_out' );
+        const response = await api.post('/api/auth/logout')
 
         console.log('here the responce :',response)
 
@@ -195,17 +197,3 @@ export const logout = async () => {
     }
 };
 
-
-export const checkIsBlock = async () => {
-    try {
-
-    return await api.get('/api/user/auth/checkIsBlock')
-        
-    } catch (error) {
-        if (error instanceof AxiosError) {
-            return error.response;
-        } else {
-            return null;
-        }  
-    }
-}
