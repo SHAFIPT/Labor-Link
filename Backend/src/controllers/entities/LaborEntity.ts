@@ -3,15 +3,11 @@ import { Schema, Document ,Types } from 'mongoose';
 import { IReview } from './ReviewRatingEntity';
 import { Wallet } from './walletEntity';
 
-
-
 export interface IAboutMe {
   name?: string;
   experience?: string;
   description?: string;
 }
-
-
 
 export interface ILaborer extends Document {
     _id?: string;

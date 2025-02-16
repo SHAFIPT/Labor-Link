@@ -5,6 +5,8 @@ import { decodeToken, verifyRefreshToken } from "../utils/tokenUtils";
 import { verifyAccessToken } from '../utils/tokenUtils';  // Replace with your response class
 import User from "../models/userModel";
 import Labor from "../models/LaborModel";
+import { ApiError } from "./errorHander";
+import Admin from "../models/AdminModal";
 // import { JwtPayload } from 'jsonwebtoken'; 
 
 
@@ -14,6 +16,87 @@ interface DecodedToken extends JwtPayload {
   iat: number;     
   exp: number;
 }
+
+// interface AuthenticatedRequest extends Request {
+//   user?: any;
+//   labor?: any;
+//   admin?: any;
+// }
+
+
+// export const authenticateRole = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+//     try {
+//         const authHeader = req.headers.authorization;
+//         if (!authHeader || !authHeader.startsWith("Bearer ")) {
+//             return res.status(401).json(new ApiError(401, "Unauthorized"));
+//         }
+
+//         const token = authHeader.split(" ")[1];
+//         const decoded: DecodedToken = jwt.verify(token, process.env.JWT_SECRET) as DecodedToken;
+
+//         if (decoded.role === "user") {
+//             req.user = await User.findById(decoded.id);
+//         } else if (decoded.role === "labor") {
+//             req.labor = await Labor.findById(decoded.id);
+//         } else if (decoded.role === "admin") {
+//             req.admin = await Admin.findById(decoded.id);
+//         }
+
+//         next();
+//     } catch (error) {
+//         return res.status(401).json(new ApiError(401, "Invalid token"));
+//     }
+// };
+export const identifyUserRole = (
+    req: Request & { user?: any; labor?: any; admin?: any },
+    res: Response,
+    next: NextFunction
+): void => {
+    const userToken = req.cookies["UserRefreshToken"] || req.header("UserRefreshToken");
+    const laborToken = req.cookies["LaborRefreshToken"] || req.header("LaborRefreshToken");
+    const adminToken = req.cookies["AdminRefreshToken"] || req.header("AdminRefreshToken");
+
+    try {
+        if (adminToken) {
+            const decodedToken = decodeToken(adminToken);
+            if (decodedToken.role.toLowerCase() !== 'admin') {
+                throw new Error('Invalid admin token');
+            }
+            req.admin = { ...decodedToken, rawToken: adminToken };
+            console.log("Admin Identified:", req.admin);
+            next();
+            return;
+        }
+
+        if (userToken) {
+            const decodedToken = decodeToken(userToken);
+            if (decodedToken.role.toLowerCase() !== 'user') {
+                throw new Error('Invalid user token');
+            }
+            req.user = { ...decodedToken, rawToken: userToken };
+            console.log("User Identified:", req.user);
+            next();
+            return;
+        }
+
+        if (laborToken) {
+            const decodedToken = decodeToken(laborToken);
+            if (decodedToken.role.toLowerCase() !== 'labor') {
+                throw new Error('Invalid labor token');
+            }
+            req.labor = { ...decodedToken, rawToken: laborToken };
+            console.log("Labor Identified:", req.labor);
+            next();
+            return;
+        }
+
+        console.log("No valid token found");
+        res.status(401).json(new ApiResponse(401, null, "Access Denied"));
+    } catch (err) {
+        console.log("Token Decoding Error:", err);
+        res.status(401).json(new ApiResponse(401, null, "Invalid Token"));
+    }
+};
 
 // export const authenticateUserOrLabor = async (
 //   req: Request & Partial<{ user: string | jwt.JwtPayload; labor: string | jwt.JwtPayload }>,

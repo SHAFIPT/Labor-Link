@@ -12,7 +12,7 @@ laborAuthRoute.post('/registerExperiencePage', authController.experiencePage.bin
 laborAuthRoute.post('/forgettPassword',authController.forgetPassword.bind(authController))
 laborAuthRoute.post('/ForgetVerify-otp',authController.forgetVerifyOtp.bind(authController))
 laborAuthRoute.post('/forgot-password-reset',authController.resetPassword.bind(authController))
-laborAuthRoute.patch('/logout', decodedLaborRefreshToken, authController.logoutLabor.bind(authController))
+laborAuthRoute.post('/logout', decodedLaborRefreshToken, authController.logoutLabor.bind(authController))
 laborAuthRoute.get('/refresh-token', verifyRefreshLaborTokenMiddleware, authController.refreshAccessToken.bind(authController));
 
 export default laborAuthRoute             

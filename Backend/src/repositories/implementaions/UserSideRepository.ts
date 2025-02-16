@@ -5,10 +5,11 @@ import { ApiError } from "../../middleware/errorHander";
 import { IBooking } from "../../controllers/entities/bookingEntity";
 import { v4 as uuidv4 } from 'uuid';
 import Booking from "../../models/BookingModal";
-import { ILaborer, IReview } from "../../controllers/entities/LaborEntity";
+import { ILaborer } from "../../controllers/entities/LaborEntity";
 import Labor from "../../models/LaborModel";
 import Stripe from 'stripe';
 import mongoose from "mongoose";
+import { IReview } from "controllers/entities/ReviewRatingEntity";
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {

@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
 
-export interface IReview {
+export  interface IReview {
   userId: Schema.Types.ObjectId;
   reviewerProfile : string
   reviewerName: string;

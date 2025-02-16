@@ -257,7 +257,7 @@ class AuthController {
             if (!OTPVerification) {
                 return res.status(500).json(new ApiError(500, "Entered Wrong OTP"));
             } 
-
+            
             const { password, refreshToken, ...user } = isUserExists;
 
             const accessToken = this.authService.generateTokenForForgotPassword(user);
