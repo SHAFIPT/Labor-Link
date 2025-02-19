@@ -273,23 +273,23 @@ const LaborRegisterExperience = () => {
 
       if (response.status === 200) {
 
-        // const firebaseUser = await createUserWithEmailAndPassword(
-        //   auth,
-        //   email,
-        //   password
-        // );
+        const firebaseUser = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
 
-        // if (firebaseUser) {
-        //   console.log("User registered in Firebase: ", firebaseUser.user);
+        if (firebaseUser) {
+          console.log("User registered in Firebase: ", firebaseUser.user);
 
-        //   const fullName = `${firstName} ${lastName}`;
+          const fullName = `${firstName} ${lastName}`;
 
-        //   await setDoc(doc(db, "Labors", firebaseUser.user.uid), {
-        //     name: fullName,
-        //     email,
-        //     role: "labor",
-        //   });
-        // }
+          await setDoc(doc(db, "Labors", firebaseUser.user.uid), {
+            name: fullName,
+            email,
+            role: "labor",
+          });
+        }
 
 
         const experienceData = {

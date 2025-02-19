@@ -191,6 +191,21 @@ export const fetchIsBookingExist = async (participentsData) => {
     throw error;
   }
 }
+export const fetchAllBookingOfLabor = async (email) => {
+  try {
+
+    const response = await api.get('/api/labor/labors/fetchAllBookingOfLabor', {
+      params: { email } // Correct way to pass params
+    });
+    return response
+    
+  } catch (error) {
+     console.error("Error fetchBooking :", error);
+    throw error;
+  }
+}
+
+
 export const handlewithdrowAmount = async  ({ amount, bankDetails }) => {
   try {
 

@@ -12,29 +12,15 @@ interface DecodedToken {
   iat: number;
   exp: number;
 }
-interface IBookingResponse {
-  bookingId: string;
-  status: string;
-  quote: {
-    description: string;
-    estimatedCost: number;
-    arrivalTime: Date;
-  };
-  laborId: {
-    firstName: string;
-    lastName: string;
-    profilePicture: string;
-    reviews?: any[];
-    rating?: number;
-  };
-}
-interface ReviewFields {
-  rating: string | string[];
-  feedback: string | string[];
-}
 
 import Stripe from 'stripe';
 import Labor from "../models/LaborModel";
+import { IBookingSerivese } from "../services/interface/IBookingServices";
+import BookingRepository from "../repositories/implementaions/BookingRepository";
+import BookingServices from "../services/implementaions/BookingServices";
+import { IPaymentService } from "../services/interface/IPaymnetService";
+import PaymnetRepository from "../repositories/implementaions/PaymentRepository";
+import PaymentService from "../services/implementaions/PaymentService";
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -44,10 +30,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export class userController {
   private userService: IUserServices;
+  private bookingService: IBookingSerivese
+  private paymentService : IPaymentService
 
   constructor() {
     const userSideRepository = new UserSideRepository();
+    const bookingRepository = new BookingRepository();
+    const paymnetRepository = new PaymnetRepository()
     this.userService = new UserServices(userSideRepository);
+    this.bookingService = new BookingServices(bookingRepository)
+    this.paymentService = new PaymentService(paymnetRepository)
   }
 
   public fetchUsers = async (
@@ -163,6 +155,9 @@ export class userController {
       next(error);
     }
   };
+
+  //Done .....................................
+
   public bookingLabor = async (
     req: Request,
     res: Response,
@@ -218,7 +213,7 @@ export class userController {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
-      const BookingResponse = await this.userService.bookingLabor(
+      const BookingResponse = await this.bookingService.bookingLabor(
         bookingDetails
       );
 
@@ -260,6 +255,8 @@ export class userController {
     }
   };
 
+   //Done .....................................
+
   public fetchBookings = async (
     req: Request & { user: { id: string } },
     res: Response,
@@ -280,7 +277,7 @@ export class userController {
 
       const filter = status ? { status } : {};
 
-      const { bookings, total } = await this.userService.fetchBooking(
+      const { bookings, total } = await this.bookingService.fetchBooking(
         userId,
         page,
         limit,
@@ -303,6 +300,9 @@ export class userController {
     }
   };
 
+  
+  //Done .....................................
+
   public cancelBooking = async (
     req: Request,
     res: Response,
@@ -316,7 +316,7 @@ export class userController {
         throw new Error("No booking id is found...");
       }
 
-      const cancelledBooking = await this.userService.cancelBooking({
+      const cancelledBooking = await this.bookingService.cancelBooking({
         bookingId,
         reason,
         comments,
@@ -337,6 +337,10 @@ export class userController {
       next(error);
     }
   };
+
+
+
+
   public updateReadStatus = async (
     req: Request,
     res: Response,
@@ -350,7 +354,7 @@ export class userController {
         return res.status(400).json({ message: "Booking ID is required" });
       }
 
-      const updatedBooking = await this.userService.updateReadStatus(
+      const updatedBooking = await this.bookingService.updateReadStatus(
         bookingId,
         isUserRead
       );
@@ -366,6 +370,9 @@ export class userController {
       next(error);
     }
   };
+
+
+
   public reshedulRequest = async (
     req: Request,
     res: Response,
@@ -381,7 +388,7 @@ export class userController {
         bookingId,
       });
 
-      const resheduleRequst = await this.userService.resheduleRequst(
+      const resheduleRequst = await this.bookingService.resheduleRequst(
         bookingId,
         newDate,
         newTime,
@@ -426,7 +433,7 @@ export class userController {
         return res.status(400).json({ message: "missing nesssory fields...." });
       }
 
-      const response = await this.userService.workCompletion(
+      const response = await this.bookingService.workCompletion(
         bookingId,
         updateData
       );
@@ -446,6 +453,10 @@ export class userController {
       next(error);
     }
   };
+
+
+
+
   public pymnetSuccess = async (
     req: Request,
     res: Response,
@@ -468,7 +479,7 @@ export class userController {
           .json({ message: "missing Requaerud Fields ....." });
       }
 
-      const successResponse = await this.userService.pymentSuccess(
+      const successResponse = await this.paymentService.pymentSuccess(
         bookingId,
         laborId,
         userId
@@ -487,6 +498,8 @@ export class userController {
       next(error);
     }
   };
+
+
   public handleStripeWebhook = async (req: Request, res: Response) => {
     console.log("hooook calledddddddddddddddddddddddd ffffffffffffffffffff");
 
@@ -495,79 +508,15 @@ export class userController {
     const sig = req.headers["stripe-signature"] as string;
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        "whsec_8fed201d762c6c7205f81574e77174f99eab11a6ebb18b1d2aed78baec8395af" as string
-      );
-      console.log(event, "event");
+      await this.paymentService.updateWebhook(event, sig);
 
-      if (event.type == "checkout.session.completed") {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const metadata = session.metadata || {};
-        const { bookingId, laborId, userId } = metadata;
-
-        // Find the booking
-        const booking = await Booking.findOne({ bookingId });
-
-        if (!booking) {
-          throw new Error("Booking not found");
-        }
-
-        const estimatedCost = booking.quote.estimatedCost;
-        const commissionAmount = 100; // Your commission logic
-        const laborAmount = estimatedCost - commissionAmount;
-
-        // Update booking with payment details
-        const updatedBooking = await Booking.findOneAndUpdate(
-          { bookingId },
-          {
-            $set: {
-              paymentStatus: "paid",
-              paymentDetails: {
-                totalAmount: estimatedCost,
-                commissionAmount,
-                laborEarnings: laborAmount,
-                transactionId: session.payment_intent as string,
-              },
-            },
-          },
-          { new: true }
-        );
-
-        if (!updatedBooking) {
-          throw new Error("Failed to update booking with payment details");
-        }
-
-        const updatedLabor = await Labor.findByIdAndUpdate(
-          laborId,
-          {
-            $inc: { "wallet.balance": laborAmount },
-            $push: {
-                "wallet.transactions": {
-                amount: laborAmount,
-                type: "credit",
-                description: `Earnings from booking ${bookingId}`,
-                bookingId: booking._id,
-                originalAmount: estimatedCost,
-                commissionAmount: commissionAmount,
-                createdAt: new Date()
-              }
-            }
-          },
-          {new : true}
-        )
-
-         if (!updatedLabor) {
-          throw new Error("Failed to update labor wallet");
-        }
-
-        return res.json({ received: true });
-      }
+      res.status(200).send({ received: true });
     } catch (error) {
       console.log(error);
     }
   };
+
+
 
   public fetchBookingWithId = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -579,7 +528,7 @@ export class userController {
         .json({message : 'Booking id is not found'})
       }
 
-      const fetchedBooking = await this.userService.fetchBookinById(bookingId)
+      const fetchedBooking = await this.bookingService.fetchBookinById(bookingId)
 
 
       console.log('myyyyyyyyyyyyyyyyyyyyyy',fetchedBooking)
@@ -597,6 +546,9 @@ export class userController {
       console.log(error);
     }
   }
+
+
+
   public reviewSubmit = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
@@ -687,7 +639,7 @@ export class userController {
         completedBookings,
         canceledBookings,
         totalAmount
-      } = await this.userService.fetchAllBookings(userId, page, limit, filter)
+      } = await this.bookingService.fetchAllBookings(userId, page, limit, filter)
 
       if (!bookings) {
         return res.status(404)
@@ -715,3 +667,22 @@ export class userController {
 }
 
 export default userController;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

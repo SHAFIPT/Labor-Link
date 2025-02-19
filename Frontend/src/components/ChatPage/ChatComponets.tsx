@@ -25,7 +25,8 @@ import AddressModal from './AddressModal';
 import { toggleMobileChatList } from '../../redux/slice/laborSlice';
 import { validateNewDate } from '../../utils/userRegisterValidators';
 import { validateDate } from '../../utils/laborRegisterValidators';
-import { fetchIsBookingExist } from '../../services/LaborServices';
+import { fetchAllBookingOfLabor, fetchIsBookingExist } from '../../services/LaborServices';
+import { IBooking } from '../../@types/IBooking';
 
 interface ChatComponentProps {
   chatId?: any; // Make chatId optional
@@ -66,9 +67,11 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [fetchedLaborId, setFetchedLaborId] = useState(null);
   const [chatData, setChatData] = useState(null);
-  const [bookingData ,setBookingData] = useState(null)
+  const [bookingData, setBookingData] = useState(null)
+  const [allBookingExist, setAllBookingExist] = useState(null)
   console.log('This is th4echata Data ;;;', chatData)
   console.log('Thsis it eh llokingg diillyy',bookingData)
+  console.log('laaaaaaaaaaaaaay suguuu',allBookingExist)
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const theam = useSelector((state: RootState) => state.theme.mode);
   const [userAddress, setUserAddress] = useState({
@@ -102,7 +105,12 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
 
   console.log('This si the chatIdddddddddddddd<',chatId)
   
-  console.log("888888888888888",participants)
+  console.log("888888888888888", participants)
+  
+  // const laborId = bookingData?.laborId
+
+  // console.log('This si the booking labor id ...........',laborId)
+
   const [quoteData, setQuoteData] = useState({
     description: "",
     estimatedCost: "",
@@ -454,6 +462,30 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       // Optionally add error handling UI feedback here
     }
   };
+  
+
+  const isTimeSlotAvailable = (requestedTime: string, allBookings: IBooking[]): boolean => {
+  const requestedDate = new Date(requestedTime);
+
+  // Calculate the 1-hour before and 1-hour after time ranges
+  const oneHourBefore = new Date(requestedDate.getTime() - 60 * 60 * 1000); // 1 hour before
+  const oneHourAfter = new Date(requestedDate.getTime() + 60 * 60 * 1000); // 1 hour after
+
+  for (const booking of allBookings) {
+    const existingBookingDate = new Date(booking.quote.arrivalTime);
+
+    // Check if the existing booking overlaps with the 1-hour before or after range
+    if (
+      (existingBookingDate >= oneHourBefore && existingBookingDate <= oneHourAfter)
+    ) {
+      return false; // Time slot is not available
+    }
+  }
+
+  return true; // Time slot is available
+};
+  
+  
   // Send quote function
   const handleSubmitQuote = async () => {
     try {
@@ -462,7 +494,13 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
           if (arrivalTimeError) {
             toast.error(arrivalTimeError)
             return; // Stop execution if validation fails
-          }
+      }
+      
+      const isAvailable = isTimeSlotAvailable(quoteData.arrivalTime, allBookingExist);
+      if (!isAvailable) {
+        toast.error("The requested time and date slot is already booked. Please choose another time.");
+        return; // Stop execution if the time slot is unavailable
+      }
 
 
       const quoteMessage = {
@@ -602,6 +640,27 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   // }
 
   // console.log('this is the my shafi participentsData',participentsData)
+
+  useEffect(() => {
+    if (laborEmail) {
+      const fetchBookingsWithEmil = async () => {
+        try {
+        const response = await fetchAllBookingOfLabor(laborEmail);
+        if (response.status === 200) {
+          console.log('99999999999999999999999999999999 :',
+            response
+          )
+          const {fetchBookings} = response.data
+          setAllBookingExist(fetchBookings);
+        }
+      } catch (error) {
+        console.error(error);
+        // toast.error('Error in booking Exist');
+      }
+      }
+      fetchBookingsWithEmil()
+    }
+  },[laborEmail])
 
   useEffect(() => {
   if (userEmail && laborEmail) {  // Ensure both values exist
@@ -902,6 +961,18 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                       />
                     )}
 
+                    {/* {previewUrl && (
+                      <div className="preview-container">
+                        {previewUrl.endsWith(".mp4") || previewUrl.endsWith(".webm") ? (
+                          <video src={previewUrl} controls className="rounded-lg max-w-full" />
+                        ) : (
+                          <img src={previewUrl} alt="Preview" className="rounded-lg max-w-full" />
+                        )}
+                        <button onClick={cancelMediaUpload} className="cancel-button">
+                          Cancel Upload
+                        </button>
+                      </div>
+                    )} */}
                     {message.type !== "quote" && (
                       <>
                         <div className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}>
@@ -917,13 +988,20 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                               ${isCurrentUser ? "bg-[#cdffcd] rounded-tr-none" : "bg-[#b0b0f4] rounded-tl-none"}
                             `}
                           >
-                            {message.type === "text" ? (
-                              <p className="text-gray-800 text-sm">{message.content}</p>
-                            ) : message.type === "image" ? (
-                              <img src={message.mediaUrl} alt="Shared" className="rounded-lg max-w-full h-auto" />
-                            ) : message.type === "video" ? (
-                              <video src={message.mediaUrl} controls className="rounded-lg max-w-full" />
-                            ) : null}
+                            {message.type === "image" ? (
+                                <img
+                                  src={message.mediaUrl}
+                                  alt="Shared"
+                                  className="rounded-lg max-w-[250px] max-h-[250px] object-cover"
+                                />
+                              ) : message.type === "video" ? (
+                                <video
+                                  src={message.mediaUrl}
+                                  controls
+                                  className="rounded-lg max-w-[250px] max-h-[250px]"
+                                />
+                              ) : null}
+
                           </div>
                         </div>
 
@@ -938,6 +1016,10 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
             })}
             <div ref={messagesEndRef} />
           </div>
+
+          {previewUrl && (
+              <MediaPreview previewUrl={previewUrl} onCancel={cancelMediaUpload} mediaFile={mediaFile}/>
+           )} 
 
           {/* Input Area */}
           <div className="bg-[#f8f9fa] p-4 shadow-lg">
@@ -1117,6 +1199,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                 : participants.user.profilePicture;
               
               const isQuoteMessage = message.type === "quote";
+
+              
               
           
               return (
@@ -1139,6 +1223,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                       />
                     )}
 
+                    
+
                     {message.type !== "quote" && (
                       <>
                         <div className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}>
@@ -1154,13 +1240,22 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                               ${isCurrentUser ? "bg-[#cdffcd] rounded-tr-none" : "bg-[#b0b0f4] rounded-tl-none"}
                             `}
                           >
-                            {message.type === "text" ? (
-                              <p className="text-gray-800 text-sm">{message.content}</p>
-                            ) : message.type === "image" ? (
-                              <img src={message.mediaUrl} alt="Shared" className="rounded-lg max-w-full h-auto" />
-                            ) : message.type === "video" ? (
-                              <video src={message.mediaUrl} controls className="rounded-lg max-w-full" />
-                            ) : null}
+                           {message.type === "text" ? (
+                            <p className="text-gray-800 text-sm">{message.content}</p>
+                          ) : message.type === "image" ? (
+                            <img
+                              src={message.mediaUrl}
+                              alt="Shared"
+                              className="rounded-lg max-w-[250px] max-h-[250px] object-cover"
+                            />
+                          ) : message.type === "video" ? (
+                            <video
+                              src={message.mediaUrl}
+                              controls
+                              className="rounded-lg max-w-[250px] max-h-[250px]"
+                            />
+                          ) : null}
+
                           </div>
                         </div>
 
@@ -1175,8 +1270,12 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
               );
             })}
             <div ref={messagesEndRef} />
-          </div>
+            </div>
 
+            {previewUrl && (
+              <MediaPreview previewUrl={previewUrl} onCancel={cancelMediaUpload} mediaFile={mediaFile}/>
+           )} 
+           
           {/* Input Area */}
           <div
             className={`${

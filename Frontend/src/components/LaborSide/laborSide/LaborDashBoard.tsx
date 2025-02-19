@@ -446,7 +446,7 @@ const LaborDashBoard = () => {
         }
       } catch (error) {
         console.error(error);
-        toast.error("Error to fetch booking....!");
+        // toast.error("Error to fetch booking....!");
       }
     };
 

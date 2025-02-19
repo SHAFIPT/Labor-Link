@@ -32,6 +32,7 @@ import ChatComponets from "../../ChatPage/ChatComponets"
 import { getDocs, query, collection, where, updateDoc, doc, getFirestore, serverTimestamp, addDoc } from "firebase/firestore";
 import { db , app } from '../../../utils/firbase';
 import Breadcrumb from "../../BreadCrumb"
+import { sendPasswordResetEmail } from "firebase/auth"
 
 const LaborProfile = () => {
     const dispatch = useDispatch()
@@ -608,6 +609,8 @@ const handleSubmit = async () => {
         const response = await editPassword(PasswodData)
   
         if (response.status === 200) {
+           await sendPasswordResetEmail(auth, email);
+          toast.success("Password reset email sent! Check your inbox.");
           setOpenChangePasswod(false)
           dispatch(setLoading(false))
           toast.success('Password updated successfully..')
@@ -794,12 +797,14 @@ const findLaborIdByEmail = async (email) => {
   }
   };
   
-    const breadcrumbItems = [
+   const breadcrumbItems = [
       { label: 'Home', link: '/' },
-      { label: 'LaborListing Page', link: '/laborListing' }, // No link for the current page
+      isLaborAuthenticated
+        ? { label: 'LaborDashBoard', link: '/labor/laborDashBoard' }
+        : { label: 'LaborListing Page', link: '/laborListing' },
       { label: 'LaborProfile Page', link: null }, // No link for the current page
-  ];
-  
+    ];
+      
    const currentPages = location.pathname.split("/").pop();
 
 

@@ -5,13 +5,17 @@ import { setError } from '../../redux/slice/userSlice'
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { validatePassword } from '../../utils/userRegisterValidators'
 import { toast } from 'react-toastify';
+import { updatePassword, reauthenticateWithCredential, EmailAuthProvider, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../utils/firbase"; // Import your Firebase instance
 
 const ResetPassword = ({
     conform,
     title,
     message,
-    onCancel
+    onCancel,
+    email
 }) => {
+  console.log('Thsi si eth email............',email)
 
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -38,12 +42,39 @@ const ResetPassword = ({
         const response = await conform(password);
 
 
-        if (response) {
+      if (response) {
+        handleFirebasePasswordReset(email);
         toast.success("Password reset successfully");
         onCancel();
         }
 
-    }
+  }
+  
+     const handleFirebasePasswordReset = async (userEmail) => {
+        // Ensure email is properly formatted and validated
+        if (!userEmail || typeof userEmail !== 'string' || !userEmail.includes('@')) {
+            toast.error("Valid email is required for Firebase password reset");
+            return;
+        }
+        
+        try {
+            // Send Firebase password reset email
+            await sendPasswordResetEmail(auth, userEmail.trim());
+            toast.info("A password reset email has been sent to your email address. Please check your inbox to complete the Firebase authentication update.");
+        } catch (error) {
+            console.error("Failed to send Firebase password reset email:", error);
+            
+            // Provide more specific error message based on the Firebase error code
+            if (error.code === 'auth/invalid-email') {
+                toast.error("The email address format is not valid. Please check your email.");
+            } else if (error.code === 'auth/user-not-found') {
+                toast.info("If you haven't used Firebase login before, you may need to create an account first.");
+            } else {
+                toast.warning("There was an issue sending the password reset email. You may need to use the 'Forgot Password' option at login if you have trouble signing in.");
+            }
+        }
+    };
+
 
    return (
     <div

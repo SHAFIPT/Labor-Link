@@ -6,6 +6,9 @@ import { Request , Response ,NextFunction } from "express"
 import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
 import { error } from "console";
+import { IBookingSerivese } from "../services/interface/IBookingServices";
+import BookingRepository from "../repositories/implementaions/BookingRepository";
+import BookingServices from "../services/implementaions/BookingServices";
 
 
 interface DecodedToken {
@@ -18,10 +21,13 @@ interface DecodedToken {
 
 class laborSideController {
   private laborService: ILaborService;
+  private bookingService : IBookingSerivese
 
   constructor() {
     const laborRepository = new LaborSideRepository();
+    const bookingRepository = new BookingRepository()
     this.laborService = new LaborServices(laborRepository);
+    this.bookingService = new BookingServices(bookingRepository)
   }
 
   public fetchLabors = async (
@@ -57,6 +63,8 @@ class laborSideController {
       next(error);
     }
   };
+
+
   public updateProfile = async (
     req: Request,
     res: Response,
@@ -137,6 +145,7 @@ class laborSideController {
       }
     });
   };
+
 
   public UpdatePassword = async (
     req: Request,
@@ -274,6 +283,8 @@ class laborSideController {
     }
   };
 
+  //Donee............\
+
   public fetchBooking = async (
     req: Request & { labor: { id: string } },
     res: Response,
@@ -301,7 +312,7 @@ class laborSideController {
         completedBookings,
         canceledBookings,
         pendingBookings ,
-        totalAmount } = await this.laborService.fetchBookings(
+        totalAmount } = await this.bookingService.fetchBookingsToLabor(
         laborId,
         page,
         limit,
@@ -396,7 +407,9 @@ class laborSideController {
     console.error("Error fetching similar labors:", error);
     next(error);
   }
-};
+  };
+  
+
 
   public fetchBookings = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -406,7 +419,7 @@ class laborSideController {
       return res.status(404).json({ message: 'Booking id is not found...' });
     }
 
-    const bookingDetails = await this.laborService.fetchBookingDetils(bookingId);
+    const bookingDetails = await this.bookingService.fetchBookingDetils(bookingId);
 
     if (bookingDetails) {
       return res.status(200).json({ message: 'Booking fetched successfully', bookings: bookingDetails });
@@ -433,7 +446,7 @@ class laborSideController {
         requestSentBy
       })
 
-       const resheduleRequst = await this.laborService.rejectResheduleRequst(
+       const resheduleRequst = await this.bookingService.rejectResheduleRequst(
         bookingId,
         newDate,
         newTime,
@@ -466,7 +479,7 @@ class laborSideController {
             return res.status(400).json({ message: "Booking ID is required" });
         }
 
-      const updatedBooking  = await this.laborService.acceptResheduleRequst(bookingId , acceptedBy);
+      const updatedBooking  = await this.bookingService.acceptResheduleRequst(bookingId , acceptedBy);
 
       return res.status(200).json({ message: "Accept reshedule successfully",reshedule : updatedBooking });
       
@@ -486,7 +499,7 @@ class laborSideController {
             return res.status(400).json({ message: "Missing required fields" });
       }
       
-      const additionalCharge = await this.laborService.additionalCharge(bookingId, amount, reason)
+      const additionalCharge = await this.bookingService.additionalCharge(bookingId, amount, reason)
       
        if (additionalCharge) {
         return res.status(200)
@@ -513,7 +526,7 @@ class laborSideController {
             return res.status(400).json({ message: "Booking ID is required" });
       }
       
-      const acceptRequstRespnse = await this.laborService.acceptRequst(bookingId)
+      const acceptRequstRespnse = await this.bookingService.acceptRequst(bookingId)
 
 
       if (acceptRequstRespnse) {
@@ -537,7 +550,7 @@ class laborSideController {
             return res.status(400).json({ message: "Booking ID is required" });
       }
       
-      const rejectRequstRespnse = await this.laborService.rejectRequst(bookingId)
+      const rejectRequstRespnse = await this.bookingService.rejectRequst(bookingId)
 
 
       if (rejectRequstRespnse) {
@@ -574,7 +587,7 @@ class laborSideController {
 
       console.log('This is the Baaabuu0',bookingData)
       
-      const fetchBookings = await this.laborService.fetchExistBooking(bookingData)
+      const fetchBookings = await this.bookingService.fetchExistBooking(bookingData)
 
       return res.status(200)
       .json({messsage : 'bookingFetchsucceffluuly',fetchBookings})
@@ -584,7 +597,35 @@ class laborSideController {
       console.error("Error in exitst bookings ", error);
       next(error);
     }
+  } 
+
+  public fetchAllBookingOfLabor = async(
+    req: Request,
+    res: Response,
+    next : NextFunction
+  ) => {
+    try {
+
+      const laborEmail = req.query.email as string;
+      
+      if (!laborEmail) {
+           return res.status(400).json({ message: "Missing laborId" });
+      }
+      
+      const fetchBookings = await this.bookingService.fetchAllBookingsById(
+        laborEmail
+      )
+
+      return res.status(200)
+      .json({messsage : 'bookingFetchsucceffluuly',fetchBookings})
+
+      
+    } catch (error) {
+      console.error("Error in fethall booking bookings ", error);
+      next(error);
+    }
   }
+
   public witdrowWalletAmount = async(
     req: Request & { labor: { id: string } },
     res: Response,

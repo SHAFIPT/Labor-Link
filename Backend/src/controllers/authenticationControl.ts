@@ -13,44 +13,11 @@ import OTPRepository from '../repositories/implementaions/OTPRepository';
 import { sendEmailOtp } from '../utils/emailService';
 import { error } from 'console';
 import { IOTP } from './entities/OtpEntity';
-
-// Define interfaces for common authentication operations
-interface IAuthStrategy {
-    login(credentials: any): Promise<any>;
-    register(data: any): Promise<any>;
-    logout(token: string, id: string): Promise<any>;
-    refreshAccessToken(userId: string): Promise<string | null>;
-    forgetPassword(email: string): Promise<any>;
-    forgetVerifyOtp(data: any): Promise<any>;
-    resetPassword(data: any): Promise<any>;
-    sendOtp?(user: IUser): Promise<any>;
-    verifyOtp?(email: string, otp: string): Promise<boolean>
-    googleSignIn?(user: Partial<IUser>): Promise<{ user: IUser, accessToken: string, refreshToken: string } | null>
-    findUserWithEmail?(email: string): Promise<IUser | null>
-    sendForgetOtp?(user: IUser): Promise<IOTP | null>
-    isVerify?(user: Partial<IUser>, otp: IOTP): Promise<IOTP | null>
-    generateTokenForForgotPassword?(user: Partial<IUser>): Promise<string>;
-    decodeAndVerifyToken?(token: string): Promise<Partial<IUser | null>>
-    changePassword?(password: string, email: string): Promise<IUser | null>
-    resendOtp?(user: IUser): Promise<IOTP | null>
-}
-
-interface IAdminAuthStrategy {
-    login(credentials: any): Promise<any>;
-    logout(token: string, id: string): Promise<any>;
-    refreshAccessToken(userId: string): Promise<string | null>;
-    register?(data: any): Promise<any>;
-    sendOtp?(user: IUser): Promise<any>;
-    verifyOtp?(email: string, otp: string): Promise<boolean>
-    googleSignIn?(user: Partial<IUser>): Promise<{ user: IUser, accessToken: string, refreshToken: string } | null>
-    findUserWithEmail?(email: string): Promise<IUser | null>
-    sendForgetOtp?(user: IUser): Promise<IOTP | null>
-    isVerify?(user: Partial<IUser>, otp: IOTP): Promise<IOTP | null>
-    generateTokenForForgotPassword?(user: Partial<IUser>): Promise<string>;
-    decodeAndVerifyToken?(token: string): Promise<Partial<IUser | null>>
-    changePassword?(password: string, email: string): Promise<IUser | null>
-    resendOtp?(user: IUser): Promise<IOTP | null>
-}
+import { ILaborer } from './entities/LaborEntity';
+import formidable from 'formidable';
+import cloudinary from '../utils/CloudineryCongif';
+import { IAuthStrategy } from './entities/AuthStrategy';
+import { IAdminAuthStrategy } from './entities/AdminAuthStrategy';
 
 // User authentication strategy
 class UserAuthStrategy implements IAuthStrategy {
@@ -164,8 +131,17 @@ class LaborAuthStrategy implements IAuthStrategy {
     async resetPassword(data: any) {
         return this.laborAuthService.changePassword(data.password, data.email);
     }
-}
+    async registerAboutYou(labor: Partial<ILaborer>){
+        return this.laborAuthService.registerAboutYou(labor)
+    }
+    async registerProfile(labor: Partial<ILaborer>){
+        return this.laborAuthService.registerProfile(labor)
+    }
+    async registerExperience(labor: Partial<ILaborer>): Promise<{ labor: ILaborer; accessToken: string; refreshToken: string }> {
+        return this.laborAuthService.registerExperience(labor);
+    }
 
+}
 
 // Admin Authentication Strategy
 class AdminAuthStrategy implements IAdminAuthStrategy  {
@@ -228,6 +204,8 @@ export class UnifiedAuthController {
       const strategy = AuthStrategyFactory.createStrategy(role);
 
       const result = await strategy.login(credentials);
+
+      console.log('Thsi is the refreshToken.....jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj',result)
 
       if (!result) {
         return res.status(401).json(new ApiError(401, "Invalid Credentials"));
@@ -318,39 +296,43 @@ export class UnifiedAuthController {
   };
 
   public refreshAccessToken = async (
-    req: Request & { user?: any; labor?: any },
-    res: Response
-  ) => {
+  req: Request & { user?: any; labor?: any; admin?: any }, 
+  res: Response
+) => {
     try {
-      const role = req.user ? "user" : "labor";
-      const entity = req.user || req.labor;
+      
+    const role = req.user ? "user" : req.labor ? "labor" : req.admin ? "admin" : null;
 
-      if (!entity) {
-        return res
-          .status(400)
-          .json(new ApiError(400, "Authentication required"));
-      }
+          
+    const entity = req.user || req.labor || req.admin;
 
-      const strategy = AuthStrategyFactory.createStrategy(role);
-      const accessToken = await strategy.refreshAccessToken(entity.id);
-
-      if (accessToken) {
-        return res
-          .status(200)
-          .json(
-            new ApiResponse(
-              200,
-              { accessToken },
-              "Token refreshed successfully"
-            )
-          );
-      }
-
-      throw new ApiError(400, "Token refresh failed");
-    } catch (error) {
-      throw error;
+    if (!entity) {
+      return res
+        .status(400)
+        .json(new ApiError(400, "Authentication required"));
     }
-  };
+
+    const strategy = AuthStrategyFactory.createStrategy(role);
+
+    const accessToken = await strategy.refreshAccessToken(entity.id);
+
+    if (accessToken) {
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            { accessToken },
+            "Token refreshed successfully"
+          )
+        );
+    }
+
+    throw new ApiError(400, "Token refresh failed");
+  } catch (error) {
+    throw error;
+  }
+};
   
    public sendOtp = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -415,7 +397,7 @@ export class UnifiedAuthController {
         const { displayName, email, photoURL, role } = req.body;
 
         const strategy = AuthStrategyFactory.createStrategy(role);
-
+  
         if (!strategy?.googleSignIn) {
             return res.status(400).json(new ApiError(400, "Google Sign-In not supported for this role"));
         }
@@ -430,14 +412,23 @@ export class UnifiedAuthController {
             return res.status(400).json(new ApiError(400, "Google Sign-In failed"));
         }
 
-        return res.status(200).json(new ApiResponse(200, result, "Google Sign-In successful"));
+        const cookieName =
+        role === "user"
+          ? "UserRefreshToken"
+          : role === "labor"
+          ? "LaborRefreshToken"
+          : "AdminRefreshToken";
+
+        return res.status(200)
+        .cookie(cookieName, result.refreshToken, this.options)    
+        .json(new ApiResponse(200, result, "Google Sign-In successful"));
 
     } catch (error) {
         console.error("Google Sign-In Error:", error);
         return res.status(500).json(new ApiError(500, "Internal Server Error"));
     }
 };
-
+   
    public forgetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, role } = req.body;
@@ -611,7 +602,266 @@ export class UnifiedAuthController {
     } catch (error) {
         next(error);
     }
+    
+    
 };
+
+    public aboutYou = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {
+            firstName,
+            lastName,
+            email,
+            password,
+            phoneNumber,
+            address,
+            location,
+            dateOfBirth,
+            gender,
+            language,
+            role
+        } = req.body;
+
+        console.log('Theeeeeeeeeeeeeee aoubt ROleeeeeeeeee:',role)
+
+        const strategy = AuthStrategyFactory.createStrategy(role);
+
+        if (!strategy.registerAboutYou) {
+            return res.status(400).json(new ApiError(400, "registerAboutYou method is not defined in the strategy."));
+        }
+
+        const laborer = await strategy.registerAboutYou({
+            firstName,
+            lastName,
+            email,
+            password,
+            phone: phoneNumber,
+            address,
+            location,
+            personalDetails: {
+                dateOfBirth,
+                gender,
+            },
+            language,
+        });
+
+        return res.status(200).json({ success: true, data: laborer });
+
+    } catch (error) {
+        // It's important to log or handle the error properly
+        console.error(error);
+        next(error)
+        return res.status(500).json(new ApiError(500, "Internal Server Error"));
+    }
+    };
+    
+
+     public profilePage = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+      ) => { 
+          console.log('iam  here see ;')
+         const { email } = req.body
+         const role = 'labor'
+    
+         console.log('this is email : ', email)
+         console.log('Thsi sie th reole ',role)
+        const form = formidable({ multiples: true });
+    console.log('ebddddddddddddddddd')
+        form.parse(req, async (err, field, files) => {
+          if (err) {
+            console.error("Error parsing form data :", err);
+            return res.status(500).json({ error: "Errror parse form data..." });
+            }
+            
+                console.log('mayreeeeeeeeeeeeeeeee')
+    
+            const imageFile = files.image ? files.image[0] : null;
+
+            console.log('this is image file is back end :',imageFile)
+          if (imageFile) {
+            try {
+    
+                const result = await cloudinary.uploader.upload(imageFile.filepath,{folder : 'labor_profiles'})
+    
+                console.log('this is image result :', result)
+                
+                const imageUrl = result.secure_url;
+            
+                console.log('this is the image url to save :', imageUrl)
+                
+                const { category, skill, startTime, endTime, availability ,email } = field;
+    
+                console.log('this is category :',category)
+                console.log('this is skill :',skill)
+                console.log('this is startTime :',startTime)
+                console.log('this is endTime :',endTime)
+                console.log('this is availability :', availability)
+                console.log('this is email :', email)
+    
+                const parsedAvailability = JSON.parse(field.availability[0]);
+    
+                console.log('this is parsedAvailability :  ++++++======&&&&&^^^#####3333', parsedAvailability)
+
+
+                const strategy = AuthStrategyFactory.createStrategy(role);
+
+                if (!strategy.registerAboutYou) {
+                    return res.status(400).json(new ApiError(400, "registerAboutYou method is not defined in the strategy."));
+                }
+
+
+                console.log('Tiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
+                const response = await strategy.registerProfile({
+                    profilePicture: imageUrl,
+                    categories : category,
+                    skill : skill,
+                    startTime : startTime[0],
+                    endTime : endTime[0],
+                    availability: parsedAvailability,
+                    email : email[0]
+                })
+                console.log('resoponse from backend :', response)
+                if (response) {
+                   return res.status(200).json({   
+                    success: true, data: response 
+                }); 
+                } else {
+                    return res.status(400).json({ error: 'error occurred ducing profile page submisingon...' });
+                }
+    
+            } catch (error) {
+              console.error("Error in profile controller:", error);
+              next(error);
+              console.error('Cloudinary upload error:', error);
+              return res.status(500).json({ error: 'Error uploading image to Cloudinary.' });
+            }
+          } else {
+              return res.status(400).json({ error: 'Image is required.' });
+          }
+        });
+    };
+    
+    public experiencePage = async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const role = 'labor'
+        const form = formidable({ multiples: true });
+    
+        form.parse(req, async (err, fields, files) => {
+          if (err) {
+            console.error("Error parsing form data:", err);
+            return res.status(500).json({ error: "Error parsing form data" });
+          }
+    
+          // Handle ID Image
+          const idImageFile = files.idImage?.[0];
+          let idImageUrl = "";
+          if (idImageFile) {
+            try {
+              const result = await cloudinary.uploader.upload(idImageFile.filepath, {
+                folder: "labor_experience/id_documents",
+              });
+              idImageUrl = result.secure_url;
+            } catch (error) {
+              console.error("Error uploading ID image:", error);
+              return res.status(500).json({ error: "Failed to upload ID image" });
+            }
+          }
+    
+          // Handle Certificate Images
+          const certificateImageFiles = files.certificateImages || [];
+          let certificateUrls: string[] = [];
+    
+          for (const certificateFile of certificateImageFiles) {
+            try {
+              const result = await cloudinary.uploader.upload(certificateFile.filepath, {
+                folder: "labor_experience/certificate",
+              });
+              certificateUrls.push(result.secure_url);
+            } catch (error) {
+              console.error("Error uploading certificate image:", error);
+              continue;
+            }
+          }
+    
+          // Parse certificates data from JSON string
+          const certificates = JSON.parse(fields.certificates[0] || '[]');
+    
+          // Combine certificate URLs with certificate data
+          const completeCertificates = certificates.map((cert: any, index: number) => ({
+            certificateDocument: certificateUrls[index] || '',
+            certificateName: cert.certificateName,
+            lastUpdated: new Date()
+          }));
+    
+          const {
+            startDate,
+            responsibility,
+            currentlyWorking,
+            email,
+            idType,
+          } = fields;
+    
+          // Create the experience data object
+          const experienceData = {
+            governmentProof: {
+              idDocument: idImageUrl,
+              idType: idType[0],
+            },
+            certificates: completeCertificates,
+            DurationofEmployment: {
+              startDate: startDate[0],
+              currentlyWorking: currentlyWorking[0] === 'true',
+            },
+            responsibility: responsibility[0],
+            email: email[0],
+          };
+    
+            console.log('Experience Data:', experienceData);
+            
+            const strategy = AuthStrategyFactory.createStrategy(role);
+
+                if (!strategy.registerAboutYou) {
+                    return res.status(400).json(new ApiError(400, "registerAboutYou method is not defined in the strategy."));
+                }
+    
+             const response = await strategy.registerExperience(experienceData);
+    
+          if (response) {
+            const laborData = { ...response.labor.toObject() }; // Convert to plain object
+    
+            // Remove sensitive fields
+            delete laborData.password;
+            delete laborData.refreshToken;
+    
+    
+            console.log("Thsi sithe labordeata ++++_________++++++++",laborData)
+    
+            return res.status(200)
+              .cookie("LaborRefreshToken", response.refreshToken, this.options) // HTTP-only cookie for refresh token
+              .json({
+                success: true,
+                message: "Experience data saved successfully",
+                data: {
+                  ...experienceData,
+                  certificateUrls,
+                  accessToken: response.accessToken, // Include access token here
+                  laborData, // Include the labor data
+                },
+              });
+          } else {
+            return res.status(400).json({ 
+              error: 'Error occurred during ExperiencePage submission!' 
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Error in experiencePage controller:", error);
+        next(error);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    };
 
 
 

@@ -333,21 +333,21 @@ const LaborRegister = () => {
       };
 
       try {
-         const firebaseUser = await createUserWithEmailAndPassword(auth, email, password);
+        //  const firebaseUser = await createUserWithEmailAndPassword(auth, email, password);
       
-        if (firebaseUser) {
-          console.log("User registered in Firebase: ", firebaseUser.user);
+        // if (firebaseUser) {
+        //   console.log("User registered in Firebase: ", firebaseUser.user);
 
-          const fullName = `${firstName} ${lastName}`;
+        //   const fullName = `${firstName} ${lastName}`;
 
-          // Store the full name in Firestore
-          await setDoc(doc(db, "Labors", firebaseUser.user.uid), {
-            name: fullName, // Use full name here
-            email,
-            role: "labor", // Add role if needed
-          });
+        //   // Store the full name in Firestore
+        //   await setDoc(doc(db, "Labors", firebaseUser.user.uid), {
+        //     name: fullName, // Use full name here
+        //     email,
+        //     role: "labor", // Add role if needed
+        //   });
           
-        }
+        // }
 
         console.log('this is data is this dfdfdfdfd :  ++++++____++++++)))))+++++', dataTOStore)
       

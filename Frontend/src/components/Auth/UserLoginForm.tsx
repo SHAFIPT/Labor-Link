@@ -31,7 +31,8 @@ const UserLoginForm = () => {
   const [resetPassword, setResetPassword] = useState(false)
   const [otpToken, setOtpToken] = useState("")
   const [imaLabor , setIamLabor] = useState(false)
-  const [imaUser , setIamUser] = useState(true)
+  const [imaUser, setIamUser] = useState(true)
+  const [emailForReset, setEmailForReset] = useState(""); 
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const loading  = useSelector((state: RootState) => state.user.loading)
@@ -174,6 +175,7 @@ const UserLoginForm = () => {
         setOtpToken(response.data.data.accessToken);
         setforgetPassword(false);
         setResetPassword(true);
+        setEmailForReset(email);
       }
       
     } catch (error) {
@@ -282,6 +284,7 @@ const UserLoginForm = () => {
               title='Reset password'
               message='Enter your New Password'
               onCancel={handleCancelation}
+              email={emailForReset} 
             />
           )}
           </AnimatedPage>

@@ -18,30 +18,12 @@ export interface ILaborSidRepository{
         sortOrder?: 'asc' | 'desc';
         rating?: number;
     }): Promise<ILaborer[]>;
-    aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<IAboutMe> 
-  fetchBooking(laborId: string, page: number, limit: number ,filter: object): Promise<{
-    bookings: IBooking[],
-    total: number,
-    completedBookings: number;
-    canceledBookings: number;
-    totalAmount: number;
-    pendingBookings : number
-  }>;
-    fetchSimilorLabors(latitude: number, longitude: number, categorie: string, laborId: string): Promise<ILaborer[]> 
-    fetchBookingDetils(bookingId : string) : Promise<IBooking | null>
-    acceptResheduleRequst(bookingId : string ,acceptedBy : string) : Promise<IBooking | null>
-    rejectResheduleRequst(
-    bookingId: string,
-    newDate: string,
-    newTime: string,
-    rejectionReason: string,
-    rejectedBy: string,
-    requestSentBy : string
-  ): Promise<IBooking | null>
-  additionalCharge(bookingId: string, amount: number, reason: string): Promise<IBooking | null>
-  acceptRequst(bookingId :string) : Promise<IBooking| null>
-  rejectRequst(bookingId: string): Promise<IBooking | null>
-  fetchExistBooking(data: { userEmail: string; laborEmail: string; }): Promise<IBooking | null> 
+  aboutMe(data: { userId: string; name: string; experience: string; description: string; }): Promise<IAboutMe> 
+ 
+
+  fetchSimilorLabors(latitude: number, longitude: number, categorie: string, laborId: string): Promise<ILaborer[]>
+  
+
   walletWithrow(
       laborId :string,
       amount: number,

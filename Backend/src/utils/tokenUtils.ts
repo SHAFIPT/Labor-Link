@@ -35,7 +35,7 @@ export const verifyRefreshToken = (token: string): string | jwt.JwtPayload => {
   try {
     const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET);
     return decoded;
-  } catch (error) {
+  } catch (error) {   
     throw new Error('Invalid Refresh Token');
   }
 };

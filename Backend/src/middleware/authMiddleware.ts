@@ -1,5 +1,5 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import ApiResponse from "../utils/Apiresponse";
 import { decodeToken, verifyRefreshToken } from "../utils/tokenUtils";
 import { verifyAccessToken } from '../utils/tokenUtils';  // Replace with your response class
@@ -15,6 +15,18 @@ interface DecodedToken extends JwtPayload {
   role: string;
   iat: number;     
   exp: number;
+}
+
+interface ExtendedRequest extends Request {
+  admin?: jwt.JwtPayload | { token: string; rawToken: string };
+  labor?: jwt.JwtPayload | { token: string; rawToken: string };
+  user?: jwt.JwtPayload | { token: string; rawToken: string };
+}
+
+interface TokenSource {
+  cookie: string;
+  header: string;
+  property: 'admin' | 'labor' | 'user';
 }
 
 // interface AuthenticatedRequest extends Request {
@@ -55,7 +67,7 @@ export const identifyUserRole = (
     const userToken = req.cookies["UserRefreshToken"] || req.header("UserRefreshToken");
     const laborToken = req.cookies["LaborRefreshToken"] || req.header("LaborRefreshToken");
     const adminToken = req.cookies["AdminRefreshToken"] || req.header("AdminRefreshToken");
-
+   
     try {
         if (adminToken) {
             const decodedToken = decodeToken(adminToken);
@@ -97,6 +109,82 @@ export const identifyUserRole = (
         res.status(401).json(new ApiResponse(401, null, "Invalid Token"));
     }
 };
+
+export const verifyAnyRefreshTokenMiddleware: RequestHandler = (
+  req: ExtendedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+
+      console.log('refersh Tokeeeeeeeeeen called..................................................')
+
+
+      console.log('=== Starting Token Verification ===');
+      console.log('Request Path:', req.path);
+      console.log('Request Headers:', req.headers);
+      console.log('Request Cookies:', req.cookies);
+  // Define token sources with their specific names
+  const tokenSources: TokenSource[] = [
+    { cookie: 'AdminRefreshToken', header: 'adminRefreshToken', property: 'admin' },
+    { cookie: 'LaborRefreshToken', header: 'laborRefreshToken', property: 'labor' },
+    { cookie: 'UserRefreshToken', header: 'userRefreshToken', property: 'user' }
+  ];
+
+  // Get all present tokens
+    // Log each token source check
+  const presentTokens = tokenSources.map(source => {
+    const cookieToken = req.cookies[source.cookie];
+    const headerToken = req.header(source.header);
+    
+    console.log(`\nChecking ${source.property} tokens:`);
+    console.log(`- Cookie (${source.cookie}):`, cookieToken ? 'Present' : 'Not present');
+    console.log(`- Header (${source.header}):`, headerToken ? 'Present' : 'Not present');
+    
+    return {
+      ...source,
+      token: cookieToken || headerToken
+    };
+  }).filter(t => t.token);
+
+  console.log('\nPresent Tokens Count:', presentTokens.length);
+
+  // If no tokens are present
+  if (presentTokens.length === 0) {
+    res.status(401).json(
+      new ApiResponse(401, null, "Access Denied - No refresh token provided")
+    );
+    return;
+  }
+
+  // If multiple tokens are present, we should probably warn about it
+  if (presentTokens.length > 1) {
+    console.warn(`Multiple refresh tokens detected for request to ${req.path}`);
+  }
+
+  // Try to verify each present token
+  for (const { token, property } of presentTokens) {
+    try {
+      const decoded = verifyRefreshToken(token);
+      
+      // Set the decoded token on the appropriate property
+      req[property] = typeof decoded === 'object'
+        ? { ...decoded, rawToken: token }
+        : { token: decoded, rawToken: token };
+
+      next();
+      return;
+    } catch (err) {
+      // Continue to next token if this one fails
+      continue;
+    }
+  }
+
+  // If we get here, all present tokens were invalid
+  res.status(401).json(
+    new ApiResponse(401, null, "Invalid Token or Expired")
+  );
+};
+
 
 // export const authenticateUserOrLabor = async (
 //   req: Request & Partial<{ user: string | jwt.JwtPayload; labor: string | jwt.JwtPayload }>,
@@ -356,7 +444,7 @@ export const decodedUserRefreshToken = (
     ));
     return; // Make sure to return here after sending the response
   }
-
+  
   try {
     const decoded = decodeToken(refreshToken);
 
@@ -396,7 +484,7 @@ export const decodedLaborRefreshToken = (
     if (!decoded || typeof decoded !== 'object' || !decoded.id) {
       res.status(401).json(new ApiResponse(401, null, "Invalid Token Format"));
       return;
-    }
+    }   
 
     // Store only necessary information
     req.labor = {
@@ -496,11 +584,13 @@ export const verifyRefreshLaborTokenMiddleware = (
 ): void => {
   const refreshToken = req.cookies['LaborRefreshToken'] || req.header('LaborRefreshToken');
 
+  console.log('Thsi is the refeshToken  ;;;;;',refreshToken)
+
   if (!refreshToken) {
     res.status(401).json(
       new ApiResponse(401, null, "Access Denied")
     );
-    return;
+    return;    
   }
 
   try {

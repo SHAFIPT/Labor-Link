@@ -11,8 +11,12 @@ export const registerAboutYou = async (formData: Partial<ILaborer>) => {
   
   console.log('this is response formdata :',formData)
 
-   try {
-    const response = await api.post('/api/labor/auth/registerAboutYou', formData);
+  try {
+     const role = 'labor'
+     const response = await api.post('/api/labor/auth/registerAboutYou', {
+       ...formData,
+       role
+     });
     return response
   } catch (error) {
     console.error("Error registering laborer:", error);
@@ -23,7 +27,7 @@ export const registerAboutYou = async (formData: Partial<ILaborer>) => {
 export const profilePage = async (formData: FormData ) => {
   try {
 
-    const response = await api.post('/api/labor/auth/registerProfilePage', formData)
+    const response = await api.post('/api/auth/registerProfilePage', formData)
     return response
     
   } catch (error) {
@@ -34,8 +38,8 @@ export const profilePage = async (formData: FormData ) => {
 
 export const ExperiencePage = async (formData: FormData) => {
   try {
-
-    const response = await api.post('/api/labor/auth/registerExperiencePage', formData)
+    
+    const response = await api.post('/api/auth/registerExperiencePage', formData)
     return response
     
   } catch (error) {
@@ -57,15 +61,15 @@ export const logout = async () => {
 }
   
 
-export const LaborLogin = async (labor : Partial<ILaborer>) => {
-  try {
-    const reseponse = await api.post('/api/labor/auth/login', labor)
-    return reseponse
-  } catch (error) {
-    console.error("Error during logout..!", error);
-    throw error;
-  }
-}
+// export const LaborLogin = async (labor : Partial<ILaborer>) => {
+//   try {
+//     const reseponse = await api.post('/api/labor/auth/login', labor)
+//     return reseponse
+//   } catch (error) {
+//     console.error("Error during logout..!", error);
+//     throw error;
+//   }
+// }
 
 
 
@@ -74,7 +78,7 @@ export const laborForgotPasswordSendOTP = async (email: string) => {
 
         console.log('this is email :',email)
 
-        const ForgetResoponce = await api.post('/api/labor/auth/forgettPassword', { email: email })
+        const ForgetResoponce = await api.post('/api/auth/forgettPassword', { email: email })
         
          console.log('this is ForgetResoponce :' ,ForgetResoponce)
     
@@ -95,7 +99,7 @@ export const laborForgotPasswordSendOTP = async (email: string) => {
 export const laborForgetPasswordVerify = async (otp : string,email: string) => {
     try {
 
-        const ForgetOtpverify = await api.post('/api/labor/auth/ForgetVerify-otp', { email: email , otp : otp})
+        const ForgetOtpverify = await api.post('/api/auth/ForgetVerify-otp', { email: email , otp : otp})
         
         return ForgetOtpverify
         
@@ -111,7 +115,7 @@ export const laborForgetPasswordVerify = async (otp : string,email: string) => {
 export const laborForgotPasswordReset = async (password: string, token:string) => {
     try {
         
-        const forgetPasswordResetresponse = await api.post('/api/labor/auth/forgot-password-reset', { password , token })
+        const forgetPasswordResetresponse = await api.post('/api/auth/forgot-password-reset', { password , token })
         
         return forgetPasswordResetresponse
         

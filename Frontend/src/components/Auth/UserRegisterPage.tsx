@@ -126,7 +126,8 @@ const UserRegisterPage = () => {
       const googleResoponse = await googleAuth();
 
       if (googleResoponse.status === 200) {
-        const { user, accessToken } = googleResoponse.data;
+        const { user, accessToken } = googleResoponse.data.data;
+        console.log('theis is the goole enter repsonws....',googleResoponse)
         localStorage.setItem("UserAccessToken", accessToken);
         dispatch(setUser(user));
         dispatch(setAccessToken(accessToken));

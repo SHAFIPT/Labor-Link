@@ -42,47 +42,11 @@ export class LaborServices implements ILaborService{
             throw new Error('Failed to Aboute me.');
         }
     }
-    async fetchBookings(laborId: string, page: number, limit: number, filter: object): Promise<{
-        bookings: IBooking[];
-        total: number;
-        completedBookings: number;
-        canceledBookings: number;
-        totalAmount: number;
-        pendingBookings : number
-    }> {
-        return await this.laborRepsitory.fetchBooking(laborId, page, limit ,filter);
-    }
+
     async fetchSimilorLabors(latitude: number, logitude: number, categorie: string , laborId: string) {
         return await this.laborRepsitory.fetchSimilorLabors(latitude,logitude,categorie , laborId)
     }
-    async fetchBookingDetils(bookingId: string): Promise<IBooking | null> {
-        return await this.laborRepsitory.fetchBookingDetils(bookingId)
-    }
-    async rejectResheduleRequst(bookingId: string, newDate: string, newTime: string, rejectionReason: string, rejectedBy: string , requestSentBy : string): Promise<IBooking | null> {
-        return await this.laborRepsitory.rejectResheduleRequst(
-        bookingId,
-        newDate,
-        newTime,
-        rejectionReason,
-        rejectedBy,
-        requestSentBy
-        );
-    }
-    async acceptResheduleRequst(bookingId: string , acceptedBy : string): Promise<IBooking | null> {
-        return await this.laborRepsitory.acceptResheduleRequst(bookingId , acceptedBy)
-    }
-    async additionalCharge(bookingId: string, amount: number, reason: string): Promise<IBooking | null> {
-        return await this.laborRepsitory.additionalCharge(bookingId , amount ,reason )
-    }
-    async acceptRequst(bookingId: string): Promise<IBooking | null> {
-        return await this.laborRepsitory.acceptRequst(bookingId)
-    }
-    async rejectRequst(bookingId: string): Promise<IBooking | null> {
-        return await this.laborRepsitory.rejectRequst(bookingId)
-    }
-    async fetchExistBooking(data: { userEmail: string; laborEmail: string; }): Promise<IBooking | null> {
-        return this.laborRepsitory.fetchExistBooking(data)
-    }
+
     async walletWithrow(laborId : string,amount: number, bankDetails: { accountNumber: string; bankName: string; ifscCode: string; }): Promise<IWallet | null> {
         return this.laborRepsitory.walletWithrow(
             laborId,

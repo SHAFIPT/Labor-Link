@@ -49,7 +49,7 @@ const Forgottpasswod = ({
         document.getElementById(`otp-${index + 1}`)?.focus();
       }
     }
-    };
+    };  
     
     const handleVerify = () => {
     const otpValue = otp.join("");

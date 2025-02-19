@@ -110,6 +110,19 @@ const LaborDashBoardNav = ({ setCurrentStage }) => {
             navigate('/');
         }
   }
+
+  // useEffect(() => {
+  //   const logou = async () => {
+      
+  //     dispatch(resetUser())
+  //            dispatch(resetLaborer())
+  //            dispatch(setLaborer({}))
+  //            dispatch(setFormData({}))
+  //          dispatch(setIsLaborAuthenticated(false))
+  //          await persistor.purge();
+  //   }
+  //   logou()
+  // },[])
   
 
     const fetchChats = (userUids) => {

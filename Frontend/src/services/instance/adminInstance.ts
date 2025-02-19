@@ -69,7 +69,7 @@ adminAxiosInstance.interceptors.response.use(
 async function getNewAccessToken() {
   try {
     const response = await axios.get(
-      `${normalizeBaseURL(API_URL)}/api/admin/auth/refresh-token`,
+      `${normalizeBaseURL(API_URL)}/api/auth/refresh-token`,
       { withCredentials: true }
     );
     
