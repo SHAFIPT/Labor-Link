@@ -88,6 +88,7 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
   }), [Userlatitude, Userlongitude, laborCoordinates]);
 
   useEffect(() => {
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     mapboxgl.accessToken = "pk.eyJ1IjoiYXJycnUiLCJhIjoiY202bmtpMDZ0MDdyMzJpcGQ1Y3Q3d3JveCJ9.KjVmyabdUcsKhNFsWLe9-Q";
 
     if (!mapContainerRef.current) return;

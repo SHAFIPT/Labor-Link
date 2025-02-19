@@ -156,7 +156,8 @@ const LaborListingPage = () => {
 }, [locationOfUser, selectedCountry, selectedState, selectedCity, selectedZipCode, selectedCategory, selectedRating, sortOrder, dispatch]);
 
 // Use Effect to call fetchLabors when location updates
-useEffect(() => {
+  useEffect(() => {
+   console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
   fetchLabors();
 }, [fetchLabors]);
 

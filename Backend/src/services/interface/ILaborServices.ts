@@ -28,4 +28,6 @@ export interface ILaborService{
     amount: number,
     bankDetails: { accountNumber: string; bankName: string; ifscCode: string }
   ): Promise<IWallet | null>
+
+  fetchAllLabor(): Promise<ILaborer[] | null>
 }

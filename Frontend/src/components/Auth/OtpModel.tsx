@@ -170,6 +170,7 @@ const OtpForm = ({ isVisible, onClose }) => {
 };
 
   useEffect(() => {
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     if (isVisible && timer > 0) {
       const interval = setInterval(() => setTimer((prev) => prev - 1), 1000)
       return () => clearInterval(interval)

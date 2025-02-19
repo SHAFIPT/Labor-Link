@@ -24,7 +24,8 @@ const App = () => {
   const theme = useSelector((state: RootState) => state.theme.mode)
   
 
-    useEffect(() => {
+  useEffect(() => {
+       console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
       if (theme === 'dark') {
         document.documentElement.classList.add('dark'); 
       } else {

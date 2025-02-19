@@ -69,6 +69,7 @@ const LaborProfile = () => {
     experience: "",
     description: "",
   })
+  const [visibleReviews, setVisibleReviews] = useState(3);
   const [submittedData, setSubmittedData] = useState(null);
   const [newSkill, setNewSkill] = useState('');
   const [modalImage, setModalImage] = useState(null); 
@@ -117,10 +118,10 @@ const LaborProfile = () => {
   image: null
 });
    
-  useEffect(() => {
-    
-    console.log('This is the formData :',email)
-  },[])
+  // useEffect(() => {
+  //    console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
+  //   console.log('This is the formData :',email)
+  // },[])
   
 const error: {
      firstName?: string;
@@ -148,6 +149,7 @@ const error: {
   // });
   // When initially loading dat
   // console.log('Theis is the console.log(error)-----++++-----',error);
+
 
     const handleEditProfile = () => {
   // Parse the availability from the string array
@@ -189,7 +191,8 @@ const error: {
   };
   
 
-   useEffect(() => {
+  useEffect(() => {
+      console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const fetchUser = async () => {
       try {
         const data = await laborFetch();
@@ -229,7 +232,8 @@ const error: {
     
 
 
-useEffect(() => {
+  useEffect(() => {
+   console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
   // Parse the availability from the string array
    const availableDays =laborData?.availability 
   ? laborData.availability.join(", ")
@@ -257,6 +261,7 @@ useEffect(() => {
   
 
   useEffect(() => {
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
   if (!isUserAuthenticated && !isLaborAuthenticated) {
     navigate('/login');
   }
@@ -340,6 +345,7 @@ const prepareAvailabilityForSubmission = () => {
    
    
   useEffect(() => {
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
   if (Laborer && Object.keys(Laborer).length > 0) {  // Check if Laborer is not empty
     console.log("Hi I am here++++++-----");
    const LaborfullAddress = Laborer?.address 
@@ -822,6 +828,15 @@ const findLaborIdByEmail = async (email) => {
  
 
   console.log('This si the usek kkkkkkkk', LaborDetails)
+
+  
+  const showMoreReviews = () => {
+    setVisibleReviews(LaborDetails.reviews.length);
+  };
+
+  const showLessReviews = () => {
+    setVisibleReviews(3);
+  };
   
   // const breadcrumbItems = [
   //   { label: "Home", link: "/" },
@@ -2167,76 +2182,101 @@ const findLaborIdByEmail = async (email) => {
 
       <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12">
       {LaborDetails?.reviews && LaborDetails.reviews.length > 0 ? (
-        LaborDetails.reviews.map((review, index) => (
-          <div key={index} className="sm:max-w-3xl md:max-w-[1200px] mx-auto mb-8">
-            {/* Review Content */}
-            <div className="space-y-6 lg:space-y-4">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center">
-                <div className="w-full flex items-start mb-4 lg:mb-0">
-                  {/* User Image */}
-                  <div className="flex-shrink-0 lg:mr-4">
-                    <img
-                      className="w-16 h-16 rounded-full object-cover"
-                      src={review?.reviewerProfile}
-                      alt="User Avatar"
-                    />
-                  </div>
+        <>
+          {LaborDetails.reviews.slice(0, visibleReviews).map((review, index) => (
+            <div key={index} className="sm:max-w-3xl md:max-w-[1200px] mx-auto mb-8">
+              {/* Review Content */}
+              <div className="space-y-6 lg:space-y-4">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center">
+                  <div className="w-full flex items-start mb-4 lg:mb-0">
+                    {/* User Image */}
+                    <div className="flex-shrink-0 lg:mr-4">
+                      <img
+                        className="w-16 h-16 rounded-full object-cover"
+                        src={review?.reviewerProfile}
+                        alt="User Avatar"
+                      />
+                    </div>
 
-                  {/* User Info */}
-                  <div className="ml-4 flex-grow">
-                    <h3 className="text-lg font-semibold">{review.reviewerName}</h3>
-                    <div className="flex items-center space-x-3 mb-2">
-                      {/* Star Rating */}
-                      <div className="flex items-center space-x-1">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            xmlns="http://www.w3.org/2000/svg"
-                            className={`w-5 h-5 ${
-                              i < Math.round(LaborDetails.rating)
-                                ? "fill-[#FFD700] text-[#FFD700]"
-                                : "fill-gray-300 text-gray-300"
-                            }`}
-                            viewBox="0 0 20 20"
-                            aria-hidden="true"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        ))}
+                    {/* User Info */}
+                    <div className="ml-4 flex-grow">
+                      <h3 className="text-lg font-semibold">{review.reviewerName}</h3>
+                      <div className="flex items-center space-x-3 mb-2">
+                        {/* Star Rating */}
+                        <div className="flex items-center space-x-1">
+                          {[...Array(5)].map((_, i) => (
+                            <svg
+                              key={i}
+                              xmlns="http://www.w3.org/2000/svg"
+                              className={`w-5 h-5 ${
+                                i < Math.round(LaborDetails.rating)
+                                  ? "fill-[#FFD700] text-[#FFD700]"
+                                  : "fill-gray-300 text-gray-300"
+                              }`}
+                              viewBox="0 0 20 20"
+                              aria-hidden="true"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          ))}
+                        </div>
+                        <span className="text-sm">{formatDate(review.createdAt)}</span>
                       </div>
-                      <span className="text-sm">{formatDate(review.createdAt)}</span>
                     </div>
                   </div>
                 </div>
+
+                {/* Review Text */}
+                <p className="text-sm sm:text-base md:text-lg lg:text-[12px] mt-2">
+                  {review.reviewText}
+                </p>
+
+                {/* Uploaded Images */}
+                {review.imageUrl && review.imageUrl.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mt-3">
+                    {review.imageUrl.map((img, imgIndex) => (
+                      <img
+                        key={imgIndex}
+                        src={img}
+                        alt={`Review Image ${imgIndex + 1}`}
+                        className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover cursor-pointer transition-transform transform hover:scale-105"
+                        onClick={() => setModalImage(img)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Review Text */}
-              <p className="text-sm sm:text-base md:text-lg lg:text-[12px] mt-2">{review.reviewText}</p>
+              {/* Underline */}
+              <div className="underLine h-[3px] bg-[#ECECEC] flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1200px] my-6"></div>
+            </div>
+          ))}
 
-              {/* Uploaded Images */}
-              {review.imageUrl && review.imageUrl.length > 0 && (
-                <div className="flex flex-wrap gap-3 mt-3">
-                  {review.imageUrl.map((img, imgIndex) => (
-                    <img
-                      key={imgIndex}
-                      src={img}
-                      alt={`Review Image ${imgIndex + 1}`}
-                      className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover cursor-pointer transition-transform transform hover:scale-105"
-                      onClick={() => setModalImage(img)}
-                    />
-                  ))}
-                </div>
+          {/* Show More / Show Less Button */}
+          {LaborDetails.reviews.length > 3 && (
+            <div className="flex justify-center mt-6">
+              {visibleReviews < LaborDetails.reviews.length ? (
+                <button
+                  onClick={showMoreReviews}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  Show More Reviews
+                </button>
+              ) : (
+                <button
+                  onClick={showLessReviews}
+                  className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                >
+                  Show Less Reviews
+                </button>
               )}
             </div>
-
-            {/* Underline */}
-            <div className="underLine h-[3px] bg-[#ECECEC] flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1200px] my-6"></div>
-          </div>
-        ))
+          )}
+        </>
       ) : (
         <p className="text-center text-gray-500">No reviews available.</p>
       )}

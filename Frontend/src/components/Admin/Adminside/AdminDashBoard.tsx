@@ -113,6 +113,7 @@ const AdminDashBoard = () => {
   };
   
   useEffect(() => {
+   
     fetchBooings();
   }, [currentPage, limit, filter]);
 

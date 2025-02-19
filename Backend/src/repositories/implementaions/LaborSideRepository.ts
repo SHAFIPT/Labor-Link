@@ -1,4 +1,4 @@
-import { IAboutMe, ILaborer } from "controllers/entities/LaborEntity";
+import { IAboutMe, ILaborer } from "../../controllers/entities/LaborEntity";
 import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
 import Labor from "../../models/LaborModel";
 import mongoose, { SortOrder } from "mongoose";
@@ -7,8 +7,15 @@ import Booking from "../../models/BookingModal";
 import User from "../../models/userModel";
 import { IWallet } from "controllers/entities/withdrawalRequstEntity";
 import WithdrawalRequest from "../../models/WithdrawalRequestModal";
+import { BaseRepository } from "../../repositories/BaseRepository/BaseRepository";
 
-export class LaborSideRepository implements ILaborSidRepository {
+export class LaborSideRepository extends BaseRepository<ILaborer> implements ILaborSidRepository {
+  
+  constructor() {
+    super(Labor)
+  }
+
+
   async fetchLabor(laborId: string): Promise<ILaborer | null> {
     return Labor.findById(laborId).select("-password -refreshToken");
   }
@@ -192,6 +199,20 @@ export class LaborSideRepository implements ILaborSidRepository {
       
     } catch (error) {
       console.error("Error in wallet widhrow requst ...", error);
+        throw error;
+    }
+  }
+
+  async fetchAllLabor(): Promise<ILaborer[] | null> {
+    try {
+
+      return await this.findAll({
+        isApproved: true,
+        isBlocked : false
+      })
+
+    } catch (error) {
+      console.error("Error in fetch all labors.....", error);
         throw error;
     }
   }

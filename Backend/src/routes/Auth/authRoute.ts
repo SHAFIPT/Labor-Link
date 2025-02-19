@@ -5,7 +5,7 @@ import { Router } from "express";
 const authRoute = Router();
 
 const authController = new UnifiedAuthController();
-   
+     
 authRoute.post('/login', authController.login.bind(authController));
 authRoute.post('/logout',identifyUserRole, authController.logout.bind(authController));
 authRoute.post('/register', authController.register.bind(authController));

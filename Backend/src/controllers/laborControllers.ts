@@ -626,6 +626,26 @@ class laborSideController {
     }
   }
 
+  public fetchAllLabors = async(
+    req: Request & { labor: { id: string } },
+    res: Response,
+    next : NextFunction
+  ) => {
+    try {
+
+
+      const fetchedLabors = await this.laborService.fetchAllLabor()
+
+      return res.status(200)
+      .json({messsage : 'labors fetch succef fullyy',fetchedLabors})
+
+      
+    } catch (error) {
+      console.error("Error in fetch alll labors.... ", error);
+      next(error);
+    }
+  }
+
   public witdrowWalletAmount = async(
     req: Request & { labor: { id: string } },
     res: Response,

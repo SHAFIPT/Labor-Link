@@ -123,6 +123,19 @@ export const fetchBookings = async (bookingId) => {
     throw error;
   }
 }
+
+export const fetchLabors = async () => {
+  try {
+
+    const response = await api.get(`/api/labor/labors/fetchAllLabors`)
+    return response
+    
+  } catch (error) {
+     console.error("Error fetchBooking :", error);
+    throw error;
+  }
+}
+
 export const rejectReshedule = async (rejectionData) => {
   try {
 

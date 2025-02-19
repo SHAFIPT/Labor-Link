@@ -45,6 +45,7 @@ const UserChatPage = () => {
   const currentPages = location.pathname.split('/').pop();
   const theam = useSelector((state: RootState) => state.theme.mode)
   const isMobileChatListOpen = useSelector((state: RootState) => state.labor.isMobileChatListOpen);
+
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -164,6 +165,7 @@ const UserChatPage = () => {
   };
 
   useEffect(() => {
+    
     const auth = getAuth();
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -229,6 +231,12 @@ const UserChatPage = () => {
         `}
             >
               <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
+                <div className="px-4 py-2">
+                  <Breadcrumb
+                    items={breadcrumbItems}
+                    currentPage={currentPages}
+                  />
+                </div>
                 <div className="p-4 flex items-center justify-between">
                   <h1 className="text-xl font-bold text-slate-800">Messages</h1>
                   <span className="text-sm text-slate-500">

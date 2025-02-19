@@ -57,6 +57,7 @@ const ViewBookingDetils = () => {
     }
   };
   useEffect(() => {
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     fetchBookings();
   }, [currentPage, limit, filter]);
 

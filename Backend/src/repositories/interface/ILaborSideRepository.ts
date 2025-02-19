@@ -28,5 +28,7 @@ export interface ILaborSidRepository{
       laborId :string,
       amount: number,
       bankDetails: { accountNumber: string; bankName: string; ifscCode: string }
-    ): Promise<IWallet | null>
+  ): Promise<IWallet | null>
+  
+  fetchAllLabor(): Promise<ILaborer[] | null>
 }

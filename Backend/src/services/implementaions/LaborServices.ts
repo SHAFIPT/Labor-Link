@@ -54,4 +54,8 @@ export class LaborServices implements ILaborService{
             bankDetails
         )
     }
+
+    async fetchAllLabor(): Promise<ILaborer[] | null> {
+        return this.laborRepsitory.fetchAllLabor()
+    }
 }

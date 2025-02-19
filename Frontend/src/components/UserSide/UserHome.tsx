@@ -6,7 +6,7 @@
 // import { logout } from "../../services/UserAuthServices"
 // import { setisUserAthenticated, setUser, resetUser ,setFormData} from '../../redux/slice/userSlice'
 // import { setIsLaborAuthenticated, setLaborer  } from '../../redux/slice/laborSlice'
-import React, { lazy, Suspense, useState, useEffect , useRef } from 'react';
+import React, { lazy, Suspense, useState, useEffect , useRef, useMemo } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 // import { resetLaborer }  from '../../redux/slice/laborSlice'
@@ -39,7 +39,12 @@ import rootMap8 from '../../assets/Rating.png';
 import smImage from '../../assets/david-cainImageCompressed.jpg'
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
+import { toast } from 'react-toastify';
+import { fetchLabors } from '../../services/LaborServices';
+import StarRating from './StarRating';
+import { useNavigate } from 'react-router-dom';
 const ServiceCard = lazy(() => import('./serviceCards'))
+import { debounce } from 'lodash';
 
 const UserHome = () => {
   // console.log('iiiiiiiiiiiiiiiiiiiiiiiii');
@@ -48,15 +53,20 @@ const UserHome = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showMore, setShowMore] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [allLabors, setAllLabors] = useState([]);
+  const [isPaused, setIsPaused] = useState(false);
+  const scrollRef = useRef(0);
   const isDarkmode = useSelector((state: RootState) => state.theme.mode)
-  
+  const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
+  const navigate = useNavigate();
+
   useEffect(() => {
-    console.log('hlooooooooooooooooooooooooooo')
+    console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     console.log('isDarkMode is this', isDarkmode);
   }, [isDarkmode]);
 
+ 
   useEffect(() => {
-    console.log('hlooooooooooooooooooooooooooo')
     const preloadImages = [HomeImage, aboutImage, thridbg];
     Promise.all(
       preloadImages.map((image) => {
@@ -70,198 +80,76 @@ const UserHome = () => {
     ).then(() => setIsLoaded(true));
   }, []);
 
-  // const { user } = useSelector((state: RootState) => state.user)
-  // const { formData } = useSelector((state: RootState) => state.user.formData)
-  // const { laborer } = useSelector((state: RootState) => state.labor)
-  // const  firstName  = useSelector((state: RootState) => state.user.user.firstName)
-  // const  lastName  = useSelector((state: RootState) => state.user.user.lastName)
-  // const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
-  // const isLaborAthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-  // // // const accessToken = localStorage.getItem('accessToken');
-  // console.log('this is firstName',firstName)
-  // console.log('this is lastName',lastName)
-  // console.log('this is laborer',laborer)
-  // console.log('this is user',user)
-  // // console.log('this is role',email)
-  // console.log('this is isAthenticated',isUserAthenticated)
-  // console.log('this is isLaborAthenticated',isLaborAthenticated)
-  // const navigate = useNavigate()
-  // const dispatch = useDispatch()
-
-  // useEffect(() => {
-  //   dispatch(setisUserAthenticated(false))
-  //  dispatch(resetUser())
-  //       dispatch(setUser({}))
-  //       dispatch(setFormData({}))
-  // },[])
-
-  //   const handleLogout = async () => {
-  //     try {
-
-  //       const response = await logout()
-
-  //       console.log('this is response : ',response)
-
-  //     if (response?.status === 200) {
-  //         // Clear local storage
-  //         localStorage.removeItem('accessToken');
-  //         localStorage.removeItem('refreshToken');
-
-  //       dispatch(resetUser())
-  //       dispatch(setUser({}))
-  //       dispatch(setisUserAthenticated(false))
-  //       // Redirect to login page
-  //       toast('logout successfully....!')
-  //         navigate('/login');
-  //       } else {
-  //         console.error('Logout failed:', response);
-  //         alert('Failed to logout. Please try again.');
-  //       }
-  //     } catch (error) {
-  //       console.error('Error during logout:', error);
-  //     }
-  // };
-
-  // console.log('this is shouldShowUserName :',isUserAthenticated)
-
-  const labors = [
-    {
-      id: 1,
-      name: "John Doe",
-      occupation: "Electrician",
-      description:
-        "Hi, I'm John Doe, a seasoned Master Electrician with over 15 years of experience in the electrical industry.",
-      rating: 5,
-      image: { laborImage },
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      occupation: "Plumber",
-      description:
-        "Hi, I'm Jane Smith, a seasoned Master Plumber with over 15 years of experience in the plumbing industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      occupation: "Carpenter",
-      description:
-        "Hi, I'm Mike Johnson, a seasoned Master Carpenter with over 15 years of experience in the carpentry industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      name: "Sarah Wilson",
-      occupation: "Painter",
-      description:
-        "Hi, I'm Sarah Wilson, a seasoned Master Painter with over 15 years of experience in the painting industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      name: "Sarah Wilson",
-      occupation: "Painter",
-      description:
-        "Hi, I'm Sarah Wilson, a seasoned Master Painter with over 15 years of experience in the painting industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      name: "Sarah Wilson",
-      occupation: "Painter",
-      description:
-        "Hi, I'm Sarah Wilson, a seasoned Master Painter with over 15 years of experience in the painting industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      name: "Sarah Wilson",
-      occupation: "Painter",
-      description:
-        "Hi, I'm Sarah Wilson, a seasoned Master Painter with over 15 years of experience in the painting industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      name: "Sarah Wilson",
-      occupation: "Painter",
-      description:
-        "Hi, I'm Sarah Wilson, a seasoned Master Painter with over 15 years of experience in the painting industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      name: "Sarah Wilson",
-      occupation: "Painter",
-      description:
-        "Hi, I'm Sarah Wilson, a seasoned Master Painter with over 15 years of experience in the painting industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      name: "Sarah Wilson",
-      occupation: "Painter",
-      description:
-        "Hi, I'm Sarah Wilson, a seasoned Master Painter with over 15 years of experience in the painting industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-    {
-      id: 4,
-      name: "Sarah Wilson",
-      occupation: "Painter",
-      description:
-        "Hi, I'm Sarah Wilson, a seasoned Master Painter with over 15 years of experience in the painting industry.",
-      rating: 5,
-      image: "https://via.placeholder.com/150",
-    },
-  ];
+  useEffect(() => {
+    const fetchAllLabors = async () => {
+      try {
+        const result = await fetchLabors();
+        if (result.status === 200) {
+          const { fetchedLabors } = result.data;
+          setAllLabors(fetchedLabors);
+        } else {
+          toast.error('Error in fetching labors');
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to fetch labors');
+      }
+    };
+    fetchAllLabors();
+  }, []);
 
   useEffect(() => {
-    console.log('hlooooooooooooooooooooooooooo')
     const handleResize = () => {
       if (window.innerWidth >= 940) {
-        setDisplayCount(4); // Show 4 items for large screens
+        setDisplayCount(4);
       } else if (window.innerWidth >= 581) {
-        setDisplayCount(2); // Show 2 items for medium screens
+        setDisplayCount(2);
       } else {
-        setDisplayCount(1); // Show 1 item for small screens
+        setDisplayCount(1);
       }
     };
 
-    // Initial check
+    const debouncedHandleResize = debounce(handleResize, 100);
     handleResize();
-
-    // Add event listener
-    window.addEventListener("resize", handleResize);
-
-    // Cleanup
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener("resize", debouncedHandleResize);
+    return () => window.removeEventListener("resize", debouncedHandleResize);
   }, []);
 
-  const duplicatedLabors = [...labors, ...labors ,...labors];
-  // Auto-scrolling animation
+  const duplicatedLabors = useMemo(() => {
+    if (!Array.isArray(allLabors) || allLabors.length === 0) {
+      return [];
+    }
+    return [...allLabors, ...allLabors, ...allLabors];
+  }, [allLabors]);
+
+  const cardWidth = 400;
+
   useEffect(() => {
-    console.log('hlooooooooooooooooooooooooooo')
+    if (duplicatedLabors.length === 0 || isPaused) return;
+
     const scrollInterval = setInterval(() => {
       setScrollPosition((prevPosition) => {
-        const maxScroll = labors.length * 480; // Approximate width of each card + gap
+        const maxScroll = allLabors.length * cardWidth;
         const newPosition = prevPosition + 1;
-        return newPosition >= maxScroll ? 0 : newPosition ;
+
+        if (newPosition >= maxScroll) {
+          return 0;
+        }
+        return newPosition;
       });
-    }, 30); // Adjust speed by changing interval
+    }, 30);
 
     return () => clearInterval(scrollInterval);
-  }, [labors.length]);
+  }, [allLabors.length, isPaused, duplicatedLabors.length, cardWidth]);
+
+  const handleNavigeProfilePage = (user) => {
+    console.log('This is the user :::', user);
+    if (isUserAthenticated) {
+      navigate("/labor/ProfilePage", { state: user });
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <>
@@ -341,21 +229,24 @@ const UserHome = () => {
 
           {/* Labor cards section with responsive grid */}
           <div className=" md:block mt-16 overflow-hidden">
-            <div
-              className="flex space-x-4 sm:space-x-6 md:space-x-8 transition-transform duration-300"
-              style={{
-                transform: `translateX(-${scrollPosition}px)`,
-                width: `${duplicatedLabors.length * 400}px`,
-              }}
-            >
-              {duplicatedLabors.map((labor, index) => (
+             <div
+                className="flex space-x-4 sm:space-x-6 md:space-x-8 transition-transform duration-300 "
+                style={{
+                  transform: `translateX(-${scrollPosition}px)`,
+                  width: `${duplicatedLabors.length * 400}px`,
+                }}
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
+              >
+              {duplicatedLabors?.map((labor, index) => (
                 <div
                   key={`${labor.id}-${index}`}
                   className="flex-shrink-0 bg-white rounded-lg shadow-md
               w-72 sm:w-80 md:w-96
               p-4 sm:p-5 md:p-6
               flex items-start gap-4 sm:gap-5 md:gap-6
-              hover:shadow-lg transition-shadow duration-300"
+              hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                  onClick={() => handleNavigeProfilePage(labor)}
                 >
                   <div
                     className="rounded-lg overflow-hidden
@@ -363,7 +254,7 @@ const UserHome = () => {
               flex-shrink-0"
                   >
                     <img
-                      src={laborImage}
+                      src={labor?.profilePicture}
                       alt={labor.name}
                       className="w-full h-full object-cover"
                     />
@@ -375,35 +266,23 @@ const UserHome = () => {
                         className="font-semibold text-gray-800 truncate
                   text-sm sm:text-base md:text-lg lg:text-xl"
                       >
-                        {labor.name}
+                        {labor.firstName} {labor.lastName}
                       </h3>
-                      <div className="flex items-center w-20 sm:w-24 md:w-28 lg:w-32">
-                        {[...Array(labor.rating)].map((_, starIndex) => (
-                          <svg
-                            key={starIndex}
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="#118577"
-                            viewBox="0 0 24 24"
-                            className="w-4 sm:w-5 md:w-6"
-                          >
-                            <path d="M12 2c.38 0 .74.214.93.555l2.33 4.755 5.242.763c.387.056.727.304.902.66.175.356.155.777-.053 1.11l-3.795 4.787.878 5.367c.063.384-.096.775-.409 1.007-.313.233-.732.27-1.084.096l-4.944-2.501-4.945 2.501c-.352.174-.771.137-1.084-.096-.313-.232-.472-.623-.409-1.007l.878-5.367-3.795-4.787c-.208-.333-.228-.754-.053-1.11.175-.356.515-.604.902-.66l5.242-.763L11.07 2.555c.19-.341.55-.555.93-.555z" />
-                          </svg>
-                        ))}
-                      </div>
+                     <StarRating rating={labor.rating} />
                     </div>
 
                     <p
                       className="text-gray-500 mt-2
                 text-xs sm:text-sm md:text-base lg:text-lg"
                     >
-                      {labor.occupation}
+                      {labor?.categories[0]}
                     </p>
 
                     <p
                       className="text-gray-600 mt-2 line-clamp-2
                 text-xs sm:text-sm md:text-base"
                     >
-                      {labor.description}
+                      {`Hi, I'm ${labor.firstName} ${labor.lastName}, a seasoned ${labor.categories[0]} with experience in the ${labor.categories[0]} industry.`}
                     </p>
                   </div>
                 </div>
@@ -411,7 +290,7 @@ const UserHome = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div>  
 
       {/* AboutPage */}
 

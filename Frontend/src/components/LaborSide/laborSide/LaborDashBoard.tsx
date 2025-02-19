@@ -79,6 +79,7 @@ const LaborDashBoard = () => {
 
 
 
+
   // console.log("this is the laborer ,,", laborer);
   // console.log("this is the authenitcted ,,", isLaborAuthenticated);
 
@@ -270,7 +271,7 @@ const LaborDashBoard = () => {
       const chatData = await Promise.all(
         chatSnapshot.docs.map(async (doc) => {
           const chatData = doc.data() as ChatDocument;
-         
+
           // Get the latest message for sorting
           const messagesCollection = collection(
             db,
@@ -291,6 +292,12 @@ const LaborDashBoard = () => {
           // Calculate unread count
           let unreadCount = 0;
           if (chatData.lastMessageSender === "user") {
+            const messagesCollection = collection(
+              db,
+              "Chats",
+              doc.id,
+              "messages"
+            );
             const unreadQuery = query(
               messagesCollection,
               where(
@@ -1552,7 +1559,7 @@ useEffect(() => {
 
                       {/* Chat List */}
                       <div className="h-[calc(100%-8rem)] overflow-y-auto">
-                        <div className=" divide-y divide-[#3B3B4F]">
+                        <div className=" h-[calc(108vh-rem)] divide-y divide-[#3B3B4F]">
                           {chats.length > 0 ? (
                             chats.map((chat) => (
                               <div

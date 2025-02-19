@@ -127,6 +127,7 @@ const LaborRegister = () => {
   }, [formData ,dispatch]);
 
   useEffect(() => {
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const handleBeforeunLoad = (event: BeforeUnloadEvent) => {
       if (unsavedChanges) {
         event.preventDefault()
@@ -163,7 +164,8 @@ const LaborRegister = () => {
       dispatch(setUnsavedChanges(true)) // Mark the form as dirty
   };
 
-      useEffect(() => {
+  useEffect(() => {
+         console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     setAddress({
       street: formData.address?.street || '',
       city: formData.address?.city || '',

@@ -103,7 +103,8 @@ const ReviewAndRating = () => {
         };
 
 
-        useEffect(() => {
+    useEffect(() => {
+             console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
             const fetchBooking = async () => {
                 const response = await fetchBookingWithId(bookingId)
                 if (response.status === 200) {

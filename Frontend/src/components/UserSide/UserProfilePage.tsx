@@ -121,6 +121,7 @@ const UserProfile = () => {
 
   useEffect(() => {
     // console.log('hlooooooooooooooooooooooooooo')
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const fetchUser = async () => {
       try {
         const data = await userFetch();
@@ -334,7 +335,7 @@ const UserProfile = () => {
   
 
   useEffect(() => {
-    console.log('hlooooooooooooooooooooooooooo')
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const fetchBooking = async () => {
       try {
         const response = await fetchBookings(currentPage, limit , filter); // Assuming fetchBookings is an API call

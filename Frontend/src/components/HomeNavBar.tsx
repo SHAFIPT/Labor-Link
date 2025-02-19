@@ -98,6 +98,7 @@ const HomeNavBar = () => {
   // const toggleMenu = () => setIsOpens(!isOpen);
 
   useEffect(() => {
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const handleScroll = () => {
       // Check if page is scrolled more than 50px
       setIsScrolled(window.scrollY > 50);
@@ -148,7 +149,7 @@ const HomeNavBar = () => {
   const shouldShowUserName = isUserAthenticated 
   // const shouldShowLaborName = isLaborAuthenticated 
   useEffect(() => {
-    console.log('hlooooooooooooooooooooooooooo')
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     console.log('shouldShowUserName :', shouldShowUserName)
     
   },[shouldShowUserName])
@@ -248,7 +249,7 @@ const HomeNavBar = () => {
   };
 
   useEffect(() => {
-    console.log('hlooooooooooooooooooooooooooo')
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const auth = getAuth();
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -266,7 +267,7 @@ const HomeNavBar = () => {
   
    
   const handleLogout = useCallback(async () => {
-    console.log('hlooooooooooooooooooooooooooo')
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     try {
       const response = await logout();
       
@@ -299,6 +300,18 @@ const HomeNavBar = () => {
     }
   }, [dispatch, navigate]);
 
+
+  // useEffect(() => {
+  //      localStorage.removeItem('LaborAccessToken');
+  //             dispatch(resetUser())
+  //             dispatch(resetLaborer())
+  //             dispatch(setLaborer({}))
+  //             dispatch(setFormData({}))
+  //           dispatch(setIsLaborAuthenticated(false))
+  //            persistor.purge();
+  //             toast('logout successfully....!')
+  //             navigate('/');
+  //   },[])
 
 
 // useEffect(() => {

@@ -74,6 +74,14 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   console.log('laaaaaaaaaaaaaay suguuu',allBookingExist)
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const theam = useSelector((state: RootState) => state.theme.mode);
+  const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated);
+  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
+
+
+  console.log('is laborAuthenticcate :::::',isLaborAuthenticated)
+  console.log('is isUserAthenticated :::::',isUserAthenticated)
+
+
   const [userAddress, setUserAddress] = useState({
     name: "",
     phone: "",
@@ -398,7 +406,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       }
 
       const ChatData = chatSnap.data();
-      const { laborId, userId } = ChatData;
+      const { laborId } = ChatData;
 
       // console.log("Thsi is the Loabor id from chat lllllllllllllkkkkkkkkkkkkkkkkkkk",laborId)
       // console.log("Thsi is the User id from chat lllllllllllllkkkkkkkkkkkkkkkkkkkk", userId)
@@ -730,7 +738,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                     name="description"
                     value={quoteData.description}
                     onChange={handleChange}
-                    rows="4"
+                    rows={4}
                     className="w-full mt-2 p-2 border border-gray-300 rounded-lg"
                     placeholder="Enter a description of the work..."
                   />
@@ -802,7 +810,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                     name="description"
                     value={quoteData.description}
                     onChange={handleChange}
-                    rows="4"
+                    rows={4}
                     className="w-full mt-2 p-2 border text-black border-gray-600 rounded-lg"
                     placeholder="Enter a description of the work..."
                   />
@@ -867,12 +875,14 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         <div className="flex flex-col h-full bg-slate-50">
           {/* Header */}
           <div className="flex items-center px-4 py-3 bg-white text-gray-900 shadow-md border-gray-200">
-            <button
-              onClick={() => window.history.back()}
-              className="md:hidden p-2 hover:bg-gray-200 rounded-full transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
-            </button>
+             {isUserAthenticated && (
+                <button 
+                onClick={() => window.history.back()} 
+                className="hidden md:block text-black px-2 py-1 rounded-lg"
+              >
+                ← Back
+              </button>
+                )}
 
             <div className="flex items-center flex-1 min-w-0 ml-2">
               <div className="relative">
@@ -902,7 +912,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                       : participants.labor.name || "/default-avatar.png"
                   }
                 </h1>
-                {Object.keys(userLogin).length === 0 && (
+                {/* {Object.keys(userLogin).length === 0 && (
                   <div className="flex items-center gap-0.5">
                     {[...Array(5)].map((_, i) => (
                       <Star
@@ -911,7 +921,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                       />
                     ))}
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           </div>
@@ -919,27 +929,16 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
           {/* Messages Area */}
           <div
             className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
-            style={{
-              background:
-                "linear-gradient(to bottom, #1E1E2E, #2A2A3B, #3B3B4F)", // Dark gradient colors
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundAttachment: "fixed",
-              scrollbarWidth: "none", // Firefox
-              msOverflowStyle: "none", // IE/Edge
-              "&::-webkit-scrollbar": {
-                // Webkit (Chrome, Safari)
-                display: "none",
-              },
-            }}
+           
           >
-            {messages.map((message) => {
+            {messages.map((message, index) => {
               const isCurrentUser = message.senderId === auth.currentUser?.uid;
               const isLabor = message.senderId === chatDetails?.laborId;
               const senderProfilePic = isLabor
                 ? participants.labor.profilePicture
                 : participants.user.profilePicture;
-                 const isQuoteMessage = message.type === "quote";
+              const isQuoteMessage = message.type === "quote";
+              const isDisabled = messages.slice(index + 1).some(m => m.type === "quote");
 
               return (
                   <div
@@ -958,6 +957,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                         participants={participants}
                         onAcceptQuote={handleAcceptQuote}
                         isLabor={isLabor}
+                        isDisabled={isDisabled}
                       />
                     )}
 
@@ -988,19 +988,21 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                               ${isCurrentUser ? "bg-[#cdffcd] rounded-tr-none" : "bg-[#b0b0f4] rounded-tl-none"}
                             `}
                           >
-                            {message.type === "image" ? (
-                                <img
-                                  src={message.mediaUrl}
-                                  alt="Shared"
-                                  className="rounded-lg max-w-[250px] max-h-[250px] object-cover"
-                                />
-                              ) : message.type === "video" ? (
-                                <video
-                                  src={message.mediaUrl}
-                                  controls
-                                  className="rounded-lg max-w-[250px] max-h-[250px]"
-                                />
-                              ) : null}
+                            {message.type === "text" ? (
+                            <p className="text-gray-800 text-sm">{message.content}</p>
+                          ) : message.type === "image" ? (
+                            <img
+                              src={message.mediaUrl}
+                              alt="Shared"
+                              className="rounded-lg max-w-[250px] max-h-[250px] object-cover"
+                            />
+                          ) : message.type === "video" ? (
+                            <video
+                              src={message.mediaUrl}
+                              controls
+                              className="rounded-lg max-w-[250px] max-h-[250px]"
+                            />
+                          ) : null}
 
                           </div>
                         </div>
@@ -1119,12 +1121,14 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
             }`}
             >
                {/* Back Arrow Button (Only visible on screens ≥ 768px) */}
-              <button 
+              {isUserAthenticated && (
+                <button 
                 onClick={() => window.history.back()} 
                 className="hidden md:block text-white px-2 py-1 rounded-lg"
               >
                 ← Back
               </button>
+                )}
             {!isMobileChatListOpen && (
               <button
                 onClick={() => dispatch(toggleMobileChatList())}
@@ -1162,7 +1166,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                       : participants.labor.name || "/default-avatar.png"
                   }
                 </h1>
-                {Object.keys(userLogin).length === 0 && (
+                {/* {Object.keys(userLogin).length === 0 && (
                   <div className="flex items-center gap-0.5">
                     {[...Array(5)].map((_, i) => (
                       <Star
@@ -1171,7 +1175,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                       />
                     ))}
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           </div>
@@ -1191,7 +1195,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
               msOverflowStyle: "none", // IE/Edge
             }}
           >
-            {messages.map((message) => {
+            {messages.map((message,index) => {
               const isCurrentUser = message.senderId === auth.currentUser?.uid;
               const isLabor = message.senderId === chatDetails?.laborId;
               const senderProfilePic = isLabor
@@ -1199,7 +1203,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                 : participants.user.profilePicture;
               
               const isQuoteMessage = message.type === "quote";
-
+               const isDisabled = messages.slice(index + 1).some(m => m.type === "quote");  
               
               
           
@@ -1220,6 +1224,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                         participants={participants}
                         onAcceptQuote={handleAcceptQuote}
                         isLabor={isLabor}
+                        isDisabled={isDisabled}
                       />
                     )}
 

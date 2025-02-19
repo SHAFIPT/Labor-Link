@@ -36,7 +36,8 @@ const CancellationModal = ({ booking, onClose, isOpen }) => {
 
     console.log("HHHHHHHHHHHHHHHHHH",booking?.laborId.location?.coordinates[1])
 
-    useEffect(() => {
+  useEffect(() => {
+       console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
         const fetchSimilaorLabors = async () => {
             dispath(setLoading(true))
             try {

@@ -10,7 +10,7 @@ export interface IAboutMe {
 }
 
 export interface ILaborer extends Document {
-    _id?: string;
+    _id: string;
   firstName: string;
   lastName: string;
   email: string;

@@ -21,6 +21,7 @@ laborRoutes.patch('/acceptRequst/:bookingId',laborSideContorller.acceptRequst.bi
 laborRoutes.patch('/rejectRequst/:bookingId', laborSideContorller.rejectRequst.bind(laborSideContorller))
 laborRoutes.get('/fetchIsBookingExist', laborSideContorller.fetchIsBookingExist.bind(laborSideContorller))
 laborRoutes.get('/fetchAllBookingOfLabor', laborSideContorller.fetchAllBookingOfLabor.bind(laborSideContorller))
+laborRoutes.get('/fetchAllLabors', laborSideContorller.fetchAllLabors.bind(laborSideContorller))
 laborRoutes.post('/witdrowWalletAmount',authenticateLabor, laborSideContorller.witdrowWalletAmount.bind(laborSideContorller))
 
 export default laborRoutes             
