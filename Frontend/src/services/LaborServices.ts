@@ -191,6 +191,17 @@ export const rejectRequst = async (bookingId) => {
     throw error;
   }
 }
+export const fetchWithdrowalRequests = async (laborId) => {
+  try {
+
+    const response = await api.get(`/api/labor/labors/withdrowalRequests/${laborId}`)
+    return response
+    
+  } catch (error) {
+     console.error("Error fetchBooking :", error);
+    throw error;
+  }
+}
 export const fetchIsBookingExist = async (participentsData) => {
   try {
 

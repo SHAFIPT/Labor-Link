@@ -25,7 +25,7 @@ import './LaborProfile.css'
 import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import LaborDashBoardNav from "./LaborDashBoardNav"
-import { aboutMe, editPassword, laborFetch, updateProfile } from "../../../services/LaborServices"
+import { aboutMe, editPassword, fetchLabors, fetchLaobrs, laborFetch, updateProfile } from "../../../services/LaborServices"
 import { validateAddress, validateAvailability, validateEndTime, validateFirstName, validateLanguage, validateLastName, validatePassword, validatePhoneNumber, validateSkill, validateStartTime } from "../../../utils/laborRegisterValidators"
 import { ILaborer } from "../../../@types/labor"
 import ChatComponets from "../../ChatPage/ChatComponets"
@@ -33,6 +33,7 @@ import { getDocs, query, collection, where, updateDoc, doc, getFirestore, server
 import { db , app } from '../../../utils/firbase';
 import Breadcrumb from "../../BreadCrumb"
 import { sendPasswordResetEmail } from "firebase/auth"
+import Footer from "../../Footer"
 
 const LaborProfile = () => {
     const dispatch = useDispatch()
@@ -49,9 +50,12 @@ const LaborProfile = () => {
   const loading = useSelector((state : RootState) => state.labor.loading)
   const currentUser = useSelector((state: RootState) => state.labor.laborer._id)
   const { state: user } = useLocation();
+
+  
   
  
-  console.log('Thsi is eth current Laborer Laborer  +++++++++++++++ :',user)
+  console.log('Thsi is eth current Laborer shafiiii Laborer  +++++++++++++++ :',user)
+  console.log('Thsi is eth current Laborer aaaaaaabuu Laborer  +++++++++++++++ :',Laborer)
   // console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
   const location = useLocation();
   const currentPage = location.pathname.split('/').pop();
@@ -63,7 +67,9 @@ const LaborProfile = () => {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [openChangePassword , setOpenChangePasswod] = useState(false)
+  const [openChangePassword, setOpenChangePasswod] = useState(false)
+  const [similorLabors, setSimilorLabors] = useState<ILaborer[]>([])
+  console.log('%%%%%%%%%%%%%##########&&&&&&&&',similorLabors)
   const [AboutFromData, setAboutFromData] = useState({
     name: "",
     experience: "",
@@ -149,6 +155,24 @@ const error: {
   // });
   // When initially loading dat
   // console.log('Theis is the console.log(error)-----++++-----',error);
+
+  const laborId = user?._id;
+  const categorie = user?.categories?.[0];
+  const latitude = user?.location?.coordinates?.[1]; // Latitude
+  const longitude = user?.location?.coordinates?.[0]; // Longitude
+
+useEffect(() => {
+  const fetchSimilarLabors = async () => {
+    if (latitude && longitude && categorie && laborId) {
+      const response = await fetchLaobrs({ latitude, longitude, categorie, laborId }); // Pass an object
+      console.log('rooooooooooooooooooI*******************', response);
+      const { labors } = response.data
+      setSimilorLabors(labors)
+    }
+  };
+
+  fetchSimilarLabors();
+}, [latitude, longitude, categorie, laborId]); 
 
 
     const handleEditProfile = () => {
@@ -338,8 +362,8 @@ const prepareAvailabilityForSubmission = () => {
   return days;
   };
   
-  console.log('Thsi is eth current user:', user)
-  console.log('Thsi is eth current Laborer :', Laborer)
+  // console.log('Thsi is eth current user:', user)
+  // console.log('Thsi is eth current Laborer :', Laborer)
 
 
    
@@ -842,6 +866,10 @@ const findLaborIdByEmail = async (email) => {
   //   { label: "Home", link: "/" },
   //   { label: "LaborProfilePage", link: null }, // No link for the current page
   // ];
+
+    const handleNavigeProfilePage = (user) => {
+      navigate("/labor/ProfilePage", { state: user });
+  };
 
   
 
@@ -1674,10 +1702,10 @@ const findLaborIdByEmail = async (email) => {
                           <Edit className="w-4 h-4" />
                           Edit Profile
                         </button>
-                        <button className="flex w-[200px] items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#5560A8]   rounded-full  transition-colors">
-                          <Wallet className="w-4 h-4" />
-                          My Wallet
-                        </button>
+                          {/* <button className="flex w-[200px] items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#5560A8]   rounded-full  transition-colors">
+                            <Wallet className="w-4 h-4" />
+                            My Wallet
+                          </button> */}
                       </div>
                     </>
                   )}
@@ -1758,7 +1786,7 @@ const findLaborIdByEmail = async (email) => {
                     </div>
 
                     {/* Save Button */}
-                    {Object.keys(Laborer).length === 0 &&
+                    {Object.keys(Laborer).length === 0 && 
                       (user || Object.keys(user).length !== 0) && (
                         <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                           <Heart className="w-5 h-5 text-gray-600" />
@@ -1829,11 +1857,14 @@ const findLaborIdByEmail = async (email) => {
                       </div>
                     </div>
 
-                    {/* Save Button */}
+                      {/* Save Button */}
+                      {isUserAuthenticated && (
+
                     <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border rounded-md hover:bg-gray-500 transition-colors">
                       <Heart className="w-5 h-5 " />
                       <span>Save</span>
                     </button>
+                      )}
                   </div>
                 </div>
               )}
@@ -1879,7 +1910,7 @@ const findLaborIdByEmail = async (email) => {
                     )}
                   </div>
                 </div>
-                {Laborer && Object.keys(Laborer).length > 0 && (
+                {/* {Laborer && Object.keys(Laborer).length > 0 && (
                   <div className="flex flex-col sm:flex-row sm:space-x-9 space-y-4 sm:space-y-0 lg:mt-[195px] md:mt-[34px] sm:mt-[34px] mt-[45px]">
                     <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
                       Total Works and Earnings
@@ -1888,7 +1919,7 @@ const findLaborIdByEmail = async (email) => {
                       View Current Status
                     </button>
                   </div>
-                )}
+                )} */}
               </div>
             ) : (
               <div className="lg:w-[400px] lg:ml-36 sm:w-full">
@@ -1936,7 +1967,7 @@ const findLaborIdByEmail = async (email) => {
                   </div>
                 </div>
 
-                {Laborer && Object.keys(Laborer).length > 0 && (
+                {/* {Laborer && Object.keys(Laborer).length > 0 && (
                   <div className="flex flex-col sm:flex-row sm:space-x-9 space-y-4 sm:space-y-0 lg:mt-[195px] md:mt-[34px] sm:mt-[34px] mt-[45px]">
                     <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
                       Total Works and Earnings
@@ -1945,7 +1976,7 @@ const findLaborIdByEmail = async (email) => {
                       View Current Status
                     </button>
                   </div>
-                )}
+                )} */}
               </div>
             )}
           </div>
@@ -2158,17 +2189,18 @@ const findLaborIdByEmail = async (email) => {
           {/* Read More Button */}
           {/* console.log("This is the user object length ++___))((((()))))::", )
   console.log("This is the user object length ++___))((((()))))::", ) */}
-          {Object.keys(Laborer).length !== 0 && (
-            <div className="mt-8">
-              <button
-                className="group relative inline-block text-[#21A391] text-sm sm:text-base md:text-lg lg:text-[17px] font-semibold transition-colors duration-300 hover:text-[#1a8275]"
-                onClick={handleEdit}
-              >
-                EDIT
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#21A391] transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
-              </button>
-            </div>
-          )}
+          {Laborer && Laborer?.aboutMe && (
+          <div className="mt-8">
+            <button
+              className="group relative inline-block text-[#21A391] text-sm sm:text-base md:text-lg lg:text-[17px] font-semibold transition-colors duration-300 hover:text-[#1a8275]"
+              onClick={handleEdit}
+            >
+              EDIT
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#21A391] transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
+            </button>
+          </div>
+        )}
+
 
           {/* {(submittedData && (!Laborer?.aboutMe || Object.keys(Laborer?.aboutMe).length > 0) && (Object.keys(user).length === 0)) && (
              
@@ -2298,115 +2330,73 @@ const findLaborIdByEmail = async (email) => {
     </div>
 
       {/* <div className="underLine h-[3px] bg-[#ECECEC] flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1200px] my-4"></div> */}
+      {isUserAuthenticated && (
 
-      <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12">
-        <div className="sm:max-w-3xl md:max-w-[1200px] mx-auto">
-          <h2 className="font-sans text-xl sm:text-2xl md:text-3xl lg:text-[19px] font-semibold mb-12">
-            Similar Labors
-          </h2>
-          <div className="space-y-6 lg:space-y-4">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center">
-              {/* Container for image and user info in mobile */}
-              <div className="w-full flex items-start mb-4 lg:mb-0">
-                {/* User Image */}
-                <div className="flex-shrink-0 lg:mr-4">
-                  <img
-                    className="w-16 h-16 rounded-full object-cover"
-                    src={char}
-                    alt="User Avatar"
-                  />
-                </div>
+ <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12 cursor-pointer">
+  <div className="max-w-3xl md:max-w-5xl lg:max-w-6xl mx-auto">
+    <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-semibold mb-8 text-center">
+      Similar Labors
+    </h2>
 
-                {/* User Info Container */}
-                <div className="ml-4 flex-grow">
-                  <h3 className="text-lg font-semibold ">Alexander</h3>
-                  <div className="flex items-center space-x-3 mb-2">
-                    {/* Star Rating */}
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, index) => (
-                        <svg
-                          key={index}
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 text-[#21A391]"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      ))}
-                    </div>
-                    <span className="text-sm ">May 08, 2024</span>
-                  </div>
-                  <h3 className="text-[12px] font-semibold ">Electrician</h3>
-                </div>
-              </div>
+    {similorLabors.length > 0 ? (
+      <div className="space-y-6 lg:space-y-4">
+        {similorLabors.slice(0, 2).map((labor, index) => (
+          <div
+            key={index}
+            className="flex flex-col lg:flex-row items-center lg:items-start border shadow-md rounded-lg p-6 lg:p-8 transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.02]"
+            onClick={() => handleNavigeProfilePage(labor)}
+          >
+            {/* User Image */}
+            <div className="flex-shrink-0 mb-4 lg:mb-0 lg:mr-6">
+              <img
+                className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full object-cover border border-gray-300 transition-transform duration-300 hover:brightness-110"
+                src={labor.profilePicture || 'default-avatar-url'}
+                alt={labor.firstName}
+              />
             </div>
-            <p className="text-sm sm:text-base md:text-lg lg:text-[12px] ">
-              <span className="font-semibold">Expertise :</span> Residential
-              Electrical Systems , Wiring and Circuit Design
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* <div className="underLine h-[3px] bg-gray-200 flex justify-center mx-auto w-full sm:w-[300px] md:w-[700px] lg:w-[1100px] my-4"></div>    */}
-
-      <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-1">
-        <div className="sm:max-w-3xl md:max-w-[1200px] mx-auto">
-          <div className="space-y-6 lg:space-y-4">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center">
-              {/* Container for image and user info in mobile */}
-              <div className="w-full flex items-start mb-4 lg:mb-0">
-                {/* User Image */}
-                <div className="flex-shrink-0 lg:mr-4">
-                  <img
-                    className="w-16 h-16 rounded-full object-cover"
-                    src={char}
-                    alt="User Avatar"
-                  />
-                </div>
-
-                {/* User Info Container */}
-                <div className="ml-4 flex-grow">
-                  <h3 className="text-lg font-semibold ">Alexander</h3>
-                  <div className="flex items-center space-x-3 mb-2">
-                    {/* Star Rating */}
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, index) => (
-                        <svg
-                          key={index}
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 text-[#21A391]"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          aria-hidden="true"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      ))}
-                    </div>
-                    <span className="text-sm ">May 08, 2024</span>
-                  </div>
-                  <h3 className="text-[12px] font-semibold ">Electrician</h3>
-                </div>
+            {/* User Info */}
+            <div className="flex-grow text-center lg:text-left">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-semibold transition-colors duration-300 hover:text-[#21A391]">
+                {labor.firstName} {labor.lastName}
+              </h3>
+              <div className="flex justify-center lg:justify-start items-center space-x-1 mt-2">
+                {[...Array(5)].map((_, starIndex) => (
+                  <svg
+                    key={starIndex}
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`w-5 h-5 md:w-6 md:h-6 ${starIndex < labor.rating ? 'text-[#21A391]' : 'text-gray-300'}`}
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 15.27l4.47 2.34-1.25-5.17 3.97-3.86-5.2-.45L10 0l-2.99 7.13-5.2.45 3.97 3.86-1.25 5.17L10 15.27z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ))}
               </div>
+              <h3 className="text-sm sm:text-base font-semibold mt-2">
+                {labor?.categories[0]}
+              </h3>
+              <p className="mt-2 text-sm sm:text-base md:text-lg line-clamp-2 transition-colors duration-300 hover:text-gray-700">
+                {`Hi, I'm ${labor.firstName} ${labor.lastName}, a seasoned ${labor.categories[0]} with experience in the ${labor.categories[0]} industry.`}
+              </p>
             </div>
-            <p className="text-sm sm:text-base md:text-lg lg:text-[12px] ">
-              <span className="font-semibold">Expertise :</span> Residential
-              Electrical Systems , Wiring and Circuit Design
-            </p>
           </div>
-        </div>
+        ))}
       </div>
+    ) : (
+      <p className="text-center text-lg font-semibold text-gray-500">No Similar Labor Found</p>
+    )}
+  </div>
+</div>
+      )}
+
+
+{/* <Footer/> */}
     </>
   );
 }

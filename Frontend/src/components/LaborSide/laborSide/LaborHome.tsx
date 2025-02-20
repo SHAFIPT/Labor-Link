@@ -2,19 +2,78 @@ import { useSelector } from "react-redux";
 import "./LaborHome.css";
 import { Link } from "react-router-dom";
 import { RootState } from "../../../redux/store/store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ScreenSort from "../../../assets/CommpressedLaborScreenShort.png";
 import ServiceCard from "../../UserSide/serviceCards";
 import Frame1 from "../../../assets/Fram1.png";
 import Frame2 from "../../../assets/Frame2.png";
 import Frame3 from "../../../assets/Frame3.png";
 import FramedServiceCard from "./FramedSuviceCard";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import Footer from "../../Footer";
 
 const LaborHome = () => {
   const labor = useSelector((state: RootState) => state.labor.formData);
   // useEffect(() => {
   //   console.log('this is labor',labor)
   // })
+
+
+  const faqs = [
+    {
+      question: "How does this platform work?",
+      answer:
+        "Our platform connects users with laborers based on location. Users can review your profile, chat with you in real time, receive a quote, and book your service.",
+    },
+    {
+      question: "How do I register as a laborer?",
+      answer:
+        "You can register by signing up on our website, providing your details, and selecting your skills. After registration, set your location to start receiving job requests.",
+    },
+    {
+      question: "How do I receive job requests?",
+      answer:
+        "Users searching for labor in your location can view your profile. If they find your profile suitable, they will initiate a chat and request a quote.",
+    },
+    {
+      question: "How do I provide a quote?",
+      answer:
+        "Once a user contacts you, discuss the work details and provide an estimated quote. If the user agrees, they can confirm the booking.",
+    },
+    {
+      question: "Can I update the quote after work starts?",
+      answer:
+        "Yes, if additional work is required, you can request an updated quote. The user must accept the new amount before proceeding.",
+    },
+    {
+      question: "How do I get paid?",
+      answer:
+        "Once the job is completed and the user confirms it, they proceed with payment. We deduct a commission and credit the remaining amount to your wallet.",
+    },
+    {
+      question: "What happens if a user cancels after booking?",
+      answer:
+        "If a user cancels, no payment will be processed. However, frequent cancellations from a user may affect their account status.",
+    },
+    {
+      question: "How does the review and rating system work?",
+      answer:
+        "After job completion, the user can rate and review your service. Higher ratings improve your visibility and chances of getting more jobs.",
+    },
+    {
+      question: "What should I do if I face issues with a user?",
+      answer:
+        "If you encounter any disputes, you can report the issue through our support system. We will review the case and take necessary action.",
+    },
+    {
+      question: "Can I change my availability status?",
+      answer:
+        "Yes, you can mark yourself as unavailable if you’re not accepting work. This will prevent new users from contacting you until you reactivate availability.",
+    },
+  ];
+
+    const [openIndex, setOpenIndex] = useState(null);
+
   return (
     <>
       <div className="relative w-full overflow-hidden">
@@ -69,6 +128,9 @@ const LaborHome = () => {
               <button
                 className="bg-[#D5FBF4] dark:bg-[#D5FBF4] text-black px-6 py-3 rounded-xl
                        hover:bg-[#b8f0e6] transition-colors duration-300 text-sm sm:text-base"
+                onClick={() => document.getElementById('faqSection')
+                  .scrollIntoView({behavior : 'smooth'})
+                }
               >
                 Frequently asked questions
               </button>
@@ -155,138 +217,49 @@ const LaborHome = () => {
           </div>
         </div>
       </div>
-      <div className="frequentilyAskedQuestions bg-gray-100 py-10">
-        <div className="container mx-auto flex  flex-wrap md:flex-nowrap  gap-8 md:space-x-[330px] px-4">
+       <section id="faqSection" className="bg-gray-100 py-12">
+      <div className="container mx-auto px-6 md:px-12">
+        <div className="flex flex-col md:flex-row gap-10 items-start">
           {/* Left Side */}
-          <div className="md:w-1/3 w-full">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800">
-              Frequently asked: -
+          <div className="md:w-1/3">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800">
+              Frequently Asked Questions
             </h1>
-            <h4 className="text-gray-600 mt-4 text-base sm:text-lg">
+            <p className="text-gray-600 mt-4 text-lg">
               Can’t find the answer you’re looking for? Reach out to our{" "}
-              <span className="text-blue-600 font-semibold">
+              <span className="text-blue-600 font-semibold cursor-pointer">
                 customer support
               </span>{" "}
               team.
-            </h4>
+            </p>
           </div>
 
-          {/* Right Side */}
-          <div className="md:w-2/3 w-full">
-            {/* Question and Answer Block */}
-            <div className="space-y-6 font-[inter]">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) What is the return policy?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * You can return items within 30 days of purchase with the
-                  original receipt.
-                </p>
+          {/* Right Side - FAQ Accordion */}
+          <div className="md:w-2/3 w-full bg-white p-6 shadow-lg rounded-lg">
+            {faqs.map((faq, index) => (
+              <div key={index} className="border-b border-gray-200">
+                <button
+                  onClick={() =>
+                    setOpenIndex(openIndex === index ? null : index)
+                  }
+                  className="flex items-center justify-between w-full py-4 text-left text-lg font-semibold text-gray-800 hover:text-blue-600 transition-all"
+                >
+                  {faq.question}
+                  {openIndex === index ? (
+                    <FaChevronUp className="text-blue-600" />
+                  ) : (
+                    <FaChevronDown className="text-gray-600" />
+                  )}
+                </button>
+                {openIndex === index && (
+                  <p className="text-gray-600 px-4 pb-4">{faq.answer}</p>
+                )}
               </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) How do I track my order?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Use the tracking number sent to your email to track your
-                  package on our website.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Q) Do you offer international shipping?
-                </h2>
-                <p className="text-gray-600 mt-2 pl-4">
-                  * Yes, we ship to most countries worldwide. Additional
-                  shipping charges may apply.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
+    </section>
 
       <div className="viewBaner bg-[#1C3D7A] text-white py-16">
         {/* Centered Header */}
@@ -295,14 +268,15 @@ const LaborHome = () => {
             Become part of the leading <br /> labor community
           </h1>
           {/* Button */}
-          <button
+          <Link to="/labor/registerPage"
             className="mt-6 px-6 py-3 bg-[#FFCD38] text-[#1C3D7A] font-semibold 
                  rounded-md shadow-md hover:bg-[#FFC107] transition-all duration-300"
           >
             Become a labor
-          </button>
+          </Link>
         </div>
       </div>
+      <Footer/>
     </>
   );
 };

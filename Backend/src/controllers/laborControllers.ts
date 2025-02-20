@@ -9,6 +9,9 @@ import { error } from "console";
 import { IBookingSerivese } from "../services/interface/IBookingServices";
 import BookingRepository from "../repositories/implementaions/BookingRepository";
 import BookingServices from "../services/implementaions/BookingServices";
+import { IPaymentService } from "../services/interface/IPaymnetService";
+import PaymnetRepository from "../repositories/implementaions/PaymentRepository";
+import PaymentService from "../services/implementaions/PaymentService";
 
 
 interface DecodedToken {
@@ -21,13 +24,16 @@ interface DecodedToken {
 
 class laborSideController {
   private laborService: ILaborService;
-  private bookingService : IBookingSerivese
+  private bookingService: IBookingSerivese;
+  private paymentService : IPaymentService
 
   constructor() {
     const laborRepository = new LaborSideRepository();
-    const bookingRepository = new BookingRepository()
+    const bookingRepository = new BookingRepository();
+    const paymentRepository = new PaymnetRepository()
     this.laborService = new LaborServices(laborRepository);
     this.bookingService = new BookingServices(bookingRepository)
+    this.paymentService = new PaymentService(paymentRepository)
   }
 
   public fetchLabors = async (
@@ -680,6 +686,34 @@ class laborSideController {
       
     } catch (error) {
       console.error("Error in withdrawal request: ", error);
+      next(error);
+    }
+  }
+
+  public withdrowalRequests = async (
+    req: Request,
+    res: Response,
+    next : NextFunction
+  ) => {
+    const { laborId } = req.params
+    
+    try {
+
+      if (!laborId) {
+            return res.status(400).json({ message: "laborId ID is required" });
+      }
+
+
+      const withdrowalRequests = await this.paymentService.withdrowalRequests(
+        laborId
+      )
+
+       res.status(200)
+        .json({message : 'withdrowal Requsets fetched succussfully......',withdrowalRequests })
+
+
+    } catch (error) {
+      console.error("Error in witthrowal requests....: ", error);
       next(error);
     }
   }

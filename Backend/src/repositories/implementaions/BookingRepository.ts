@@ -719,9 +719,9 @@ export default class BookingRepository
         laborId: labor._id,
       }).sort({ createdAt: -1 });
 
-      if (!existingBooking) {
-        throw new Error("No confirmed booking found");
-      }
+      // if (!existingBooking) {
+      //   throw new Error("No confirmed booking found");
+      // }
 
       return existingBooking;
     } catch (error) {

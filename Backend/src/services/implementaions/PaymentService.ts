@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { IPaymnetRepository } from "../../repositories/interface/IPaymentRepository";
 import { IPaymentService } from "../../services/interface/IPaymnetService";
 import { IBooking } from "controllers/entities/bookingEntity";
+import { IWallet } from "controllers/entities/withdrawalRequstEntity";
 
 export default class PaymentService implements IPaymentService{
     private paymentRepository: IPaymnetRepository
@@ -32,5 +33,9 @@ export default class PaymentService implements IPaymentService{
             event,
             sig
         )
+    }
+    
+    async withdrowalRequests(laborId: string): Promise<IWallet | null> {
+      return this.paymentRepository.withdrowalRequests(laborId)
     }
 }

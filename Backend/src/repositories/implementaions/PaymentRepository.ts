@@ -4,6 +4,8 @@ import { IBooking } from "../../controllers/entities/bookingEntity";
 import Stripe from "stripe";
 import { BaseRepository } from "../../repositories/BaseRepository/BaseRepository";
 import Labor from "../../models/LaborModel";
+import { IWallet } from "controllers/entities/withdrawalRequstEntity";
+import WithdrawalRequest from "../../models/WithdrawalRequestModal";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-01-27.acacia',
@@ -81,8 +83,8 @@ export default class PaymnetRepository extends BaseRepository<IBooking> implemen
 
      async updateWebhook(event: Stripe.Event, sig: string): Promise<IBooking> {
         try {
-            console.log("Processing Stripe event:", event.type);
-
+          console.log("Processing Stripe event:", event.type);
+          
             if (event.type === "checkout.session.completed") {
                 const session = event.data.object as Stripe.Checkout.Session;
                 const metadata = session.metadata || {};
@@ -154,5 +156,19 @@ export default class PaymnetRepository extends BaseRepository<IBooking> implemen
             console.error("Error processing webhook:", error);
             throw new Error("Webhook processing failed");
         }
+    }
+    
+    async withdrowalRequests(laborId: string): Promise<IWallet | null> {
+      try {
+
+        return await WithdrawalRequest.findOne({
+          laborerId :laborId,
+          status :"pending"
+        })
+        
+      } catch (error) {
+           console.error("Error fetch withdrowal requst..:", error);
+            throw new Error("fetch withdrowal requst..:");
+      }
     }
 }

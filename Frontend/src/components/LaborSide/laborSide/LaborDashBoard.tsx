@@ -14,7 +14,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-toastify";
 import { format } from 'date-fns';
 import { useNavigate } from "react-router-dom";
-import { fetchLaborBookings, handlewithdrowAmount, laborFetch } from "../../../services/LaborServices";
+import { fetchLaborBookings, fetchWithdrowalRequests, handlewithdrowAmount, laborFetch } from "../../../services/LaborServices";
 import { resetUser, setAccessToken, setisUserAthenticated, setUser } from "../../../redux/slice/userSlice";
 import { setBookingDetails } from "../../../redux/slice/bookingSlice";
 import { ClockIcon } from "@heroicons/react/24/solid";
@@ -80,14 +80,14 @@ const LaborDashBoard = () => {
 
 
 
-  // console.log("this is the laborer ,,", laborer);
+  console.log("this is the laborer ,,", laborer);
   // console.log("this is the authenitcted ,,", isLaborAuthenticated);
 
   const [currentStage, setCurrentStage] = useState("Dashboard");
   const [resheduleModal, setResheduleModal] = useState(null);
   const [unreadChats, setUnreadChats] = useState({});
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState('');
   const [bankDetails, setBankDetails] = useState({
     accountNumber: "",
     bankName: "",
@@ -169,7 +169,6 @@ const LaborDashBoard = () => {
     { name: "Chats", icon: MessageSquare, stage: "Chats" },
     { name: "  Bookings & History ", icon: Briefcase, stage: "Works" },
     { name: "My Wallet", icon: Receipt, stage: "Wallet" },
-    { name: "View Profile", icon: User, stage: "Profile" },
   ];
 
   // const stats = [
@@ -340,9 +339,15 @@ const LaborDashBoard = () => {
 
       // Sort chats by latest message timestamp
       const sortedChats = chatsWithUserData.sort((a, b) => {
-        return b.latestMessageTime.seconds - a.latestMessageTime.seconds;
+        // First, sort by lastMessageSender (user messages first)
+        if (a.lastMessageSender === 'user' && b.lastMessageSender !== 'user') return -1;
+        if (a.lastMessageSender !== 'user' && b.lastMessageSender === 'user') return 1;
+        
+        // Then sort by timestamp for messages from the same sender type
+        const aTime = a.latestMessageTime?.seconds || 0;
+        const bTime = b.latestMessageTime?.seconds || 0;
+        return bTime - aTime;
       });
-
       setChats(sortedChats);
     });
 
@@ -513,6 +518,18 @@ useEffect(() => {
     // Add withdrawal logic here
     console.log("Withdrawing:", amount, bankDetails);
     try {
+
+
+      if (!amount || Number(amount) <= 0) {
+          toast.error('Please enter a valid amount');
+          return;
+        }
+
+        // Ensure amount is converted to a number before comparison
+        if (Number(amount) > laborer.wallet.balance) {
+          toast.error(`Insufficient balance. Available balance: ${laborer.wallet.balance}`);
+          return;
+        }
       
       const response = await handlewithdrowAmount({ amount, bankDetails })
       if (response.status === 200) {
@@ -529,6 +546,23 @@ useEffect(() => {
     }
     setIsWithdrawOpen(false);
   };
+
+
+  const laborId = laborer?._id
+  
+
+  useEffect(() => {
+    const fetchWithdrowalRequest = async () => {
+      const response = await fetchWithdrowalRequests(laborId)
+      if (response.status === 200) {
+        const { withdrowalRequests } = response.data
+        // console.log('Thsi si the rrrrrrrrrrrre333333333333333##############################',response)
+        setUpdatedBooking(withdrowalRequests)
+        // toast.success('Requsts fetch succesfully for withdrowallss')
+      }
+    }
+    fetchWithdrowalRequest()
+  },[laborId])
 
   return (
     <div>
@@ -1337,15 +1371,33 @@ useEffect(() => {
               laborer?.wallet ? ( // Check if wallet exists
                 <div className="p-4 w-full max-w-screen-lg mx-auto">
                   <div className="rounded-lg bg-white p-6 shadow-lg">
-                    <div className="flex justify-between items-center mb-6">
-                      <h1 className="text-2xl font-bold text-gray-900">
-                        My Wallet
-                      </h1>
-                      <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
-                      onClick={() => setIsWithdrawOpen(true)}
-                      >
-                        Withdraw Money
-                      </button>
+                     <div className="flex justify-between items-center mb-6">
+                      <h1 className="text-2xl font-bold ">My Wallet</h1>
+                      {updatedBooking ? (
+                        updatedBooking.status === "pending" && updatedBooking.amount ? (
+                           <p className="text-orange-500 font-medium text-sm sm:text-base md:text-lg bg-yellow-100 p-2 rounded-md border border-yellow-400">
+                            Your withdrawal request of ₹{updatedBooking.amount} is pending. Please be patient.
+                          </p>
+                        ) : updatedBooking.status === "approved" || updatedBooking.status === "rejected" ? (
+                          laborer?.wallet?.balance > 0 && (
+                            <button
+                              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm md:text-base"
+                              onClick={() => setIsWithdrawOpen(true)}
+                            >
+                              Withdraw Money
+                            </button>
+                          )
+                        ) : null
+                      ) : (
+                        laborer?.wallet?.balance > 0 && (
+                          <button
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm md:text-base"
+                            onClick={() => setIsWithdrawOpen(true)}
+                          >
+                            Withdraw Money
+                          </button>
+                        )
+                      )}
                     </div>
 
                     <div className="mb-8 text-center">
@@ -2072,33 +2124,34 @@ useEffect(() => {
               laborer?.wallet ? ( // Check if wallet exists
                 <div className="p-4 w-full max-w-screen-lg mx-auto bg-gray-900">
                   <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-                    <div className="flex justify-between items-center mb-6">
-                      <h1 className="text-2xl font-bold text-white">
-                        My Wallet
-                      </h1>
-                        {updatedBooking ? (
-                          updatedBooking.status === "pending" && updatedBooking.amount ? (
-                            <p className="text-yellow-600 font-semibold text-sm md:text-base">
-                              Your withdrawal request of ₹{updatedBooking.amount} is pending. Please be patient.
-                            </p>
-                          ) : updatedBooking.status === "approved" || updatedBooking.status === "rejected" ? (
-                            <button
-                              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm md:text-base"
-                              onClick={() => setIsWithdrawOpen(true)}
-                            >
-                              Withdraw Money
-                            </button>
-                          ) : null
-                        ) : (
-                          <button
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm md:text-base"
-                            onClick={() => setIsWithdrawOpen(true)}
-                          >
-                            Withdraw Money
-                          </button>
-                        )}
+                  <div className="flex flex-col md:flex-row justify-between items-center mb-6 bg-gray-800 p-4 rounded-lg shadow-md">
+                <h1 className="text-2xl font-bold text-white">My Wallet</h1>
+                
+                {updatedBooking ? (
+                  updatedBooking.status === "pending" && updatedBooking.amount ? (
+                    <p className="text-orange-500 font-medium text-sm sm:text-base md:text-lg bg-yellow-100 p-2 rounded-md border border-yellow-400">
+                      Your withdrawal request of <span className="font-semibold">₹{updatedBooking.amount}</span> is pending. Please be patient.
+                    </p>
+                  ) : (updatedBooking.status === "approved" || updatedBooking.status === "rejected") && laborer?.wallet?.balance > 0 ? (
+                    <button
+                      className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-all text-sm sm:text-base md:text-lg shadow-md"
+                      onClick={() => setIsWithdrawOpen(true)}
+                    >
+                      Withdraw Money
+                    </button>
+                  ) : null
+                ) : (
+                  laborer?.wallet?.balance > 0 && (
+                    <button
+                      className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-all text-sm sm:text-base md:text-lg shadow-md"
+                      onClick={() => setIsWithdrawOpen(true)}
+                    >
+                      Withdraw Money
+                    </button>
+                  )
+                )}
+              </div>
 
-                    </div>
                     <div className="mb-8 text-center">
                       <p className="text-gray-400 text-lg mb-2 uppercase tracking-wide">
                         Available Balance

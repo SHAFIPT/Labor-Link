@@ -13,7 +13,7 @@ export const registerAboutYou = async (formData: Partial<ILaborer>) => {
 
   try {
      const role = 'labor'
-     const response = await api.post('/api/labor/auth/registerAboutYou', {
+     const response = await api.post('/api/auth/registerAboutYou', {
        ...formData,
        role
      });

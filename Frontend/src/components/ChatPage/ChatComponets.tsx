@@ -498,6 +498,13 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   const handleSubmitQuote = async () => {
     try {
 
+      if (!quoteData.description.trim() || !quoteData.estimatedCost.trim() || !quoteData.arrivalTime) {
+        toast.error("All fields are required. Please fill in all details.");
+        return;
+      }
+
+
+
          const arrivalTimeError = validateDate(quoteData.arrivalTime);
           if (arrivalTimeError) {
             toast.error(arrivalTimeError)
@@ -560,6 +567,28 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     setSelectedQuoteDetails(quoteDetails);
     setIsConfirmModalOpen(true);
   };
+
+  const handleRejectQuote = async (messageId, rejectionReason) => {
+  try {
+    // Update the quote status in the message
+    const messageRef = doc(db, "Chats", chatId, "messages", messageId);
+    await updateDoc(messageRef, {
+      "content.status": "rejected",
+      "content.rejectionReason": rejectionReason
+    });
+
+    // Update the chat document
+    await updateDoc(doc(db, "Chats", chatId), {
+      quoteRejected: true,
+      lastUpdated: serverTimestamp(),
+    });
+
+    toast.success("Quote rejected successfully");
+  } catch (error) {
+    console.error("Error rejecting quote:", error);
+    toast.error("Failed to reject quote");
+  }
+};
 
   const handleConfirmQuoteAcceptance = async () => {
     setAddressModalOpen(true); // Show the modal before booking
@@ -956,6 +985,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                         formatTimestamp={formatTimestamp}
                         participants={participants}
                         onAcceptQuote={handleAcceptQuote}
+                        onRejectQuote={handleRejectQuote}
                         isLabor={isLabor}
                         isDisabled={isDisabled}
                       />
@@ -1223,6 +1253,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                         formatTimestamp={formatTimestamp}
                         participants={participants}
                         onAcceptQuote={handleAcceptQuote}
+                        onRejectQuote={handleRejectQuote}
                         isLabor={isLabor}
                         isDisabled={isDisabled}
                       />

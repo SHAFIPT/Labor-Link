@@ -45,6 +45,8 @@ import StarRating from './StarRating';
 import { useNavigate } from 'react-router-dom';
 const ServiceCard = lazy(() => import('./serviceCards'))
 import { debounce } from 'lodash';
+import Chatbot from './ChatBot';
+import Footer from '../Footer';
 
 const UserHome = () => {
   // console.log('iiiiiiiiiiiiiiiiiiiiiiiii');
@@ -154,6 +156,7 @@ const UserHome = () => {
   return (
     <>
       <HomeNavBar />
+      <Chatbot/>
       <div className="homePage relative w-full min-h-screen overflow-hidden">
         {/* Desktop/Tablet background image */}
         <img
@@ -1566,8 +1569,9 @@ const UserHome = () => {
           </div>
         </div>
       </div>
+      <Footer/>
     </>
   );
 };
-
+  
 export default UserHome;

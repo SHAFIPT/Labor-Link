@@ -159,7 +159,17 @@ const UserChatPage = () => {
       });
 
       const chatsWithUserData = await Promise.all(userPromises);
-      setChats(chatsWithUserData);
+   const sortedChats = chatsWithUserData.sort((a, b) => {
+        // First, sort by lastMessageSender (user messages first)
+        if (a.lastMessageSender === 'labor' && b.lastMessageSender !== 'labor') return -1;
+        if (a.lastMessageSender !== 'labor' && b.lastMessageSender === 'labor') return 1;
+        
+        // Then sort by timestamp for messages from the same sender type
+        const aTime = a.latestMessageTime?.seconds || 0;
+        const bTime = b.latestMessageTime?.seconds || 0;
+        return bTime - aTime;
+      });
+      setChats(sortedChats);
     });
     return unsubscribe;
   };

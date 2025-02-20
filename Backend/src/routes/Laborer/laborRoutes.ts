@@ -19,6 +19,7 @@ laborRoutes.put('/acceptBooking/:bookingId',laborSideContorller.acceptBooking.bi
 laborRoutes.post('/additionalCharge',authenticateLabor,laborSideContorller.additionalCharge.bind(laborSideContorller))
 laborRoutes.patch('/acceptRequst/:bookingId',laborSideContorller.acceptRequst.bind(laborSideContorller))
 laborRoutes.patch('/rejectRequst/:bookingId', laborSideContorller.rejectRequst.bind(laborSideContorller))
+laborRoutes.get('/withdrowalRequests/:laborId', laborSideContorller.withdrowalRequests.bind(laborSideContorller))
 laborRoutes.get('/fetchIsBookingExist', laborSideContorller.fetchIsBookingExist.bind(laborSideContorller))
 laborRoutes.get('/fetchAllBookingOfLabor', laborSideContorller.fetchAllBookingOfLabor.bind(laborSideContorller))
 laborRoutes.get('/fetchAllLabors', laborSideContorller.fetchAllLabors.bind(laborSideContorller))

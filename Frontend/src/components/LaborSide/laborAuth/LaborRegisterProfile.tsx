@@ -21,7 +21,7 @@ import {
 import { toast } from 'react-toastify';
 import '../../Auth/LoadingBody.css'
 import { profilePage } from "../../../services/LaborAuthServices"
-import { getDocs, query, collection, where, updateDoc, doc } from "firebase/firestore";
+import { getDocs, query, collection, where, updateDoc, doc, addDoc } from "firebase/firestore";
 import { db } from '../../../utils/firbase';
 
 const LaborRegisterProfile = () => {
@@ -138,39 +138,33 @@ const navigate = useNavigate()
     console.log("Starting Firebase labor profile update...");
     console.log("Email:", email);
     console.log("Profile Picture URL:", profilePictureUrl);
-    // console.log("Name:", name);
 
-    // Query the labor by email
     const usersRef = collection(db, "Labors");
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-      // Loop through matching documents and update
+      // Update existing document(s)
       const updatePromises = querySnapshot.docs.map(async (docSnapshot) => {
         const userDocRef = doc(db, "Labors", docSnapshot.id);
-        
-        // Log the data being updated
-        console.log("Updating document ID:", docSnapshot.id);
-        console.log("Data being updated:", {
-          profilePicture: profilePictureUrl || ""
-        });
-
-        // Ensure no undefined values are passed
-        await updateDoc(userDocRef, {
-          profilePicture: profilePictureUrl || ""
-        });
+        await updateDoc(userDocRef, { profilePicture: profilePictureUrl || "" });
       });
-
       await Promise.all(updatePromises);
-      console.log("Labor profile picture and name updated successfully in Firebase.");
+      console.log("Labor profile picture updated successfully in Firebase.");
     } else {
-      console.error("No labor found with the provided email.");
+      // If no document exists, create a new one
+      console.log("No existing labor found, creating a new profile...");
+      await addDoc(usersRef, {
+        email,
+        profilePicture: profilePictureUrl || "",
+        createdAt: new Date()
+      });
+      console.log("New labor profile created in Firebase.");
     }
   } catch (error) {
     console.error("Error updating labor profile picture in Firebase:", error);
   }
-}
+};
 
 
 
@@ -247,8 +241,13 @@ const navigate = useNavigate()
         
         const { profilePicture, email } = response.data.data
         
-        await updateFirebaseLaborProfilePicture(email, profilePicture);
-        
+        if (profilePicture) {
+          console.log("Updating Firebase profile picture...");
+          await updateFirebaseLaborProfilePicture(email, profilePicture);
+        } else {
+          console.warn("Profile picture is missing in API response.");
+        }
+          
         console.log('thsi is response of profilePicture:::::::::::::::', profilePicture)
           if (response.status === 200) {
 
