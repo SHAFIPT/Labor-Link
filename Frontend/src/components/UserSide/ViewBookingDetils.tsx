@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import { Filter, User } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store/store";
@@ -13,8 +13,7 @@ const ViewBookingDetils = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
   const UserId = useSelector((state: RootState) => state.user.user._id);
-  const { state: booking } = useLocation();
-  const [limit, setLimit] = useState(6);
+  const limit = 6
   const [filter, setFilter] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);

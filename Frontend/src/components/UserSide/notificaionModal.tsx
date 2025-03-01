@@ -4,16 +4,21 @@ import { RootState } from '../../redux/store/store';
 import { useLocation, useNavigate } from "react-router-dom";
 import {  updateBookingReadStatusAsync } from '../../redux/slice/bookingSlice';
 import type { AppDispatch } from "../../redux/store/store";
+import { DocumentData, Timestamp } from 'firebase/firestore';
 
 interface ChatNotification {
   id: string;
-  message: string;
+  message?: string;
   unreadCount: number;
-  userData: {
-    name: string;
-  };
+  userData: DocumentData;
+  laborId: string;
+  userId: string;
   lastMessage: string;
-  lastUpdated: string;
+  lastUpdated: Timestamp;
+  quoteSent: boolean;
+  messagesCount: number;
+  lastReadTimestamp: Timestamp;
+  lastMessageSender: string;
 }
 export interface User {
   ProfilePic: string;

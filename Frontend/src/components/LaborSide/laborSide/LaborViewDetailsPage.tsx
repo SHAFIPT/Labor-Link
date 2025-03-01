@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Clock, Calendar, DollarSign, User, FileText, AlertCircle, ArrowLeft, IndianRupee } from 'lucide-react';
+import { Clock, ArrowLeft, IndianRupee } from 'lucide-react';
 import mapboxgl from "mapbox-gl";
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { RootState } from '../../../redux/store/store';
@@ -55,9 +55,7 @@ const LaborViewDetailsPage = () => {
 
   const {
     bookingId,
-    cancellation,
     createdAt,
-    laborId,
     paymentStatus,
     quote,
     status,
@@ -248,23 +246,6 @@ const isRescheduleReset = (reschedule) => {
   );
 };
 
-
-  // Helper function to check if reschedule is rejected with new details
-  const hasRejectionDetails = (reschedule) => {
-  const hasRejection = 
-    reschedule.rejectedBy === "user" &&
-    reschedule.rejectionNewDate &&
-    reschedule.rejectionNewTime &&
-    reschedule.rejectionReason;
-
-  const hasRequest = 
-    reschedule.requestSentBy === "user" &&
-    reschedule.newDate &&
-    reschedule.newTime &&
-    reschedule.reasonForReschedule;
-
-  return hasRejection || hasRequest;
-};
 
   return (
     <>

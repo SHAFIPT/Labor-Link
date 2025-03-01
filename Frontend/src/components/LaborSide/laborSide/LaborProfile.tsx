@@ -1,39 +1,27 @@
 import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "../../../redux/store/store"
 import { useEffect, useState } from "react"
-import { setFormData, setIsLaborAuthenticated, setLaborer, resetLaborer ,setError, setLoading} from "../../../redux/slice/laborSlice"
+import { setIsLaborAuthenticated, setLaborer, resetLaborer ,setError, setLoading} from "../../../redux/slice/laborSlice"
 import { resetUser, setAccessToken, setisUserAthenticated, setUser } from '../../../redux/slice/userSlice'
 import { toast } from "react-toastify"
-import { useLocation, useNavigate , useHistory } from "react-router-dom"
-import { logout } from "../../../services/LaborAuthServices"
-import HomeNavBar from "../../HomeNavBar"
-import LoginNav from "../../Auth/LoginNav"
+import { useLocation, useNavigate } from "react-router-dom"
 import BgImage from '../../../assets/image 6.png'// Assuming you're using React Router for navigation
-import firebase from 'firebase/app';
 import {auth} from '../../../utils/firbase';
-import HomeImage from '../../../assets/HomeIcon.png'
-import char from '../../../assets/happy-female-electrician.avif'
-import { persistor } from '../../../redux/store/store';
 import { CalendarDaysIcon } from "@heroicons/react/24/solid";
 import '../../Auth/LoadingBody.css'
-import { Phone, Mail, MapPin, Clock,Globe, Heart, Star, Edit, Wallet , ChevronRight, Home, User ,
+import { Phone, Mail, MapPin, Clock,Globe, Heart, Star, Edit, User ,
   Calendar, 
-  CheckSquare, 
   Lock,
     X  } from 'lucide-react';
 import './LaborProfile.css'
-import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import LaborDashBoardNav from "./LaborDashBoardNav"
-import { aboutMe, editPassword, fetchLabors, fetchLaobrs, laborFetch, updateProfile } from "../../../services/LaborServices"
-import { validateAddress, validateAvailability, validateEndTime, validateFirstName, validateLanguage, validateLastName, validatePassword, validatePhoneNumber, validateSkill, validateStartTime } from "../../../utils/laborRegisterValidators"
+import { aboutMe, editPassword, fetchLaobrs, laborFetch, updateProfile } from "../../../services/LaborServices"
+import { validateAvailability, validateEndTime, validateFirstName, validateLanguage, validateLastName, validatePassword, validatePhoneNumber, validateSkill, validateStartTime } from "../../../utils/laborRegisterValidators"
 import { ILaborer } from "../../../@types/labor"
-import ChatComponets from "../../ChatPage/ChatComponets"
 import { getDocs, query, collection, where, updateDoc, doc, getFirestore, serverTimestamp, addDoc } from "firebase/firestore";
 import { db , app } from '../../../utils/firbase';
 import Breadcrumb from "../../BreadCrumb"
 import { sendPasswordResetEmail } from "firebase/auth"
-import Footer from "../../Footer"
 
 const LaborProfile = () => {
     const dispatch = useDispatch()
@@ -141,20 +129,6 @@ const error: {
     availability?: string; 
     password? : string
   } = useSelector((state: RootState) => state.labor.error);
-  // const [availablityFormData, setAvailablityFormData] = useState({
-  // availability: {
-  //   Monday: false,
-  //   Tuesday: false,
-  //   Wednesday: false,
-  //   Thursday: false,
-  //   Friday: false,
-  //   Saturday: false,
-  //   Sunday: false,
-  //   All: false
-  // }
-  // });
-  // When initially loading dat
-  // console.log('Theis is the console.log(error)-----++++-----',error);
 
   const laborId = user?._id;
   const categorie = user?.categories?.[0];
@@ -227,7 +201,7 @@ useEffect(() => {
         //  console.log("This is the laborData LLLLLLLLLLLLLLLLlaborData", fetchUserResponse);
   
         dispatch(setLaborer(fetchUserResponse))
-      } catch (error: any) {
+      } catch (error) {
         if (error.response && error.response.status === 403) {
           const errorMessage = error.response.data?.message || "Your account has been blocked.";
           toast.error(errorMessage); // Show dynamic error message
@@ -573,9 +547,9 @@ const handleSubmit = async () => {
       console.log('thde formDatat to submit....______++++++-0------')
 
       // Log FormData contents
-      for (let [key, value] of formDataToSubmit.entries()) {
-        console.log(`${key}:`, value);
-      }
+      // for (let [key, value] of formDataToSubmit.entries()) {
+      //   console.log(`${key}:`, value);
+      // }
 
       const response = await updateProfile(formDataToSubmit);
 
@@ -1105,7 +1079,7 @@ const findLaborIdByEmail = async (email) => {
                         value={formData.address}
                         readOnly
                         className="w-full px-3 py-2 border cursor-not-allowed rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                        rows="3"
+                        rows={3}
                       />
                     </div>
 
@@ -1441,7 +1415,7 @@ const findLaborIdByEmail = async (email) => {
                         value={formData.address}
                         readOnly
                         className="w-full px-3 py-2 bg-[#0e5962] cursor-not-allowed rounded-md focus:outline-none focus:ring-2 focus:ring-[#5560A8]"
-                        rows="3"
+                        rows={3}
                       />
                     </div>
 

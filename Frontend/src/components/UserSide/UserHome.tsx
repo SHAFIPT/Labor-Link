@@ -6,14 +6,12 @@
 // import { logout } from "../../services/UserAuthServices"
 // import { setisUserAthenticated, setUser, resetUser ,setFormData} from '../../redux/slice/userSlice'
 // import { setIsLaborAuthenticated, setLaborer  } from '../../redux/slice/laborSlice'
-import React, { lazy, Suspense, useState, useEffect , useRef, useMemo } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import React, { lazy,  useState, useEffect , useRef, useMemo } from 'react';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 // import { resetLaborer }  from '../../redux/slice/laborSlice'
 
 import HomeImage from '../../assets/Home image compressed.jpg'
 import HomeNavBar from "../HomeNavBar"
-import laborImage from '../../assets/char1.jpeg'
 import './UserHome.css'
 import aboutImage from '../../assets/abouPage.png'
 import thridbg from '../../assets/image 3.png'
@@ -57,7 +55,6 @@ const UserHome = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [allLabors, setAllLabors] = useState([]);
   const [isPaused, setIsPaused] = useState(false);
-  const scrollRef = useRef(0);
   const isDarkmode = useSelector((state: RootState) => state.theme.mode)
   const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
   const navigate = useNavigate();

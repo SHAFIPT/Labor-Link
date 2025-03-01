@@ -3,7 +3,6 @@ import {
   validateComments,
   validateEmail,
   validateFirstName,
-  validatePhoneNumber,
   validatePhoneNumbers,
   validatePlace,
   validateReason,
@@ -189,7 +188,7 @@ const CancelBookingForm = ({ onClose , bookingId }) => {
                   value={cancelFormData.comments}
                   onChange={handleInputChange}
                   className="w-full p-2 border border-gray-300 rounded-md"
-                  rows="3"
+                  rows={3}
                 />
               </div>
               {error?.comments && (
@@ -324,7 +323,7 @@ const CancelBookingForm = ({ onClose , bookingId }) => {
             value={cancelFormData.comments}
             onChange={handleInputChange}
             className="w-full p-2 bg-[#33334D] border border-gray-500 rounded-md text-white"
-            rows="3"
+            rows={3}
           />
         </div>
         {error?.comments && <p className="text-red-400 text-sm mt-1">{error.comments}</p>}

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import HomeNavBar from '../HomeNavBar'
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import Breadcrumb from '../BreadCrumb';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
@@ -12,32 +11,34 @@ import { format } from 'date-fns';
 import ChatComponents from '../ChatPage/ChatComponets';
 import { MenuIcon, MessageCircle } from 'lucide-react';
 import { toggleMobileChatList } from '../../redux/slice/laborSlice';
+
 interface ChatDocument {
   laborId: string;
   userId: string;
   lastMessage: string;
-  lastUpdated: Timestamp;  // Change to Timestamp, not string
+  lastUpdated: Timestamp;
   quoteSent: boolean;
   messagesCount: number;
   lastReadTimestamp: Timestamp;
-  lastMessageSender : string
+  lastMessageSender: string;
+  latestMessageTime?: Timestamp;  // Add the latestMessageTime field
 }
 
 interface UserData {
-  // Add user fields based on your Users collection structure
   name?: string;
   email?: string;
-  profilePicture? : string
-  // ... other user fields
+  profilePicture?: string;
+  online?: boolean;  // Add the online field
 }
-
-
 
 interface Chat extends ChatDocument {
   id: string;
   userData?: UserData | null;
   unreadCount: number;
+  unread ? : string
+  name?: string;
 }
+
 
 
 const UserChatPage = () => {
@@ -47,9 +48,8 @@ const UserChatPage = () => {
   const isMobileChatListOpen = useSelector((state: RootState) => state.labor.isMobileChatListOpen);
 
   const [chats, setChats] = useState<Chat[]>([]);
-  const [selectedChatId, setSelectedChatId] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const navigate = useNavigate()
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const currentPage = 1
   const dispatch = useDispatch();
   console.log("This is my chatssssssssssssss:",chats)
 
@@ -63,32 +63,9 @@ const UserChatPage = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentChats = chats.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(chats.length / itemsPerPage);
 
   console.log("This is the currrenet chattttttttttttttttttttts :",currentChats)
-  const chatss = [
-    {
-      id: 1,
-      name: "John Doe",
-      message: "Hey, how are you doing?",
-      time: "10:30 AM",
-      imageUrl: "/api/placeholder/40/40",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      message: "Can we meet tomorrow?",
-      time: "9:45 AM",
-      imageUrl: "/api/placeholder/40/40",
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      message: "The meeting was great!",
-      time: "8:15 AM",
-      imageUrl: "/api/placeholder/40/40",
-    },
-  ];
+ 
 
   const fetchChats = (userUids) => {
     if (!userUids) {

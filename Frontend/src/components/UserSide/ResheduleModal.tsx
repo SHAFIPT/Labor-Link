@@ -5,7 +5,6 @@ import { RootState } from "../../redux/store/store";
 import { validateNewDate, validateNewTime, validateReason } from "../../utils/userRegisterValidators";
 import { toast } from "react-toastify";
 import '../Auth/LoadingBody.css'
-import { setBookingDetails, updateSingleBooking } from "../../redux/slice/bookingSlice";
 import { handleRescheduleWork } from "../../services/UserSurvice";
 
 const ResheduleModal = ({ onClose, bookingId , onUpdateBooking }) => {
@@ -150,7 +149,7 @@ const ResheduleModal = ({ onClose, bookingId , onUpdateBooking }) => {
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
                   value={reshedulDatas.reason}
                   onChange={handleChangeInput}
-                  rows="4"
+                  rows={4}
                   placeholder="Please provide a reason for the reschedule."
                 />
                 {error?.reason && (
@@ -246,7 +245,7 @@ const ResheduleModal = ({ onClose, bookingId , onUpdateBooking }) => {
                   className="mt-1 block w-full px-4 py-2 border border-gray-600 bg-gray-700 text-gray-200 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={reshedulDatas.reason}
                   onChange={handleChangeInput}
-                  rows="4"
+                  rows={4}
                   placeholder="Please provide a reason for the reschedule."
                 />
                 {error?.reason && (

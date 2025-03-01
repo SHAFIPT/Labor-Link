@@ -5,7 +5,7 @@ import { setError } from '../../redux/slice/userSlice'
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { validatePassword } from '../../utils/userRegisterValidators'
 import { toast } from 'react-toastify';
-import { updatePassword, reauthenticateWithCredential, EmailAuthProvider, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../utils/firbase"; // Import your Firebase instance
 
 const ResetPassword = ({

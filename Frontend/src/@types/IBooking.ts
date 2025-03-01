@@ -31,12 +31,18 @@ export interface User {
   address?: IAddressDetails; 
 }
 export interface Labor {
-  _id : string
+  _id: string;
   profilePicture: string;
   firstName: string;
   lastName: string;
-  phone: string
-  location: string
+  phone: string;
+  address?: {
+    city?: string;
+    street?: string;
+    zipCode?: string;
+  }; // Optional address object
+  location?: string; 
+  categories?: string
 }
 
 

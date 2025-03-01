@@ -8,13 +8,13 @@ import { persistor } from '../../../redux/store/store';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
 import { toggleTheme } from "../../../redux/slice/themeSlice";
-import { HomeIcon, Receipt, Briefcase, User, Bell} from 'lucide-react';
+import { Bell} from 'lucide-react';
 import { resetUser } from "../../../redux/slice/userSlice";
 import { resetLaborer, setFormData, setIsLaborAuthenticated, setLaborer } from "../../../redux/slice/laborSlice";
 import { logout } from "../../../services/LaborAuthServices";
 import NotificationModal from "../../UserSide/notificaionModal";
 import { auth, db } from "../../../utils/firbase";
-import { collection, doc, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
+import { collection, doc, DocumentData, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
 import NotificaionModal from "../../UserSide/notificaionModal";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 // import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading, setAccessToken } from '../../../redux/slice/laborSlice'
@@ -29,19 +29,20 @@ interface ChatDocument {
   lastReadTimestamp: Timestamp;
   lastMessageSender : string
 }
-interface UserData {
-  // Add user fields based on your Users collection structure
-  name?: string;
-  email?: string;
-  profilePicture? : string
-  // ... other user fields
-}
-interface Chat extends ChatDocument {
+interface Chat {
   id: string;
-  userData?: UserData | null;
+  message?: string; // Make it optional if it's not always present
   unreadCount: number;
+  userData: DocumentData;
+  laborId: string;
+  userId: string;
+  lastMessage: string;
+  lastUpdated: Timestamp;
+  quoteSent: boolean;
+  messagesCount: number;
+  lastReadTimestamp: Timestamp;
+  lastMessageSender: string;
 }
-
 
 
 const LaborDashBoardNav = ({ setCurrentStage }) => {
@@ -211,22 +212,6 @@ const LaborDashBoardNav = ({ setCurrentStage }) => {
 
     return () => unsubscribe(); // Cleanup auth listener on unmount
   }, []);
-
-  const hasRejectionDetails = (reschedule) => {
-    const hasRejection = 
-      reschedule.rejectedBy === "labor" &&
-      reschedule.rejectionNewDate &&
-      reschedule.rejectionNewTime &&
-      reschedule.rejectionReason;
-
-    const hasRequest = 
-      reschedule.requestSentBy === "labor" &&
-      reschedule.newDate &&
-      reschedule.newTime &&
-      reschedule.reasonForReschedule;
-
-    return hasRejection || hasRequest;
-  };
   
 
     

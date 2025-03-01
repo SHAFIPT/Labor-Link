@@ -2,28 +2,22 @@ import { useDispatch, useSelector } from "react-redux";
 import BgImage from "../../assets/userProfielBg.png";
 import { RootState } from "../../redux/store/store";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { loadStripe } from "@stripe/stripe-js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db, auth } from '../../utils/firbase'; // Adjust path as needed
+import { db} from '../../utils/firbase'; // Adjust path as needed
 import '../UserSide/chatPage.css'
 import {
   Mail ,
   Heart,
-  ChevronRight,
-  Home,
-  User,
   PenSquare,
   Calendar,
   ClockIcon,
 } from "lucide-react";
 import '../Auth/LoadingBody.css'
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import char from "../../assets/happy-female-electrician.avif";
 import { useEffect, useState } from "react";
 import { editPassword, fetchBookings, pymnetSuccess, updateUser, userFetch } from "../../services/UserSurvice";
 import { editProfileValidate, validatePassword } from "../../utils/userRegisterValidators";
-import { resetUser, setError, setisUserAthenticated, setFormData, setLoading, setUser, setAccessToken } from "../../redux/slice/userSlice";
+import { resetUser, setError, setisUserAthenticated,  setLoading, setUser, setAccessToken } from "../../redux/slice/userSlice";
 import { getDocs, query, collection, where} from "firebase/firestore";
 import { toast } from "react-toastify";
 import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../../redux/slice/laborSlice";
@@ -38,7 +32,6 @@ import WorkCompleteModal from "./workCompleteModal";
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email);
-  const user = useSelector((state: RootState) => state.user.user);
   // console.log("This is the user .......dddddddddddddddddddddddddddddddd ",user)
   const loading = useSelector((state: RootState) => state.user.loading);
   const dispatch = useDispatch();
@@ -66,7 +59,7 @@ const UserProfile = () => {
       setUpdatedBooking(newBooking); // Update state when reschedule is accepted
     };
   const [filter, setFilter] = useState(""); 
-  const [limit, setLimit] = useState(1);
+  const limit = 1
   const [totalPages, setTotalPages] = useState(1);
   const [resheduleModal, setResheduleModalOpen] = useState(null)
   const navigate = useNavigate();

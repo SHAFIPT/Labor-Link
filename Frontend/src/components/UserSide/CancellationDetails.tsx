@@ -10,6 +10,9 @@ import { fetchLaobrs } from '../../services/LaborServices';
 
 type Labor = {
   _id: string;
+  aboutMe: {
+    description: string; // Ensure aboutMe is an object with a description field
+  };
   firstName: string;
   lastName: string;
   rating: number;
@@ -27,7 +30,6 @@ const CancellationModal = ({ booking, onClose, isOpen }) => {
     const navigate = useNavigate();
     const dispath = useDispatch()
     const theam = useSelector((state: RootState) => state.theme.mode);
-    const loading = useSelector((state: RootState) => state.user.loading);
     const [similorLabors , setSimilorLabors] = useState<Labor[]>([])
     console.log("Booking is this", booking)
     
@@ -63,32 +65,7 @@ const CancellationModal = ({ booking, onClose, isOpen }) => {
         fetchSimilaorLabors();
     },[])
 
-  const similarLabors = [
-    {
-      id: 1,
-      name: "Rahul Kumar",
-      rating: 4.8,
-      category: "Plumber",
-      description: "Experienced plumber with 5+ years of service",
-      totalJobs: 120
-    },
-    {
-      id: 2,
-      name: "Amit Shah",
-      rating: 4.6,
-      category: "Plumber",
-      description: "Specialized in bathroom and kitchen repairs",
-      totalJobs: 95
-    },
-    {
-      id: 3,
-      name: "Suresh Patel",
-      rating: 4.7,
-      category: "Plumber",
-      description: "Expert in pipe fitting and maintenance",
-      totalJobs: 150
-    }
-  ];
+
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('en-US', {
@@ -239,7 +216,7 @@ const CancellationModal = ({ booking, onClose, isOpen }) => {
                   <div className="space-y-4">
                     {similorLabors.map((labor) => (
                       <div
-                        key={labor.id}
+                        key={labor?._id}
                         className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors cursor-pointer"
                         onClick={() => navigate(`/labor/ProfilePage`, { state: labor })}
                       >
@@ -422,7 +399,7 @@ const CancellationModal = ({ booking, onClose, isOpen }) => {
                   <div className="space-y-4">
                     {similorLabors.map((labor) => (
                       <div
-                        key={labor.id}
+                        key={labor?._id}
                         className="bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-colors cursor-pointer"
                         onClick={() => navigate(`/labor/ProfilePage`, { state: labor })}
                       >

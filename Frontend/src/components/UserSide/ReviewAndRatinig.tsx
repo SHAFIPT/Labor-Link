@@ -9,7 +9,6 @@ import { fetchBookingWithId, reviewSubmit } from '../../services/UserSurvice';
 const ReviewAndRating = () => {
     const [rating, setRating] = useState(0);
     const [feedback, setFeedback] = useState('');
-    const [image, setImage] = useState(null)
     const [image1, setImage1] = useState(null);
     const [image2, setImage2] = useState(null);
     const navigate = useNavigate()
@@ -76,10 +75,10 @@ const ReviewAndRating = () => {
             if (image2) {
                 formData.append("image2", image2);
             }
-                console.log("FormData content:");
-                for (let [key, value] of formData.entries()) {
-                    console.log(key, value);
-                }
+                // console.log("FormData content:");
+                // for (let [key, value] of formData.entries()) {
+                //     console.log(key, value);
+                // }
       
             try {
                  console.log('submitted......')          
@@ -217,7 +216,7 @@ const ReviewAndRating = () => {
                                 value={feedback}
                                 onChange={handleFeedbackChange}
                                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                rows="4"
+                                rows={4}
                                 placeholder="Write your feedback here..."
                             ></textarea>
                             {error.feedback && <p className="text-red-500">{error.feedback}</p>}
@@ -337,7 +336,7 @@ const ReviewAndRating = () => {
                                     value={feedback}
                                     onChange={handleFeedbackChange}
                                     className="w-full p-3 border border-gray-600 bg-gray-900 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                                    rows="4"
+                                    rows={4}
                                     placeholder="Write your feedback here..."
                                 ></textarea>
                                 {error.feedback && <p className="text-red-500">{error.feedback}</p>}

@@ -2,8 +2,8 @@ import HomeNavBar from "../HomeNavBar";
 import { Star } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store/store";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import {  useLocation, useNavigate } from "react-router-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { fetchLaborsByLocation } from "../../services/LaborServices";
@@ -70,7 +70,7 @@ const LaborListingPage = () => {
     const fetchUser = async () => {
       try {
         await userFetch();
-      } catch (error: any) {
+      } catch (error) {
         if (error.response && error.response.status === 403) {
           toast.error("Your account has been blocked.");
           localStorage.removeItem("UserAccessToken");

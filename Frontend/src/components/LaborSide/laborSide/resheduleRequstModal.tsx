@@ -5,7 +5,6 @@ import { RootState } from '../../../redux/store/store';
 import { validateNewDate, validateNewTime, validateReason } from '../../../utils/userRegisterValidators';
 import { setError } from '../../../redux/slice/laborSlice';
 import { toast } from 'react-toastify';
-import { setBookingDetails, updateSingleBooking } from '../../../redux/slice/bookingSlice';
 import { acceptReshedule, rejectReshedule } from '../../../services/LaborServices';
 
 const RescheduleRequestModal = ({ 

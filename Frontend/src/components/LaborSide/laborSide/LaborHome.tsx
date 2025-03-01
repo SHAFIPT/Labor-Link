@@ -1,10 +1,7 @@
-import { useSelector } from "react-redux";
 import "./LaborHome.css";
 import { Link } from "react-router-dom";
-import { RootState } from "../../../redux/store/store";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ScreenSort from "../../../assets/CommpressedLaborScreenShort.png";
-import ServiceCard from "../../UserSide/serviceCards";
 import Frame1 from "../../../assets/Fram1.png";
 import Frame2 from "../../../assets/Frame2.png";
 import Frame3 from "../../../assets/Frame3.png";
@@ -13,11 +10,6 @@ import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import Footer from "../../Footer";
 
 const LaborHome = () => {
-  const labor = useSelector((state: RootState) => state.labor.formData);
-  // useEffect(() => {
-  //   console.log('this is labor',labor)
-  // })
-
 
   const faqs = [
     {

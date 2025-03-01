@@ -1,12 +1,9 @@
 import React from 'react';
 import { toast } from 'react-toastify';
-import { setBookingDetails, updateSingleBooking } from '../../redux/slice/bookingSlice';
-import { useDispatch } from 'react-redux';
 import { acceptRequst, rejectRequst } from '../../services/LaborServices';
 import { XCircle } from 'lucide-react';
 
 const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails ,onUpdateBooking}) => {
-    const dispatch = useDispatch()
   if (!isOpen || !bookingDetails || bookingDetails.length === 0) return null;
 
     const additionalCharge = bookingDetails[0].additionalChargeRequest;
