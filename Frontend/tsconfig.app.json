@@ -3,19 +3,17 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
     "useDefineForClassFields": true,
+    "emitDeclarationOnly": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    "noEmit": false,  // Set to false to allow emitting files
     "jsx": "react-jsx",
-
-    /* Linting */
+    "composite": true,  // Add this line
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
