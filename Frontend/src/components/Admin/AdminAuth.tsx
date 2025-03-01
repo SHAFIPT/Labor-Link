@@ -8,160 +8,151 @@ import {
     setLoading,
     setAdmin,
     setAccessToken,
-    setFormData,
     setIsAdminAuthenticated
 } from '../../redux/slice/adminSlice'
 
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { AdminLogin } from "../../services/AdminAuthServices";
 import { RootState } from "../../redux/store/store";
 import '../Auth/LoadingBody.css'
 
 const AdminAuth = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState(false);
+  const loading = useSelector((state: RootState) => state.admin.loading);
+  const dispatch = useDispatch();
 
-    const [email , setEmail] = useState<string>('')
-    const [password , setPassword] = useState<string>('')
-    const [showPassword, setShowPassword] = useState(false)
-    const loading = useSelector((state : RootState) => state.admin.loading)
-    const dispatch = useDispatch()
-    const navigate = useNavigate()
+  const handleOnSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch(setLoading(true));
 
-    const handleOnSubmit = async (e : React.FormEvent) => {
-        e.preventDefault()
-        dispatch(setLoading(true))
+    const validationErrors = {
+      email: validateEmail(email),
+      password: validatePassword(password),
+    };
+    const hasErrors = Object.values(validationErrors).some((error) => !!error);
 
-        const validationErrors = {
-          email: validateEmail(email),
-          password: validatePassword(password),
-        };
-        const hasErrors = Object.values(validationErrors).some(
-          (error) => !!error
-        );
-
-        if (hasErrors) {
-          dispatch(setError(validationErrors));
-          dispatch(setLoading(false));
-          toast.error("Please correct the highlighted errors.");
-          return;
-        }
-
-        try {
-            const role = 'admin'
-            const response = await AdminLogin({ email, password },role)
-
-            console.log('thsi si the front end response :',response)
-            
-          if (response.status === 200) {
-              
-            console.log("Thei is the resonse as admin :",response)
-
-            const { admin, accessToken } = response.data.data;
-            
-            console.log('Thsi is the  accessToken',accessToken)
-            console.log('Thsi is the admin', admin)
-            
-
-                localStorage.setItem("AdminAccessToken", accessToken);
-                dispatch(setAdmin(admin))
-                dispatch(setIsAdminAuthenticated(true))   
-                dispatch(setAccessToken(accessToken))
-                dispatch(setLoading(false))
-                // navigate('/admin/adimDashboard')
-            } else {
-              dispatch(setLoading(false))
-                throw new Error(response.data.message || 'An error occurred');
-            }
-            
-        } catch (error) {
-          if (axios.isAxiosError(error)) {
-            const message = error.response?.data?.message || error.message;
-            console.error("Axios error:", message);
-            toast.error(message);
-            dispatch(setLoading(false))
-          } else {
-            dispatch(setLoading(false))
-            console.error("Unexpected error:", error);
-            toast.error("An unexpected error occurred.");
-          }
-        } finally {
-          dispatch(setLoading(false));
-        }  
+    if (hasErrors) {
+      dispatch(setError(validationErrors));
+      dispatch(setLoading(false));
+      toast.error("Please correct the highlighted errors.");
+      return;
     }
 
+    try {
+      const role = "admin";
+      const response = await AdminLogin({ email, password }, role);
+
+      console.log("thsi si the front end response :", response);
+
+      if (response.status === 200) {
+        console.log("Thei is the resonse as admin :", response);
+
+        const { admin, accessToken } = response.data.data;
+
+        console.log("Thsi is the  accessToken", accessToken);
+        console.log("Thsi is the admin", admin);
+
+        localStorage.setItem("AdminAccessToken", accessToken);
+        dispatch(setAdmin(admin));
+        dispatch(setIsAdminAuthenticated(true));
+        dispatch(setAccessToken(accessToken));
+        dispatch(setLoading(false));
+        // navigate('/admin/adimDashboard')
+      } else {
+        dispatch(setLoading(false));
+        throw new Error(response.data.message || "An error occurred");
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.message || error.message;
+        console.error("Axios error:", message);
+        toast.error(message);
+        dispatch(setLoading(false));
+      } else {
+        dispatch(setLoading(false));
+        console.error("Unexpected error:", error);
+        toast.error("An unexpected error occurred.");
+      }
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
   return (
-<div>
-     {loading && <div className="loader"></div>}
-     <div className="flex items-center justify-center min-h-screen bg-[#D6CCCC]">
-      <div className="lg:max-w-lg  md:w-[500px] md:h-[300px] lg:w-full">
-        <div
-          style={{
-            boxShadow:
-              "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+    <div>
+      {loading && <div className="loader"></div>}
+      <div className="flex items-center justify-center min-h-screen bg-[#D6CCCC]">
+        <div className="lg:max-w-lg  md:w-[500px] md:h-[300px] lg:w-full">
+          <div
+            style={{
+              boxShadow:
+                "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
             }}
             className="bg-[#E5E5E5] rounded-lg shadow-xl overflow-hidden "
-            >
+          >
             <div className="p-8">
-                <h2 className="text-center text-3xl font-extrabold text-[#A79B9B]">
+              <h2 className="text-center text-3xl font-extrabold text-[#A79B9B]">
                 Admin Login
-                </h2>
-                <p className="mt-4 text-center text-gray-400"></p>
-                <form onSubmit={handleOnSubmit} className="mt-8 space-y-6">
+              </h2>
+              <p className="mt-4 text-center text-gray-400"></p>
+              <form onSubmit={handleOnSubmit} className="mt-8 space-y-6">
                 <div className="rounded-md shadow-sm">
-                    <div>
+                  <div>
                     <label className="sr-only" htmlFor="email">
-                        Email address
+                      Email address
                     </label>
                     <input
-                        placeholder="Email address"
-                        className="appearance-none relative block w-full px-3 py-3 border  bg-[#D9D9D9] text-black rounded-md focus:outline-none  sm:text-sm"
-                        type="email"
-                        name="email"
-                        id="email"
-                        value={email}
-                        onChange={(e)=>setEmail(e.target.value)}
+                      placeholder="Email address"
+                      className="appearance-none relative block w-full px-3 py-3 border  bg-[#D9D9D9] text-black rounded-md focus:outline-none  sm:text-sm"
+                      type="email"
+                      name="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
-                    </div>
-                    <div className="mt-4">
+                  </div>
+                  <div className="mt-4">
                     <label className="sr-only" htmlFor="password">
-                        Password
+                      Password
                     </label>
                     <div className="relative">
-                        <input
+                      <input
                         placeholder="Password"
                         className="appearance-none relative block w-full px-3 py-3 border  bg-[#D9D9D9] text-black  rounded-md focus:outline-none sm:text-sm"
-                        type={showPassword ? 'password' : 'text'}
+                        type={showPassword ? "password" : "text"}
                         name="password"
                         id="password"
                         value={password}
-                        onChange={(e)=>setPassword(e.target.value)}
-                    />
-                    <button
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-4 text-gray-500"
-                    >
+                      >
                         {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <button
-                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-gray-900 bg-[#A79B9B] hover:bg-[#7c7272] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  type="submit"
-                >
-                  Sign In
-                </button>
-              </div>
-            </form>
+                <div>
+                  <button
+                    className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-gray-900 bg-[#A79B9B] hover:bg-[#7c7272] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    type="submit"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
     </div>
-   </div>
   );
 };
 

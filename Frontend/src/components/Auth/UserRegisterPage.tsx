@@ -7,7 +7,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store/store";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import {
   setLoading,
   setFormData,
@@ -29,9 +28,9 @@ const UserRegisterPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [isOtpModalVisible, setOtpModalVisible] = useState(false)
+  const [isOtpModalVisible, setOtpModalVisible] = useState(false);
   const [criteria, setCriteria] = useState({
     length: false,
     lowerCase: false,
@@ -57,10 +56,6 @@ const UserRegisterPage = () => {
 
   const { loading } = useSelector((state: RootState) => state.user);
 
-  // const togglePasswordVisibility = () => {
-  //   setShowPassword(!showPassword);
-  // };
-
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     setPassword(input);
@@ -80,14 +75,14 @@ const UserRegisterPage = () => {
     });
 
     if (formattedErrors && Object.keys(formattedErrors).length > 0) {
-        setTimeout(() => {
-          dispatch(setLoading(false));
-          dispatch(setError(formattedErrors));
-          toast.error("Please correct the highlighted errors.");
-        }, 1000);
+      setTimeout(() => {
+        dispatch(setLoading(false));
+        dispatch(setError(formattedErrors));
+        toast.error("Please correct the highlighted errors.");
+      }, 1000);
 
       return;
-  }
+    }
 
     dispatch(setError({}));
     dispatch(setFormData({ firstName, lastName, email, password }));
@@ -127,18 +122,16 @@ const UserRegisterPage = () => {
 
       if (googleResoponse.status === 200) {
         const { user, accessToken } = googleResoponse.data.data;
-        console.log('theis is the goole enter repsonws....',googleResoponse)
+        console.log("theis is the goole enter repsonws....", googleResoponse);
         localStorage.setItem("UserAccessToken", accessToken);
         dispatch(setUser(user));
         dispatch(setAccessToken(accessToken));
         dispatch(setisUserAthenticated(true));
         dispatch(setLoading(false));
         toast.success("Successfully signed in with Google!");
-        navigate('/');
+        navigate("/");
       } else {
-        toast.error(
-          googleResoponse.data?.message || "Google Sign-In failed."
-        );
+        toast.error(googleResoponse.data?.message || "Google Sign-In failed.");
       }
     } catch (error) {
       console.error("Google Sign-In error:", error);

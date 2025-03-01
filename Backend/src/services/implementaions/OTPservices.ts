@@ -74,7 +74,7 @@ export default class OTPservices implements IOTPservices{
         }
         if (existOTP.otp !== otp) {
             throw new Error("Invalid otp ")
-        }
+        }   
         return true
     }
 

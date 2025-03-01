@@ -7,6 +7,7 @@ interface IAboutMe {
 
 
 export interface WalletTransaction {
+   _id : string
     amount: number;
     type: 'credit' | 'debit';
     description: string;
@@ -30,6 +31,7 @@ export interface ILaborer {
   phoneNumber?: string;
   language: string;
   aboutMe: IAboutMe;
+  category: string;
   address: {
     street: string;
     city: string;

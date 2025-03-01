@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import lightModeLogo from "../../assets/laborLink light.jpg";
-import darkModeLogo from "../../assets/night.png";
 import "./userLogin.css";  
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";

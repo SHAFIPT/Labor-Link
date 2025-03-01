@@ -10,7 +10,6 @@
 
       const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
       const user = useSelector((state: RootState) => state.user.user)
-      const role = useSelector((state:RootState)=>state.user.role)
       const UserformData = useSelector((state: RootState) => state.user.formData)
       console.log('thsi is logingin :',isUserAuthenticated)
       console.log('thsi is user :',user)

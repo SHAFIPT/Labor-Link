@@ -1,11 +1,6 @@
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { createUserWithEmailAndPassword } from "firebase/auth";
-
-import { setDoc, doc } from "firebase/firestore";
-import { auth , db } from "../../../utils/firbase"; // Import your Firestore instance
-
 import {
   validateFirstName,
   validateDateOfBirth,
@@ -433,7 +428,8 @@ const LaborRegister = () => {
                     placeholder="Enter your First Name...."
                     className="px-3 w-[340px] p-4 text-black text-[14px] bg-white border  rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                     value={firstName}
-                    onChange={handleInputChange(setFirstName)}
+                    onChange={handleInputChange(setFirstName, 'firstName')}
+
                   />
                   {showErrors && error?.firstName && (
                     <p className="text-red-500 text-sm mt-1">{error.firstName}</p>
@@ -445,7 +441,7 @@ const LaborRegister = () => {
                     placeholder="Enter your Last Name...."
                     className="px-3 w-[340px] p-4 text-black text-[14px] bg-white border  rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                     value={lastName}
-                    onChange={handleInputChange(setLastName)}
+                    onChange={handleInputChange(setLastName, 'lastName')}
                   />
                   {showErrors && error?.lastName && (
                     <p className="text-red-500 text-sm mt-1">{error.lastName}</p>
@@ -561,7 +557,7 @@ const LaborRegister = () => {
                     placeholder="Enter your Email..."
                     className="px-3 w-[340px] p-4  text-black text-[14px] bg-white  border  rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                     value={email}
-                    onChange={handleInputChange(setEmail)}
+                    onChange={handleInputChange(setEmail, 'email')}
                   />
                   {showErrors && error?.email && (
                     <p className="text-red-500 text-sm mt-1">{error.email}</p>
@@ -573,7 +569,7 @@ const LaborRegister = () => {
                     placeholder="Enter your password..."
                     className="px-3 w-[340px] p-4 text-black text-[14px] bg-white border  rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                     value={password}
-                    onChange={handleInputChange(setPassword)}
+                    onChange={handleInputChange(setPassword , 'password')}
                   />
                   {showErrors && error?.password && (
                     <p className="text-red-500 text-sm mt-1">{error.password}</p>
@@ -587,7 +583,7 @@ const LaborRegister = () => {
                       type="date"
                       required
                       value={dateOfBirth}
-                      onChange={handleInputChange(setDateOfBirth)}
+                      onChange={handleInputChange(setDateOfBirth , 'dateOfBirth')}
                       
                     />
                     {/* Custom icon for date picker, optional */}
@@ -606,7 +602,7 @@ const LaborRegister = () => {
                     className="px-3 w-[340px] p-4 text-[14px] text-black bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                     required
                     value={gender}
-                    onChange={handleInputChange(setGender)}
+                    onChange={handleInputChange(setGender , 'gender')}
                   >
                     <option value="" disabled selected>Select your gender</option>
                     <option value="male">Male</option>
@@ -622,7 +618,7 @@ const LaborRegister = () => {
                   <select
                     className="px-3 w-[340px] p-4 text-black text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500"
                     value={language}
-                    onChange={handleInputChange(setLanguage)}
+                    onChange={handleInputChange(setLanguage, 'language')}
                     defaultValue=""
                   >
                     <option value="" disabled>Select a language...</option>

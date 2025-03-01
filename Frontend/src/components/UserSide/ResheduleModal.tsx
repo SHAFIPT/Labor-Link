@@ -23,7 +23,8 @@ const ResheduleModal = ({ onClose, bookingId , onUpdateBooking }) => {
     newDate?: string;
     newTime?: string;
     reason?: string;
-    } = useSelector((state: RootState) => state.user.error);  
+  } = useSelector((state: RootState) => state.user.error);
+  console.log('Thsi is th eroroors ;;;;;',error)
     const loading  = useSelector((state: RootState) => state.user.loading)
     const theam = useSelector((state: RootState) => state.theme.mode)
     const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)

@@ -1,69 +1,51 @@
 import React, { useEffect, useState } from 'react';
-import { Eye, Trash2 } from 'lucide-react';
 import AdminSideRow from './AdminSideRow';
 import { IBooking } from '../../../@types/IBooking';
 import { fetchAllBookings } from '../../../services/AdminAuthServices';
 
 const BookingsListing = () => {
-//   const [currentPage, setCurrentPage] = useState(1)
-  const [limit, setLimit] = useState(7);
-  const [filter, setFilter] = useState("");
+  const [limit] = useState(7);
   const [totalPages, setTotalPages] = useState(1);
-  const [bookingDetils , setBookingDetils] =    useState<IBooking[]>(null)  
- 
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
 
-//   const [selectedFilter, setSelectedFilter] = useState('all');
   const [page, setPage] = useState(1);
-//   const totalPages = Math.ceil(bookings.length / itemsPerPage);
 
-  
   const filterOptions = [
-      { value: "All", label: "All", color: "bg-gray-500" },
-        { value: "confirmed", label: "confirmed", color: "bg-yellow-500" },
-        { value: "completed", label: "completed", color: "bg-green-500" },
-        { value: "canceled", label: "canceled", color: "bg-red-500" },
-    ];
-      const [isOpen, setIsOpen] = useState(false);
-      const [selectedFilter, setSelectedFilter] = useState("Filter");
-      
-    console.log('Thsi ie th selectedFilter : ',selectedFilter)
-    //   const filteredBookings = bookingDetils?.filter(booking => 
-    //     selectedFilter === 'all' ? true : booking.status === selectedFilter
-    // );
-    
+    { value: "All", label: "All", color: "bg-gray-500" },
+    { value: "confirmed", label: "confirmed", color: "bg-yellow-500" },
+    { value: "completed", label: "completed", color: "bg-green-500" },
+    { value: "canceled", label: "canceled", color: "bg-red-500" },
+  ];
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("Filter");
+  useEffect(() => {
     const fetchBooings = async () => {
-        try {
-          const response = await fetchAllBookings(page, limit, selectedFilter); // Removed incorrect filter syntax
-          if (response.status === 200) {
-            console.log('Thsi si teh preosnf',response);
-            const {
-              bookings,
-              totalPages,
-            } = response.data
-      
-            setTotalPages(totalPages)
-            setBookingDetils(bookings)
-          }
-        } catch (error) {
-          console.error("Error fetching labor bookings:", error);
+      try {
+        const response = await fetchAllBookings(page, limit, selectedFilter); // Removed incorrect filter syntax
+        if (response.status === 200) {
+          console.log("Thsi si teh preosnf", response);
+          const { bookings, totalPages } = response.data;
+
+          setTotalPages(totalPages);
+          setBookingDetils(bookings);
         }
-      };
-      
-      useEffect(() => {
-        fetchBooings();
-      }, [page, limit,selectedFilter]);
-    
-    console.log('Thsi is the bookigndetials ;;', bookingDetils)
-    
-    const handlePreviousPage = () => {
+      } catch (error) {
+        console.error("Error fetching labor bookings:", error);
+      }
+    };
+
+    fetchBooings();
+  }, [page, limit, selectedFilter]);
+
+  const handlePreviousPage = () => {
     if (page > 1) {
-      setPage(prev => prev - 1);
+      setPage((prev) => prev - 1);
     }
   };
 
   const handleNextPage = () => {
     if (page < totalPages) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
@@ -212,15 +194,17 @@ const BookingsListing = () => {
                         </div>
 
                         <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
-                        {booking.quote.arrivalTime 
-                            ? new Date(booking.quote.arrivalTime).toLocaleString('en-US', { 
-                                year: 'numeric', 
-                                month: 'short', 
-                                day: 'numeric', 
-                                hour: '2-digit', 
-                                minute: '2-digit', 
-                                hour12: true 
-                            }) 
+                          {booking.quote.arrivalTime
+                            ? new Date(
+                                booking.quote.arrivalTime
+                              ).toLocaleString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
                             : "N/A"}
                         </div>
 
@@ -230,18 +214,20 @@ const BookingsListing = () => {
                         </div>
 
                         {/* Payment Status */}
-                        <div className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium w-20 ${
-                              booking.paymentStatus === "failed"
-                                ? "bg-red-500 text-white"
-                                : booking.paymentStatus === "paid"
-                                ? "bg-green-500 text-white"
-                                : "bg-yellow-500 text-white"
-                            }`}>
+                        <div
+                          className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium w-20 ${
+                            booking.paymentStatus === "failed"
+                              ? "bg-red-500 text-white"
+                              : booking.paymentStatus === "paid"
+                              ? "bg-green-500 text-white"
+                              : "bg-yellow-500 text-white"
+                          }`}
+                        >
                           {booking.paymentStatus === "paid"
-                              ? "Paid"
-                              : booking.paymentStatus === "failed"
-                              ? "Failed"
-                              : "pending"}
+                            ? "Paid"
+                            : booking.paymentStatus === "failed"
+                            ? "Failed"
+                            : "pending"}
                         </div>
                       </div>
                     ))}
@@ -253,7 +239,7 @@ const BookingsListing = () => {
           {/* Pagination controls */}
           <div className="flex justify-center gap-4 p-4">
             <button
-                onClick={handlePreviousPage}
+              onClick={handlePreviousPage}
               disabled={page === 1}
               className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
             >
@@ -263,7 +249,7 @@ const BookingsListing = () => {
               Page {page} of {totalPages}
             </span>
             <button
-                onClick={handleNextPage}
+              onClick={handleNextPage}
               disabled={page === totalPages}
               className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
             >

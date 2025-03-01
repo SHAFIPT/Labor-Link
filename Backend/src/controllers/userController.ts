@@ -508,7 +508,7 @@ export class userController {
     const sig = req.headers["stripe-signature"] as string;
     let event: Stripe.Event;
     try {
-       event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET as string);
+       event = stripe.webhooks.constructEvent(req.body, sig, "whsec_8fed201d762c6c7205f81574e77174f99eab11a6ebb18b1d2aed78baec8395af");
       await this.paymentService.updateWebhook(event, sig);
 
       res.status(200).send({ received: true });

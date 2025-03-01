@@ -108,7 +108,11 @@ class LaborAuthStrategy implements IAuthStrategy {
 
     async register(data: any) {
         return this.laborAuthService.registerAboutYou(data);
-    }
+  }
+  
+  // async findUserWithEmail(email: string) {
+  //       return this.laborAuthService.findUserWithEmail(email)
+  //   }
 
     async logout(token: string, id: string) {
         return this.laborAuthService.logout(token, id);
@@ -431,7 +435,12 @@ export class UnifiedAuthController {
    
    public forgetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { email, role } = req.body;
+      const { email, role } = req.body;
+      
+      console.log('This arre the roless.....',
+        email,
+        role
+      )
 
         // Validate required fields
         if (!email || !role) {
@@ -439,7 +448,8 @@ export class UnifiedAuthController {
         }
 
         // Get authentication strategy
-        const strategy = AuthStrategyFactory.createStrategy(role);
+      const strategy = AuthStrategyFactory.createStrategy(role);
+      console.log('This is the strategy.......',strategy)
         if (!strategy) {
             return res.status(400).json(new ApiError(400, "Invalid role provided."));
         }

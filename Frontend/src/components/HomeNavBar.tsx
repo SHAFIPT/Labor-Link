@@ -680,11 +680,11 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
             </div>
 
             <div
-              className={`rightDarkLighMode relative z-[60] md:z-0  ${
+              className={`rightDarkLighMode relative z-[60] md:z-0   ${
                 theme === "dark"
                   ? "bg-darkBg text-darkText"
                   : "bg-lightBg text-lightText"
-              }`}
+              } absolute top-0 right-4 md:right-6`}
             >
               <label className="toggle" htmlFor="switch" onClick={toggleDarkMode}>
                 <input
@@ -769,7 +769,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
 
         {/* Overlay Menu for Mobile */}
         <div
-          className={`fixed inset-0 h-screen bg-black bg-opacity-50 transform transition-all duration-500 ease-in-out z-40 ${
+          className={`fixed inset-0 h-screen  bg-black bg-opacity-50 transform transition-all duration-500 ease-in-out z-40 ${
             isOpen ? 'translate-y-0' : '-translate-y-full'
           }`}
           onClick={toggleMenu} // Close menu when clicking outside

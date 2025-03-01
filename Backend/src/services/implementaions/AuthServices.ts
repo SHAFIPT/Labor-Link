@@ -83,7 +83,7 @@ export  class AuthService implements IAuthService{
             const refreshToken = generateRefreshToken({
                 id: createUser.id,
                 role : createUser.role
-            })
+            }) 
 
             const userAfterSavedToken = await this.userRepository.saveRefreshToken(createUser.id, refreshToken)
             

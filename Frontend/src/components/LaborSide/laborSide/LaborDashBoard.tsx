@@ -1,28 +1,26 @@
 import LaborDashBoardNav from "./LaborDashBoardNav"
 
 import React, { useEffect, useState } from 'react';
-import { HomeIcon, MessageSquare, Receipt, Briefcase, User, LogOut, DollarSign, MessageCircle, MenuIcon, Filter, Clock, XCircle, CheckCircle, IndianRupee } from 'lucide-react';
+import { HomeIcon, MessageSquare, Receipt, Briefcase, MessageCircle, MenuIcon, Filter, Clock, XCircle, CheckCircle, IndianRupee, LucideIcon } from 'lucide-react';
 import { FaCalendarCheck } from "react-icons/fa"; 
 import { Phone, MapPin } from 'lucide-react';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
-import { auth, db } from "../../../utils/firbase";
+import { db } from "../../../utils/firbase";
 import {  collection, getDocs, query, where, getDoc, doc, getCountFromServer, onSnapshot, Timestamp, serverTimestamp, updateDoc, orderBy, limitToLast } from 'firebase/firestore';
-import { resetLaborer, setIsLaborAuthenticated, setLaborer, setLoading, toggleMobileChatList } from "../../../redux/slice/laborSlice";
+import { resetLaborer, setIsLaborAuthenticated, setLaborer, toggleMobileChatList } from "../../../redux/slice/laborSlice";
 import '../../Auth/LoadingBody.css'
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-toastify";
-import { format } from 'date-fns';
 import { useNavigate } from "react-router-dom";
 import { fetchLaborBookings, fetchWithdrowalRequests, handlewithdrowAmount, laborFetch } from "../../../services/LaborServices";
 import { resetUser, setAccessToken, setisUserAthenticated, setUser } from "../../../redux/slice/userSlice";
 import { setBookingDetails } from "../../../redux/slice/bookingSlice";
 import { ClockIcon } from "@heroicons/react/24/solid";
-import ResheduleRequstModal from "./resheduleRequstModal";
 import RescheduleRequestModal from "./resheduleRequstModal";
 import ChatComponents from "../../ChatPage/ChatComponets";
 import { IBooking } from "../../../@types/IBooking";
-import { ILaborer } from "../../../@types/labor";
+import { IconType } from "react-icons/lib";
 
 interface ChatDocument {
   laborId: string;
@@ -35,11 +33,6 @@ interface ChatDocument {
   lastMessageSender : string
 }
 
-interface Message {
-  message: string;
-  timestamp: Timestamp;
-  sender: 'user' | 'labor';
-}
 
 interface UserData {
   // Add user fields based on your Users collection structure
@@ -47,6 +40,7 @@ interface UserData {
   email?: string;
   profilePicture? : string
   // ... other user fields
+  online?: boolean;
 }
 
 
@@ -54,20 +48,19 @@ interface Chat extends ChatDocument {
   id: string;
   userData?: UserData | null;
   unreadCount: number;
+
 }
 
 
 interface NavItem {
   name: string;
-  icon: any; // Or use the correct Lucide icon type
+  icon: LucideIcon | IconType; // Or use the correct Lucide icon type
   stage: string;
 }
 
 
 const LaborDashBoard = () => {
-  //  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const theme = useSelector((state: RootState) => state.theme.mode);
-  const email = useSelector((state: RootState) => state.labor.laborer.email);
   const laborer = useSelector((state: RootState) => state.labor.laborer);
   const loading = useSelector((state: RootState) => state.labor.loading);
   const isLaborAuthenticated = useSelector(
@@ -77,15 +70,8 @@ const LaborDashBoard = () => {
     (state: RootState) => state.labor.isMobileChatListOpen
   );
 
-
-
-
-  console.log("this is the laborer ,,", laborer);
-  // console.log("this is the authenitcted ,,", isLaborAuthenticated);
-
   const [currentStage, setCurrentStage] = useState("Dashboard");
   const [resheduleModal, setResheduleModal] = useState(null);
-  const [unreadChats, setUnreadChats] = useState({});
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [bankDetails, setBankDetails] = useState({
@@ -94,14 +80,10 @@ const LaborDashBoard = () => {
     ifscCode: "",
   });
   const [chats, setChats] = useState<Chat[]>([]);
-  console.log('This sie th chatssssssssssssssssss',chats)
   const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
-
-  // console.log("Thiss is the boooking thanveeeraaa", bookingDetils);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [limit, setLimit] = useState(2);
-  const [laborerDetils ,setLaborDetils] = useState<ILaborer>(null)
   const [filter, setFilter] = useState("");
   const currentPages = location.pathname.split("/").pop();
   const [totalPages, setTotalPages] = useState(1);
@@ -117,9 +99,6 @@ const LaborDashBoard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [updatedBooking, setUpdatedBooking] = useState(null);
-
-  console.log('kummmmmmmmmm2222222222222',updatedBooking)
-
   const sortedTransactions = laborer?.wallet?.transactions 
     ? [...laborer.wallet.transactions].sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -134,29 +113,19 @@ const LaborDashBoard = () => {
       indexOfLastTransaction
     );
 
-    // Pagination handlers
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-    // Calculate total pages
     const totalPagess = Math.ceil(
       (laborer?.wallet?.transactions?.length || 0) / transactionsPerPage
     );
     
-    // console.log('this ist eh resheudelullll',updatedBooking)
-  
     const handleRescheduleUpdate = (newBooking) => {
-      setUpdatedBooking(newBooking); // Update state when reschedule is accepted
+      setUpdatedBooking(newBooking);
     };
-  // console.log("99999999999999", currentPages);
-  // console.log("Gthis si the chats :::::", chats);
-
-  // console.log("thsis eth labo data :A", email);
 
   const bookingDetails = useSelector(
     (state: RootState) => state.booking.bookingDetails
   );
-
-  // console.log("Thiis is the BoookingDETAilssssssssssssss :", bookingDetails);
 
   const totalUnreadCount = chats.reduce(
     (sum, chat) => sum + (chat.unreadCount || 0),
@@ -171,42 +140,14 @@ const LaborDashBoard = () => {
     { name: "My Wallet", icon: Receipt, stage: "Wallet" },
   ];
 
-  // const stats = [
-  //   { title: "Total Work Taken", value: total, icon: Briefcase },
-  //   { title: "Work Completed", value: "18", icon: Receipt },
-  //   { title: "Total Earnings", value: "$2,450", icon: DollarSign },
-  //   { title: "Pending Tasks", value: "6", icon: MessageSquare },
-  // ];
-
-  // useEffect(() => {
-  //    localStorage.removeItem("LaborAccessToken");
-
-  //         // Reset User State
-  //         dispatch(setUser({}));
-  //         dispatch(resetUser());
-  //         dispatch(setisUserAthenticated(false));
-  //         dispatch(setAccessToken(""));
-
-  //         // Reset Labor State
-  //         dispatch(setLaborer({}));
-  //         dispatch(resetLaborer());
-  //         dispatch(setIsLaborAuthenticated(false));
-
-  //         navigate("/"); // Redirect to login page
-  // },[])
-
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const data = await laborFetch();
-        // console.log("This is the Data LLLLLLLLLLLLLLLLLLLLLLLLLL", data);
-
         const { fetchUserResponse } = data;
 
-        //  console.log("This is the laborData LLLLLLLLLLLLLLLLlaborData", fetchUserResponse);
-
         dispatch(setLaborer(fetchUserResponse));
-      } catch (error: any) {
+      } catch (error) {
         if (error.response && error.response.status === 403) {
           const errorMessage =
             error.response.data?.message || "Your account has been blocked.";
@@ -244,7 +185,6 @@ const LaborDashBoard = () => {
     localStorage.setItem("currentStage", currentStage);
   }, [currentStage]);
   const fetchChats = (userUid) => {
-    console.log('HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH')
     
     if (!userUid) {
       throw new Error("Missing user credentials");
@@ -386,14 +326,6 @@ const LaborDashBoard = () => {
     );
   };
 
-  // Modify the navigation handler to mark messages as read
-  const handleNavigateChatpage = async (chatId) => {
-    await markChatAsRead(chatId);
-    navigate(`/chatingPage`, { state: chatId });
-  };
-
-  // console.log("this is the chat coutn :;;;;;;;;;;;;", unreadChats);
-
   useEffect(() => {
     // Define limits for each stage
     const stageLimits = {
@@ -488,7 +420,6 @@ useEffect(() => {
       try {
         const fetchLabor = await laborFetch();
         const { fetchUserResponse } = fetchLabor
-        setLaborDetils(fetchUserResponse)
         console.log("Fetched Labors:", fetchUserResponse);
       } catch (error) {
         console.error(error);
@@ -1418,7 +1349,7 @@ useEffect(() => {
                         {currentTransactions.length > 0 ? (
                           currentTransactions.map((transaction) => (
                             <div
-                              key={transaction._id}
+                              key={transaction?._id}
                               className="flex justify-between items-center p-4 bg-gray-200 rounded-lg"
                             >
                               <div className="flex items-center space-x-4">

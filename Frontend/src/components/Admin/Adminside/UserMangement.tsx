@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 import AdminSideRow from './AdminSideRow'
 import './User.css'
 import { toast } from "react-toastify"
-import { Link, useNavigate } from "react-router-dom"
-import { UserPlus , Eye, Trash2} from 'lucide-react';
+import { useNavigate } from "react-router-dom"
+import {  Eye, Trash2} from 'lucide-react';
 import { fetchUser } from '../../../services/AdminAuthServices'
 import UseDebounce from '../../../Hooks/useDebounce'
 const UserMangement = () => {
@@ -190,7 +190,7 @@ const UserMangement = () => {
                       className="grid grid-cols-11 gap-4 items-center bg-[#ABA0A0] rounded-lg shadow-md p-3 hover:bg-[#998F8F] transition-colors"
                     >
                       {/* Number */}
-                      <div className="col-span-1 text-center text-xs sm:text-sm font-medium text-white font-bold">
+                      <div className="col-span-1 text-center text-xs sm:text-sm  text-white font-bold">
                         {index + 1}
                       </div>
 
@@ -207,7 +207,7 @@ const UserMangement = () => {
                       {/* Status */}
                       <div className="col-span-2 text-center">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium font-bold ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
                             user.isBlocked
                               ? "bg-red-500 text-white"
                               : "bg-green-500 text-white"

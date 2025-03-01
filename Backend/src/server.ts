@@ -1,5 +1,5 @@
 import express from 'express'
-import cores from 'cors'
+import cors from 'cors'
 import 'dotenv/config'
 import cookieParser from 'cookie-parser'
 import connectDB from './config/db'
@@ -13,10 +13,10 @@ connectDB()
 
 app.use(express.urlencoded({ extended: true })); 
 app.use(cookieParser())
-app.use(cores({
-    origin: 'http://localhost:5173',
-    credentials: true         
-}))
+app.use(cors({
+    origin: ['http://localhost:5174', 'http://localhost:5173', 'https://yourdomain.com'],
+    credentials: true
+}));
 
 app.use('/',router)
 

@@ -50,7 +50,7 @@ export default class OTPRepository implements IOTPRepository{
     async findOtpById(otpId: string): Promise<IOTP | null> {
         return otpModel.findById(otpId)
     }
-
+   
     async resetOtp(user: IUser): Promise<IOTP | null> {
         const existOtp = await this.findOtpByEmail(user.email)
         if (existOtp) {

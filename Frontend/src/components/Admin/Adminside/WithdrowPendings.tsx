@@ -4,35 +4,31 @@ import { toast } from 'react-toastify';
 import { fetchPending, submitData } from '../../../services/AdminAuthServices';
 
 const WithdrowPendings = () => {
-    // Demo pending withdrawals
-    const [pendingWallets, setPendingWallets] = useState(null)
-    console.log('this si peingind wallets...',pendingWallets)
-    const handleAction = async (id, status) => {
-      console.log('thsi si the stauts...',status)
-       try {
-             const response = await submitData(id, { status });
-             if (response.status == 200) {
-                 toast.success('data uploaded succefully')
-             }
-         
-       } catch (error) {
-           console.log(error)
-         toast.error('Errorn is submit actions...')
-       }    
-    };
-  
-    useEffect(() => {
-        const fetchPendingWithdrowalls = async () => {
-            const response = await fetchPending()
+  // Demo pending withdrawals
+  const [pendingWallets, setPendingWallets] = useState(null);
+  const handleAction = async (id, status) => {
+    try {
+      const response = await submitData(id, { status });
+      if (response.status == 200) {
+        toast.success("data uploaded succefully");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Errorn is submit actions...");
+    }
+  };
 
-            if (response.status === 200) {
-                setPendingWallets(response.data.fetchedResponse)
-                // toast.success('peingind fetch succefully')
-            }
-        }
-        fetchPendingWithdrowalls()
-    },[])
-    
+  useEffect(() => {
+    const fetchPendingWithdrowalls = async () => {
+      const response = await fetchPending();
+
+      if (response.status === 200) {
+        setPendingWallets(response.data.fetchedResponse);
+        // toast.success('peingind fetch succefully')
+      }
+    };
+    fetchPendingWithdrowalls();
+  }, []);
 
   return (
     <div className="flex min-h-screen">
@@ -106,7 +102,7 @@ const WithdrowPendings = () => {
                 ))
               ) : pendingWallets?.length === 0 ? ( // Check explicitly for empty array
                 <tr>
-                  <td colSpan="4" className="text-center p-4 text-gray-400">
+                  <td colSpan={4} className="text-center p-4 text-gray-400">
                     No pending withdrawals
                   </td>
                 </tr>

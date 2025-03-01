@@ -21,14 +21,11 @@ import { AxiosError } from 'axios';
 
 
 const OtpForm = ({ isVisible, onClose }) => {
-  
-  const [timer, setTimer] = useState(60)
-  const [otp, setOtp] = useState(['', '', '', '']); 
+  const [timer, setTimer] = useState(60);
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const { formData, loading } = useSelector((state: RootState) => state.user);
-  console.log("This is formDat (((((++++++)))))(((())))",formData)
-  const [message, setMessage] = useState({ type: '', content: '', description: '' });
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleOtpChange = (value: string, index: number) => {
     if (/^[0-9]?$/.test(value)) {
@@ -46,207 +43,219 @@ const OtpForm = ({ isVisible, onClose }) => {
     }
   };
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const otpCode = otp.join('');
-  console.log('This is otpCode :', otpCode);
-  console.log('this is the user formData :', formData);
+    const otpCode = otp.join("");
+    console.log("This is otpCode :", otpCode);
+    console.log("this is the user formData :", formData);
 
-  try {
-    const VerifyOtpResponse = await verifyOtp(formData.email, otpCode);
+    try {
+      const VerifyOtpResponse = await verifyOtp(formData.email, otpCode);
 
-    if (VerifyOtpResponse.status === 200) {
-      toast.success('OTP Verified Successfully!', {
-        position: 'top-right',
-        autoClose: 3000,
-      });
+      if (VerifyOtpResponse.status === 200) {
+        toast.success("OTP Verified Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
 
-      setTimeout(async () => {
-        dispatch(setLoading(true));
+        setTimeout(async () => {
+          dispatch(setLoading(true));
 
-        // Before creating a user, check if the email is already in use
-        try {
-          const signInMethods = await fetchSignInMethodsForEmail(auth, formData.email);
-          
-          // If the email is already in use, Firebase will return an array with sign-in methods
-          if (signInMethods.length > 0) {
-            toast.error('Email is already in use. Please try logging in or use a different email.', {
-              position: 'top-right',
-              autoClose: 3000,
-            });
-            dispatch(setLoading(false)); // Stop loading
-            return; // Exit the function early
-          }
-
-          // Firebase Email/Password Sign-Up if email is not in use
-          const firebaseUserCredential = await createUserWithEmailAndPassword(
-            auth,
-            formData.email,
-            formData.password
-          );
-
-          const { user } = firebaseUserCredential;
-
-          console.log("This is the firebase user:", user);
-
-          // Save user data to Firestore
-          const userData = {
-            email: formData.email,
-            name: formData.name || '', // Default name if not provided
-            profilePicture: formData.profilePicture || '', // Default empty string if no profile picture
-            role: "user", // Default role for chat users
-          };
-
+          // Before creating a user, check if the email is already in use
           try {
-            await setDoc(doc(db, "Users", user.uid), userData);
-            console.log("User data saved to Firestore successfully");
+            const signInMethods = await fetchSignInMethodsForEmail(
+              auth,
+              formData.email
+            );
 
-            // Save user data in MongoDB (if required)
-            const registernewUser = await registUser(formData);
-            console.log('User Registered Successfully:', registernewUser);
+            // If the email is already in use, Firebase will return an array with sign-in methods
+            if (signInMethods.length > 0) {
+              toast.error(
+                "Email is already in use. Please try logging in or use a different email.",
+                {
+                  position: "top-right",
+                  autoClose: 3000,
+                }
+              );
+              dispatch(setLoading(false)); // Stop loading
+              return; // Exit the function early
+            }
 
-            if (registernewUser.data) {
-              const { user, accessToken } = registernewUser.data.data;
+            // Firebase Email/Password Sign-Up if email is not in use
+            const firebaseUserCredential = await createUserWithEmailAndPassword(
+              auth,
+              formData.email,
+              formData.password
+            );
 
-              localStorage.setItem("UserAccessToken", accessToken);
+            const { user } = firebaseUserCredential;
 
-              dispatch(setUser(user));
-              dispatch(setAccessToken(accessToken));
-              dispatch(setisUserAthenticated(true));
-              dispatch(setFormData({}));
-              navigate('/');
+            console.log("This is the firebase user:", user);
 
-              toast.success('Registration Successful!', {
-                position: 'top-right',
-                autoClose: 3000,
-              });
-            } else {
-              dispatch(setError(registernewUser));
-              toast.error('Error during registration.', {
-                position: 'top-right',
+            // Save user data to Firestore
+            const userData = {
+              email: formData.email,
+              name: formData.name || "", // Default name if not provided
+              profilePicture: formData.profilePicture || "", // Default empty string if no profile picture
+              role: "user", // Default role for chat users
+            };
+
+            try {
+              await setDoc(doc(db, "Users", user.uid), userData);
+              console.log("User data saved to Firestore successfully");
+
+              // Save user data in MongoDB (if required)
+              const registernewUser = await registUser(formData);
+              console.log("User Registered Successfully:", registernewUser);
+
+              if (registernewUser.data) {
+                const { user, accessToken } = registernewUser.data.data;
+
+                localStorage.setItem("UserAccessToken", accessToken);
+
+                dispatch(setUser(user));
+                dispatch(setAccessToken(accessToken));
+                dispatch(setisUserAthenticated(true));
+                dispatch(setFormData({}));
+                navigate("/");
+
+                toast.success("Registration Successful!", {
+                  position: "top-right",
+                  autoClose: 3000,
+                });
+              } else {
+                dispatch(setError(registernewUser));
+                toast.error("Error during registration.", {
+                  position: "top-right",
+                  autoClose: 3000,
+                });
+              }
+            } catch (error) {
+              console.error("Error saving user data to Firestore:", error);
+              toast.error("Error occurred while saving user data.", {
+                position: "top-right",
                 autoClose: 3000,
               });
             }
-          } catch (error) {
-            console.error('Error saving user data to Firestore:', error);
-            toast.error('Error occurred while saving user data.', {
-              position: 'top-right',
-              autoClose: 3000,
-            });
+          } catch (firebaseError) {
+            console.error("Firebase Error:", firebaseError);
+            toast.error(
+              firebaseError.message ||
+                "Firebase error occurred during registration.",
+              {
+                position: "top-right",
+                autoClose: 3000,
+              }
+            );
           }
 
-        } catch (firebaseError) {
-          console.error('Firebase Error:', firebaseError);
-          toast.error(firebaseError.message || 'Firebase error occurred during registration.', {
-            position: 'top-right',
+          setTimeout(() => {
+            dispatch(setLoading(false));
+          }, 3000);
+        }, 2000); // 2 seconds delay
+      } else {
+        toast.error(
+          VerifyOtpResponse.data?.message || "Invalid OTP. Please try again.",
+          {
+            position: "top-right",
             autoClose: 3000,
-          });
-        }
-
-        setTimeout(() => {
-          dispatch(setLoading(false));
-        }, 3000);
-      }, 2000); // 2 seconds delay
-    } else {
+          }
+        );
+      }
+    } catch (error) {
+      console.error(error);
       toast.error(
-        VerifyOtpResponse.data?.message || 'Invalid OTP. Please try again.',
+        error.response?.data?.message ||
+          "An error occurred during OTP verification.",
         {
-          position: 'top-right',
+          position: "top-right",
           autoClose: 3000,
         }
       );
     }
-  } catch (error) {
-    console.error(error);
-    toast.error(
-      error.response?.data?.message || 'An error occurred during OTP verification.',
-      {
-        position: 'top-right',
-        autoClose: 3000,
-      }
-    );
-  }
-};
+  };
 
   useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     if (isVisible && timer > 0) {
-      const interval = setInterval(() => setTimer((prev) => prev - 1), 1000)
-      return () => clearInterval(interval)
+      const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+      return () => clearInterval(interval);
     }
-  }, [isVisible, timer])
-  
+  }, [isVisible, timer]);
+
   if (!isVisible) return null;
-  
 
   const handleResend = async () => {
     if (timer === 0) {
-      setTimer(60)
+      setTimer(60);
 
-      const otpResponse = await resendOtp(formData)
+      const otpResponse = await resendOtp(formData);
 
       if (otpResponse instanceof AxiosError) {
-      toast.error(otpResponse.message);
-    } else if (otpResponse?.data?.error) {
-      toast.error(otpResponse.data.error);
+        toast.error(otpResponse.message);
+      } else if (otpResponse?.data?.error) {
+        toast.error(otpResponse.data.error);
+      }
     }
-    }
-  }
-
-  
-
-  const handleCloseMessage = () => {
-    setMessage({ type: '', content: '', description: '' });
   };
 
   return (
     <StyledWrapper>
+      {loading && <div className="loader "></div>}
 
-      {message.content && (
-        <ErrorMessage message={message} onClose={handleCloseMessage} />
-      )}
-
-      {loading && (
-        <div className="loader "></div>
-    )}
-
-     <div className="modal-overlay fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-80">
-          <form className="otp-Form bg-white p-6 rounded-lg shadow-lg" onSubmit={handleSubmit}>
-            <span className="mainHeading text-xl font-semibold">Enter OTP</span>
-            <p className="otpSubheading text-gray-600">We have sent a verification code to your email</p>
-            <div className="flex flex-col items-center justify-center mt-2">
-              <div className="flex justify-center space-x-2 mt-2">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    value={digit}
-                    onChange={(e) => handleOtpChange(e.target.value, index)}
-                    id={`otp-${index}`}
-                    maxLength={1}
-                    className="w-10 h-10 bg-white text-black text-center border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
-                  />
-                ))}  
-              </div>
+      <div className="modal-overlay fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-80">
+        <form
+          className="otp-Form bg-white p-6 rounded-lg shadow-lg"
+          onSubmit={handleSubmit}
+        >
+          <span className="mainHeading text-xl font-semibold">Enter OTP</span>
+          <p className="otpSubheading text-gray-600">
+            We have sent a verification code to your email
+          </p>
+          <div className="flex flex-col items-center justify-center mt-2">
+            <div className="flex justify-center space-x-2 mt-2">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  value={digit}
+                  onChange={(e) => handleOtpChange(e.target.value, index)}
+                  id={`otp-${index}`}
+                  maxLength={1}
+                  className="w-10 h-10 bg-white text-black text-center border border-orange-300 focus:outline-none rounded-md focus:border-orange-500"
+                />
+              ))}
             </div>
-            <button className="verifyButton bg-orange-500 text-white px-2 py-2 rounded-md mt-4 p-3" type="submit">
-              Verify
-            </button>
-            <button className="exitBtn absolute top-2 right-2 text-xl" onClick={onClose}>×</button>
-            <p className="resendNote text-gray-600 mt-4">
-              {timer > 0 ? (
-                `Resend available in ${timer}s`
-              ) : (
-                <button className="resendBtn text-blue-500" onClick={handleResend}>Resend Code</button>
-              )}
-            </p>
-          </form>
-        </div>
-
+          </div>
+          <button
+            className="verifyButton bg-orange-500 text-white px-2 py-2 rounded-md mt-4 p-3"
+            type="submit"
+          >
+            Verify
+          </button>
+          <button
+            className="exitBtn absolute top-2 right-2 text-xl"
+            onClick={onClose}
+          >
+            ×
+          </button>
+          <p className="resendNote text-gray-600 mt-4">
+            {timer > 0 ? (
+              `Resend available in ${timer}s`
+            ) : (
+              <button
+                className="resendBtn text-blue-500"
+                onClick={handleResend}
+              >
+                Resend Code
+              </button>
+            )}
+          </p>
+        </form>
+      </div>
     </StyledWrapper>
   );
-}
+};
 
 const StyledWrapper = styled.div`
 //  .modal-overlay {

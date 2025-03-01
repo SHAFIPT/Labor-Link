@@ -5,9 +5,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {  updateBookingReadStatusAsync } from '../../redux/slice/bookingSlice';
 import type { AppDispatch } from "../../redux/store/store";
 
-interface Chat {
+interface ChatNotification {
   id: string;
-  message: string; // Make sure 'message' exists
+  message: string;
   unreadCount: number;
   userData: {
     name: string;
@@ -48,9 +48,12 @@ interface BookingDetails {
     requestSentBy: 'user' | 'labor';
     acceptedBy: 'user' | 'labor'
     rejectedBy: 'user' | 'labor'
+    newDate?: string; // <-- Add this property
+    newTime?: string;
     rejectionNewDate: string;
     rejectionNewTime: string;
     rejectionReason: string;
+    reasonForReschedule?: string; 
   }
   quote?: {
     description: string;
@@ -64,7 +67,7 @@ const NotificationModal = ({
   setCurrentStage 
 }: { 
   onClose: () => void; 
-  chats: Chat[]; // Specify Chat[] instead of []
+  chats: ChatNotification[]; // Specify Chat[] instead of []
   bookingDetails: BookingDetails[]; 
   setCurrentStage?: (stage: string) => void;
 }) => {
@@ -76,8 +79,9 @@ const NotificationModal = ({
     const currentPages = location.pathname.split("/").pop();
     const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
     const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-
-    const handleNavigateChatPage = () => {
+    console.log('Ths is the curent page ::',currentPages)
+  const handleNavigateChatPage = () => {
+      console.log('Ths is t clickced........')
         if (currentPages === 'userChatPage') {
             onClose()
         }
@@ -85,7 +89,8 @@ const NotificationModal = ({
           navigate('/userChatPage')
       }
       if (isLaborAuthenticated && setCurrentStage) {
-        setCurrentStage("Chats"); // Only update stage if labor is authenticated
+        setCurrentStage("Chats");
+        setCurrentStage?.("Chats");// Only update stage if labor is authenticated
         onClose()
       }
   }
@@ -93,9 +98,10 @@ const NotificationModal = ({
   console.log("Booking ID:", bookingDetails?.[0]?.bookingId);
 
   
-   const handleNavigateToBookings = useCallback((bookingId: string) => {
+  const handleNavigateToBookings = useCallback((bookingId: string) => {
+     console.log('Ths is t clicked........')
     if (!bookingId) return;
-
+     
     dispatch(updateBookingReadStatusAsync({ bookingId, isUserRead: true }));
     onClose();
 
@@ -104,7 +110,7 @@ const NotificationModal = ({
     }
 
      if (isLaborAuthenticated) {
-      
+      console.log('Thsi is t bookingDetails')
       setCurrentStage?.("Bookings");
       // navigate("/labor/bookings");
     }
@@ -178,22 +184,10 @@ const NotificationModal = ({
   };
 
 
-   const isRescheduleReset = (reschedule) => {
-    return reschedule?.isReschedule === true &&
-      !reschedule?.newTime &&
-      !reschedule?.newDate &&
-      !reschedule?.reasonForReschedule &&
-      !reschedule?.requestSentBy &&
-      !reschedule?.rejectedBy &&
-      !reschedule?.rejectionNewDate &&
-      !reschedule?.rejectionNewTime &&
-      !reschedule?.rejectionReason;
-  };
-
   return (
     <>
       {theme === "light" ? (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-md overflow-y-auto max-h-[calc(100vh-1rem)]">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-11/12 md:w-2/5 lg:w-1/3 p-8 ">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
@@ -632,7 +626,7 @@ const NotificationModal = ({
           {bookingDetails?.length > 0 &&
             bookingDetails[0].reschedule?.requestSentBy === "user" &&
             bookingDetails[0].reschedule?.acceptedBy === null &&
-            bookingDetails[0].reschedule?.rejectedBy === null && (
+            bookingDetails[0].reschedule?.rejectedBy === "user" && (
               <div
                 className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
                 onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}

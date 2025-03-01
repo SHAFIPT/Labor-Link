@@ -1,5 +1,4 @@
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
 import React, { useState, useEffect } from "react";
 import UploadModal from "./uploadModal";
 import "./LaborExperience.css";
@@ -18,7 +17,6 @@ import {
   setLoading,
   setFormData,
   setUnsavedChanges,
-  setNavigateBack,
   setIsLaborAuthenticated,
   setLaborer,
 } from "../../../redux/slice/laborSlice";
@@ -26,7 +24,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
 import { ExperiencePage } from "../../../services/LaborAuthServices";
 import "../../Auth/LoadingBody.css";
-import Card from "./LaborRequestModal";
 import { auth, db } from "../../../utils/firbase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
@@ -187,7 +184,7 @@ const LaborRegisterExperience = () => {
     setOpenModal(true);
   };
 
-  const handleDeleteImage = (type, index) => {
+  const handleDeleteImage = (type, index = null) => {
     if (type === "id") {
       setIdImage(null);
     } else if (type == "certificate") {
@@ -263,9 +260,9 @@ const LaborRegisterExperience = () => {
       }
 
       // Log formData contents for debugging
-      for (let pair of formDataForAPI.entries()) {
-        console.log("thsi si the fomrDatafroApit", pair[0] + ": " + pair[1]);
-      }
+      // for (let pair of formDataForAPI.entries()) {
+      //   console.log("thsi si the fomrDatafroApit", pair[0] + ": " + pair[1]);
+      // }
 
       const response = await ExperiencePage(formDataForAPI);
 

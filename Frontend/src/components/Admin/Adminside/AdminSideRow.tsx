@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { FaHome, FaUsers, FaClipboardList, FaDollarSign, FaHardHat } from 'react-icons/fa'; // React Icons
+import React, { useState } from 'react';
+import { FaHome, FaUsers, FaClipboardList, FaHardHat } from 'react-icons/fa'; // React Icons
 import logo from '../../../assets/laborLink light.jpg'; // Your logo
 import { Link, useNavigate } from "react-router-dom";
 import { resetUser, setAccessToken, setFormData, setisUserAthenticated, setUser } from '../../../redux/slice/userSlice';
@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 import { logout } from '../../../services/AdminAuthServices';
 import { useDispatch } from 'react-redux';
 import { resetAdmin, setAdmin, setIsAdminAuthenticated } from '../../../redux/slice/adminSlice';
-import { describe } from 'node:test';
 import { Clock, IndianRupee } from 'lucide-react';
 
 const AdminSideRow = () => {
@@ -68,10 +67,6 @@ const AdminSideRow = () => {
       }
   }
   
-  // useEffect(() => {
-    
-  // },[dispatch, navigate])
-
   return (
     <div className="flex relative ">
       {/* Sidebar with conditional classes for open/close */}

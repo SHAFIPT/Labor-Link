@@ -50,6 +50,7 @@ export interface BookingDetails {
   updatedAt: string;
   isUserRead?: boolean; 
   cancellation: {
+    canceledBy: 'user' | 'labor';
     isUserRead: boolean;
     canceledAt: string;
     cancellationFee: number;

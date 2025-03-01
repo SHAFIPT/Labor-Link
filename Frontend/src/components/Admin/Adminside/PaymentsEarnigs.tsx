@@ -4,91 +4,52 @@ import { IBooking } from '../../../@types/IBooking';
 import { fetchAllBookings } from '../../../services/AdminAuthServices';
 
 const PaymentsEarnigs = () => {
-    const [page, setPage] = useState(1);
-  // const totalPages = 2; // Replace with dynamic value
+  const [page, setPage] = useState(1);
 
-  const payments = [
-    {
-      laborName: "John Doe",
-      creditedAmount: 5000,
-      commission: 500,
-      remainingAmount: 4500,
-      dateTime: "2024-02-10 10:30 AM",
-    },
-    {
-      laborName: "Jane Smith",
-      creditedAmount: 7000,
-      commission: 700,
-      remainingAmount: 6300,
-      dateTime: "2024-02-10 12:00 PM",
-    },
-  ];
-
-  const totalPendingAmount = payments.reduce(
-    (acc, payment) => acc + payment.remainingAmount,
-    0
-  );
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("Filter");
-  const [limit, setLimit] = useState(70);
-  const [filter, setFilter] = useState("");
+  const [selectedFilter] = useState("Filter");
+  const [limit] = useState(70);
   const [totalPages, setTotalPages] = useState(1);
   const [totalAmount, setTotalAmount] = useState(0);
-  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null)  
-  console.log('this is eth bookingDetils ::',bookingDetils)
-  const filterOptions = [
-    { value: "All", label: "All", color: "bg-gray-500" },
-    { value: "confirmed", label: "confirmed", color: "bg-yellow-500" },
-    { value: "completed", label: "completed", color: "bg-green-500" },
-    { value: "canceled", label: "canceled", color: "bg-red-500" },
-  ];
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
 
   const paymnetCompleted = bookingDetils?.filter((booking) => {
-    return booking.paymentStatus === 'paid'
-  })
+    return booking.paymentStatus === "paid";
+  });
+  useEffect(() => {
+    const fetchBooings = async () => {
+      try {
+        const response = await fetchAllBookings(page, limit, selectedFilter); // Removed incorrect filter syntax
+        if (response.status === 200) {
+          console.log("Thsi si teh preosnf", response);
+          const { bookings, totalPages, totalCompnyProfit } = response.data;
 
+          setTotalPages(totalPages);
+          setBookingDetils(bookings);
+          setTotalAmount(totalCompnyProfit);
+        }
+      } catch (error) {
+        console.error("Error fetching labor bookings:", error);
+      }
+    };
 
+    fetchBooings();
+  }, [page, limit, selectedFilter]);
 
-  const fetchBooings = async () => {
-          try {
-            const response = await fetchAllBookings(page, limit, selectedFilter); // Removed incorrect filter syntax
-            if (response.status === 200) {
-              console.log('Thsi si teh preosnf',response);
-              const {
-                bookings,
-                totalPages,
-                totalCompnyProfit
-              } = response.data
-        
-              setTotalPages(totalPages)
-              setBookingDetils(bookings)
-              setTotalAmount(totalCompnyProfit)
-            }
-          } catch (error) {
-            console.error("Error fetching labor bookings:", error);
-          }
-        };
-        
-        useEffect(() => {
-          fetchBooings();
-        }, [page, limit,selectedFilter]);
-  
-
-   const handlePreviousPage = () => {
+  const handlePreviousPage = () => {
     if (page > 1) {
-      setPage(prev => prev - 1);
+      setPage((prev) => prev - 1);
     }
   };
 
   const handleNextPage = () => {
     if (page < totalPages) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
   return (
-      <div className="flex min-h-screen">
-          <AdminSideRow/>
+    <div className="flex min-h-screen">
+      <AdminSideRow />
       <div className="w-full bg-[#D6CCCC]">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center w-full p-4 ">
@@ -99,13 +60,15 @@ const PaymentsEarnigs = () => {
 
         {/* Summary Section */}
         <div className="w-full p-1">
-        <div className="bg-gradient-to-r from-green-400 to-green-800 p-6 rounded-lg shadow-lg text-center text-white">
-          <h2 className="text-2xl font-bold">
-            Total Amount Credited: ₹ {totalAmount}
-          </h2>
-          <p className="mt-2 text-lg opacity-90">Your total earnings so far</p>
+          <div className="bg-gradient-to-r from-green-400 to-green-800 p-6 rounded-lg shadow-lg text-center text-white">
+            <h2 className="text-2xl font-bold">
+              Total Amount Credited: ₹ {totalAmount}
+            </h2>
+            <p className="mt-2 text-lg opacity-90">
+              Your total earnings so far
+            </p>
+          </div>
         </div>
-      </div>
 
         {/* Payment List Section */}
         <div className="relative px-4 pt-5">
@@ -120,7 +83,7 @@ const PaymentsEarnigs = () => {
                   Labor Name
                 </div>
                 <div className="text-center text-xs sm:text-sm font-semibold text-gray-700">
-                Total Amount 
+                  Total Amount
                 </div>
                 <div className="text-center text-xs sm:text-sm font-semibold text-gray-700">
                   Commission Amount
@@ -153,15 +116,15 @@ const PaymentsEarnigs = () => {
                       ₹{payment?.paymentDetails?.totalAmount}
                     </div>
                     <div className="text-center text-xs sm:text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
-                    + ₹{payment?.paymentDetails?.commissionAmount}
-                  </div>
+                      + ₹{payment?.paymentDetails?.commissionAmount}
+                    </div>
 
                     <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
                       ₹{payment?.paymentDetails?.laborEarnings}
                     </div>
                     <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
-                  {new Date(payment.updatedAt).toLocaleString()}
-                </div>
+                      {new Date(payment.updatedAt).toLocaleString()}
+                    </div>
                     <div
                       className={`text-center text-xs sm:text-sm font-bold px-2 py-1 rounded-lg ${
                         payment?.paymentStatus === "paid"
@@ -172,7 +135,7 @@ const PaymentsEarnigs = () => {
                       {payment?.paymentStatus}
                     </div>
                   </div>
-                ))} 
+                ))}
               </div>
             </div>
           </div>
@@ -201,6 +164,6 @@ const PaymentsEarnigs = () => {
       </div>
     </div>
   );
-}
+};
 
 export default PaymentsEarnigs

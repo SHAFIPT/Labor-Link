@@ -7,7 +7,6 @@ export const UseDebounce = (value, delay) => {
 
 
     useEffect(() => {
-         console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
         const handler = setTimeout(() => {
             setDebouncedValue(value)
         }, delay)

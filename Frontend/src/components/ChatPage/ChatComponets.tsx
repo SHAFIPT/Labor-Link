@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Star, Smile, Paperclip, Mic, Send, Info , X, MenuIcon } from 'lucide-react';
-import char from '../../assets/char1.jpeg';
-import user from '../../assets/girl1.jpeg';
+import { Smile, Paperclip, Send, Info , MenuIcon } from 'lucide-react';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,7 +7,7 @@ import { RootState } from '../../redux/store/store';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc , where, getDocs, documentId  } from 'firebase/firestore';
 // import { getAuth } from 'firebase/auth';
 import { auth , db } from '../../utils/firbase';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation} from 'react-router-dom';
 import QuoteMessage from './QuoteMessage';
 import { uploadToCloudinary } from "../../utils/cloudineryConfig";
 import MediaPreview from './MediaPreview';
@@ -19,18 +17,17 @@ import { toast } from 'react-toastify';
 import './Chat.css'
 import SuccessModal from './SuccessModal';
 import { fetchlaborId } from '../../services/UserSurvice';
-import { setBookingDetails } from '../../redux/slice/bookingSlice';
-import bgImage from '../../assets/toole.avif'        
+import { setBookingDetails } from '../../redux/slice/bookingSlice';    
 import AddressModal from './AddressModal';
 import { toggleMobileChatList } from '../../redux/slice/laborSlice';
-import { validateNewDate } from '../../utils/userRegisterValidators';
 import { validateDate } from '../../utils/laborRegisterValidators';
 import { fetchAllBookingOfLabor, fetchIsBookingExist } from '../../services/LaborServices';
 import { IBooking } from '../../@types/IBooking';
 
 interface ChatComponentProps {
-  chatId?: any; // Make chatId optional
-  currentPage?: any;
+  chatId: string;
+  onMenuClick: () => void; // ✅ Add this property
+  currentPage: string;
 }
 
 const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, currentPage = null }) => {
@@ -91,11 +88,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     pincode: "",
     latitude: null,
     longitude: null,
-  });
-  const [currentUserData, setCurrentUserData] = useState({
-    profilePicture: "",
-    name: "",
-    email: "",
   });
 
   const [participants, setParticipants] = useState({
@@ -326,12 +318,12 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
 
         if (!querySnapshot.empty) {
           // Get the first matching document
-          const userData = querySnapshot.docs[0].data();
-          setCurrentUserData({
-            profilePicture: userData.profilePicture || "",
-            name: userData.name || "",
-            email: userData.email || "",
-          });
+          // const userData = querySnapshot.docs[0].data();
+          // setCurrentUserData({
+          //   profilePicture: userData.profilePicture || "",
+          //   name: userData.name || "",
+          //   email: userData.email || "",
+          // });
 
           // console.log("This is the mmmmmmmmmmyyyyyyyyyyyyyyyyymmmmmmmmmmmmmmmmmm",setCurrentUserData)
         } else {

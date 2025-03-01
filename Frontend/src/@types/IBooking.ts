@@ -4,7 +4,8 @@ export interface IAddressDetails {
   phone: string;
   district: string;
   place: string;
-  address: string;
+  address : string
+  city : string
   pincode: string;
   Userlatitude: number;
   Userlongitude: number;
@@ -27,6 +28,7 @@ export interface User {
   ProfilePic : string;
   firstName: string;
   lastName: string;
+  address?: IAddressDetails; 
 }
 export interface Labor {
   _id : string
@@ -40,10 +42,11 @@ export interface Labor {
 
 
 export interface IBooking extends Document {
+  _id: string;
   bookingId: string;
   userId: User;  // Changed from User object to string
  laborId: Labor;
-
+  canceledBy: 'user' | 'labor';
   quote: {
     description: string;
     estimatedCost: number;

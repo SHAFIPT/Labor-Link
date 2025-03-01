@@ -8,54 +8,34 @@ import Booking from '../../../assets/BookingsKing.png'
 import Payment from '../../../assets/paymentEarnigsKing.png'
 import totialIMaes from '../../../assets/totalImages.jpg'
 import laborEarnings from '../../../assets/LaborEranigs.jpg'
-import { IBooking } from '../../../@types/IBooking';
 import { fetchAllBookings } from '../../../services/AdminAuthServices';
 
+interface BookingStats {
+  completed: number;
+  inProgress: number;
+  pending: number;
+  cancelled: number;
+  paid: number;
+  paymentPending: number;
+  paymentFailed: number;
+  monthlyEarnings: number[];
+}
+
+
 const AdminDashBoard = () => {
-  // Sample data for charts and stats
-  // const statsData = [
-  //   { icon: User, title: 'Total Users', value: '12,000', color: 'text-blue-600' },
-  //   { icon: Briefcase, title: 'Total Labors', value: '1,600', color: 'text-green-600' },
-  //   { icon: Calendar, title: 'Total Bookings', value: '300', color: 'text-purple-600' },
-  //   { icon: DollarSign, title: 'Total Earnings', value: '$45,000', color: 'text-red-600' }
-  // ];
-
-  // const pieData1 = [
-  //   { name: 'Active', value: 400 },
-  //   { name: 'Inactive', value: 200 }
-  // ];
-
-  // const pieData2 = [
-  //   { name: 'Pending', value: 300 },
-  //   { name: 'Completed', value: 500 }
-  // ];
-
-  // const barData = [
-  //   { month: 'Jan', earnings: 4000 },
-  //   { month: 'Feb', earnings: 3000 },
-  //   { month: 'Mar', earnings: 5000 },
-  //   { month: 'Apr', earnings: 4500 },
-  //   { month: 'May', earnings: 6000 }
-  // ];
-
-  const COLORS1 = ['#0088FE', '#FF8042'];
-  const COLORS2 = ['#00C49F', '#FFBB28'];
-
-
  
-
-    const [currentPage, setCurrentPage] = useState(1)
-    const [limit, setLimit] = useState(200);
-    const [filter, setFilter] = useState("");
-    const [totalPages, setTotalPages] = useState(1);
-    const [bookingDetils , setBookingDetils] = useState<IBooking[]>(null)
+    const [currentPage] = useState(1);
+    const [limit] = useState(200);
+    const [filter] = useState("");
+    // const [totalPages, setTotalPages] = useState(1);
+    // const [bookingDetils , setBookingDetils] = useState<IBooking[]>(null)
     const [totalUsers, setTotalUsers] = useState(0); // Add state for total users
     const [totalLabors, setTotalLabors] = useState(0);
     const [totalBooking, setTotalBookings] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
     const [totalLaborErnigs, setTotalLaborErnigs] = useState(0);
     const [totalCompnyProfit, setTotalCompnyProfit] = useState(0);
-    const [bookingStats, setbookingStats] = useState('');
+    const [bookingStats, setbookingStats] = useState<BookingStats | null>(null);
     console.log('This si eht bookingStatas',bookingStats)
     
      const statusData = [
@@ -86,8 +66,8 @@ const AdminDashBoard = () => {
       if (response.status === 200) {
         console.log('Thsi si teh preosnf',response);
         const {
-          bookings,
-          totalPages,
+          // bookings,
+          // totalPages,
           totalAmount,
           totalLabors,
           totalUsers,
@@ -97,8 +77,8 @@ const AdminDashBoard = () => {
           totalCompnyProfit
         } = response.data
   
-        setTotalPages(totalPages)
-        setBookingDetils(bookings)
+        // setTotalPages(totalPages)
+        // setBookingDetils(bookings)
         setTotalUsers(totalUsers)
         setTotalLabors(totalLabors)
         setTotalBookings(total)

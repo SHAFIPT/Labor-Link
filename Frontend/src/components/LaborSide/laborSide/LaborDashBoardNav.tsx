@@ -8,13 +8,14 @@ import { persistor } from '../../../redux/store/store';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
 import { toggleTheme } from "../../../redux/slice/themeSlice";
-import { HomeIcon, MessageSquare, Receipt, Briefcase, User, Users } from 'lucide-react';
+import { HomeIcon, Receipt, Briefcase, User, Bell} from 'lucide-react';
 import { resetUser } from "../../../redux/slice/userSlice";
 import { resetLaborer, setFormData, setIsLaborAuthenticated, setLaborer } from "../../../redux/slice/laborSlice";
 import { logout } from "../../../services/LaborAuthServices";
 import NotificationModal from "../../UserSide/notificaionModal";
 import { auth, db } from "../../../utils/firbase";
 import { collection, doc, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
+import NotificaionModal from "../../UserSide/notificaionModal";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 // import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading, setAccessToken } from '../../../redux/slice/laborSlice'
 // import { checkIsBlock, logout } from "../services/UserAuthServices";
@@ -74,8 +75,18 @@ const LaborDashBoardNav = ({ setCurrentStage }) => {
   const [notificaionOn, setNotificaionOn] = useState(false)
   const [chats, setChats] = useState<Chat[]>([]);
   const hasUnreadMessages = chats.some((chat) => chat.unreadCount > 0);
+  const [isScrolled, setIsScrolled] = useState(false);
+  console.log("Thsi si the chats..................", chats)
+  useEffect(() => {
+     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
+    const handleScroll = () => {
+      // Check if page is scrolled more than 50px
+      setIsScrolled(window.scrollY > 50);
+    };
 
-  console.log("Thsi si the chats..................",chats)
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   const toggleDarkMode = () => {
     dispatch(toggleTheme()); // Dispatch toggle action
@@ -110,20 +121,6 @@ const LaborDashBoardNav = ({ setCurrentStage }) => {
             navigate('/');
         }
   }
-
-  // useEffect(() => {
-  //   const logou = async () => {
-      
-  //     dispatch(resetUser())
-  //            dispatch(resetLaborer())
-  //            dispatch(setLaborer({}))
-  //            dispatch(setFormData({}))
-  //          dispatch(setIsLaborAuthenticated(false))
-  //          await persistor.purge();
-  //   }
-  //   logou()
-  // },[])
-  
 
     const fetchChats = (userUids) => {
     if (!userUids) {
@@ -214,6 +211,23 @@ const LaborDashBoardNav = ({ setCurrentStage }) => {
 
     return () => unsubscribe(); // Cleanup auth listener on unmount
   }, []);
+
+  const hasRejectionDetails = (reschedule) => {
+    const hasRejection = 
+      reschedule.rejectedBy === "labor" &&
+      reschedule.rejectionNewDate &&
+      reschedule.rejectionNewTime &&
+      reschedule.rejectionReason;
+
+    const hasRequest = 
+      reschedule.requestSentBy === "labor" &&
+      reschedule.newDate &&
+      reschedule.newTime &&
+      reschedule.reasonForReschedule;
+
+    return hasRejection || hasRequest;
+  };
+  
 
     
   return (
@@ -551,11 +565,11 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
             </div>
 
             <div
-              className={`rightDarkLighMode lg:pl-0 m-6 lg:m-0 pl-[114px] md:pl-[590px] sm:pl-16 -mr-32 sm:mr-1 md:mr-6 lg:mr-0 ${
+              className={`rightDarkLighMode relative z-[60] md:z-0   ${
                 theme === "dark"
                   ? "bg-darkBg text-darkText"
                   : "bg-lightBg text-lightText"
-              }`}
+              } absolute top-0 right-4 md:right-6`}
             >
               <label
                 className="toggle"
@@ -613,95 +627,132 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           >
             Brouse all labors
           </button> */}
-            <div className="relative">
-              {/* Menu Icon - Now with higher z-index to stay on top */}
-              <div className="lg:hidden md:hidden sm:hidden fixed top-9 right-1 z-50">
-                <button
-                  onClick={toggleMenu}
-                  className="p-2 focus:outline-none"
-                  aria-label="Toggle menu"
-                >
-                  <i
-                    className={`fas ${
-                      isOpen ? "fa-times" : "fa-bars"
-                    } text-2xl ${isOpen ? "text-white" : "text-black"}`}
-                  ></i>
-                </button>
-              </div>
+           {/* Navigation Container */}
+            <div className="">
+            {/* Menu Toggle Button for Mobile */}
+               <div
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+          isOpen 
+            ? 'bg-transparent' 
+            : isScrolled 
+              ? theme === 'dark' 
+                ? 'bg-gray-900 shadow-md' 
+                : 'bg-white shadow-md'
+              : 'bg-transparent'
+        } lg:hidden`}
+      >
 
-              <div
-                className={`fixed inset-x-0 top-0 h-/2 bg-[#184242] transform transition-transform duration-300 ease-in-out z-40 ${
-                  isOpen ? "translate-y-0" : "-translate-y-full"
-                }`}
-              >
-                <nav className="container mx-auto h-full px-4 py-8">
-                  <div className="grid gap-y-4 h-full max-w-md mx-auto">
-                    <div className="space-y-4">
-                      <Link
-                        to={""}
-                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
-                      >
-                        <HomeIcon className="w-6 h-6 flex-shrink-0" />
-                        <span className="text-lg font-medium">Dashboard</span>
-                      </Link>
-                      <Link
-                        to=""
-                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
-                      >
-                        <span className="text-lg font-medium">Chats</span>
-                      </Link>
-                      <Link
-                        to=""
-                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
-                      >
-                        <Receipt className="w-6 h-6 flex-shrink-0" />
-                        <span className="text-lg font-medium">
-                          Billing History
-                        </span>
-                      </Link>
-                      <Link
-                        to=""
-                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
-                      >
-                        <Briefcase className="w-6 h-6 flex-shrink-0" />
-                        <span className="text-lg font-medium">Total Works</span>
-                      </Link>
-                      <Link
-                        to="/labor/LaborProfile"
-                        className="flex items-center space-x-4 text-white hover:bg-[#235959] px-4 py-3 rounded-lg transition-all duration-200"
-                      >
-                        <User className="w-6 h-6 flex-shrink-0" />
-                        <span className="text-lg font-medium">
-                          View Profile page
-                        </span>
-                      </Link>
-                    </div>
-
-                    {isLaborAuthenticated && (
-                      <div className="mt-auto pb-4">
-                        <button className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1">
-                          <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
-                            <svg
-                              className="w-4 h-4"
-                              viewBox="0 0 512 512"
-                              fill="white"
-                            >
-                              <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
-                            </svg>
-                          </div>
-                          <div className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-                            Logout
-                          </div>
-                        </button>
-                      </div>
-                    )}
+                  <div className="p-4 flex justify-end ">
+                    <button
+                      onClick={toggleMenu}
+                      className="p-2 focus:outline-none transition-colors duration-300 gap-3"
+                      aria-label="Toggle menu"
+                      aria-expanded={isOpen}
+                    >
+                      <i
+                        className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-2xl ${
+                          theme === 'dark' ? 'text-gray-300' : 'text-black'
+                        }`}
+                      />
+                    </button>
                   </div>
-                </nav>
+                </div>
+
+        {/* Overlay Menu for Mobile */}
+        <div
+          className={`fixed inset-0 h-screen bg-black bg-opacity-50 transform transition-all duration-500 ease-in-out z-40 ${
+            isOpen ? 'translate-y-0' : '-translate-y-full'
+          }`}
+          onClick={toggleMenu} // Close menu when clicking outside
+        >
+          <div
+            className={`fixed inset-x-0 top-0 h-[50vh] bg-gradient-to-b from-teal-900 to-teal-800 
+                        transform transition-all duration-500 ease-in-out z-40
+                        ${isOpen ? 'translate-y-0' : '-translate-y-full'} 
+                        shadow-2xl`}
+          >
+            <nav className="container mx-auto px-4 h-full flex flex-col items-center justify-center space-y-1 relative">
+              {/* Notification Icon */}
+              <div className="absolute top-6 left-8 lg:hidden">
+            <button className="relative group">
+              <Bell className="w-6 h-6 text-white transition-colors duration-200 group-hover:text-teal-300" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                3
+              </span>
+            </button>
+          </div>
+
+              {/* Menu Items */}
+              <div className="flex flex-col items-center space-y-8 w-full max-w-md mt-16">
+                <button
+                  className="w-full py-3 px-6 text-white text-xl font-medium tracking-wide rounded-lg 
+                            bg-teal-700/30 hover:bg-teal-700/50 transition-all duration-200 
+                            transform hover:scale-105 hover:shadow-lg
+                            flex items-center justify-center space-x-2"
+                  // onClick={handleLaborList}
+                >
+                  <span>Browse all Labors</span>
+                </button>
+
+                <button
+                  className="w-full py-3 px-6 text-white text-xl font-medium tracking-wide rounded-lg 
+                            bg-teal-700/30 hover:bg-teal-700/50 transition-all duration-200 
+                            transform hover:scale-105 hover:shadow-lg
+                            flex items-center justify-center space-x-2"
+                  // onClick={handleViewProfile}
+                >
+                  <span>View Profile Page</span>
+                </button>
+
+                {shouldShowUserName && (
+                  <button
+                    className="group flex items-center justify-center w-full max-w-xs h-12 
+                              bg-gradient-to-r from-red-600 to-red-700 rounded-lg 
+                              hover:from-red-700 hover:to-red-800
+                              transition-all duration-300 transform hover:scale-105
+                              shadow-lg hover:shadow-xl"
+                    // onClick={handleLogout}
+                  >
+                    <div className="flex items-center justify-center space-x-3 px-4">
+                      <svg
+                        className="w-5 h-5 text-white"
+                        viewBox="0 0 512 512"
+                        fill="currentColor"
+                      >
+                        <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
+                      </svg>
+                      <span className="text-white text-lg font-semibold">Logout</span>
+                    </div>
+                  </button>
+                )}
               </div>
-            </div>
+            </nav>
+          </div>
+          </div>
+            {/* 
+
+            {shouldShowUserName && (
+              <> */}
+
+            {/* Bell Iconnnnnnnnnnnnnn */}
+
+            {notificaionOn && (
+              <NotificaionModal
+                onClose={() => setNotificaionOn(false)}
+                chats={chats}
+                bookingDetails={bookingDetails}
+                setCurrentStage={isLaborAuthenticated ? setCurrentStage : undefined}
+              />
+            )}
+
+            
+
+            {/* </>
+            )} */}
+          </div>
 
             <div className="di" onClick={() => setNotificaionOn(true)}>
-              <div className="relative cursor-pointer">
+              <div className="relative cursor-pointer hidden md:block lg:block">
                 {/* Notification Bell Icon */}
                 <i className="fas fa-bell text-2xl"></i>
 

@@ -8,4 +8,4 @@ export interface IOTPservices{
     checkOTPExists(user: Partial<IUser>): Promise<IOTP | null>
     resendOtp(user: IUser): Promise<IOTP | null> 
     isVerify(user:Partial<IUser>, otp:IOTP): Promise <IOTP| null>
-}
+}     

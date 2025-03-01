@@ -57,7 +57,7 @@ const navigate = useNavigate()
     setCategory(formData.category || '')
     setStartTime(formData.startTime || '')
     setEndTime(formData.endTime || '')
-    setSkills(formData.skills || [])
+    setSkills(Array.isArray(formData.skills) ? formData.skills : formData.skills ? [formData.skills] : []);
     setImage(formData.image || '') 
     setAvailability(Array.isArray(formData.availability) ? formData.availability : [])
   }
@@ -229,9 +229,9 @@ const navigate = useNavigate()
 
 
        // Log formData contents for debugging
-        for (let pair of formDataForAPI.entries()) {
-          console.log(pair[0] + ': ' + pair[1]);
-        }
+        // for (let pair of formDataForAPI.entries()) {
+        //   console.log(pair[0] + ': ' + pair[1]);
+        // }
 
       try {
 

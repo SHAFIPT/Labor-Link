@@ -41,7 +41,9 @@ const RescheduleRequestModal = ({
         newDate?: string;
         newTime?: string;
         reason?: string;
-        } = useSelector((state: RootState) => state.labor.error);  
+  } = useSelector((state: RootState) => state.labor.error);  
+  
+  console.log('Thsi is the erroro ;;;;',error)
 
   useEffect(() => {
      console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
@@ -181,6 +183,9 @@ const RescheduleRequestModal = ({
                 className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
+              {error?.newTime && (
+                  <p className="text-red-500 text-sm mt-1">{error.newTime}</p>
+              )}
             </div>
 
             <div>
@@ -193,6 +198,9 @@ const RescheduleRequestModal = ({
                 className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
+              {error?.newDate && (
+                  <p className="text-red-500 text-sm mt-1">{error.newDate}</p>
+                )}
             </div>
 
             <div>
@@ -205,6 +213,9 @@ const RescheduleRequestModal = ({
                 className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
+              {error?.reason && (
+                  <p className="text-red-500 text-sm mt-1">{error.reason}</p>
+                )}
             </div>
 
             <div className="flex justify-end gap-4">
@@ -289,6 +300,9 @@ const RescheduleRequestModal = ({
             className="w-full mt-2 px-4 py-2 bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
           />
+          {error?.newTime && (
+                  <p className="text-red-500 text-sm mt-1">{error.newTime}</p>
+              )}
         </div>
 
         <div>
@@ -301,6 +315,9 @@ const RescheduleRequestModal = ({
             className="w-full mt-2 px-4 py-2 bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
           />
+          {error?.newDate && (
+             <p className="text-red-500 text-sm mt-1">{error.newDate}</p>
+          )}
         </div>
 
         <div>
@@ -313,6 +330,9 @@ const RescheduleRequestModal = ({
             className="w-full mt-2 px-4 py-2 bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
           />
+          {error?.reason && (
+            <p className="text-red-500 text-sm mt-1">{error.reason}</p>
+          )}
         </div>
 
         <div className="flex justify-end gap-4">

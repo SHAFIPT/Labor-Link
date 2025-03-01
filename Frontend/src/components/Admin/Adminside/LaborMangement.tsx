@@ -2,8 +2,8 @@ import React, { useState ,useEffect } from "react";
 import AdminSideRow from "./AdminSideRow";
 import "./User.css";
 import { toast } from "react-toastify";
-import { Link, useNavigate } from "react-router-dom";
-import { UserPlus, Eye, Trash2 } from "lucide-react";
+import {  useNavigate } from "react-router-dom";
+import {  Eye, Trash2 } from "lucide-react";
 import { deleteLabor, fetchLabor } from "../../../services/AdminAuthServices";
 import UseDebounce from "../../../Hooks/useDebounce";
 
@@ -38,7 +38,6 @@ const LaborMangement = () => {
   const fetchUsers = async (query = "", pageNumber = 1 ,selectedFilter) => {
     const resoponse = await fetchLabor(query, pageNumber ,selectedFilter);
 
-    console.log("this is the repnse of the labor fetch :", resoponse);
 
     if (resoponse.status === 200) {
       const { totalPage, laborFound } = resoponse.data.data;
