@@ -26,7 +26,7 @@ const initialState: InitialState = {
     user: {} as IUser,
     loading: false,
     error: {},
-    role: null,
+    role: "user",
     isUserAthenticated: false,
     accessToken: "",
     modal: false,

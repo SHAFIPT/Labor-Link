@@ -22,14 +22,13 @@ import { getDocs, query, collection, where} from "firebase/firestore";
 import { toast } from "react-toastify";
 import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../../redux/slice/laborSlice";
 import Breadcrumb from "../BreadCrumb";
-import { setBookingDetails } from "../../redux/slice/bookingSlice";
+import { BookingDetails, setBookingDetails } from "../../redux/slice/bookingSlice";
 import CancelBookingForm from "./CancelBookingForm";
 import CancellationDetails from "./CancellationDetails";
 import ResheduleModal from "./ResheduleModal";
 import RescheduleRequestModal from "../LaborSide/laborSide/resheduleRequstModal";
 import AdditionalChargeModal from "./AdditionalChargeModal";
 import WorkCompleteModal from "./workCompleteModal";
-import { IBooking } from "../../@types/IBooking";
 import { AxiosError } from "axios";
 
 interface UserData {
@@ -73,11 +72,11 @@ const UserProfile = () => {
   // const [updatedBookingDetails , setUpdatedBookingDetails] = useState("")
   const currentPages = location.pathname.split("/").pop() || "defaultPage";
   const [currentPage, setCurrentPage] = useState(1);
-  const [updatedBooking, setUpdatedBooking] = useState<IBooking | null>(null);
+  const [updatedBooking, setUpdatedBooking] = useState<BookingDetails | null>(null);
   
     console.log('this ist eh resheudelullll',updatedBooking)
   
-    const handleRescheduleUpdate = (newBooking  :IBooking) => {
+    const handleRescheduleUpdate = (newBooking  :BookingDetails) => {
       setUpdatedBooking(newBooking); // Update state when reschedule is accepted
     };
   const [filter, setFilter] = useState(""); 

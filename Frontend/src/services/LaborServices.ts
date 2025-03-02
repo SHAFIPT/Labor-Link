@@ -7,6 +7,67 @@ interface AboutMeData {
   description: string;
 }
 
+interface Filters {
+  latitude: number;
+  longitude: number;
+  country: string;
+  state: string;
+  city: string;
+  zipCode: string;
+  category: string;
+  rating: number;
+  sortOrder: string;
+}
+
+
+interface FetchLaborsParams {
+  latitude: number;
+  longitude: number;
+  categorie: string;
+  laborId: string;
+}
+
+interface CancelFormData {
+  bookingId: string;
+  reason: string;
+  comments: string;
+  isWithin30Minutes: boolean;
+}
+
+interface RejectionData {
+  newTime: string;  // or Date, depending on your expected format
+  newDate: string;  // or Date
+  rejectionReason: string;
+  bookingId: string; // assuming bookingId is a string
+  rejectedBy: string
+  requestSentBy: string; // assuming requestSentBy is a string
+}
+
+
+interface AdditionalChargeData {
+  bookingId: string;
+  amount: string;
+  reason: string;
+}
+
+interface WithdrawalData {
+  amount: number;
+  bankDetails: {
+    accountNumber: string;
+    bankName: string;
+    ifscCode: string;
+    accountName?: string; // Add if needed
+  };
+}
+
+// Define the type for the bank details (example structure, adjust as needed)
+// interface BankDetails {
+//   accountNumber: string;
+//   accountName: string;
+//   routingNumber: string;
+//   bankName: string;
+// }
+
 const api = laborAxiosInstance
 
 
@@ -46,7 +107,7 @@ export const editPassword = async (PasswodData: { email: string; password: strin
 }
 
 
-export const fetchLaborsByLocation = async (filters) => {
+export const fetchLaborsByLocation = async (filters: Filters) => {
   try {
 
      const { latitude, longitude, country, state, city, zipCode, category, rating , sortOrder} = filters;
@@ -81,7 +142,7 @@ export const fetchLaborBookings = async (page: number, limit: number, filter : s
     throw error;
   }
 }
-export const fetchLaobrs = async ({ latitude, longitude , categorie, laborId }) => {
+export const fetchLaobrs = async ({ latitude, longitude, categorie, laborId }: FetchLaborsParams)=> {
   try {
     // Assuming the backend accepts latitude and longitude in query params
     const response = await api.get('/api/labor/labors/fetchSimilorLabors', {
@@ -100,7 +161,7 @@ export const fetchLaobrs = async ({ latitude, longitude , categorie, laborId }) 
 };
 
 
-export const cancelSubmision = async (cancelFormData) => {
+export const cancelSubmision = async (cancelFormData: CancelFormData) => {
   try {  
 
     const response = await api.post('/api/user/users/cancelBooking', {
@@ -118,7 +179,7 @@ export const cancelSubmision = async (cancelFormData) => {
   }
 }
 
-export const fetchBookings = async (bookingId) => {
+export const fetchBookings = async (bookingId : string) => {
   try {
 
     const response = await api.get(`/api/labor/labors/fetchBooking/${bookingId}`)
@@ -142,7 +203,7 @@ export const fetchLabors = async () => {
   }
 }
 
-export const rejectReshedule = async (rejectionData) => {
+export const rejectReshedule = async  (rejectionData: RejectionData)  => {
   try {
 
     const response = await api.post('/api/labor/labors/submitRejection',rejectionData)
@@ -153,7 +214,7 @@ export const rejectReshedule = async (rejectionData) => {
     throw error;
   }
 }
-export const acceptReshedule = async (bookingId , acceptedBy) => {
+export const acceptReshedule = async (bookingId :string, acceptedBy  :string) => {
   try {
 
     const response = await api.put(`/api/labor/labors/acceptBooking/${bookingId}`,acceptedBy)
@@ -164,7 +225,7 @@ export const acceptReshedule = async (bookingId , acceptedBy) => {
     throw error;
   }
 }
-export const submitAdditionalCharge = async (additonalCharges) => {
+export const submitAdditionalCharge = async (additonalCharges: AdditionalChargeData) => {
   try {
 
     const response = await api.post('/api/labor/labors/additionalCharge',additonalCharges)
@@ -175,7 +236,7 @@ export const submitAdditionalCharge = async (additonalCharges) => {
     throw error;
   }
 }
-export const acceptRequst = async (bookingId) => {
+export const acceptRequst = async (bookingId : string) => {
   try {
 
     const response = await api.patch(`/api/labor/labors/acceptRequst/${bookingId}`)
@@ -186,7 +247,7 @@ export const acceptRequst = async (bookingId) => {
     throw error;
   }
 }
-export const rejectRequst = async (bookingId) => {
+export const rejectRequst = async (bookingId : string) => {
   try {
 
     const response = await api.patch(`/api/labor/labors/rejectRequst/${bookingId}`)
@@ -197,7 +258,7 @@ export const rejectRequst = async (bookingId) => {
     throw error;
   }
 }
-export const fetchWithdrowalRequests = async (laborId) => {
+export const fetchWithdrowalRequests = async (laborId :string) => {
   try {
 
     const response = await api.get(`/api/labor/labors/withdrowalRequests/${laborId}`)
@@ -208,7 +269,7 @@ export const fetchWithdrowalRequests = async (laborId) => {
     throw error;
   }
 }
-export const fetchIsBookingExist = async (participentsData) => {
+export const fetchIsBookingExist = async (participentsData: { userEmail: string; laborEmail: string })  => {
   try {
 
     const response = await api.get('/api/labor/labors/fetchIsBookingExist', {
@@ -221,7 +282,7 @@ export const fetchIsBookingExist = async (participentsData) => {
     throw error;
   }
 }
-export const fetchAllBookingOfLabor = async (email) => {
+export const fetchAllBookingOfLabor = async (email  :string) => {
   try {
 
     const response = await api.get('/api/labor/labors/fetchAllBookingOfLabor', {
@@ -236,7 +297,7 @@ export const fetchAllBookingOfLabor = async (email) => {
 }
 
 
-export const handlewithdrowAmount = async  ({ amount, bankDetails }) => {
+export const handlewithdrowAmount = async   ({ amount, bankDetails }: WithdrawalData) => {
   try {
 
     const response = await api.post('/api/labor/labors/witdrowWalletAmount', {

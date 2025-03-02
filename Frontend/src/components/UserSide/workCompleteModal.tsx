@@ -2,11 +2,11 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
 import { toast } from 'react-toastify';
 import { workCompletion } from '../../services/UserSurvice'
-import { IBooking } from '../../@types/IBooking';
+import { BookingDetails } from '../../redux/slice/bookingSlice';
 interface WorkCompleteModalProps {
   onClose: () => void; // onClose should be a function that takes no parameters and returns nothing
   bookingId: string;  // Assuming bookingId is a string (adjust if it's another type)
-  onUpdateBooking: (reshedule: IBooking
+  onUpdateBooking: (reshedule: BookingDetails
   ) => void; // Assuming onUpdateBooking takes 'reshedule' as an argument
 }
 
@@ -25,11 +25,8 @@ const WorkCompleteModal: React.FC<WorkCompleteModalProps> = ({ onClose, bookingI
                 updateData = {isUserCompletionReported: true}
             } else if (isLaborAuthenticated) {
                 updateData = { isLaborCompletionReported: true };
-            }
-
-            console.log("uuuuuuuuuuuuuu",updateData)
-            console.log("llllllllll",bookingId)
-            
+          }
+          
             const response = await workCompletion(updateData, bookingId)
             
           if (response.status === 200) {

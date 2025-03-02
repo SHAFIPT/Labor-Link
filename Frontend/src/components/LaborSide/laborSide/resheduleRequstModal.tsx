@@ -6,28 +6,7 @@ import { validateNewDate, validateNewTime, validateReason } from '../../../utils
 import { setError } from '../../../redux/slice/laborSlice';
 import { toast } from 'react-toastify';
 import { acceptReshedule, rejectReshedule } from '../../../services/LaborServices';
-import { IBooking } from '../../../@types/IBooking';
-
-interface Booking {
-  bookingId: string;
-  customerName: string;
-  id: string;
-  date: string;
-  time: string;
-  laborId: string;
-  status: string;
-  reschedule?: { // Add the reschedule property, with an appropriate type
-    isReschedule: boolean;
-    newTime: string | null;
-    newDate: string | null;
-    reasonForReschedule: string | null;
-    requestSentBy: string | null;
-    rejectedBy: string | null;
-    rejectionNewDate: string | null;
-    rejectionNewTime: string | null;
-    rejectionReason: string | null;
-  };
-}
+import { BookingDetails } from '../../../redux/slice/bookingSlice';
 
 
 
@@ -35,8 +14,8 @@ interface Booking {
 interface RescheduleRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  bookingDetails: Booking[]; // Booking details are passed as an array
-  onUpdateBooking: (updatedBooking: IBooking) => void;
+  bookingDetails: BookingDetails[]; // Booking details are passed as an array
+  onUpdateBooking: (updatedBooking: BookingDetails) => void;
 }
 
 const RescheduleRequestModal = ({
@@ -88,9 +67,10 @@ const RescheduleRequestModal = ({
     };
   }, [isOpen]);
     
-  const rejectedBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null;
-  const acceptedBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null;
-  const requestSentBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null
+ const rejectedBy = isUserAthenticated ? "user" : (isLaborAuthenticated ? "labor" : "");
+const acceptedBy = isUserAthenticated ? "user" : (isLaborAuthenticated ? "labor" : "");
+const requestSentBy = isUserAthenticated ? "user" : (isLaborAuthenticated ? "labor" : "");
+ 
 
   const handleRejectionSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

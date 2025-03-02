@@ -11,7 +11,7 @@ export interface WalletTransaction {
     amount: number;
     type: 'credit' | 'debit';
     description: string;
-    bookingId?: Types.ObjectId;
+    bookingId?: string
     originalAmount?: number;
     commissionAmount?: number;
     createdAt: Date;

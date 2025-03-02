@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
-export const uploadToCloudinary = async (file) => {
+export const uploadToCloudinary = async (file  :File) => {
   // First, ensure your upload preset is properly configured
   const UPLOAD_PRESET = "laborlinkPresist"; // Must be configured in Cloudinary dashboard
   const CLOUD_NAME = "dni3mqui7";
@@ -27,12 +27,12 @@ export const uploadToCloudinary = async (file) => {
       throw new Error("Invalid response from Cloudinary");
     }
   } catch (error) {
-    // Improved error handling
-    if (error.response) {
-      console.error("Cloudinary error:", error.response.data);
-      throw new Error(error.response.data.error?.message || "Failed to upload to Cloudinary");
-    }
-    console.error("Upload error:", error);
-    throw error;
+     if (error instanceof AxiosError && error.response) {
+    console.error("Cloudinary error:", error.response.data);
+    throw new Error(error.response.data.error?.message || "Failed to upload to Cloudinary");
+  } else {
+    console.error("An unknown error occurred:", error);
+    throw new Error("An unknown error occurred");
+  }
   }
 };

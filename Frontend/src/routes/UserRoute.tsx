@@ -1,6 +1,6 @@
 // UserRoute.jsx
 import React, { Suspense } from 'react';
-import { Route, Routes, useNavigate  } from 'react-router-dom';
+import { Route, Routes} from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
 // Route guards - these are typically small and can be imported directly
@@ -8,8 +8,6 @@ import PublicRoute from '../components/Authentications/PublicRoute';
 // import PrivateRoute from '../components/Authentications/UserPrivateRoute';
 import UserPublicRoute from '../components/Authentications/UserPublicRoute';
 import UserProfilePage from '../pages/userSide/UserProfilePage';
-import { useSelector } from 'react-redux';
-import { RootState } from '../redux/store/store';
 import ChatPage from '../pages/Chat/ChatPage';
 import UserChatView from '../pages/userSide/UserChatView';
 import UserPrivateRoute from '../components/Authentications/UserPrivateRoute';

@@ -6,12 +6,12 @@ import { validateNewDate, validateNewTime, validateReason } from "../../utils/us
 import { toast } from "react-toastify";
 import '../Auth/LoadingBody.css'
 import { handleRescheduleWork } from "../../services/UserSurvice";
-import { IBooking } from "../../@types/IBooking";
+import { BookingDetails } from "../../redux/slice/bookingSlice";
 
 interface ResheduleModalProps {
   onClose: () => void;
   bookingId: string; 
-  onUpdateBooking: (reshedule: IBooking) => void;
+  onUpdateBooking: (reshedule: BookingDetails) => void;
 }
 
 const ResheduleModal = ({ onClose, bookingId, onUpdateBooking }: ResheduleModalProps) => {

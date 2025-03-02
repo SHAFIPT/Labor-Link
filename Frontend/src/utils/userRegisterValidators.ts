@@ -62,7 +62,7 @@ const editProfileSchema = Joi.object({
 
 const registerSchema = Joi.object({
   firstName: Joi.string()
-  .pattern(new RegExp("^[A-Za-z\s]+$"))  // Allowing spaces
+  .pattern(new RegExp("^[A-Za-z ]+$"))   // Allowing spaces
   .min(2)
   .max(30)
   .required()
@@ -173,7 +173,7 @@ export const editProfileValidate = async (data: Partial<IUser>) => {
 
 }
 
-export const validateNewDate = (newDate) => {
+export const validateNewDate = (newDate   :string) => {
   const schema = Joi.date()
     .min("now") // ⬅️ Ensures the date is today or in the future
     .required()
@@ -186,7 +186,7 @@ export const validateNewDate = (newDate) => {
   return error ? error.details[0].message : null;
 };
 
-export const validateNewTime = (newTime) => {
+export const validateNewTime = (newTime  :string) => {
   const schema = Joi.string().required().messages({
     "string.empty": "Please select a valid time.",
   });
@@ -194,7 +194,7 @@ export const validateNewTime = (newTime) => {
   return error ? error.details[0].message : null;
 };
 
-export const validateReason = (reason) => {
+export const validateReason = (reason : string) => {
   const schema = Joi.string().required().messages({
     "string.empty": "Please provide a reason for the reschedule.",
   });

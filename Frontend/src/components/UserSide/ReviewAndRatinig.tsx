@@ -65,7 +65,7 @@ const ReviewAndRating = () => {
       
             const formData = new FormData();
             if (bookingId) {
-                formData.append("bookingId", bookingId); // Ensure bookingId is not null
+                formData.append("bookingId", bookingId || ""); // Ensure bookingId is not null
             }
             formData.append("rating", rating.toString());
             formData.append("feedback", feedback);
@@ -84,7 +84,7 @@ const ReviewAndRating = () => {
       
             try {
                  console.log('submitted......')          
-                const reviewSumbitResponse = await reviewSubmit(formData, bookingId)
+                const reviewSumbitResponse = await reviewSubmit(formData, bookingId || ""); 
                 console.log('Riveiw respnse ',reviewSumbitResponse)
                 if (reviewSumbitResponse.status == 200) {
                     toast.success('Review sumiteed sussfully...')
@@ -105,9 +105,8 @@ const ReviewAndRating = () => {
 
 
     useEffect(() => {
-             console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
             const fetchBooking = async () => {
-                const response = await fetchBookingWithId(bookingId)
+                const response = await fetchBookingWithId(bookingId || ""); 
                 if (response.status === 200) {
                     const { fetchedBooking } = response.data
                     console.log('helooooooooooooooooooooooo',fetchedBooking)

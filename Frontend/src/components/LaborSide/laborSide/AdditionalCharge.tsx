@@ -2,17 +2,16 @@ import React, { useState } from "react";
 import { XCircle } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
-import { updateSingleBooking } from "../../../redux/slice/bookingSlice";
+import { BookingDetails, updateSingleBooking } from "../../../redux/slice/bookingSlice";
 import { toast } from "react-toastify";
 import { submitAdditionalCharge } from "../../../services/LaborServices";
-import { IBooking } from "../../../@types/IBooking";
 
 
 interface AdditionalChargeProps {
   onClose: () => void; 
   bookingId: string; 
-  booking: any; 
-  onUpdateBooking: (updatedBooking: IBooking) => void;
+  booking: BookingDetails; 
+  onUpdateBooking: (updatedBooking: BookingDetails) => void;
 }
 
 const AdditionalCharge: React.FC<AdditionalChargeProps> = ({ onClose, bookingId, booking, onUpdateBooking }) => {

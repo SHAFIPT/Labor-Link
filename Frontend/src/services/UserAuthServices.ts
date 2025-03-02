@@ -1,9 +1,9 @@
 
 import { signInWithPopup } from "firebase/auth";
 import { googleProvider, auth } from "../utils/firbase";
-import axios, { AxiosError } from "axios";
 import { IUser } from "../@types/user";
 import { userAxiosInstance } from "./instance/userInstance";
+import { AxiosError } from "axios";
 
 
 const api = userAxiosInstance

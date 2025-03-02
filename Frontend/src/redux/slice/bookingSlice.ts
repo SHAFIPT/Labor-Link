@@ -38,6 +38,13 @@ export interface Quote {
 }
 
 
+interface AdditionalCharge {
+  amount: number;  // Assuming amount is a number. Change the type if it's different.
+  reason: string;  // Assuming reason is a string.
+}
+
+
+
 
 export interface BookingDetails {
   _id: string;
@@ -62,6 +69,7 @@ export interface BookingDetails {
     reason?: string;
     status: 'pending' | 'approved' | 'declined';
   };
+  additionalCharge : AdditionalCharge;
   reschedule: {
     isReschedule: boolean;
     requestSentBy: 'user' | 'labor';
@@ -75,7 +83,7 @@ export interface BookingDetails {
     reasonForReschedule: string;
   };
   // paymentStatus : boolean
-
+  amount :string
   addressDetails: {
     name: string;
     phone: string;

@@ -2,23 +2,13 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import { acceptRequst, rejectRequst } from '../../services/LaborServices';
 import { XCircle } from 'lucide-react';
-import { IBooking } from '../../@types/IBooking';
-
-interface AdditionalCharge {
-  amount: number;  // Assuming amount is a number. Change the type if it's different.
-  reason: string;  // Assuming reason is a string.
-}
-
-interface BookingDetails {
-  bookingId: string;
-  additionalChargeRequest: AdditionalCharge;  // Now it's an object of type AdditionalCharge.
-}
+import { BookingDetails } from '../../redux/slice/bookingSlice';
 
 interface AdditionalChargeModalProps {
   isOpen: boolean;
   onClose: () => void;
   bookingDetails: BookingDetails[];  // Array of booking details objects
-  onUpdateBooking: (updatedBooking: IBooking) => void;  // Function to update booking
+  onUpdateBooking: (updatedBooking: BookingDetails) => void; // Function to update booking
 }
 
 const AdditionalChargeModal: React.FC<AdditionalChargeModalProps> = ({
@@ -94,10 +84,10 @@ const AdditionalChargeModal: React.FC<AdditionalChargeModalProps> = ({
         {/* Details */}
         <div className="space-y-4">
           <p className="text-gray-700 dark:text-gray-300 text-lg">
-            <span className="font-semibold">Additional Charge:</span> {additionalCharge.amount}
+            <span className="font-semibold">Additional Charge:</span> {additionalCharge?.amount}
           </p>
           <p className="text-gray-700 dark:text-gray-300 text-lg">
-            <span className="font-semibold">Reason for the Charge:</span> {additionalCharge.reason}
+            <span className="font-semibold">Reason for the Charge:</span> {additionalCharge?.reason}
           </p>
         </div>
 

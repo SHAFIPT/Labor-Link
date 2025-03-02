@@ -7,7 +7,7 @@ import { RootState } from '../../../redux/store/store';
 import { useDispatch, useSelector } from 'react-redux';
 import CancelBooking from './CancelBooking';
 import { toast } from 'react-toastify';
-import { setBookingDetails } from '../../../redux/slice/bookingSlice';
+import { BookingDetails, setBookingDetails } from '../../../redux/slice/bookingSlice';
 import { fetchBookings } from '../../../services/LaborServices';
 import ResheduleModal from '../../UserSide/ResheduleModal';
 import RescheduleRequestModal from './resheduleRequstModal';
@@ -15,7 +15,6 @@ import '../../Auth/LoadingBody.css'
 import { setLoading } from '../../../redux/slice/laborSlice';
 import AdditionalCharge from './AdditionalCharge';
 import WorkCompleteModal from '../../UserSide/workCompleteModal';
-import { IBooking } from '../../../@types/IBooking';
 
 interface Reschedule {
   isReschedule?: boolean;
@@ -35,11 +34,11 @@ const LaborViewDetailsPage = () => {
   const booking = location.state?.booking;
   // console.log("This is BBBBBBBBBBBBBB",booking)
   const bookingdetislss = useSelector((state: RootState) => state.booking.bookingDetails);
-  const [updatedBooking, setUpdatedBooking] = useState<IBooking | null>(null);
+  const [updatedBooking, setUpdatedBooking] = useState<BookingDetails | null>(null);
 
   console.log('this ist eh resheudelullll',updatedBooking)
 
-  const handleRescheduleUpdate = (newBooking: IBooking) => {
+  const handleRescheduleUpdate = (newBooking: BookingDetails) => {
     setUpdatedBooking(newBooking);
   };
 

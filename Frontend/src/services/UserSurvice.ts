@@ -1,6 +1,30 @@
 import { userAxiosInstance } from "./instance/userInstance";
 
 
+interface CancelFormData {
+  bookingId: string; // or number, depending on the type of bookingId
+  reason: string;
+  comments: string;
+  isWithin30Minutes: boolean;
+}
+
+interface UpdateData {
+  status?: string; // Example field, adjust the type based on the actual data
+  comments?: string; // Optional field, can be undefined
+  completedAt?: string; // Optional field for completion time (use string or Date)
+}
+
+interface PymnetData {
+  bookingId: string;
+  laborId: string;
+  userId : string
+}
+
+interface RescheduleData {
+  bookingId :string
+  requestSentBy: string | null;  // Allowing null
+}
+
 const api = userAxiosInstance
 
 export const userFetch = async () => {
@@ -77,7 +101,7 @@ export const fetchBookings = async (page: number, limit: number, filter: string)
     throw error;
   }
 };
-export const cancelSubmision = async (cancelFormData) => {
+export const cancelSubmision = async (cancelFormData: CancelFormData) => {
   try {  
 
     const response = await api.post('/api/user/users/cancelBooking', {
@@ -94,7 +118,7 @@ export const cancelSubmision = async (cancelFormData) => {
     throw error;
   }
 }
-export const handleRescheduleWork = async (reshedulDatas) => {
+export const handleRescheduleWork = async  (reshedulDatas: RescheduleData) => {
   try {
 
     const response = await api.post('/api/user/users/resheduleRequst', reshedulDatas)
@@ -105,7 +129,7 @@ export const handleRescheduleWork = async (reshedulDatas) => {
     throw error;
   }
 }
-export const workCompletion = async (updateData, bookingId) => {
+export const workCompletion = async (updateData: UpdateData, bookingId: string) => {
   try {
     const response = await api.post(`/api/user/users/workCompletion/${bookingId}`, updateData)
     return response
@@ -115,7 +139,7 @@ export const workCompletion = async (updateData, bookingId) => {
     throw error;
   }
 }
-export const pymnetSuccess = async (pymnetData) => {
+export const pymnetSuccess = async (pymnetData: PymnetData) => {
   try {
     const response = await api.post('/api/user/users/pymnetSuccess', pymnetData)
     return response
@@ -125,7 +149,7 @@ export const pymnetSuccess = async (pymnetData) => {
     throw error;
   }
 }
-export const fetchBookingWithId = async (bookingId) => {
+export const fetchBookingWithId = async (bookingId  :string) => {
   try {
     const response = await api.get(`/api/user/users/fetchBookingWithId/${bookingId}`)
     return response
@@ -135,7 +159,7 @@ export const fetchBookingWithId = async (bookingId) => {
     throw error;
   }
 }
-export const reviewSubmit = async (formData , bookingId) => {
+export const reviewSubmit = async (formData: FormData, bookingId: string) => {
   try {
     const response = await api.post(`/api/user/users/reviewSubmit/${bookingId}`,formData)
     return response
@@ -145,7 +169,7 @@ export const reviewSubmit = async (formData , bookingId) => {
     throw error;
   }
 }
-export const fetchAllBooings = async (userId , page :number , limit : number , filter : string) => {
+export const fetchAllBooings = async (userId  :string, page :number , limit : number , filter : string) => {
   try {
 
      const queryParams = new URLSearchParams({

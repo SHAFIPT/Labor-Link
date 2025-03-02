@@ -46,7 +46,7 @@ const LaborMangement = () => {
   });
 
   const fetchUsers = async (query = "", pageNumber = 1 ,selectedFilter  :string) => {
-    const resoponse = await fetchLabor(query, pageNumber ,selectedFilter);
+      const resoponse = await fetchLabor({ query, pageNumber, selectedFilter });
 
 
     if (resoponse.status === 200) {

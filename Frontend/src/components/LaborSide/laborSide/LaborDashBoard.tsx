@@ -32,7 +32,26 @@ interface ChatDocument {
   lastReadTimestamp: Timestamp;
   lastMessageSender : string
 }
-
+// interface BookingDetails {
+//   bookingId: string;
+//   customerName: string; // Add this
+//   id: string; // Add this
+//   date: string; // Add this
+//   time: string; // Add this
+//   laborId: string;
+//   status: string;
+//   reschedule?: {
+//     isReschedule: boolean;
+//     newTime: string | null;
+//     newDate: string | null;
+//     reasonForReschedule: string | null;
+//     requestSentBy: string | null;
+//     rejectedBy: string | null;
+//     rejectionNewDate: string | null;
+//     rejectionNewTime: string | null;
+//     rejectionReason: string | null;
+//   };
+// }
 
 interface UserData {
   // Add user fields based on your Users collection structure
@@ -110,7 +129,7 @@ const LaborDashBoard = () => {
   const theam = useSelector((state: RootState) => state.theme.mode)
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [updatedBooking, setUpdatedBooking] = useState<IWithrowalBooking | IBooking | null>(null);
+  const [updatedBooking, setUpdatedBooking] = useState<BookingDetails | null>(null);
   
   console.log('Thsis is the updatedBooking::',updatedBooking)
 
@@ -134,7 +153,7 @@ const LaborDashBoard = () => {
       (laborer?.wallet?.transactions?.length || 0) / transactionsPerPage
     );
     
-    const handleRescheduleUpdate =  (newBooking: IBooking) => {
+    const handleRescheduleUpdate =  (newBooking: BookingDetails) => {
       setUpdatedBooking(newBooking);
     };
 
@@ -449,20 +468,20 @@ useEffect(() => {
     // Add withdrawal logic here
     console.log("Withdrawing:", amount, bankDetails);
     try {
+      const numericAmount = Number(amount);
 
-
-      if (!amount || Number(amount) <= 0) {
-          toast.error('Please enter a valid amount');
-          return;
+      if (!numericAmount || numericAmount <= 0) {
+            toast.error('Please enter a valid amount');
+            return;
         }
 
         // Ensure amount is converted to a number before comparison
-        if (Number(amount) > laborer.wallet.balance) {
-          toast.error(`Insufficient balance. Available balance: ${laborer.wallet.balance}`);
-          return;
+       if (numericAmount > laborer.wallet.balance) {
+            toast.error(`Insufficient balance. Available balance: ${laborer.wallet.balance}`);
+            return;
         }
       
-      const response = await handlewithdrowAmount({ amount, bankDetails })
+      const response = await handlewithdrowAmount({ amount: numericAmount, bankDetails  })
       if (response.status === 200) {
         // onUpdateBooking={handleRescheduleUpdate}
         const {withdrawalResponse } = response.data
@@ -493,7 +512,8 @@ useEffect(() => {
       }
     }
     fetchWithdrowalRequest()
-  },[laborId])
+  }, [laborId])
+
 
   return (
     <div>
