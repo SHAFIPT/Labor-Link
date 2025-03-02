@@ -36,8 +36,8 @@ interface Certificate {
 
 const LaborRegisterExperience = () => {
   const [openModal, setOpenModal] = useState(false);
-  const [idImage, setIdImage] = useState(null);
-  const [uploadType, setUploadType] = useState(null);
+  const [idImage, setIdImage] = useState<File | null>(null);
+  const [uploadType, setUploadType] = useState<"id" | "certificate" | null>(null);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [certificateImages, setCertificateImages] = useState<File[]>([]);
   const [certificateText, setCertificateText] = useState<string[]>([]);
@@ -80,7 +80,7 @@ const LaborRegisterExperience = () => {
     startDate?: string;
     responsiblity?: string;
     idProof?: string;
-  } = useSelector((state: RootState) => state.labor.error);
+  } = useSelector((state: RootState) => state.labor.error)?? {};
 
 
 
@@ -179,12 +179,12 @@ const LaborRegisterExperience = () => {
     dispatch(setUnsavedChanges(true));
   };
 
-  const handleOpenModal = (type) => {
+  const handleOpenModal = (type: "id" | "certificate") => {
     setUploadType(type);
     setOpenModal(true);
   };
 
-  const handleDeleteImage = (type, index = null) => {
+  const handleDeleteImage = (type: "id" | "certificate", index: number | null = null) => {
     if (type === "id") {
       setIdImage(null);
     } else if (type == "certificate") {
@@ -268,7 +268,7 @@ const LaborRegisterExperience = () => {
 
       console.log("response is this :", response);
 
-      if (response.status === 200) {
+      if (response.status === 200 && email && password) {
 
         const firebaseUser = await createUserWithEmailAndPassword(
           auth,
@@ -472,7 +472,7 @@ const LaborRegisterExperience = () => {
       )}
 
       {loading && <div className="loader"></div>}
-      {openModal && (
+      {openModal && uploadType && ( 
         <UploadModal
           onClose={() => {
             setOpenModal(false);

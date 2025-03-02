@@ -64,7 +64,7 @@ const LaborHome = () => {
     },
   ];
 
-    const [openIndex, setOpenIndex] = useState(null);
+    const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <>
@@ -120,9 +120,12 @@ const LaborHome = () => {
               <button
                 className="bg-[#D5FBF4] dark:bg-[#D5FBF4] text-black px-6 py-3 rounded-xl
                        hover:bg-[#b8f0e6] transition-colors duration-300 text-sm sm:text-base"
-                onClick={() => document.getElementById('faqSection')
-                  .scrollIntoView({behavior : 'smooth'})
-                }
+                onClick={() => {
+                  const faqElement = document.getElementById('faqSection');
+                  if (faqElement) {
+                    faqElement.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
               >
                 Frequently asked questions
               </button>

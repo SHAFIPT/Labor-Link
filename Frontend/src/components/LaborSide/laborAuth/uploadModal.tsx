@@ -2,12 +2,18 @@ import React from 'react'
 import './LaborExperience.css';
 import { useState } from 'react';
 
-const UploadModal = ({ onClose, onImageSelect ,uploadType }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+interface UploadModalProps {
+  onClose: () => void; 
+  onImageSelect: (file: File) => void; 
+  uploadType: "id" | "certificate"; 
+}
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
+const UploadModal: React.FC<UploadModalProps> = ({ onClose, onImageSelect, uploadType }) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+     const file = event.target.files?.[0]; 
     if (file) {
       setSelectedFile(file);
       setImagePreview(URL.createObjectURL(file)); 

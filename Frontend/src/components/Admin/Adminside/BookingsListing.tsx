@@ -6,7 +6,8 @@ import { fetchAllBookings } from '../../../services/AdminAuthServices';
 const BookingsListing = () => {
   const [limit] = useState(7);
   const [totalPages, setTotalPages] = useState(1);
-  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>([]);
+
 
   const [page, setPage] = useState(1);
 

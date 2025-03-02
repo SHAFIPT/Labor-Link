@@ -1,6 +1,11 @@
 import React from 'react';
+interface FramedServiceCardProps {
+  image: string; // Assuming image is a URL string
+  title: string;
+  className?: string;
+}
 
-const FramedServiceCard = ({ image, title, className = "" }) => {
+const FramedServiceCard: React.FC<FramedServiceCardProps> = ({ image, title, className = "" }) => {
   return (
     <div className={`flex flex-col items-center ${className}`}>
       <div className="relative w-full aspect-[3/4] max-w-[300px]  overflow-hidden group 

@@ -10,7 +10,7 @@ const PaymentsEarnigs = () => {
   const [limit] = useState(70);
   const [totalPages, setTotalPages] = useState(1);
   const [totalAmount, setTotalAmount] = useState(0);
-  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>([]);
 
   const paymnetCompleted = bookingDetils?.filter((booking) => {
     return booking.paymentStatus === "paid";
@@ -106,10 +106,10 @@ const PaymentsEarnigs = () => {
                     key={index}
                     className="grid grid-cols-7 gap-4 items-center bg-[#ABA0A0] rounded-lg shadow-md p-3 hover:bg-[#998F8F] transition-colors"
                   >
-                    <div className="text-center text-xs sm:text-sm font-medium text-white font-bold">
+                    <div className="text-center text-xs sm:text-sm  text-white font-bold">
                       {index + 1}
                     </div>
-                    <div className="text-center text-xs sm:text-sm font-medium text-white truncate font-bold">
+                    <div className="text-center text-xs sm:text-sm  text-white truncate font-bold">
                       {payment?.laborId?.firstName}
                     </div>
                     <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
@@ -123,7 +123,7 @@ const PaymentsEarnigs = () => {
                       ₹{payment?.paymentDetails?.laborEarnings}
                     </div>
                     <div className="text-center text-xs sm:text-sm text-white truncate font-bold">
-                      {new Date(payment.updatedAt).toLocaleString()}
+                       {payment.updatedAt ? new Date(payment.updatedAt).toLocaleString() : "N/A"}
                     </div>
                     <div
                       className={`text-center text-xs sm:text-sm font-bold px-2 py-1 rounded-lg ${

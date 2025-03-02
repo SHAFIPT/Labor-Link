@@ -43,7 +43,7 @@ interface Chat extends ChatDocument {
 
 const UserChatPage = () => {
   const location = useLocation();
-  const currentPages = location.pathname.split('/').pop();
+  const currentPages = location.pathname.split("/").pop() || "defaultPage";
   const theam = useSelector((state: RootState) => state.theme.mode)
   const isMobileChatListOpen = useSelector((state: RootState) => state.labor.isMobileChatListOpen);
 
@@ -56,7 +56,7 @@ const UserChatPage = () => {
   const breadcrumbItems = [
     { label: 'Home', link: '/' },
     { label: 'LaborProfilePage', link: '/userProfilePage' }, 
-    { label: 'ChatLising', link: null }, // No link for the current page
+    { label: 'ChatLising', link: undefined }, // No link for the current page
   ];
 
   const itemsPerPage = 6;
@@ -67,7 +67,7 @@ const UserChatPage = () => {
   console.log("This is the currrenet chattttttttttttttttttttts :",currentChats)
  
 
-  const fetchChats = (userUids) => {
+  const fetchChats = (userUids  :string) => {
     if (!userUids) {
       throw new Error("Missing user credentials");
     }
@@ -169,7 +169,7 @@ const UserChatPage = () => {
   }, []);
 
   // Add a function to update the last read timestamp
-  const markChatAsRead = async (chatId) => {
+  const markChatAsRead = async (chatId : string) => {
     const chatRef = doc(db, "Chats", chatId);
 
     // ✅ Set lastReadTimestamp before querying messages
@@ -185,10 +185,14 @@ const UserChatPage = () => {
     );
   };
 
-  const handleChatSelect = (chatId) => {
+  const handleChatSelect = (chatId  :string) => {
     setSelectedChatId(chatId);
     markChatAsRead(chatId);
   };
+
+  const handleMenuClick = () => {
+  // Your menu click logic here
+};
 
   const EmptyState = () => (
     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
@@ -322,7 +326,11 @@ const UserChatPage = () => {
       `}
             >
               {selectedChatId ? (
-                <ChatComponents chatId={selectedChatId} />
+                <ChatComponents 
+                  chatId={selectedChatId} 
+                  onMenuClick={handleMenuClick} 
+                  currentPage="chat" 
+                />
               ) : (
                 <div className="flex-1 flex items-center justify-center p-8 bg-slate-50">
                   <div className="text-center max-w-md mx-auto">
@@ -473,7 +481,8 @@ const UserChatPage = () => {
               {selectedChatId ? (
                 <ChatComponents
                   chatId={selectedChatId}
-                  onMenuClick={() => dispatch(toggleMobileChatList())}
+                    onMenuClick={() => dispatch(toggleMobileChatList())}
+                    currentPage="chat"
                 />
               ) : (
                 <div className="flex-1 flex flex-col  bg-[#1E1E2E]">

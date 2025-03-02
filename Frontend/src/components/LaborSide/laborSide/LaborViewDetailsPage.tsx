@@ -15,18 +15,32 @@ import '../../Auth/LoadingBody.css'
 import { setLoading } from '../../../redux/slice/laborSlice';
 import AdditionalCharge from './AdditionalCharge';
 import WorkCompleteModal from '../../UserSide/workCompleteModal';
+import { IBooking } from '../../../@types/IBooking';
+
+interface Reschedule {
+  isReschedule?: boolean;
+  newTime?: string;
+  newDate?: string;
+  reasonForReschedule?: string;
+  requestSentBy?: string;
+  rejectedBy?: string;
+  rejectionNewDate?: string;
+  rejectionNewTime?: string;
+  rejectionReason?: string;
+}
+
 
 const LaborViewDetailsPage = () => {
   const location = useLocation();
   const booking = location.state?.booking;
   // console.log("This is BBBBBBBBBBBBBB",booking)
   const bookingdetislss = useSelector((state: RootState) => state.booking.bookingDetails);
-  const [updatedBooking, setUpdatedBooking] = useState(null);
+  const [updatedBooking, setUpdatedBooking] = useState<IBooking | null>(null);
 
   console.log('this ist eh resheudelullll',updatedBooking)
 
-  const handleRescheduleUpdate = (newBooking) => {
-    setUpdatedBooking(newBooking); // Update state when reschedule is accepted
+  const handleRescheduleUpdate = (newBooking: IBooking) => {
+    setUpdatedBooking(newBooking);
   };
 
   const [cancelBooking, setCancelBooking] = useState(false)
@@ -67,7 +81,7 @@ const LaborViewDetailsPage = () => {
 
 console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString  :string) => {
     return new Date(dateString).toLocaleString();
   };
 
@@ -175,7 +189,7 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
         const data = json.routes[0];
         const route = data.geometry.coordinates;
         
-        const geojson = {
+        const geojson: GeoJSON.Feature<GeoJSON.LineString> = {
           type: 'Feature',
           properties: {},
           geometry: {
@@ -185,14 +199,14 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
         };
         
         if (map.getSource('route')) {
-          (map.getSource('route') as mapboxgl.GeoJSONSource).setData(geojson as any);
+          (map.getSource('route') as mapboxgl.GeoJSONSource).setData(geojson);
         }
 
         const bounds = new mapboxgl.LngLatBounds();
-        route.forEach(point => {
-          bounds.extend(point as [number, number]);
+        route.forEach((point: [number, number]) => {
+          bounds.extend(point);
         });
-        
+
         map.fitBounds(bounds, {
           padding: 50
         });
@@ -200,6 +214,7 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
         console.error('Error fetching route:', error);
       }
     }
+
 
     return () => map.remove();
   }, [coordinates]);
@@ -231,7 +246,7 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
   }, []);
 
   
-const isRescheduleReset = (reschedule) => {
+const isRescheduleReset = (reschedule: Reschedule)  => {
   return (
     // reschedule?.isReschedule === false || // Initial state
     (reschedule?.isReschedule === true || reschedule?.isReschedule === false &&
@@ -252,7 +267,7 @@ const isRescheduleReset = (reschedule) => {
       {loading && <div className="loader"></div>}
       {resheduleModal && (
         <ResheduleModal
-          onClose={() => setResheduleModalOpen(false)}
+          onClose={() => setResheduleModalOpen(null)}
           bookingId={resheduleModal}
           onUpdateBooking={handleRescheduleUpdate} 
         />

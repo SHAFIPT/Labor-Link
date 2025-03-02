@@ -3,10 +3,24 @@ import AdminSideRow from './AdminSideRow';
 import { toast } from 'react-toastify';
 import { fetchPending, submitData } from '../../../services/AdminAuthServices';
 
+interface Laborer {
+  firstName: string;
+  lastName?: string;
+}
+
+interface Withdrawal {
+  _id: string;
+  amount: number;
+  status: "pending" | "approved" | "rejected";
+  laborerId?: Laborer;
+  createdAt: string;
+}
+
+
 const WithdrowPendings = () => {
   // Demo pending withdrawals
-  const [pendingWallets, setPendingWallets] = useState(null);
-  const handleAction = async (id, status) => {
+  const [pendingWallets, setPendingWallets] = useState<Withdrawal[] | null>(null);
+  const handleAction = async (id  :string, status : string) => {
     try {
       const response = await submitData(id, { status });
       if (response.status == 200) {

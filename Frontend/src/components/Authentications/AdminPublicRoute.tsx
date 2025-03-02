@@ -1,9 +1,12 @@
+import { ReactNode } from 'react';
 import { RootState } from '../../redux/store/store'
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
+interface AdminPublicRouteProps {
+  children: ReactNode;
+}
 
-
-const AdminPublicRoute = ({ children }) => {
+const AdminPublicRoute = ({ children }: AdminPublicRouteProps) => {
 
        const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated);
       const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);

@@ -29,18 +29,40 @@ import ResheduleModal from "./ResheduleModal";
 import RescheduleRequestModal from "../LaborSide/laborSide/resheduleRequstModal";
 import AdditionalChargeModal from "./AdditionalChargeModal";
 import WorkCompleteModal from "./workCompleteModal";
+import { IBooking } from "../../@types/IBooking";
+import { AxiosError } from "axios";
+
+interface UserData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  image: string | null;
+  ProfilePic: string | null; // Add ProfilePic property
+}
+
+interface Reschedule {
+  isReschedule?: boolean;
+  newTime?: string;
+  newDate?: string;
+  reasonForReschedule?: string;
+  requestSentBy?: string;
+  rejectedBy?: string;
+  rejectionNewDate?: string;
+  rejectionNewTime?: string;
+  rejectionReason?: string;
+}
+
+
 const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email);
-  // console.log("This is the user .......dddddddddddddddddddddddddddddddd ",user)
   const loading = useSelector((state: RootState) => state.user.loading);
   const dispatch = useDispatch();
-  // console.log('Thsi siw eht email :',email)
   const [openEditProfile, setOpenEditProfile] = useState(false);
   const [OpenCancelationModal, setOpenCancelationModal] = useState(false);
   const [openChangePassword, setOpenChangePasswod] = useState(false);
   const [workCompleteModal ,setWorkCompleteModal] = useState(null)
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [resheduleModals, setResheduleModal] = useState(null);
   const [additionalChageModal, setAdditionalChageModal] = useState(null);
   const [password, setPassword] = useState("");
@@ -49,13 +71,13 @@ const UserProfile = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const location = useLocation();
   // const [updatedBookingDetails , setUpdatedBookingDetails] = useState("")
-  const currentPages = location.pathname.split("/").pop();
+  const currentPages = location.pathname.split("/").pop() || "defaultPage";
   const [currentPage, setCurrentPage] = useState(1);
-  const [updatedBooking, setUpdatedBooking] = useState(null);
+  const [updatedBooking, setUpdatedBooking] = useState<IBooking | null>(null);
   
     console.log('this ist eh resheudelullll',updatedBooking)
   
-    const handleRescheduleUpdate = (newBooking) => {
+    const handleRescheduleUpdate = (newBooking  :IBooking) => {
       setUpdatedBooking(newBooking); // Update state when reschedule is accepted
     };
   const [filter, setFilter] = useState(""); 
@@ -63,9 +85,13 @@ const UserProfile = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [resheduleModal, setResheduleModalOpen] = useState(null)
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+  const [formData, setFormData] = useState<{
+    firstName: string;
+    lastName: string;
+    image: File | null;
+  }>({
+    firstName: '',
+    lastName: '',
     image: null,
   });
   const error: {
@@ -87,31 +113,6 @@ const UserProfile = () => {
       : [updatedBooking] // Convert to an array if it's an object
     : bookingFromStore;
 
-
-
-  // console.log('this is the neeeeeeeeewwwwwww bbbbbbboke3ee ,',updatedBookingDetails?.[0]?.bookingId)
-  // console.log("Thiis is the llllllllllllllll :", booking.bookingId);
-
-  // const { bookingId } = bookingDetails
-  
-  // console.log("Thsis ie th bookingId")
-
-
-  //  useEffect(() => {
-  //             const fetchBooking = async () => {
-  //                 const response = await fetchBookingWithId(bookingId)
-  //                 if (response.status === 200) {
-  //                     const { fetchedBooking } = response.data
-  //                     console.log('helooooooooooooooooooooooo',fetchedBooking)
-  //                     setBookingDetils(fetchedBooking)
-  //                     // toast.success('Booking fetched succesffull')
-  //                 } else {
-  //                     // toast.error('Eroor in fetched booking')
-  //                 }
-  //             }
-  //             fetchBooking()
-  //         }, [])
-
   useEffect(() => {
     // console.log('hlooooooooooooooooooooooooooo')
      console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
@@ -125,8 +126,8 @@ const UserProfile = () => {
         setUser(fetchUserResponse);
         setUserData(fetchUserResponse);
       } catch (error) {
-        if (error.response && error.response.status === 403) {
-          toast.error("Your account has been blocked.");
+       if (error instanceof AxiosError && error.response && error.response.status === 403) {
+           toast.error("Your account has been blocked.");
           localStorage.removeItem("UserAccessToken");
           // Reset User State
           dispatch(setUser({}));
@@ -157,21 +158,21 @@ const UserProfile = () => {
   };
 
   // Handle input changes
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
   // Handle image upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
     setFormData((prev) => ({ ...prev, image: file }));
   };
 
   const updateFirebaseProfilePicture = async (
-    email,
-    profilePictureUrl,
-    name
+    email : string,
+    profilePictureUrl : string,
+    name : string
   ) => {
     try {
       console.log("Starting Firebase profile update...");
@@ -240,8 +241,10 @@ const UserProfile = () => {
       const formDataObj = new FormData();
       formDataObj.append("firstName", formData.firstName);
       formDataObj.append("lastName", formData.lastName);
-      formDataObj.append("email", userData.email);
-      formDataObj.append("image", formData.image);
+      formDataObj.append("email", userData?.email || ""); 
+      if (formData.image) {
+        formDataObj.append("image", formData.image);
+      }
 
       console.log("FormData contents:", {
         firstName: formDataObj.get("firstName"),
@@ -276,6 +279,7 @@ const UserProfile = () => {
     } finally {
       console.log("HandleSave completed"); // Add this to verify function completion
       dispatch(setLoading(false));
+      dispatch(setError({}));
     }
   };
 
@@ -351,40 +355,17 @@ const UserProfile = () => {
     fetchBooking(); // Call the function inside useEffect
   }, [currentPage, limit, dispatch , filter ]);
 
-  const handleFilterChange = (value) => {
+  const handleFilterChange = (value : string) => {
     setFilter(value);
   };
 
-  // const handleViewCancelaiton = (bookingData) => {
-  //   <CancellationDetails booking={bookingData} />
-  // }
-  // const handleManageBooking = () => {
-  //   navigate('/bookingDetails-and-history')
-  // }
-
-  // useEffect(() => {
-  //   const fetchBooking = async () => {
-  //     if (bookingId) {
-  //       const fetchBookingResponse = await fetchBookings(bookingId);
-  //       if (fetchBookingResponse.status === 200) {
-  //         toast.success('Booking fetched successfully');
-  //         dispatch(setBookingDetails(fetchBookingResponse.data.bookings));
-  //       } else {
-  //         toast.error('Error fetching booking details');
-  //       }
-  //     }
-  //   };
-    
-  //   fetchBooking();
-  // }, [bookingId, dispatch]);
-
   const breadcrumbItems = [
     { label: "Home", link: "/" },
-    { label: "LaborProfilePage", link: null }, // No link for the current page
+    { label: "LaborProfilePage", link: undefined }, // No link for the current page
   ];
 
 
-   const isRescheduleReset = (reschedule) => {
+   const isRescheduleReset = (reschedule: Reschedule | null) => {
     return (reschedule?.isReschedule === false || reschedule?.isReschedule === true) &&
       !reschedule?.newTime &&
       !reschedule?.newDate &&
@@ -396,16 +377,7 @@ const UserProfile = () => {
       !reschedule?.rejectionReason;
 };
 
-
-  // Helper function to check if reschedule is rejected with new details
-  // const hasRejectionDetails = (reschedule) => {
-  //   return reschedule.rejectedBy === "labor" &&
-  //     reschedule.rejectionNewDate &&
-  //     reschedule.rejectionNewTime &&
-  //     reschedule.rejectionReason;
-  // };
-
-  const hasRejectionDetails = (reschedule) => {
+  const hasRejectionDetails = (reschedule: Reschedule | null) => {
     const hasRejection = 
       reschedule?.rejectedBy === "labor" &&
       reschedule?.rejectionNewDate &&
@@ -423,7 +395,7 @@ const UserProfile = () => {
 
 
 
-  const handleProceedToPay = async (bookingId , laborId ,userId) => {
+  const handleProceedToPay = async (bookingId: string, laborId: string, userId: string) => {
     try {
       dispatch(setLoading(true))
 
@@ -472,7 +444,7 @@ const UserProfile = () => {
       {/* Reschedule Modal */}
       {resheduleModal && (
         <ResheduleModal
-          onClose={() => setResheduleModalOpen(false)}
+          onClose={() => setResheduleModalOpen(null)}
           bookingId={resheduleModal}
           onUpdateBooking={handleRescheduleUpdate} 
         />
@@ -639,7 +611,7 @@ const UserProfile = () => {
 
                     <input
                       id="email"
-                      value={userData.email}
+                      value={userData?.email || ""}
                       readOnly
                       onChange={handleChange}
                       className="w-full px-3 py-2 border border-gray-300 cursor-default rounded-md shadow-sm"
@@ -742,7 +714,7 @@ const UserProfile = () => {
 
                     <input
                       id="email"
-                      value={userData.email}
+                      value={userData?.email || ""}
                       readOnly
                       className="w-full px-3 py-2 bg-[#2b2b2b] text-gray-400 border border-[#444] rounded-md shadow-sm cursor-not-allowed"
                     />
@@ -802,7 +774,7 @@ const UserProfile = () => {
               <div className="flex flex-col items-center lg:items-start lg:flex-row">
                 <div className="flex justify-center lg:justify-start lg:ml-6 md:-mt-4">
                   <img
-                    src={userData?.ProfilePic}
+                    src={userData?.ProfilePic || ""} 
                     alt="Profile"
                     className="w-[150px] h-[150px] sm:w-[160px] sm:h-[160px] md:w-[190px] md:h-[190px] lg:w-[220px] lg:h-[220px] rounded-full border-4 shadow-lg object-cover"
                   />

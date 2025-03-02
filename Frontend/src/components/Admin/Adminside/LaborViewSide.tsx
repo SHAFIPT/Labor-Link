@@ -12,6 +12,24 @@ import {
 import { IBooking } from "../../../@types/IBooking";
 
 
+interface Labor {
+  _id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  isBlocked?: boolean;
+  categories?: string[];
+  status?: "pending" | "approved" | "rejected";
+  certificates?: Certificate[];
+}
+
+
+interface Certificate {
+  certificateName: string;
+  certificateDocument: string;
+}
+
+
 const LaborViewSide = () => {
   const location = useLocation();
   const dispatch = useDispatch();
@@ -22,8 +40,8 @@ const LaborViewSide = () => {
   const [isApproved, setIsApproved] = useState(labor.isApproved);
   const [rejfectModal, setRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
-  const [updatedLabor, setUpdatedLabor] = useState(null);
-  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
+  const [updatedLabor, setUpdatedLabor] = useState<Labor | null>(null);
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>([]);
   const [currentPage] = useState(1);
   const [limit] = useState(6);
   const [filter] = useState("");
@@ -51,7 +69,7 @@ const LaborViewSide = () => {
     fetchLaborBooings();
   }, [currentPage, limit, filter, laborId]);
 
-  const categoryIcons = {
+ const categoryIcons: Record<string, JSX.Element> = {
     plumber: (
       <svg
         id="plumber-icon"
@@ -109,10 +127,7 @@ const LaborViewSide = () => {
         toast.error("error occud in approval");
       }
     } catch (error) {
-      console.error(
-        "Error in block/unblock operation:",
-        error.response?.data || error.message
-      );
+      console.error(error);
       dispatch(setLoading(false));
       toast.error(`Failed to approve the list...!`);
     }
@@ -139,10 +154,7 @@ const LaborViewSide = () => {
         toast.error("An error occurred. Please try again.");
       }
     } catch (error) {
-      console.error(
-        "Error in block/unblock operation:",
-        error.response?.data || error.message
-      );
+      console.error(error);
       dispatch(setLoading(false));
       toast.error(`Failed to ${isBlocked ? "unblock" : "block"} user.`);
     }
@@ -170,7 +182,7 @@ const LaborViewSide = () => {
     }
   };
 
-  const handleViewAll = (labor) => {
+  const handleViewAll = (labor : Labor) => {
     navigate("/admin/viewAllDetails", { state: { labor } });
   };
 
@@ -669,7 +681,7 @@ const LaborViewSide = () => {
                       : "grid-cols-2 w-[673px]"
                   } gap-6`}
                 >
-                  {labor.certificates.map((certificate, index) => (
+                  {labor.certificates.map((certificate: Certificate, index: number) => (
                     <div
                       key={index}
                       className="flex flex-col items-center bg-white p-4 rounded-lg shadow-lg"

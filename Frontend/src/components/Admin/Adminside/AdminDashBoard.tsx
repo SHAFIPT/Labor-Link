@@ -261,7 +261,7 @@ const AdminDashBoard = () => {
                 <YAxis />
                 <Tooltip
                   content={({ payload, label }) => {
-                    if (payload && payload[0]) {
+                    if (payload?.length && payload[0]?.value !== undefined) {
                       return (
                         <div className="bg-white px-3 py-2 shadow-lg rounded-lg border border-gray-200">
                           <p className="font-medium text-gray-900">{label}</p>

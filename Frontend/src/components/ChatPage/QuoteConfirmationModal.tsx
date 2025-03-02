@@ -1,7 +1,21 @@
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
+import { QuoteDetailsType } from './ChatComponets';
 
-const QuoteConfirmationModal = ({ isOpen, onClose, onConfirm, quoteDetails }) => {
+interface QuoteConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  quoteDetails: QuoteDetailsType | null;
+}
+
+
+const QuoteConfirmationModal: React.FC<QuoteConfirmationModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  quoteDetails,
+}) => {
     if (!isOpen) return null;
     
       console.log("This is the selected Queet4e leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",quoteDetails)
@@ -30,10 +44,12 @@ const QuoteConfirmationModal = ({ isOpen, onClose, onConfirm, quoteDetails }) =>
             <div className="flex justify-between">
               <span className="text-gray-600">Arrival Time:</span>
               <span className="font-semibold text-black">
-                {new Date(quoteDetails?.arrivalTime).toLocaleString('en-IN', {
-                  dateStyle: 'medium',
-                  timeStyle: 'short'
-                })}
+                {quoteDetails?.arrivalTime 
+                  ? new Date(quoteDetails.arrivalTime).toLocaleString('en-IN', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short'
+                    })
+                  : "N/A"}
               </span>
             </div>
           </div>

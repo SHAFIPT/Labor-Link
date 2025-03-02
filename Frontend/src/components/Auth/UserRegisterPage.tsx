@@ -91,15 +91,14 @@ const UserRegisterPage = () => {
       const Otpresponce = await sendOtp({ email, password });
       console.log("This is the Otpresponce:", Otpresponce);
 
-      if (Otpresponce.status === 200) {
+      if (Otpresponce && Otpresponce.status === 200) {
         const userEmail = Otpresponce.data.email;
         setEmail(userEmail);
         setOtpModalVisible(true);
         toast.success("OTP sent successfully! Please check your email.");
       } else {
-        toast.error(
-          Otpresponce.data?.message || "Unexpected response from the server."
-        );
+        toast.error(Otpresponce?.data?.message || "Unexpected response from the server.");
+
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -120,7 +119,7 @@ const UserRegisterPage = () => {
       dispatch(setLoading(true));
       const googleResoponse = await googleAuth();
 
-      if (googleResoponse.status === 200) {
+      if (googleResoponse && googleResoponse.status === 200) {
         const { user, accessToken } = googleResoponse.data.data;
         console.log("theis is the goole enter repsonws....", googleResoponse);
         localStorage.setItem("UserAccessToken", accessToken);
@@ -131,7 +130,8 @@ const UserRegisterPage = () => {
         toast.success("Successfully signed in with Google!");
         navigate("/");
       } else {
-        toast.error(googleResoponse.data?.message || "Google Sign-In failed.");
+        toast.error(googleResoponse?.data?.message || "Google Sign-In failed.");
+
       }
     } catch (error) {
       console.error("Google Sign-In error:", error);

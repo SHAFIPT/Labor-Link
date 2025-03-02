@@ -19,8 +19,12 @@ import './LoadingBody.css'
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 
+interface OtpFormProps {
+  isVisible: boolean;
+  onClose: () => void;
+}
 
-const OtpForm = ({ isVisible, onClose }) => {
+const OtpForm: React.FC<OtpFormProps> = ({ isVisible, onClose }) => {
   const [timer, setTimer] = useState(60);
   const [otp, setOtp] = useState(["", "", "", ""]);
   const { formData, loading } = useSelector((state: RootState) => state.user);
@@ -50,8 +54,17 @@ const OtpForm = ({ isVisible, onClose }) => {
     console.log("This is otpCode :", otpCode);
     console.log("this is the user formData :", formData);
 
+    if (!formData.email) {
+      toast.error("Email is required for OTP verification.");
+      return;
+    }
+
     try {
       const VerifyOtpResponse = await verifyOtp(formData.email, otpCode);
+
+      if (!VerifyOtpResponse) {
+        throw new Error("Invalid response from server.");
+      }
 
       if (VerifyOtpResponse.status === 200) {
         toast.success("OTP Verified Successfully!", {
@@ -64,6 +77,10 @@ const OtpForm = ({ isVisible, onClose }) => {
 
           // Before creating a user, check if the email is already in use
           try {
+            if (!formData.email) {
+              toast.error("Email is required for register in firebase.");
+              return;
+            }
             const signInMethods = await fetchSignInMethodsForEmail(
               auth,
               formData.email
@@ -80,6 +97,11 @@ const OtpForm = ({ isVisible, onClose }) => {
               );
               dispatch(setLoading(false)); // Stop loading
               return; // Exit the function early
+            }
+
+            if (!formData.password) {
+              toast.error("password is required for OTP verification.");
+              return;
             }
 
             // Firebase Email/Password Sign-Up if email is not in use
@@ -108,6 +130,12 @@ const OtpForm = ({ isVisible, onClose }) => {
               // Save user data in MongoDB (if required)
               const registernewUser = await registUser(formData);
               console.log("User Registered Successfully:", registernewUser);
+
+              if (!registernewUser || !registernewUser.data) {
+                throw new Error(
+                  "Invalid response from server during registration."
+                );
+              }
 
               if (registernewUser.data) {
                 const { user, accessToken } = registernewUser.data.data;
@@ -140,14 +168,17 @@ const OtpForm = ({ isVisible, onClose }) => {
             }
           } catch (firebaseError) {
             console.error("Firebase Error:", firebaseError);
-            toast.error(
-              firebaseError.message ||
-                "Firebase error occurred during registration.",
-              {
-                position: "top-right",
-                autoClose: 3000,
-              }
-            );
+
+            // Ensure firebaseError is an instance of Error before accessing message
+            const errorMessage =
+              firebaseError instanceof Error
+                ? firebaseError.message
+                : "Firebase error occurred during registration.";
+
+            toast.error(errorMessage, {
+              position: "top-right",
+              autoClose: 3000,
+            });
           }
 
           setTimeout(() => {
@@ -165,14 +196,22 @@ const OtpForm = ({ isVisible, onClose }) => {
       }
     } catch (error) {
       console.error(error);
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred during OTP verification.",
-        {
-          position: "top-right",
-          autoClose: 3000,
-        }
-      );
+
+      let errorMessage = "An error occurred during OTP verification.";
+
+      // If error is an Axios error, extract response message
+      if (error instanceof AxiosError) {
+        errorMessage = error.response?.data?.message || errorMessage;
+      }
+      // If error is a generic Error, extract message
+      else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 

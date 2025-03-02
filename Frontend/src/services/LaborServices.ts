@@ -1,5 +1,11 @@
 import { laborAxiosInstance } from "./instance/laborInstance";
 
+interface AboutMeData {
+  userId: string;
+  name: string;
+  experience: string;
+  description: string;
+}
 
 const api = laborAxiosInstance
 
@@ -55,7 +61,7 @@ export const fetchLaborsByLocation = async (filters) => {
 }
 
 
-export const aboutMe = async (data) => {
+export const aboutMe = async (data :AboutMeData ) => {
   try {
     
     const response = await api.post('/api/labor/labors/abouteMe',data)

@@ -22,16 +22,42 @@ import { getDocs, query, collection, where, updateDoc, doc, getFirestore, server
 import { db , app } from '../../../utils/firbase';
 import Breadcrumb from "../../BreadCrumb"
 import { sendPasswordResetEmail } from "firebase/auth"
+import { IUser } from "../../../@types/user"
+
+interface LaborData {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email?: string;
+  address: string;
+  profilePicture?: string;
+  language: string;
+  skill: string | string[]; // Ensure skill is defined
+  responsibility: string;
+  availability: string[]; // Assuming it's an array of strings
+  startTime?: string;
+  endTime?: string;
+  categories?: string[]; 
+}
+
+interface Review {
+  id: string;
+  reviewerName: string;
+  reviewerProfile: string; // Profile picture URL
+  createdAt: string; // or Date, depending on your data type
+  reviewText: string;
+  rating: number;
+  imageUrl?: string[]; // Optional array of image URLs
+}
+
+
+
 
 const LaborProfile = () => {
-    const dispatch = useDispatch()
-    const navigate = useNavigate()
-  
-  //   const formdata = useSelector((state: RootState) => state.labor.formData)
-  //   const formdatarole = useSelector((state: RootState) => state.labor?.formData?.role)
-  //   const Oldrole = useSelector((state: RootState) => state.labor?.laborer?.role)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const theam = useSelector((state: RootState) => state.theme.mode)
-   const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated); 
+  const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated); 
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
   const Laborer = useSelector((state : RootState) => state.labor.laborer)
   const email = useSelector((state : RootState) => state.labor.laborer.email)
@@ -46,11 +72,12 @@ const LaborProfile = () => {
   console.log('Thsi is eth current Laborer aaaaaaabuu Laborer  +++++++++++++++ :',Laborer)
   // console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
   const location = useLocation();
-  const currentPage = location.pathname.split('/').pop();
+  const currentPage = location.pathname.split('/').pop()|| "defaultPage"; 
 
   console.log("Thsi is the current paaaaaaaaaaaaaaaaaaageeeeeeeeeeeeeeeeee",currentPage)
   const [openEditProfile, setOpenEditProfile] = useState(false)
-  const [laborData, setLaborData] = useState(null)
+  const [laborData, setLaborData] = useState<LaborData | null>(null);
+  console.log('Thsi is the laborDataalllllllllllll',laborData)
   const [openAbout, setOpenAbout] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -64,9 +91,9 @@ const LaborProfile = () => {
     description: "",
   })
   const [visibleReviews, setVisibleReviews] = useState(3);
-  const [submittedData, setSubmittedData] = useState(null);
+  const [submittedData] = useState(null);
   const [newSkill, setNewSkill] = useState('');
-  const [modalImage, setModalImage] = useState(null); 
+  const [modalImage, setModalImage] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<{
   firstName: string;
@@ -88,7 +115,7 @@ const LaborProfile = () => {
   startTime: string;
   endTime: string;
   responsibilities: string;
-  image: null;
+  image: File | null;
 }>({
   firstName: '',
   lastName: '',
@@ -128,7 +155,7 @@ const error: {
     endTime?: string;
     availability?: string; 
     password? : string
-  } = useSelector((state: RootState) => state.labor.error);
+  } = useSelector((state: RootState) => state.labor.error) ?? {}
 
   const laborId = user?._id;
   const categorie = user?.categories?.[0];
@@ -154,11 +181,18 @@ useEffect(() => {
    const availableDays = laborData?.availability 
   ? laborData.availability.join(", ")
   : "No availability"
-     const parsedSkills = Array.isArray(laborData?.skill) 
-    ? JSON.parse(laborData.skill[0]) 
-    : typeof laborData?.skill === 'string'
-      ? JSON.parse(laborData.skill)
-      : [];
+     const parsedSkills = (() => {
+  try {
+    if (Array.isArray(laborData?.skill)) {
+      return JSON.parse(laborData.skill[0]);
+    } else if (typeof laborData?.skill === 'string') {
+      return JSON.parse(laborData.skill);
+    }
+  } catch (error) {
+    console.warn("Could not parse skills:", error);
+  }
+  return []; // Default to empty array if parsing fails
+})();
       
       console.log("This is partsed Skills ........ +++++ ========= ",parsedSkills)
   
@@ -202,11 +236,12 @@ useEffect(() => {
   
         dispatch(setLaborer(fetchUserResponse))
       } catch (error) {
-        if (error.response && error.response.status === 403) {
-          const errorMessage = error.response.data?.message || "Your account has been blocked.";
-          toast.error(errorMessage); // Show dynamic error message
-  
-          localStorage.removeItem("LaborAccessToken");
+         if (error instanceof Error) {
+          console.error("Error message:", error.message);
+        } else {
+          console.error("Unknown error:", error);
+        
+                localStorage.removeItem("LaborAccessToken");
   
           // Reset User State
           dispatch(setUser({}));
@@ -266,7 +301,7 @@ useEffect(() => {
 }, [isUserAuthenticated, navigate ,isLaborAuthenticated]); 
 
   
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -275,13 +310,16 @@ useEffect(() => {
   };
 
    // Handle image upload
-  const handleImageUpload = (e) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
     const file = e.target.files[0];
-    setFormData((prev) => ({ ...prev, image: file }));
+    setFormData(prev => ({ ...prev, image: file }));
   };
 
+
  // Handle individual day change
-const handleAvailabilityChange = (day) => {
+const handleAvailabilityChange = (day: keyof typeof formData.availability) => {
   setFormData(prev => {
     const newAvailability = {
       ...prev.availability,
@@ -319,12 +357,11 @@ const handleAllDaysChange = () => {
   });
   };
 
-  console.log("This is the form datat ... !!!h000000003030303003",submittedData)
   
 
 const prepareAvailabilityForSubmission = () => {
   const days = Object.keys(formData.availability)
-    .filter(day => day !== 'All' && formData.availability[day])
+    .filter(day => day !== 'All' && formData.availability[day as keyof typeof formData.availability]) // ✅ Explicitly cast `day`
     .map(day => day.toLowerCase());
 
   // Validate availability
@@ -334,7 +371,8 @@ const prepareAvailabilityForSubmission = () => {
   }
 
   return days;
-  };
+};
+
   
   // console.log('Thsi is eth current user:', user)
   // console.log('Thsi is eth current Laborer :', Laborer)
@@ -370,6 +408,7 @@ const prepareAvailabilityForSubmission = () => {
     console.log('This is the Labor laborData +++++____+++++++++++ ;', laborData);
   }
 }, [Laborer, user]);
+
   
 
   const handleInputChangeAbout = (e) => {
@@ -380,26 +419,12 @@ const prepareAvailabilityForSubmission = () => {
     }));
   };
 
-  // useEffect(() => {
-  //   const userId = currentUser || user?._id;
-  //   console.log("This is the current user:", user); // Ensure the user object is present
-  //   console.log("This is the userId:", userId);
-  //   if (userId) {
-  //   console.log("Ho iam enter here :: seeeee ------------------------")
-  //     const savedData = localStorage.getItem(`aboutData_${userId}`);
-  //       console.log("Thsi my shabeel savedDatat ",savedData)
-  //   if (savedData) {
-  //     setSubmittedData(JSON.parse(savedData));
-  //      console.log("Thsi se th userId savedData  ++++ hasdfdsfojdf ",savedData)
-  //   }
-  // }
-  // }, [currentUser, user]);
-  
-//   const userId = currentUser || user?._id;
 console.log("This is the currentUser:", currentUser);
 
 const handleSubmit = async () => {
   const userId = currentUser || user?._id;
+
+  console.log('Thsi shte userId/////',userId)
 
 
   console.log("This is the current user:", currentUser);
@@ -449,7 +474,11 @@ const handleSubmit = async () => {
   };
   
 
-  const updateFirebaseLaborProfilePicture = async (email, profilePictureUrl, name) => {
+const updateFirebaseLaborProfilePicture = async (
+  email: string,
+  profilePictureUrl: string | undefined,
+  name: string | undefined
+): Promise<void> => {
   try {
     console.log("Starting Firebase labor profile update...");
     console.log("Email:", email);
@@ -541,8 +570,9 @@ const handleSubmit = async () => {
       formDataToSubmit.append('email', email || '');
 
       if (formData.image) {
-        formDataToSubmit.append('profilePicture', formData.image, formData.image);
+        formDataToSubmit.append('profilePicture', formData.image, formData.image.name);
       }
+
 
       console.log('thde formDatat to submit....______++++++-0------')
 
@@ -630,7 +660,7 @@ const handleSubmit = async () => {
   };
   
 
-  const handleAddSkill = (e) => {
+  const handleAddSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && newSkill.trim()) {
       e.preventDefault();
       setFormData(prev => ({
@@ -643,60 +673,34 @@ const handleSubmit = async () => {
     }
   };
 
-  const handleRemoveSkill = (indexToRemove) => {
+  const handleRemoveSkill = (indexToRemove: number) => {
     setFormData(prev => ({
       ...prev,
-      skills: prev.skills.filter((_, index) => index !== indexToRemove)
+      skills: Array.isArray(prev.skills) 
+        ? prev.skills.filter((_, index) => index !== indexToRemove) 
+        : prev.skills // If skills is not an array, return it as-is
     }));
   };
 
 
+
   // console.log('This labor daata . skills and dispal  ++++ 8888888 *(****)', JSON.parse(laborData?.skill?.[0]))
-   const parsedSkillsData = Array.isArray(laborData?.skill) ? JSON.parse(laborData.skill[0])  : typeof laborData?.skill === 'string'
-      ? JSON.parse(laborData.skill)
-      : [];
+   const parsedSkillsData: string[] = (() => {
+  try {
+    if (Array.isArray(laborData?.skill)) {
+      return JSON.parse(laborData.skill[0]);
+    } else if (typeof laborData?.skill === "string") {
+      return JSON.parse(laborData.skill);
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error("Error parsing skills data:", error);
+    return [];
+  }
+})();
   console.log('Role   ++++ &&%%%parsedSkillsData',parsedSkillsData)
-  // const handleAllDaysToggle = () => {
-  //   const newAllStatus = !formData.availability.All;
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     availability: Object.keys(prev.availability).reduce((acc, day) => {
-  //       acc[day] = day !== 'All' ? newAllStatus : newAllStatus;
-  //       return acc;
-  //     }, {})
-  //   }));
-  // };
-
-  
-  //  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
-  //   const laborRole = useSelector((state: RootState) => state.labor.laborer.role);
-  //   const userRole = useSelector((state: RootState) => state.user);
-  
-  
-  //     console.log('Role required')
-  //     console.log('Is Labor Authenticated:', isLaborAuthenticated);
-  //     console.log('Labor Role:', laborRole);
-  //     console.log('user Role:', userRole);
-
-    // const handleLogoutLabor = async () => {
-    //   console.log('this is logout going logooiiu :')
-    //   const response = await logout()
-    //   console.log('this is logout response :',response)
-      
-        
-    //     if (response.status === 200) {
-    //       localStorage.removeItem('LaborAccessToken');
-    //         dispatch(resetUser())
-    //         dispatch(resetLaborer())
-    //         dispatch(setLaborer({}))
-    //         dispatch(setFormData({}))
-    //       dispatch(setIsLaborAuthenticated(false))
-    //       await persistor.purge();
-    //         toast('logout successfully....!')
-    //         navigate('/');
-    //     }
-  // }
-
+ 
   console.log("Thsi sieth laborData +++++{{{{{{{}}}}}}} :",formData) 
   
   if (!currentUser && !user?._id) {
@@ -708,7 +712,7 @@ const handleSubmit = async () => {
   console.log("This is the leabor emeaillll+___))((((()))))::", user?.email)
 
 // Updated chat creation function
-const handleChatPage = async (user) => {
+const handleChatPage = async (user : IUser) => {
   console.log("The chatting page is triggering ;;;");
   const laborEmail = user?.email;
   if (!laborEmail) {
@@ -781,7 +785,7 @@ const handleChatPage = async (user) => {
 };
 
 // Function to find labor ID by email
-const findLaborIdByEmail = async (email) => {
+const findLaborIdByEmail = async (email  : string) => {
   if (!email) {
     console.log("Invalid email value");
     return null;
@@ -806,13 +810,13 @@ const findLaborIdByEmail = async (email) => {
       isLaborAuthenticated
         ? { label: 'LaborDashBoard', link: '/labor/laborDashBoard' }
         : { label: 'LaborListing Page', link: '/laborListing' },
-      { label: 'LaborProfile Page', link: null }, // No link for the current page
+      { label: 'LaborProfile Page', link: undefined }, // No link for the current page
     ];
       
-   const currentPages = location.pathname.split("/").pop();
+   const currentPages = location.pathname.split("/").pop()|| "defaultPage"; 
 
 
-   const formatDate = (dateString) => {
+   const formatDate = (dateString : string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -841,9 +845,19 @@ const findLaborIdByEmail = async (email) => {
   //   { label: "LaborProfilePage", link: null }, // No link for the current page
   // ];
 
-    const handleNavigeProfilePage = (user) => {
+    const handleNavigeProfilePage = (user : ILaborer) => {
       navigate("/labor/ProfilePage", { state: user });
   };
+
+  const daysOfWeek: Array<keyof typeof formData.availability> = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
 
   
 
@@ -1117,25 +1131,18 @@ const findLaborIdByEmail = async (email) => {
                     <Calendar className="mr-2 text-[#5560A8]" /> Availability
                   </h3>
                   <div className="grid grid-cols-3 gap-4 mt-4">
-                    {[
-                      "Monday",
-                      "Tuesday",
-                      "Wednesday",
-                      "Thursday",
-                      "Friday",
-                      "Saturday",
-                      "Sunday",
-                    ].map((day) => (
+                  {daysOfWeek.map((day) => (
                       <label key={day} className="flex items-center space-x-2">
                         <input
                           type="checkbox"
-                          checked={formData.availability[day]}
-                          onChange={() => handleAvailabilityChange(day)}
+                          checked={formData.availability[day]} // ✅ No more error
+                          onChange={() => handleAvailabilityChange(day)} // ✅ No more error
                           className="form-checkbox text-[#5560A8]"
                         />
                         <span>{day}</span>
                       </label>
                     ))}
+
                     <label className="flex items-center space-x-2">
                       <input
                         type="checkbox"
@@ -1453,25 +1460,18 @@ const findLaborIdByEmail = async (email) => {
                     <Calendar className="mr-2 text-[#5560A8]" /> Availability
                   </h3>
                   <div className="grid grid-cols-3 gap-4 mt-4 text-black">
-                    {[
-                      "Monday",
-                      "Tuesday",
-                      "Wednesday",
-                      "Thursday",
-                      "Friday",
-                      "Saturday",
-                      "Sunday",
-                    ].map((day) => (
-                      <label key={day} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.availability[day]}
-                          onChange={() => handleAvailabilityChange(day)}
-                          className="form-checkbox text-[#5560A8]"
-                        />
-                        <span>{day}</span>
-                      </label>
-                    ))}
+                    {daysOfWeek.map((day) => (
+                        <label key={day} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.availability[day]} // ✅ No more error
+                            onChange={() => handleAvailabilityChange(day)} // ✅ No more error
+                            className="form-checkbox text-[#5560A8]"
+                          />
+                          <span>{day}</span>
+                        </label>
+                      ))}
+
                     <label className="flex items-center space-x-2">
                       <input
                         type="checkbox"
@@ -1850,7 +1850,7 @@ const findLaborIdByEmail = async (email) => {
                 <div className="border bg-white rounded-xl p-4 sm:p-6 shadow-lg">
                   <div className="space-y-7">
                     <h2 className="text-center font-[Rockwell] lg:text-[25px] md:text-[16px] sm:text-[12px] font-semibold border-b-2  pb-2">
-                      Expert {laborData?.categories[0]}
+                      Expert {laborData?.categories?.[0] ?? "Unknown"}
                     </h2>
 
                     <div>
@@ -2189,7 +2189,7 @@ const findLaborIdByEmail = async (email) => {
       <div className="sm:max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-12">
       {LaborDetails?.reviews && LaborDetails.reviews.length > 0 ? (
         <>
-          {LaborDetails.reviews.slice(0, visibleReviews).map((review, index) => (
+          {LaborDetails.reviews.slice(0, visibleReviews).map((review: Review, index: number) => (
             <div key={index} className="sm:max-w-3xl md:max-w-[1200px] mx-auto mb-8">
               {/* Review Content */}
               <div className="space-y-6 lg:space-y-4">

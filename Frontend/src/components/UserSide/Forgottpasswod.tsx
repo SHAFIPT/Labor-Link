@@ -6,13 +6,21 @@ import { RootState } from '../../redux/store/store';
 import { setError } from '../../redux/slice/userSlice'
 import { toast } from 'react-toastify';
 
+interface ForgottpasswodProps {
+  conform: (email: string) => Promise<boolean | void>; // The return type can be adjusted as needed
+  onCancel: () => void;
+  message: string;
+  title: string;
+  onVerify: (otpValue: string, email: string) => void;
+}
+
 const Forgottpasswod = ({
-    conform,
-    onCancel,
-    message,
-    title,
-    onVerify
-}) => {
+  conform,
+  onCancel,
+  message,
+  title,
+  onVerify,
+}: ForgottpasswodProps) => {
 
     const error : { email?: string } = useSelector((state: RootState) => state.user.error);
 

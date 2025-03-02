@@ -7,12 +7,22 @@ import {  Eye, Trash2 } from "lucide-react";
 import { deleteLabor, fetchLabor } from "../../../services/AdminAuthServices";
 import UseDebounce from "../../../Hooks/useDebounce";
 
+interface Labor {
+  _id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  isBlocked?: boolean;
+  categories?: string[]; 
+  status?: "pending" | "approved" | "rejected"; 
+}
+
 const LaborMangement = () => {
   const navigate = useNavigate()
   
   const [searchTerm, setSearchTerm] = useState("");
   // const [selectedStatus, setSelectedStatus] = useState("");
-  const [Labors, setLabors] = useState([]);
+  const [Labors, setLabors] = useState<Labor[]>([]);
   const [page, setPage] = useState(1);
   const filterOptions = [
     { value: "All", label: "All", color: "bg-gray-500" },
@@ -35,7 +45,7 @@ const LaborMangement = () => {
     console.log("isBlocked is this:", isBlocked);
   });
 
-  const fetchUsers = async (query = "", pageNumber = 1 ,selectedFilter) => {
+  const fetchUsers = async (query = "", pageNumber = 1 ,selectedFilter  :string) => {
     const resoponse = await fetchLabor(query, pageNumber ,selectedFilter);
 
 
@@ -62,7 +72,7 @@ const LaborMangement = () => {
     fetchData();
   }, [debouncedSearchTerm, page,selectedFilter]);
 
-  const handleDeleteLabor = async (labor) => {
+  const handleDeleteLabor = async (labor: Labor) => {
   try {
     console.log("This is the deleting labor:", labor.email);
 
@@ -82,7 +92,7 @@ const LaborMangement = () => {
   }
 };
 
-  const handleViewPage = (labor) => {
+  const handleViewPage = (labor : Labor) => {
     //  console.log('this is passing user :',user)
     navigate("/admin/laborView", { state: { labor } });
   };
@@ -227,7 +237,7 @@ const LaborMangement = () => {
               <div className="space-y-2 mt-4">
                 {Labors.map((labor, index) => (
                   <div
-                    key={labor.id}
+                    key={labor._id}
                     className="grid grid-cols-12 gap-4 items-center bg-[#ABA0A0] rounded-lg shadow-md p-3 hover:bg-[#998F8F] transition-colors"
                   >
                     {/* Number */}
@@ -247,7 +257,7 @@ const LaborMangement = () => {
 
                     {/* Expertise */}
                     <div className="col-span-2 text-center text-xs sm:text-sm text-white truncate font-bold">
-                      {labor.categories[0] || "N/A"}
+                     {labor.categories?.[0] ?? "N/A"}
                     </div>
 
                     {/* Status */}

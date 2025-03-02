@@ -1,7 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Breadcrumb = ({ items, currentPage }) => {
+interface BreadcrumbItem {
+  label: string;
+  link?: string;
+}
+
+interface BreadcrumbProps {
+  items: BreadcrumbItem[];  // Array of breadcrumb items
+  currentPage: string;  // The current page name (e.g., 'ProfilePage')
+}
+
+const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, currentPage }) => {
   return (
     <nav className="py-3 px-4 sm:px-6 lg:px-8" aria-label="Breadcrumb">
       <ol className="flex flex-wrap items-center space-x-1 sm:space-x-2 md:space-x-3">
@@ -31,7 +41,11 @@ const Breadcrumb = ({ items, currentPage }) => {
             {item.link ? (
               <Link
                 to={item.link}
-                className={`text-xs sm:text-sm md:text-base font-medium transition-colors ${
+                className={`${
+                  currentPage === 'userChatPage' 
+                    ? 'text-xs'  // Apply smaller font size for userChatPage
+                    : 'text-xs sm:text-sm md:text-base'
+                } font-medium transition-colors ${
                   currentPage === 'ProfilePage' || currentPage === 'userProfilePage'
                     ? 'text-white hover:text-blue-500'
                     : 'text-gray-700 hover:text-blue-700'
@@ -40,8 +54,12 @@ const Breadcrumb = ({ items, currentPage }) => {
                 {item.label}
               </Link>
             ) : (
-              <span
-                className={`text-xs sm:text-sm md:text-base font-medium ${
+               <span
+                className={`${
+                  currentPage === 'userChatPage'
+                    ? 'text-xs' // Apply smaller font size for userChatPage
+                    : 'text-xs sm:text-sm md:text-base'
+                } font-medium ${
                   currentPage === 'ProfilePage' || currentPage === 'userProfilePage'
                     ? 'text-gray-300'
                     : 'text-gray-500'

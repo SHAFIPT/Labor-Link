@@ -1,17 +1,32 @@
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+  import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { validateAddress, validateFirstName, validatePhoneNumbers, validatePlace, validatePostalCode } from "../../utils/laborRegisterValidators";
 import { useDispatch, useSelector } from "react-redux";
 import { setError } from "../../redux/slice/userSlice";
 import { RootState } from "../../redux/store/store";
+import { Dispatch, SetStateAction } from "react";
 
-const AddressModal = ({
-  isOpen,
-  onClose,
-  onSubmit,
-  userAddress,
-  setUserAddress,
-}) => {
+interface UserAddress {
+  name?: string;
+  city?: string;
+  address?: string;
+  phone?: string;
+  pincode?: string;
+  place?: string;
+  district?: string; // Add district if needed
+  latitude?: number | null; // Allow null
+  longitude?: number | null; // Allow null
+}
+
+interface AddressModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  userAddress: UserAddress;
+  setUserAddress: Dispatch<SetStateAction<UserAddress>>;
+}
+
+const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }: AddressModalProps) => {
   const dispatch = useDispatch();
   const error: {
     name?: string;
@@ -23,7 +38,7 @@ const AddressModal = ({
   } = useSelector((state: RootState) => state.user.error);
 
   // Validate Fields Function
-  const validateFields = () => {
+   const validateFields = () => {
     const errors = {
       name: validateFirstName(userAddress.name),
       phone: validatePhoneNumbers(userAddress.phone),
@@ -36,13 +51,16 @@ const AddressModal = ({
     dispatch(setError(errors));
 
     // Return true if no errors, otherwise false
-    return Object.values(errors).every((error) => error === undefined);
+    return Object.values(errors).every((error) => error === null || error === undefined);
   };
 
+  console.log('This is are the errorr showing;;;; ',error)
+
   // Handle Input Changes
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserAddress({ ...userAddress, [e.target.name]: e.target.value });
   };
+
 
   // Component to handle map click and set latitude/longitude
   const LocationMarker = () => {
@@ -56,20 +74,21 @@ const AddressModal = ({
       },
     });
 
-    return userAddress.latitude ? (
-      <Marker position={[userAddress.latitude, userAddress.longitude]} />
+    return userAddress.latitude !== undefined && userAddress.longitude !== undefined ? (
+      <Marker position={[userAddress.latitude ?? 0, userAddress.longitude ?? 0]} />
     ) : null;
   };
 
-  const handleSubmit = () => {
-    // Validate fields before submit
-    console.log("Thsi is Valdiatefieldllll", validateFields);
-    if (Object.keys(error).length === 0) {
-      onSubmit();
-      onClose();
-      dispatch(setError({}));
-    }
-  };
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault(); // ✅ Prevents default form submission behavior
+
+  // Validate fields before submit
+  if (validateFields()) {
+    onSubmit(event); // ✅ Pass event to onSubmit function
+    onClose();
+    dispatch(setError({}));
+  }
+};
 
   const handleCancelation = () => {
     dispatch(setError({}));
@@ -191,12 +210,14 @@ const AddressModal = ({
             >
               Cancel
             </button>
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-            >
-              Confirm Address
-            </button>
+            <form onSubmit={handleSubmit}>
+              <button
+                type="submit" // ✅ Ensures it triggers the form submission event
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              >
+                Confirm Address
+              </button>
+            </form>
           </div>
         </div>
       </div>

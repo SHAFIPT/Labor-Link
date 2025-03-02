@@ -8,25 +8,56 @@ import { setLoading } from '../../redux/slice/userSlice';
 import { toast } from 'react-toastify';
 import { fetchLaobrs } from '../../services/LaborServices';
 
-type Labor = {
+interface Labor {
   _id: string;
   aboutMe: {
-    description: string; // Ensure aboutMe is an object with a description field
+    description: string;
   };
   firstName: string;
   lastName: string;
   rating: number;
+  phone: string; // Add this if phone is part of the data structure
+  location: {
+    coordinates: [number, number]; // Latitude and Longitude
+  };
   category: string;
   description: string;
   totalJobs: number;
-    profilePicture: string;
-  categories : string
+  profilePicture: string;
+  categories: string[];
   // Add other fields as necessary
+}
+
+type Cancellation = {
+  canceledBy: string;
+  reason: string;
+  canceledAt: string;
+  comments: string;
 };
 
+type Booking = {
+  bookingId: string;
+  cancellation: Cancellation;
+  laborId: Labor;
+  addressDetails: {
+    name: string;
+    phone: string;
+    address: string;
+    place: string;
+    district: string;
+  };
+  quote: {
+    arrivalTime: string;
+  };
+};
 
+interface CancellationModalProps {
+  booking: Booking;  // Typing the booking prop
+  onClose: () => void;
+  isOpen: boolean;
+}
 
-const CancellationModal = ({ booking, onClose, isOpen }) => {
+const CancellationModal = ({ booking, onClose, isOpen }: CancellationModalProps) => {
     const navigate = useNavigate();
     const dispath = useDispatch()
     const theam = useSelector((state: RootState) => state.theme.mode);
@@ -67,7 +98,7 @@ const CancellationModal = ({ booking, onClose, isOpen }) => {
 
 
 
-  const formatDate = (dateString) => {
+   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleString('en-US', {
       day: 'numeric',
       month: 'short',

@@ -6,8 +6,15 @@ import { validateNewDate, validateNewTime, validateReason } from "../../utils/us
 import { toast } from "react-toastify";
 import '../Auth/LoadingBody.css'
 import { handleRescheduleWork } from "../../services/UserSurvice";
+import { IBooking } from "../../@types/IBooking";
 
-const ResheduleModal = ({ onClose, bookingId , onUpdateBooking }) => {
+interface ResheduleModalProps {
+  onClose: () => void;
+  bookingId: string; 
+  onUpdateBooking: (reshedule: IBooking) => void;
+}
+
+const ResheduleModal = ({ onClose, bookingId, onUpdateBooking }: ResheduleModalProps) => {
   
 
   console.log("Thsi is the bookingId.....",bookingId)
@@ -30,7 +37,7 @@ const ResheduleModal = ({ onClose, bookingId , onUpdateBooking }) => {
     const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
 
-  const handleChangeInput = (e) => {
+  const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setReshedulDatas((prev) => ({
       ...prev,
@@ -41,7 +48,7 @@ const ResheduleModal = ({ onClose, bookingId , onUpdateBooking }) => {
 
   const requestSentBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null
 
-  const handleReschedule = async (e) => {
+  const handleReschedule = async  (e: React.FormEvent) => {
     e.preventDefault();
     const validateErrors = {
       newDate: validateNewDate(reshedulDatas.newDate),

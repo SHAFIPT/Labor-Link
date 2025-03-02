@@ -1,6 +1,5 @@
 import { Link,  useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-import lightModeLogo from "../assets/laborLink light.jpg";
 import Handman from '../assets/Icons/Handiman.png'
 import Electriion from '../assets/Icons/Electriion.png'
 import Carpender from '../assets/Icons/Carpender.png'
@@ -20,10 +19,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store/store";
 import { toggleTheme } from "../redux/slice/themeSlice";
 import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading, setAccessToken } from '../redux/slice/userSlice'
-import { checkIsBlock, logout } from "../services/UserAuthServices";
+import { logout } from "../services/UserAuthServices";
 import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../redux/slice/laborSlice";
 import LocationPrompt from "./LocationUser/LocationPrompt";
-import NotificaionModal from "./UserSide/notificaionModal";
+import NotificaionModal, { ChatNotification } from "./UserSide/notificaionModal";
 import { auth, db } from "../utils/firbase";
 import { collection, doc, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -48,7 +47,17 @@ interface UserData {
   // ... other user fields
 }
 
-
+interface Reschedule {
+  rejectedBy?: "user" | "labor" | null;
+  requestSentBy?: "user" | "labor" | null;
+  acceptedBy?: "user" | "labor" | null;
+  rejectionNewDate?: string;
+  rejectionNewTime?: string;
+  rejectionReason?: string;
+  newTime?: string;
+  newDate?: string;
+  reasonForReschedule?: string;
+}
 
 interface Chat extends ChatDocument {
   id: string;
@@ -59,48 +68,18 @@ interface Chat extends ChatDocument {
 
 
 const HomeNavBar = () => {
-  
-  
-  const user = useSelector((state: RootState) => state.user)
-
-
-  const userData = user?.user
-
   const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
-  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-  const laborer = useSelector((state: RootState) => state.labor.laborer)
   const loading = useSelector((state: RootState) => state.user.loading)
-  const bookingDetails = useSelector((state: RootState) => state.booking.bookingDetails)
-  // const [isOpens, setIsOpens] = useState(false);
+  const bookingDetails = useSelector((state: RootState) => state.booking?.bookingDetails || []);
   const [isScrolled, setIsScrolled] = useState(false);
-  // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-
-  // console.log("This is the bookingDetails..................", bookingDetails)
-  
- 
-
-
-  // const [userLocation, setUserLocation] = useState(null);
   const locationOfUser = useSelector((state: RootState) => state.user.locationOfUser);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [notificaionOn, setNotificaionOn] = useState(false)
   const [chats, setChats] = useState<Chat[]>([]);
-
-
-  // console.log("This is the Chats ...................",chats)
   const hasUnreadMessages = chats.some((chat) => chat.unreadCount > 0);
 
-  // useEffect(() => {
-    
-  //   console.log("This is the locaiton fo the userLocation :",locationOfUser)
-  // },[locationOfUser])
-
-  // const toggleMenu = () => setIsOpens(!isOpen);
-
   useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const handleScroll = () => {
-      // Check if page is scrolled more than 50px
       setIsScrolled(window.scrollY > 50);
     };
 
@@ -173,7 +152,7 @@ const HomeNavBar = () => {
   ];
 
 
-  const fetchChats = (userUids) => {
+  const fetchChats = (userUids : string) => {
       console.log('hlooooooooooooooooooooooooooo')
     if (!userUids) {
       throw new Error("Missing user credentials");
@@ -300,41 +279,7 @@ const HomeNavBar = () => {
     }
   }, [dispatch, navigate]);
 
-
-  // useEffect(() => {
-  //      localStorage.removeItem('LaborAccessToken');
-  //             dispatch(resetUser())
-  //             dispatch(resetLaborer())
-  //             dispatch(setLaborer({}))
-  //             dispatch(setFormData({}))
-  //           dispatch(setIsLaborAuthenticated(false))
-  //            persistor.purge();
-  //             toast('logout successfully....!')
-  //             navigate('/');
-  //   },[])
-
-
-// useEffect(() => {
-//   const cheakUserIsBlock = async () => {
-//     const response = await checkIsBlock();
-//     const isBlocked = response.data.data.isBlocked;
-//     console.log('User is blocked:', isBlocked);
-//     if (isBlocked) {
-//       handleLogout();  // This will now use the memoized handleLogout
-//     }
-//   };
-
-//   const interval = setInterval(cheakUserIsBlock, 10000);
-
-//   return () => clearInterval(interval);
-// }, [handleLogout]);
-
-
-  // const handleLaborList = () => {
-    
-  // }
-
-  const hasRejectionDetails = (reschedule) => {
+  const hasRejectionDetails = (reschedule: Reschedule) => {
     const hasRejection = 
       reschedule.rejectedBy === "labor" &&
       reschedule.rejectionNewDate &&
@@ -848,8 +793,8 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
             {notificaionOn && (
               <NotificaionModal
                 onClose={() => setNotificaionOn(false)}
-                chats={chats}
-                bookingDetails={bookingDetails}
+                chats={(chats || []).filter(chat => chat.userData !== null) as ChatNotification[]} 
+                bookingDetails={bookingDetails || []}
               />
             )}
 
@@ -859,7 +804,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                   {/* Notification Bell Icon */}
                   <i className="fas fa-bell text-2xl"></i>
 
-                  {bookingDetails?.length > 0 &&
+                  {(bookingDetails || []).length > 0 && 
                     bookingDetails[0]?.additionalChargeRequest?.status ===
                       "pending" &&
                     bookingDetails[0]?.additionalChargeRequest?.amount > 0 &&
@@ -875,7 +820,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                       </div>
                     )}
 
-                  {bookingDetails?.length > 0 &&
+                  {(bookingDetails || []).length > 0 && 
                     bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
                     bookingDetails[0]?.reschedule?.rejectedBy === "user" && (
                       <div className="absolute -top-2 -right-2">
@@ -889,7 +834,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                       </div>
                     )}
 
-                  {bookingDetails?.length > 0 &&
+                  {(bookingDetails || []).length > 0 && 
                     bookingDetails[0]?.reschedule &&
                     hasRejectionDetails(bookingDetails[0]?.reschedule) && (
                       <div className="absolute -top-2 -right-2">
@@ -903,7 +848,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                       </div>
                     )}
 
-                  {bookingDetails?.length > 0 &&
+                  {(bookingDetails || []).length > 0 && 
                     bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
                     bookingDetails[0]?.reschedule?.acceptedBy === null &&
                     bookingDetails[0]?.reschedule?.rejectedBy === null && (

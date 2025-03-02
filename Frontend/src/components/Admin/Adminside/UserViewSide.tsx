@@ -13,7 +13,7 @@ const UserViewSide = () => {
 
   const { ProfilePic, email, firstName, lastName } = user;
   const [isBlocked, setIsBlocked] = useState(user?.isBlocked);
-  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(6);
   const [filter] = useState("");
@@ -64,10 +64,7 @@ const UserViewSide = () => {
         toast.error("An error occurred. Please try again.");
       }
     } catch (error) {
-      console.error(
-        "Error in block/unblock operation:",
-        error.response?.data || error.message
-      );
+      console.error(error);
       toast.error(`Failed to ${isBlocked ? "unblock" : "block"} user.`);
     }
   };

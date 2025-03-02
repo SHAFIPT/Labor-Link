@@ -5,8 +5,17 @@ import { RootState } from "../../../redux/store/store";
 import { updateSingleBooking } from "../../../redux/slice/bookingSlice";
 import { toast } from "react-toastify";
 import { submitAdditionalCharge } from "../../../services/LaborServices";
+import { IBooking } from "../../../@types/IBooking";
 
-const AdditionalCharge = ({ onClose, bookingId, booking ,onUpdateBooking}) => {
+
+interface AdditionalChargeProps {
+  onClose: () => void; 
+  bookingId: string; 
+  booking: any; 
+  onUpdateBooking: (updatedBooking: IBooking) => void;
+}
+
+const AdditionalCharge: React.FC<AdditionalChargeProps> = ({ onClose, bookingId, booking, onUpdateBooking }) => {
   const [formData, setFormData] = useState({
     amount: "", 
     reason: "",
@@ -15,7 +24,7 @@ const AdditionalCharge = ({ onClose, bookingId, booking ,onUpdateBooking}) => {
   const dispatch = useDispatch();
   const theme = useSelector((state: RootState) => state.theme.mode);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 

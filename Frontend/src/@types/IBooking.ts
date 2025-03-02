@@ -65,7 +65,8 @@ export interface IBooking extends Document {
     status: 'pending' | 'approved' | 'declined';
   };
 
-  status: 'confirmed' | 'in-progress' | 'pending-approval' | 'completed' | 'canceled';
+  status: 'confirmed' | 'in-progress' | 'pending-approval' | 'completed' | 'canceled' | 'pending';
+
   isUserCompletionReported?: boolean
   isLaborCompletionReported?: boolean
   paymentStatus: 'pending' | 'paid' | 'failed';
@@ -89,5 +90,5 @@ export interface IBooking extends Document {
   reschedule?: IReschedule;
 
   createdAt?: Date;
-  updatedAt?: Date;
+  updatedAt?: Date; 
 }

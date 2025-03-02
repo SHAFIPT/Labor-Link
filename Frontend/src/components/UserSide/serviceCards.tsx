@@ -1,4 +1,11 @@
-const ServiceCard = ({ image, title, description = "", className = "" }) => {
+interface ServiceCardProps {
+  image: string;       // Type for image, should be a string (URL)
+  title: string;       // Type for title, should be a string
+  description?: string; // Optional description, type string
+  className?: string;   // Optional className, type string
+}
+
+const ServiceCard: React.FC<ServiceCardProps> = ({ image, title, description = "", className = "" }) => {
 return (
      <div className={`flex flex-col items-center ${className}`}>
       <div className="relative w-full aspect-square max-w-[300px] rounded-lg shadow-lg overflow-hidden group">

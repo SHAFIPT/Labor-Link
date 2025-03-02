@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import {
   validateComments,
   validateEmail,
@@ -14,7 +14,12 @@ import { RootState } from '../../redux/store/store';
 import '../Auth/LoadingBody.css'
 import { cancelSubmision } from '../../services/UserSurvice';
 
-const CancelBookingForm = ({ onClose , bookingId }) => {
+interface CancelBookingFormProps {
+  onClose: () => void; // Define onClose type (function with no parameters)
+  bookingId: string; // Define bookingId type (assuming it's a string, adjust if necessary)
+}
+
+const CancelBookingForm: React.FC<CancelBookingFormProps> = ({ onClose, bookingId }) => {
   const dispatch = useDispatch();
   const loading = useSelector((state: RootState) => state.user.loading);
   const theam = useSelector((state: RootState) => state.theme.mode);
@@ -38,15 +43,17 @@ const CancelBookingForm = ({ onClose , bookingId }) => {
     
     console.log("Thsi is the ERRRRRROoooooors ",error.name)
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const newValue = type === "checkbox" && e.target instanceof HTMLInputElement ? e.target.checked : value;
+  
     setCancelFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: newValue,
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent)  => {
     e.preventDefault();
     dispatch(setLoading(true));
 

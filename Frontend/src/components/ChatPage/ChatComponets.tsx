@@ -4,7 +4,8 @@ import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc , where, getDocs, documentId  } from 'firebase/firestore';
+import { EmojiClickData } from "emoji-picker-react"; 
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc , where, getDocs, documentId, DocumentData, Timestamp  } from 'firebase/firestore';
 // import { getAuth } from 'firebase/auth';
 import { auth , db } from '../../utils/firbase';
 import { useLocation} from 'react-router-dom';
@@ -23,12 +24,43 @@ import { toggleMobileChatList } from '../../redux/slice/laborSlice';
 import { validateDate } from '../../utils/laborRegisterValidators';
 import { fetchAllBookingOfLabor, fetchIsBookingExist } from '../../services/LaborServices';
 import { IBooking } from '../../@types/IBooking';
+import { UserAddress } from '../../@types/userAddres';
 
 interface ChatComponentProps {
   chatId: string;
   onMenuClick: () => void; // ✅ Add this property
   currentPage: string;
 }
+
+
+interface ChatDetails {
+  userId: string;
+  laborId: string;
+}
+
+export interface Message {
+  id: string;
+  senderId: string;
+  type: "text" | "quote" | "image" | "video";
+  content: string | QuoteDetailsType; 
+  mediaUrl?: string;
+  timestamp?: number | Date;
+}
+
+export type QuoteDetailsType = {
+  description: string;
+  estimatedCost: number;
+  arrivalTime: Date;
+  status: string;
+  rejectionReason ? :string
+};
+
+interface BookingData {
+  status: string;
+  // Add other properties if needed
+}
+
+
 
 const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, currentPage = null }) => {
   
@@ -50,22 +82,22 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   const chatId = chatIdProp || chatIdState;
   // const { state: chatId } = useLocation();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [selectedQuoteId, setSelectedQuoteId] = useState(null);
-  const [selectedQuoteDetails, setSelectedQuoteDetails] = useState(null);
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
+  const [selectedQuoteDetails, setSelectedQuoteDetails] = useState<QuoteDetailsType | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [mediaFile, setMediaFile] = useState(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [newMessage, setNewMessage] = useState("");
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState(false);
-  const fileInputRef = useRef(null);
-  const [chatDetails, setChatDetails] = useState(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [chatDetails, setChatDetails] = useState<ChatDetails | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [fetchedLaborId, setFetchedLaborId] = useState(null);
-  const [chatData, setChatData] = useState(null);
-  const [bookingData, setBookingData] = useState(null)
-  const [allBookingExist, setAllBookingExist] = useState(null)
+  const [chatData, setChatData] = useState<DocumentData | null>(null);
+  const [bookingData, setBookingData] = useState<BookingData | null>(null);
+  const [allBookingExist, setAllBookingExist] = useState([])
   console.log('This is th4echata Data ;;;', chatData)
   console.log('Thsis it eh llokingg diillyy',bookingData)
   console.log('laaaaaaaaaaaaaay suguuu',allBookingExist)
@@ -79,7 +111,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   console.log('is isUserAthenticated :::::',isUserAthenticated)
 
 
-  const [userAddress, setUserAddress] = useState({
+  const [userAddress, setUserAddress] = useState<UserAddress>({
     name: "",
     phone: "",
     district: "",
@@ -158,24 +190,11 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     if (participants.labor.email) {
       fetchLaborId(); // Only call fetchLaborId if labor email is available
     }
-  }, [participants.labor.email]); // Dependency array to re-run if labor email changes
+  }, [participants.labor.email]);
 
-  // console.log("TTTTTTTTTJIIIIIIIIIIIIIIIIIIII ussssssssserrrrrrrrrr:::", user)
-
-  // console.log('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv',fetchedLaborId)
 
   const laborId = fetchedLaborId || user?.user?._id;
   const userId = userLogin?._id;
-
-  // console.log("This is the chatId ::: ", chatId);
-  // console.log("This is the laobrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr ::: ", laborId);
-  // console.log("This is the userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr ::: ", userId);
-
-  // console.log("Thsi is the labor lllllllllllllllllllllllllllllllll:", LaborLogin);
-  // console.log("Thsi is the user ||||||||||||||||||||||||||||||||||:", userLogin);
-
-  // console.log("Thsi sit eh current labor is herrrrrrrrrrrrrrrrrrrrrrrrrr::::::::::",currentUserData)
-  // console.log("Thsi sie the participants ;;;;;;;;;;;;;;;", participants);
 
   const fetchParticipantsData = async () => {
     try {
@@ -338,7 +357,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   }, [userLogin?.email, LaborLogin?.email]);
 
   //   const [laborData , setLaborData] = useState('')
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   console.log("Thsi sie userLogin : ", userLogin.ProfilePic);
   console.log("Thsi sie LaborLogin : ", LaborLogin);
@@ -356,23 +375,34 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     // Get chat details
     const fetchChatDetails = async () => {
       const chatDoc = await getDoc(doc(db, "Chats", chatId));
+
       if (chatDoc.exists()) {
-        setChatDetails(chatDoc.data());
+        setChatDetails(chatDoc.data() as ChatDetails);
       }
     };
+
 
     // Listen to messages in real-time
     const messagesRef = collection(db, "Chats", chatId, "messages");
     const q = query(messagesRef, orderBy("timestamp", "asc"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newMessages = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const newMessages: Message[] = snapshot.docs.map((doc) => {
+        const data = doc.data(); // Get the document data
+
+        return {
+          id: doc.id,
+          senderId: data.senderId || "", // Ensure senderId is always present
+          type: data.type || "text", // Ensure type is set (default to "text")
+          content: data.content || "",
+          mediaUrl: data.mediaUrl || "",
+          timestamp: data.timestamp || 0, // Ensure timestamp is a valid number
+        };
+      });
+
       setMessages(newMessages);
       scrollToBottom();
-    });
+});
 
     fetchChatDetails();
     return () => unsubscribe();
@@ -381,8 +411,13 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   // Send message function
   // Modify your handleSendMessage function to handle both text and media
 
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+
+     if (!auth.currentUser) {
+        console.error("No user is signed in.");
+        return;
+      }
 
     try {
       let messageData;
@@ -398,7 +433,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       }
 
       const ChatData = chatSnap.data();
-      const { laborId } = ChatData;
+      const laborId = ChatData?.laborId;
 
       // console.log("Thsi is the Loabor id from chat lllllllllllllkkkkkkkkkkkkkkkkkkk",laborId)
       // console.log("Thsi is the User id from chat lllllllllllllkkkkkkkkkkkkkkkkkkkk", userId)
@@ -416,7 +451,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
           : "Sent a video";
 
         messageData = {
-          content: lastMessageContent,
+          content:                                lastMessageContent,
           mediaUrl: mediaUrl,
           type: mediaFile.type.startsWith("image/") ? "image" : "video",
           senderId: auth.currentUser.uid,
@@ -509,6 +544,11 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         return; // Stop execution if the time slot is unavailable
       }
 
+      if (!auth.currentUser) {
+        toast.error("User is not authenticated.");
+        return;
+      }
+
 
       const quoteMessage = {
         type: "quote",
@@ -538,13 +578,34 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     }
   };
 
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return "";
-    const date = timestamp.toDate();
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const formatTimestamp = (
+  timestamp: Timestamp | Date | number | null | undefined
+): string => {
+  if (!timestamp) return ''; // Handle null or undefined
+
+  // Define options to exclude seconds
+  const options: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true, // Optional: Change to 'false' for 24-hour format
   };
 
-  const handleChange = (e) => {
+  // If it's a Date object, directly format the time
+  if (timestamp instanceof Date) {
+    return timestamp.toLocaleTimeString([], options); // Show only hours and minutes
+  }
+
+  // Handle number (timestamp in milliseconds)
+  if (typeof timestamp === 'number') {
+    return new Date(timestamp).toLocaleTimeString([], options); // Show only hours and minutes
+  }
+
+  // Handle Firebase Timestamp (Firestore Timestamp)
+  const milliseconds = timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000;
+  return new Date(milliseconds).toLocaleTimeString([], options); // Show only hours and minutes
+};
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>)  => {
     const { name, value } = e.target;
     setQuoteData((prevData) => ({
       ...prevData,
@@ -552,15 +613,15 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     }));
   };
 
-  const handleAcceptQuote = (messageId, quoteDetails) => {
+  const handleAcceptQuote = (messageId: string, quoteDetails: QuoteDetailsType)  => {
     // console.log("Thsi sie messageId dddddddddddddddd",messageId)
-    // console.log("Thsi sie quoteDetailsssssssssssss",quoteDetails)
+    // console.log("Thsi sie quoteDetailsssssssssssss",quoteDetails)  
     setSelectedQuoteId(messageId);
     setSelectedQuoteDetails(quoteDetails);
     setIsConfirmModalOpen(true);
   };
 
-  const handleRejectQuote = async (messageId, rejectionReason) => {
+  const handleRejectQuote = async (messageId: string, rejectionReason : string) => {
   try {
     // Update the quote status in the message
     const messageRef = doc(db, "Chats", chatId, "messages", messageId);
@@ -598,9 +659,19 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         return;
       }
 
+      if (!chatId || !selectedQuoteId) {
+        toast.error("Chat ID or Quote ID is missing!");
+        return;
+      }
+
       // Update the quote status in the message
       const messageRef = doc(db, "Chats", chatId, "messages", selectedQuoteId);
       await updateDoc(messageRef, { "content.status": "accepted" });
+
+      if (!selectedQuoteDetails) {
+        toast.error("Quote details are missing!");
+        return;
+      }
 
       // Update the chat document with the accepted quote
       await updateDoc(doc(db, "Chats", chatId), {
@@ -611,12 +682,23 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
 
       console.log("Thissssssssssssiis the userAddress", userAddress);
 
+      const sanitizedUserAddress = {
+        name: userAddress.name ?? "",
+        phone: userAddress.phone ?? "",
+        district: userAddress.district ?? "",
+        place: userAddress.place ?? "",
+        address: userAddress.address ?? "",
+        pincode: userAddress.pincode ?? "",
+        latitude: userAddress.latitude ?? 0, // Provide default value
+        longitude: userAddress.longitude ?? 0, // Provide default value
+      };
+      
       // Send booking request with the address details
       const response = await bookTheLabor(
         userId,
         laborId,
         selectedQuoteDetails,
-        userAddress
+        sanitizedUserAddress
       );
 
       if (response.status === 201) {
@@ -631,17 +713,17 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     }
   };
 
-  const onEmojiSelect = (emoji) => {
-    setNewMessage((prevMessage) => prevMessage + emoji.native); // Append selected emoji
+  const onEmojiSelect = (emoji: EmojiClickData) => {
+    setNewMessage((prevMessage) => prevMessage + emoji.emoji); // Append selected emoji
     setShowEmojiPicker(false); // Close picker after selection
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       if (file.type.startsWith("image/") || file.type.startsWith("video/")) {
         setMediaFile(file);
-        const objectUrl = URL.createObjectURL(file);
+        const objectUrl: string = URL.createObjectURL(file);
         setPreviewUrl(objectUrl);
       } else {
         alert("Please select an image or video file");
@@ -711,6 +793,19 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     isBookingExist();
   } 
 }, [userEmail, laborEmail]); 
+
+  // Type guard function to check if content is QuoteDetailsType
+    function isQuoteDetailsType(content: string | QuoteDetailsType): content is QuoteDetailsType {
+      return typeof content !== 'string' && 
+            'description' in content && 
+            'estimatedCost' in content && 
+            'arrivalTime' in content &&
+            'status' in content;
+  }
+  
+  function isValidQuoteMessage(message: Message): message is Message & { content: QuoteDetailsType } {
+  return message.type === 'quote' && isQuoteDetailsType(message.content);
+}
 
   // console.log("This is the selected Queet4e in chat page leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",)
 
@@ -952,15 +1047,15 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
             className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
            
           >
-            {messages.map((message, index) => {
+            {messages.map((message : Message, index) => {
               const isCurrentUser = message.senderId === auth.currentUser?.uid;
               const isLabor = message.senderId === chatDetails?.laborId;
               const senderProfilePic = isLabor
                 ? participants.labor.profilePicture
                 : participants.user.profilePicture;
-              const isQuoteMessage = message.type === "quote";
+              const isQuoteMessage = isValidQuoteMessage(message);
               const isDisabled = messages.slice(index + 1).some(m => m.type === "quote");
-
+              console.log('TRhis is th timestaaabmghp ppppoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',message); 
               return (
                   <div
                   key={message.id}
@@ -1010,8 +1105,9 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                               ${isCurrentUser ? "bg-[#cdffcd] rounded-tr-none" : "bg-[#b0b0f4] rounded-tl-none"}
                             `}
                           >
+                            
                             {message.type === "text" ? (
-                            <p className="text-gray-800 text-sm">{message.content}</p>
+                            <p className="text-gray-800 text-sm"> {typeof message.content === "string" ? message.content : message.content.description}</p>
                           ) : message.type === "image" ? (
                             <img
                               src={message.mediaUrl}
@@ -1030,7 +1126,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                         </div>
 
                         <span className="text-xs text-gray-500 mt-1 px-12">
-                          {formatTimestamp(message.timestamp)}
+                          {message.timestamp ? formatTimestamp(message.timestamp) : ""}
                         </span>
                       </>
                     )}
@@ -1224,10 +1320,10 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                 ? participants.labor.profilePicture
                 : participants.user.profilePicture;
               
-              const isQuoteMessage = message.type === "quote";
+              const isQuoteMessage = isValidQuoteMessage(message);
                const isDisabled = messages.slice(index + 1).some(m => m.type === "quote");  
               
-              
+              console.log('TRhis is th timestaaabmghp ppppoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',message);
           
               return (
                <div
@@ -1269,7 +1365,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                             `}
                           >
                            {message.type === "text" ? (
-                            <p className="text-gray-800 text-sm">{message.content}</p>
+                            <p className="text-gray-800 text-sm"> {typeof message.content === "string" ? message.content : message.content.description}</p>
                           ) : message.type === "image" ? (
                             <img
                               src={message.mediaUrl}
@@ -1288,7 +1384,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                         </div>
 
                         <span className="text-xs text-gray-500 mt-1 px-12">
-                          {formatTimestamp(message.timestamp)}
+                          {message.timestamp ? formatTimestamp(message.timestamp) : ""}
                         </span>
                       </>
                     )}

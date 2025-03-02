@@ -9,8 +9,8 @@ import { fetchBookingWithId, reviewSubmit } from '../../services/UserSurvice';
 const ReviewAndRating = () => {
     const [rating, setRating] = useState(0);
     const [feedback, setFeedback] = useState('');
-    const [image1, setImage1] = useState(null);
-    const [image2, setImage2] = useState(null);
+    const [image1, setImage1] = useState<File | null>(null);
+    const [image2, setImage2] = useState<File | null>(null);
     const navigate = useNavigate()
     const theam = useSelector((state: RootState) => state.theme.mode);
     const [searchParams] = useSearchParams();
@@ -49,22 +49,24 @@ const ReviewAndRating = () => {
 
     console.log('Thissssssssssssssis eh error :',error)
 
-        const handleStarClick = (index) => {
+        const handleStarClick = (index: number): void => {
             setRating(index + 1);
         };
 
-        const handleFeedbackChange = (e) => {
+        const handleFeedbackChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
             setFeedback(e.target.value);
         };
 
-        const handleSubmit = async (e) => {
+        const handleSubmit = async (e: React.FormEvent)  => {
             e.preventDefault(); 
             console.log('tiam hereeeeeeeeeeeeeee.')
             console.log(validateForm())
             if (validateForm()) return;
       
             const formData = new FormData();
-            formData.append("bookingId", bookingId);
+            if (bookingId) {
+                formData.append("bookingId", bookingId); // Ensure bookingId is not null
+            }
             formData.append("rating", rating.toString());
             formData.append("feedback", feedback);
             // formData.append("bookingId", bookingId);
@@ -94,8 +96,8 @@ const ReviewAndRating = () => {
             }
         };
     
-        const handleImageUpload = (e, setImage) => {
-            const file = e.target.files[0];
+        const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setImage: React.Dispatch<React.SetStateAction<File | null>>): void => {
+            const file = e.target.files?.[0];
             if (file) {
                 setImage(file); // Set the specific image state
             }

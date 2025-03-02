@@ -4,9 +4,9 @@ import { RootState } from '../../redux/store/store';
 import { useLocation, useNavigate } from "react-router-dom";
 import {  updateBookingReadStatusAsync } from '../../redux/slice/bookingSlice';
 import type { AppDispatch } from "../../redux/store/store";
-import { DocumentData, Timestamp } from 'firebase/firestore';
+import { DocumentData } from 'firebase/firestore';
 
-interface ChatNotification {
+export interface ChatNotification {
   id: string;
   message?: string;
   unreadCount: number;
@@ -51,8 +51,8 @@ interface BookingDetails {
   reschedule: {
     isReschedule: boolean;
     requestSentBy: 'user' | 'labor';
-    acceptedBy: 'user' | 'labor'
-    rejectedBy: 'user' | 'labor'
+    acceptedBy: 'user' | 'labor' | null
+    rejectedBy: 'user' | 'labor' | null
     newDate?: string; // <-- Add this property
     newTime?: string;
     rejectionNewDate: string;
@@ -63,6 +63,22 @@ interface BookingDetails {
   quote?: {
     description: string;
   };
+}
+
+interface Timestamp {
+  seconds: number;
+  nanoseconds: number; // Add this if it's relevant to your data (e.g., Firestore Timestamp)
+}
+
+interface Reschedule {
+  rejectionNewDate?: string;
+  rejectionNewTime?: string;
+  rejectionReason?: string;
+  requestSentBy?: string;
+  rejectedBy: "user" | "labor" | null;
+  newDate?: string;
+  newTime?: string;
+  reasonForReschedule?: string;
 }
 
 const NotificationModal = ({ 
@@ -100,7 +116,11 @@ const NotificationModal = ({
       }
   }
 
-  console.log("Booking ID:", bookingDetails?.[0]?.bookingId);
+  console.log("Booking ID:hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", bookingDetails);
+
+  console.log("Booking Details:", bookingDetails);
+  console.log("Reschedule Object:", bookingDetails[0]?.reschedule);
+  console.log('is labor auth',isLaborAuthenticated)
 
   
   const handleNavigateToBookings = useCallback((bookingId: string) => {
@@ -122,7 +142,7 @@ const NotificationModal = ({
   }, [dispatch, isLaborAuthenticated, isUserAthenticated, navigate, onClose, setCurrentStage]);
 
 
-    const formatTimestamp = (timestamp) => {
+    const formatTimestamp = (timestamp: Timestamp | undefined): string => {
         if (!timestamp || !timestamp.seconds) return "Just now";
 
         const date = new Date(timestamp.seconds * 1000);
@@ -143,7 +163,7 @@ const NotificationModal = ({
       : false
   );
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | undefined): string => {
     if (!dateString) return "Unknown Date";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -154,11 +174,11 @@ const NotificationModal = ({
     });
   };
 
-  const formatTime = (timeString) => {
+  const formatTime = (timeString: string | undefined): string => {
     if (!timeString) return "Unknown Time";
     const [hour, minute] = timeString.split(":");
     const date = new Date();
-    date.setHours(hour, minute);
+    date.setHours(Number(hour), Number(minute)); 
     return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
@@ -172,7 +192,7 @@ const NotificationModal = ({
   );
 
 
-  const hasRejectionDetails = (reschedule) => {
+  const hasRejectionDetails = (reschedule: Reschedule | undefined) => {
     const hasRejection = 
       reschedule?.rejectedBy === "labor" &&
       reschedule?.rejectionNewDate &&
@@ -414,7 +434,7 @@ const NotificationModal = ({
                     </p>
                     <p className="text-xs text-gray-600">
                       Your booking with the following description:{" "}
-                      <strong>{canceledBooking.quote.description}</strong> was
+                      <strong>{canceledBooking.quote?.description || 'No description available'}</strong>was
                       canceled by
                       <strong>
                         {" "}
@@ -631,7 +651,7 @@ const NotificationModal = ({
           {bookingDetails?.length > 0 &&
             bookingDetails[0].reschedule?.requestSentBy === "user" &&
             bookingDetails[0].reschedule?.acceptedBy === null &&
-            bookingDetails[0].reschedule?.rejectedBy === "user" && (
+            bookingDetails[0].reschedule?.rejectedBy === null && (
               <div
                 className="p-4 bg-yellow-100 border-l-4 border-yellow-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-yellow-200"
                 onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
@@ -655,7 +675,7 @@ const NotificationModal = ({
             bookingDetails[0].reschedule?.rejectedBy === null && (
               <div
                 className="p-4 bg-blue-100 border-l-4 border-blue-500 rounded-lg cursor-pointer flex items-start gap-3 hover:bg-blue-200"
-                onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
+                // onClick={() => handleNavigateToBookings(bookingDetails[0]?.bookingId)}
               >
                 <i className="fas fa-clock text-blue-600 text-lg"></i>
                 <div>
@@ -762,7 +782,7 @@ const NotificationModal = ({
                     </p>
                     <p className="text-xs text-gray-600">
                       Your booking with the following description:{" "}
-                      <strong>{canceledBooking.quote.description}</strong> was
+                      <strong>{canceledBooking.quote?.description || 'No description available'}</strong> was
                       canceled by
                       <strong>
                         {" "}
@@ -804,7 +824,7 @@ const NotificationModal = ({
                   unreadChats.length > 0 ||
                   bookingDetails?.[0]?.reschedule?.requestSentBy === "user" ||
                   hasRejectionDetails(bookingDetails?.[0]?.reschedule) ||
-                  (bookingDetails[0]?.additionalChargeRequest?.amount > 0) // Fixed parentheses
+                   (bookingDetails[0]?.additionalChargeRequest?.amount ?? 0) > 0 // Fixed parentheses
                 ) && (
                   <p className="text-center text-gray-500 text-sm">
                     No new notifications

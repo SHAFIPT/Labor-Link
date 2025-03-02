@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {  useNavigate } from "react-router-dom";
 import { Filter, User } from "lucide-react";
 import { useSelector } from "react-redux";
@@ -11,13 +11,13 @@ import { fetchAllBooings } from "../../services/UserSurvice";
 const ViewBookingDetils = () => {
   const navigate = useNavigate();
   const theam = useSelector((state: RootState) => state.theme.mode);
-  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>([]);
   const UserId = useSelector((state: RootState) => state.user.user._id);
   const limit = 6
   const [filter, setFilter] = useState("");
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const currentPages = location.pathname.split("/").pop();
+  const currentPages = location.pathname.split("/").pop() || "defaultPage";
   const [stats, setStats] = useState([
     { title: "Total Bookings", value: "0" },
     { title: "Total Work Completed", value: "0" },
@@ -27,7 +27,8 @@ const ViewBookingDetils = () => {
 
   console.log("this is the bookingDetils.....", bookingDetils);
 
-  const fetchBookings = async () => {
+  
+const fetchBookings = useCallback(async () => {
     const resoponse = await fetchAllBooings(UserId, currentPage, limit, filter);
     if (resoponse.status === 200) {
       const {
@@ -38,7 +39,7 @@ const ViewBookingDetils = () => {
         canceledBookings,
         totalAmount,
       } = resoponse.data;
-      console.log("thsi sie th fetchbooking ", resoponse);
+      console.log("this is the fetchbooking ", resoponse);
       setBookingDetils(bookings);
       setTotalPages(totalPages);
       setStats([
@@ -50,17 +51,16 @@ const ViewBookingDetils = () => {
           value: `₹${totalAmount.toLocaleString()}`,
         },
       ]);
-      // toast.success('All booking is fetched....')
     } else {
-      toast.error("Error in booking fetcheing ...");
+      toast.error("Error in booking fetching ...");
     }
-  };
-  useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
-    fetchBookings();
-  }, [currentPage, limit, filter]);
+}, [UserId, currentPage, limit, filter]);
 
-  const handleFilterChange = (value) => {
+useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]); 
+
+  const handleFilterChange = (value  :string) => {
     setFilter(value);
   };
 
@@ -89,7 +89,7 @@ const ViewBookingDetils = () => {
   const breadcrumbItems = [
     { label: "Home", link: "/" },
     { label: "LaborProfilePage", link: "/userProfilePage" }, // No link for the current page
-    { label: "BookingDetils", link: null }, // No link for the current page
+    { label: "BookingDetils", link: undefined }, // No link for the current page
   ];
 
   return (
@@ -169,7 +169,7 @@ const ViewBookingDetils = () => {
                  bookingDetils.map((booking, index) => (
                   <tr  key={booking?._id || index} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(booking.createdAt).toLocaleDateString()}
+                      {booking?.createdAt ? new Date(booking.createdAt).toLocaleDateString() : "N/A"}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {booking?.quote?.description || "N/A"}
@@ -208,7 +208,7 @@ const ViewBookingDetils = () => {
                               {booking?.laborId?.address?.city || "N/A"}
                           </p>
                           <p className="text-sm text-gray-500">
-                             {booking?.laborId?.categories[0] || "N/A"}
+                              {booking?.laborId?.categories?.[0] || "N/A"}
                           </p>
                           {/* <p className="text-sm text-gray-500">
                             {booking.labor.address}
@@ -335,7 +335,7 @@ const ViewBookingDetils = () => {
                       className="hover:bg-gray-700"
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                        {new Date(booking.createdAt).toLocaleDateString()}
+                         {booking?.createdAt ? new Date(booking.createdAt).toLocaleDateString() : "N/A"}
                       </td>
                       <td className="px-6 py-4 text-sm text-white">
                         {booking?.quote?.description || "N/A"}
@@ -377,7 +377,7 @@ const ViewBookingDetils = () => {
                                 {booking?.laborId?.phone || "N/A"}
                               </p> */}
                             <p className="text-sm text-gray-400">
-                              {booking?.laborId?.categories[0] || "N/A"}
+                               {booking?.laborId?.categories?.[0] || "N/A"}
                             </p>
                           </div>
                         </div>

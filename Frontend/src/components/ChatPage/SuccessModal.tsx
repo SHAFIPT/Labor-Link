@@ -1,10 +1,15 @@
 import React from "react";
 import { CheckCircle } from "lucide-react"; // Success icon
 import { useNavigate } from "react-router-dom";
+// Define an interface for your props
+interface SuccessModalProps {
+  successModal: boolean;
+  setSuccessModal: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
-const SuccessModal = ({ successModal, setSuccessModal  }) => {
+// Use the interface to type your component's props
+const SuccessModal: React.FC<SuccessModalProps> = ({ successModal, setSuccessModal }) => {
   const navigate = useNavigate();
-
   if (!successModal) return null;
 
   return (

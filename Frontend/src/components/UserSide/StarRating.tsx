@@ -1,7 +1,11 @@
 import React from 'react';
 import { Star } from 'lucide-react';
 
-const StarRating = ({ rating }) => {
+interface StarRatingProps {
+  rating: number; // rating should be a number
+}
+
+const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
    const formattedRating = Number(rating).toFixed(1);
   
   return (

@@ -1,7 +1,40 @@
+import { Timestamp as FirebaseTimestamp } from 'firebase/firestore';
 import { Banknote, CalendarDays, Clock, FileText, X } from "lucide-react";
 import { useState } from "react";
+import { Message, QuoteDetailsType } from "./ChatComponets";
 
-const QuoteMessage = ({ message, isCurrentUser, formatTimestamp, participants, onAcceptQuote, isLabor, isDisabled ,onRejectQuote}) => {
+// interface Timestamp {
+//   toDate(): Date;
+//   seconds: number;
+//   nanoseconds: number;
+// }
+
+
+interface QuoteMessageProps {
+  message: Message & { content: QuoteDetailsType }; // Enforce that content is QuoteDetailsType
+  isCurrentUser: boolean;
+  formatTimestamp: (timestamp: FirebaseTimestamp | Date | null | undefined) => string;
+  participants: {
+    labor: { profilePicture: string };
+    user: { profilePicture: string };
+  };
+  onAcceptQuote: (messageId: string, quoteDetails: QuoteDetailsType) => void;
+  onRejectQuote: (messageId: string, rejectionReason: string) => Promise<void>;
+  isLabor: boolean;
+  isDisabled: boolean;
+}
+
+
+const QuoteMessage: React.FC<QuoteMessageProps> = ({
+  message,
+  isCurrentUser,
+  formatTimestamp,
+  participants,
+  onAcceptQuote,
+  isLabor,
+  isDisabled,
+  onRejectQuote,
+}) => {
   const senderProfilePic = isLabor 
     ? participants.labor.profilePicture 
     : participants.user.profilePicture;
@@ -15,6 +48,21 @@ const QuoteMessage = ({ message, isCurrentUser, formatTimestamp, participants, o
     setShowRejectModal(false);
     setRejectionReason("");
   };
+
+    const convertTimestamp = (timestamp?: number | Date): FirebaseTimestamp | Date | null | undefined => {
+      if (timestamp === undefined) return undefined;
+      if (timestamp === null) return null;
+      
+      // If it's a Date object, just return it
+      if (timestamp instanceof Date) return timestamp;
+      
+      // If it's a number, convert to Date
+      if (typeof timestamp === 'number') return new Date(timestamp);
+      
+      // Default fallback
+      return undefined;
+    };
+
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -137,7 +185,7 @@ const QuoteMessage = ({ message, isCurrentUser, formatTimestamp, participants, o
 
           {/* Timestamp */}
           <div className="mt-2 text-xs text-gray-500 px-1">
-            {formatTimestamp(message.timestamp)}
+           {formatTimestamp(convertTimestamp(message.timestamp))}
           </div>
         </div>
       </div>

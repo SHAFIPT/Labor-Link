@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { X } from 'lucide-react';
+interface MediaPreviewProps {
+  previewUrl: string;
+  mediaFile?: File | null;
+  onCancel: () => void;
+}
 
-const MediaPreview = ({ previewUrl, mediaFile, onCancel }) => {
+const MediaPreview: FC<MediaPreviewProps> = ({ previewUrl, mediaFile, onCancel }) => {
   if (!previewUrl) return null;
 
   const isVideo = mediaFile?.type.startsWith('video/');

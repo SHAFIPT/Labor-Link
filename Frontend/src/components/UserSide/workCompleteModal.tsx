@@ -2,7 +2,15 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
 import { toast } from 'react-toastify';
 import { workCompletion } from '../../services/UserSurvice'
-const WorkCompleteModal = ({ onClose, bookingId,onUpdateBooking }) => {
+import { IBooking } from '../../@types/IBooking';
+interface WorkCompleteModalProps {
+  onClose: () => void; // onClose should be a function that takes no parameters and returns nothing
+  bookingId: string;  // Assuming bookingId is a string (adjust if it's another type)
+  onUpdateBooking: (reshedule: IBooking
+  ) => void; // Assuming onUpdateBooking takes 'reshedule' as an argument
+}
+
+const WorkCompleteModal: React.FC<WorkCompleteModalProps> = ({ onClose, bookingId, onUpdateBooking }) => {
     const theme = useSelector((state: RootState) => state.theme.mode);
     const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
     const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)

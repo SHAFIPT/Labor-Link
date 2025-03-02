@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { fetchLaborBookings, fetchWithdrowalRequests, handlewithdrowAmount, laborFetch } from "../../../services/LaborServices";
 import { resetUser, setAccessToken, setisUserAthenticated, setUser } from "../../../redux/slice/userSlice";
-import { setBookingDetails } from "../../../redux/slice/bookingSlice";
+import { BookingDetails, setBookingDetails } from "../../../redux/slice/bookingSlice";
 import { ClockIcon } from "@heroicons/react/24/solid";
 import RescheduleRequestModal from "./resheduleRequstModal";
 import ChatComponents from "../../ChatPage/ChatComponets";
@@ -42,6 +42,17 @@ interface UserData {
   // ... other user fields
   online?: boolean;
 }
+
+export interface IWithrowalBooking {
+  _id: string;
+  status: "pending" | "approved" | "rejected";
+  amount?: number;  // Add this field
+  createdAt: string;
+  paymentMethod: string;
+  paymentDetails: string;
+  processedAt?: string;
+}
+
 
 
 interface Chat extends ChatDocument {
@@ -71,7 +82,7 @@ const LaborDashBoard = () => {
   );
 
   const [currentStage, setCurrentStage] = useState("Dashboard");
-  const [resheduleModal, setResheduleModal] = useState(null);
+  const [resheduleModal, setResheduleModal] = useState<BookingDetails | null>(null);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [bankDetails, setBankDetails] = useState({
@@ -80,12 +91,13 @@ const LaborDashBoard = () => {
     ifscCode: "",
   });
   const [chats, setChats] = useState<Chat[]>([]);
-  const [bookingDetils, setBookingDetils] = useState<IBooking[]>(null);
+  const [bookingDetils, setBookingDetils] = useState<IBooking[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+
   const [limit, setLimit] = useState(2);
   const [filter, setFilter] = useState("");
-  const currentPages = location.pathname.split("/").pop();
+  const currentPages = location.pathname.split("/").pop() || "";
   const [totalPages, setTotalPages] = useState(1);
   const transactionsPerPage = 5;
   const [stats, setStats] = useState([
@@ -98,7 +110,10 @@ const LaborDashBoard = () => {
   const theam = useSelector((state: RootState) => state.theme.mode)
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [updatedBooking, setUpdatedBooking] = useState(null);
+  const [updatedBooking, setUpdatedBooking] = useState<IWithrowalBooking | IBooking | null>(null);
+  
+  console.log('Thsis is the updatedBooking::',updatedBooking)
+
   const sortedTransactions = laborer?.wallet?.transactions 
     ? [...laborer.wallet.transactions].sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -119,13 +134,12 @@ const LaborDashBoard = () => {
       (laborer?.wallet?.transactions?.length || 0) / transactionsPerPage
     );
     
-    const handleRescheduleUpdate = (newBooking) => {
+    const handleRescheduleUpdate =  (newBooking: IBooking) => {
       setUpdatedBooking(newBooking);
     };
 
-  const bookingDetails = useSelector(
-    (state: RootState) => state.booking.bookingDetails
-  );
+  const bookingDetails = useSelector((state: RootState) => state.booking?.bookingDetails || []);
+
 
   const totalUnreadCount = chats.reduce(
     (sum, chat) => sum + (chat.unreadCount || 0),
@@ -148,10 +162,8 @@ const LaborDashBoard = () => {
 
         dispatch(setLaborer(fetchUserResponse));
       } catch (error) {
-        if (error.response && error.response.status === 403) {
-          const errorMessage =
-            error.response.data?.message || "Your account has been blocked.";
-          toast.error(errorMessage); // Show dynamic error message
+        if (error instanceof Error) {
+            toast.error(error.message); // Show dynamic error message
 
           localStorage.removeItem("LaborAccessToken");
 
@@ -184,7 +196,7 @@ const LaborDashBoard = () => {
     // Save the current stage to localStorage whenever it changes
     localStorage.setItem("currentStage", currentStage);
   }, [currentStage]);
-  const fetchChats = (userUid) => {
+  const fetchChats = (userUid : string) => {
     
     if (!userUid) {
       throw new Error("Missing user credentials");
@@ -310,7 +322,7 @@ const LaborDashBoard = () => {
   }, []);
 
   // Add a function to update the last read timestamp
-  const markChatAsRead = async (chatId) => {
+  const markChatAsRead = async (chatId : string) => {
     const chatRef = doc(db, "Chats", chatId);
 
     // ✅ Set lastReadTimestamp before querying messages
@@ -327,19 +339,13 @@ const LaborDashBoard = () => {
   };
 
   useEffect(() => {
-    // Define limits for each stage
-    const stageLimits = {
-      // Dashboard: 2,
-      Bookings: 2,
-      // Chats: 10,
-      Works: 7,
-      // Wallet: 3,
-      // Profile: 1,
-    };
+  const stageLimits: Record<string, number> = {
+    Bookings: 2,
+    Works: 7,
+  };
 
-    // Update limit based on the current stage
-    setLimit(stageLimits[currentStage] || 2); // Default to 2 if stage not found
-  }, [currentStage]);
+  setLimit(stageLimits[currentStage] || 2);
+}, [currentStage]);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -397,21 +403,15 @@ const LaborDashBoard = () => {
     fetchBookings();
   }, [currentStage, currentPage, limit, dispatch, filter]);
 
-  const handleFilterChange = (value) => {
+  const handleFilterChange = (value : string) => {
     setFilter(value);
   };
 
-  // const sortedBookings = [...bookingDetails].sort(
-  //   (a, b) =>
-  //     new Date(b.quote.arrivalTime).getTime() -
-  //     new Date(a.quote.arrivalTime).getTime()
-  // );
-
-  const handelViewDetails = (booking) => {
+  const handelViewDetails = (booking : BookingDetails) => {
     navigate("/labor/viewBookingDetials", { state: { booking } });
   };
 
-  const handleChatSelect = (chatId) => {
+  const handleChatSelect = (chatId  :string) => {
     setSelectedChatId(chatId);
     markChatAsRead(chatId);
   };
@@ -1200,11 +1200,10 @@ useEffect(() => {
                             key={booking?._id || index}
                             className="hover:bg-[#f1f1f1]"
                           >
-                            <td className="px-4 py-4 text-xs sm:text-sm">
-                              {new Date(
-                                booking?.createdAt
-                              ).toLocaleDateString()}
-                            </td>
+                           <td className="px-4 py-4 text-xs sm:text-sm">
+  {booking?.createdAt ? new Date(booking.createdAt).toLocaleDateString() : "N/A"}
+</td>
+
                             <td className="px-4 py-4 text-xs sm:text-sm">
                               {booking?.userId?.firstName || "N/A"}{" "}
                               {booking?.userId?.lastName || ""}
@@ -1953,9 +1952,9 @@ useEffect(() => {
                             className="hover:bg-gray-700"
                           >
                             <td className="px-4 py-4 whitespace-nowrap text-xs sm:text-sm text-white">
-                              {new Date(
-                                booking?.createdAt
-                              ).toLocaleDateString()}
+                              {booking?.createdAt
+    ? new Date(booking.createdAt).toLocaleDateString()
+    : "N/A"}
                             </td>
                             <td className="px-4 py-4 text-xs sm:text-sm text-white">
                               {booking?.userId?.firstName || "N/A"}{" "}

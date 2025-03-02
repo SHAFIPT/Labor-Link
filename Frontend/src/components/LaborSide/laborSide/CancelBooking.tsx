@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ChangeEvent, FC, FormEvent, useState } from 'react';
 import {
   validateComments,
   validateEmail,
@@ -15,7 +15,13 @@ import '../../Auth/LoadingBody.css'
 import { cancelSubmision } from '../../../services/LaborServices';
 import { setBookingDetails } from '../../../redux/slice/bookingSlice';
 
-const CancelBookingForm = ({ onClose, bookingId }) => {
+interface CancelBookingFormProps {
+  onClose: () => void; // Function type
+  bookingId: string; // String type
+}
+
+// Use the interface for props in the component
+const CancelBookingForm: FC<CancelBookingFormProps> = ({ onClose, bookingId }) => {
   const dispatch = useDispatch();
   const loading = useSelector((state: RootState) => state.user.loading);
   const [cancelFormData, setCancelFormData] = useState({
@@ -34,19 +40,21 @@ const CancelBookingForm = ({ onClose, bookingId }) => {
     place?: string;
     reason?: string;
     comments?: string;
-  } = useSelector((state: RootState) => state.labor.error);
+  } = useSelector((state: RootState) => state.labor.error) ?? {}
 
   console.log("Thsi is the ERRRRRROoooooors ", error?.name);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setCancelFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const { name, value, type } = e.target;
+  const newValue = type === "checkbox" && e.target instanceof HTMLInputElement ? e.target.checked : value;
 
-  const handleSubmit = async (e) => {
+  setCancelFormData((prev) => ({
+    ...prev,
+    [name]: newValue,
+  }));
+};
+
+  const handleSubmit = async  (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     dispatch(setLoading(true));
 

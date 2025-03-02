@@ -1,15 +1,5 @@
-// import { Link, useNavigate } from "react-router-dom"
-// import AnimatedPage from "../AnimatedPage/Animated"
-// import { useDispatch, useSelector } from "react-redux"
-// import { RootState } from "../../redux/store/store"
-// import { toast } from "react-toastify"
-// import { logout } from "../../services/UserAuthServices"
-// import { setisUserAthenticated, setUser, resetUser ,setFormData} from '../../redux/slice/userSlice'
-// import { setIsLaborAuthenticated, setLaborer  } from '../../redux/slice/laborSlice'
-import React, { lazy,  useState, useEffect , useRef, useMemo } from 'react';
+import React, { lazy,  useState, useEffect , useMemo } from 'react';
 import 'react-lazy-load-image-component/src/effects/blur.css';
-// import { resetLaborer }  from '../../redux/slice/laborSlice'
-
 import HomeImage from '../../assets/Home image compressed.jpg'
 import HomeNavBar from "../HomeNavBar"
 import './UserHome.css'
@@ -46,21 +36,31 @@ import { debounce } from 'lodash';
 import Chatbot from './ChatBot';
 import Footer from '../Footer';
 
+
+interface Labor {
+  _id: string;
+  profilePicture: string;
+  firstName: string;
+  lastName: string;
+  rating: number;
+  categories: string[];
+}
+
+
 const UserHome = () => {
   // console.log('iiiiiiiiiiiiiiiiiiiiiiiii');
   
   const [displayCount, setDisplayCount] = useState(4);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showMore, setShowMore] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [allLabors, setAllLabors] = useState([]);
+  const [allLabors, setAllLabors] = useState<Labor[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const isDarkmode = useSelector((state: RootState) => state.theme.mode)
   const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
+    console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################',displayCount)
     console.log('isDarkMode is this', isDarkmode);
   }, [isDarkmode]);
 
@@ -76,7 +76,7 @@ const UserHome = () => {
           img.onerror = reject;
         });
       })
-    ).then(() => setIsLoaded(true));
+    )
   }, []);
 
   useEffect(() => {
@@ -141,7 +141,7 @@ const UserHome = () => {
     return () => clearInterval(scrollInterval);
   }, [allLabors.length, isPaused, duplicatedLabors.length, cardWidth]);
 
-  const handleNavigeProfilePage = (user) => {
+  const handleNavigeProfilePage = (user : Labor) => {
     console.log('This is the user :::', user);
     if (isUserAthenticated) {
       navigate("/labor/ProfilePage", { state: user });
@@ -240,7 +240,7 @@ const UserHome = () => {
               >
               {duplicatedLabors?.map((labor, index) => (
                 <div
-                  key={`${labor.id}-${index}`}
+                  key={`${labor._id}-${index}`}
                   className="flex-shrink-0 bg-white rounded-lg shadow-md
               w-72 sm:w-80 md:w-96
               p-4 sm:p-5 md:p-6
@@ -255,7 +255,6 @@ const UserHome = () => {
                   >
                     <img
                       src={labor?.profilePicture}
-                      alt={labor.name}
                       className="w-full h-full object-cover"
                     />
                   </div>

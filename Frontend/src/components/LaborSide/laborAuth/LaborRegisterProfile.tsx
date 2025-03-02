@@ -48,7 +48,7 @@ const navigate = useNavigate()
     startTime?: string;
     endTime?: string;
     availability?: string;
-  } = useSelector((state: RootState) => state.labor.error);
+  } = useSelector((state: RootState) => state.labor.error) ?? {}
 
   console.log('this is profile page form data :',formData)
   useEffect(() => {
@@ -133,7 +133,7 @@ const navigate = useNavigate()
   };
   
 
-  const updateFirebaseLaborProfilePicture = async (email, profilePictureUrl) => {
+  const updateFirebaseLaborProfilePicture = async (email : string, profilePictureUrl  :string) => {
   try {
     console.log("Starting Firebase labor profile update...");
     console.log("Email:", email);
@@ -225,7 +225,9 @@ const navigate = useNavigate()
       formDataForAPI.append('startTime', startTime);
       formDataForAPI.append('endTime', endTime);
       formDataForAPI.append('availability', JSON.stringify(availability));
-      formDataForAPI.append('email',email)
+      if (email) {
+        formDataForAPI.append('email',email)
+      }
 
 
        // Log formData contents for debugging

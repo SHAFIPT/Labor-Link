@@ -15,6 +15,37 @@ import Breadcrumb from "../BreadCrumb";
 import '../Auth/LoadingBody.css'
 import "leaflet/dist/leaflet.css";
 import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import { AxiosError } from "axios";
+
+interface LocationMapProps {
+  setLatLng: (location: { lat: number; lng: number }) => void;
+  latLng: { lat: number; lng: number };
+}
+
+interface Review {
+  userId: string; // Assuming userId is a string, if it's an ObjectId, adjust accordingly.
+  reviewerProfile: string;
+  reviewerName: string;
+  reviewText: string;
+  rating: number;
+  imageUrl: string[]; // Array of strings for image URLs
+  createdAt: Date;
+}
+
+
+interface User {
+  _id: string;
+  profilePicture: string;
+  firstName: string;
+  lastName: string;
+  categories: string[];
+  rating: number;
+  reviews?: Review // Adjust the type based on the actual shape of the reviews
+  aboutMe: {
+    experience: number;
+    description: string;
+  };
+}
 const LaborListingPage = () => {
   const theme = useSelector((state: RootState) => state.theme.mode);
   const locationOfUser = useSelector(
@@ -45,7 +76,7 @@ const LaborListingPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const location = useLocation();
   const [sortOrder, setSortOrder] = useState("desc");
-  const currentPages = location.pathname.split("/").pop();
+  const currentPages = location.pathname.split("/").pop() || "defaultPage";
   // const itemsPerPage = 4;
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -58,7 +89,7 @@ const LaborListingPage = () => {
   const itemsPerPage = 4;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentLabors = (
+  const currentLabors: User[] = (
     filteredLabors.length > 0 ? filteredLabors : laborsList
   ).slice(startIndex, endIndex);
   const totalPages = Math.ceil(
@@ -71,8 +102,8 @@ const LaborListingPage = () => {
       try {
         await userFetch();
       } catch (error) {
-        if (error.response && error.response.status === 403) {
-          toast.error("Your account has been blocked.");
+        if (error instanceof AxiosError && error.response && error.response.status === 403) {
+            toast.error("Your account has been blocked.");
           localStorage.removeItem("UserAccessToken");
           // Reset User State
           dispatch(setUser({}));
@@ -92,30 +123,6 @@ const LaborListingPage = () => {
     fetchUser();
   }, [navigate, dispatch]);
 
-  // useEffect(() => {
-  //   const uniqueCountry = Array.from(
-  //     new Set(laborsList.map((labor) => labor.address.country.trim()))
-  //   );
-
-  //   const uniqueState = Array.from(
-  //     new Set(laborsList.map((labor) => labor.address.state.trim()))
-  //   );
-
-  //   const uniqueCities = Array.from(
-  //     new Set(laborsList.map((labor) => labor.address.city.trim()))
-  //   );
-
-  //   const uniqueZipCodes = Array.from(
-  //     new Set(laborsList.map((labor) => labor.address.postalCode.trim()))
-  //   );
-
-  //   console.log("This is the cities..... ++++ ---- .", uniqueCities);
-
-  //   SetCountry(uniqueCountry);
-  //   setState(uniqueState);
-  //   setCities(uniqueCities);
-  //   setZipCodes(uniqueZipCodes);
-  // }, [laborsList]);
 
   console.log("Thsi sis the laborsList :  ++++++ ====-- --- -- ", laborsList);
   const toggleFilters = () => {
@@ -161,7 +168,7 @@ const LaborListingPage = () => {
   fetchLabors();
 }, [fetchLabors]);
 
-  const handleNavigeProfilePage = (user) => {
+  const handleNavigeProfilePage = (user : User) => {
 
     navigate("/labor/ProfilePage", { state: user });
   };
@@ -207,12 +214,12 @@ const LaborListingPage = () => {
 
   const breadcrumbItems = [
     { label: "Home", link: "/" },
-    { label: "LaborListing Page", link: null }, // No link for the current page
+    { label: "LaborListing Page", link: undefined }, // No link for the current page
   ];
 
 
 
-  const LocationMap = ({ setLatLng, latLng }) => {
+  const LocationMap = ({ setLatLng, latLng }: LocationMapProps) => {
   const dispatch = useDispatch();
 
   useMapEvents({
@@ -1036,7 +1043,7 @@ const LaborListingPage = () => {
                                   />
                                 ))}
                                 <span className="text-sm text-gray-600 ml-1">
-                                  {user.rating.toFixed(1)} ({user.reviews?.length || 0} reviews)
+                                  {user.rating.toFixed(1)} 
                                 </span>
                               </div>
                                 <div className="text-sm sm:text-base md:text-lg lg:text-[12px]">
@@ -1109,7 +1116,7 @@ const LaborListingPage = () => {
                         currentLabors.map((user) => {
                           return (
                             <div
-                              key={user.id}
+                              key={user._id}
                               className="p-6 rounded-lg shadow-lg border border-gray-700 flex flex-col h-full"
                             >
                               {/* Notification Badge */}
@@ -1132,7 +1139,7 @@ const LaborListingPage = () => {
                               <div className="w-full  h-96 mb-4">
                                 <img
                                   src={user.profilePicture}
-                                  alt={`${user.name} profile`}
+                                  alt={`${user.firstName} profile`}
                                   className="w-full h-full object-cover rounded-lg"
                                 />
                               </div>
@@ -1154,7 +1161,7 @@ const LaborListingPage = () => {
                                   />
                                 ))}
                                 <span className="text-sm text-gray-600 ml-1">
-                                  {user.rating.toFixed(1)} ({user.reviews?.length || 0} reviews)
+                                  {user.rating.toFixed(1)}
                                 </span>
                               </div>
                                 <div className="text-sm sm:text-base md:text-lg lg:text-[12px]">

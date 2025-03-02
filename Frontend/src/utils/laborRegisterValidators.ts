@@ -4,10 +4,6 @@ interface IdProofData {
   idImage: File | string | null;
 }
 
-interface CertificateData {
-  certificateText: string;
-  certificateImages: (File | string)[];
-}
 
 const reasonSchema = Joi.string()
   .required()
@@ -196,14 +192,7 @@ const timeSchema = Joi.string()
     "string.empty": "Time is required",
   });
 
-// Availability Schema (boolean or specific string value)
-const availabilitySchema = Joi.array() // Adjust with your valid options
-  .required()
-  .messages({
-    "array.base": "Availability must be an array",
-    "array.includes": "Invalid day in availability",
-    "array.empty": "Availability cannot be empty",
-  });
+
 
   const idTypeSchema = Joi.string()
   .valid('drivers-license', 'voter-id', 'others')
@@ -270,39 +259,39 @@ const arrivalTimeSchema = Joi.date()
     "string.empty": "Address is required",
   });
 
-  export const validatePhoneNumbers = (phone) => {
+  export const validatePhoneNumbers = (phone ?: string) => {
   const { error } = phoneSchema.validate(phone);
   return error ? error.details[0].message : null;
 };
 
-  export const validateReason = (reason) => {
+  export const validateReason = (reason : string) => {
   const { error } = reasonSchema.validate(reason);
   return error ? error.details[0].message : null;
 };
-  export const validatePlace = (reason) => {
+  export const validatePlace = (reason ?: string) => {
   const { error } = placeSchema.validate(reason);
   return error ? error.details[0].message : null;
 };
 
-export const validateComments = (comments) => {
+export const validateComments = (comments : string) => {
   const { error } = commentsSchema.validate(comments);
   return error ? error.details[0].message : null;
 };
 
 
-  export const validateAddress = (address: string) => {
+  export const validateAddress = (address ?: string) => {
   const { error } = addressSchema.validate(address);
   return error ? error.details[0].message : null;
 };
 
-export const validateIdType = (idType) => {
+export const validateIdType = (idType  :string) => {
   const { error } = idTypeSchema.validate(idType);
   return error ? error.details[0].message : null;
 };
 
 
 // Create a general validator for each field
-export const validateFirstName = (firstName: string) => {
+export const validateFirstName = (firstName ?: string) => {
   const { error } = firstNameSchema.validate(firstName);
   return error ? error.details[0].message : null;
 };
@@ -362,7 +351,7 @@ export const validateState = (state: string) => {
   return error ? error.details[0].message : null;
 };
 
-export const validatePostalCode = (postalCode: string) => {
+export const validatePostalCode = (postalCode ?: string) => {
   const postalCodeSchema = Joi.string().min(5).max(10).required().messages({
     "string.min": "Postal code should be at least 5 characters",
     "string.max": "Postal code should be less than 10 characters",
@@ -468,12 +457,12 @@ export const validateCertificate = (data: { certificateText: string[], certifica
   return null;
 };
 
-export const validateStartDate = (startDate) => {
+export const validateStartDate = (startDate :string) => {
   const { error } = startDateSchema.validate(startDate);
   return error ? error.details[0].message : null;
 };
 
-export const validateResponsibilities = (responsibilities) => {
+export const validateResponsibilities = (responsibilities :string) => {
   const { error } = responsibilitiesSchema.validate(responsibilities);
   return error ? error.details[0].message : null;
 };

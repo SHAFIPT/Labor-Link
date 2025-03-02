@@ -6,13 +6,45 @@ import { validateNewDate, validateNewTime, validateReason } from '../../../utils
 import { setError } from '../../../redux/slice/laborSlice';
 import { toast } from 'react-toastify';
 import { acceptReshedule, rejectReshedule } from '../../../services/LaborServices';
+import { IBooking } from '../../../@types/IBooking';
 
-const RescheduleRequestModal = ({ 
-  isOpen, 
+interface Booking {
+  bookingId: string;
+  customerName: string;
+  id: string;
+  date: string;
+  time: string;
+  laborId: string;
+  status: string;
+  reschedule?: { // Add the reschedule property, with an appropriate type
+    isReschedule: boolean;
+    newTime: string | null;
+    newDate: string | null;
+    reasonForReschedule: string | null;
+    requestSentBy: string | null;
+    rejectedBy: string | null;
+    rejectionNewDate: string | null;
+    rejectionNewTime: string | null;
+    rejectionReason: string | null;
+  };
+}
+
+
+
+// Define the props for the modal
+interface RescheduleRequestModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  bookingDetails: Booking[]; // Booking details are passed as an array
+  onUpdateBooking: (updatedBooking: IBooking) => void;
+}
+
+const RescheduleRequestModal = ({
+  isOpen,
   onClose,
   bookingDetails,
   onUpdateBooking
-}) => {
+}: RescheduleRequestModalProps) => {
 
     console.log("This is the bookingDetails;;;;;;;;;;;;;;", bookingDetails)
     
@@ -40,7 +72,7 @@ const RescheduleRequestModal = ({
         newDate?: string;
         newTime?: string;
         reason?: string;
-  } = useSelector((state: RootState) => state.labor.error);  
+  } = useSelector((state: RootState) => state.labor.error) ?? {}  
   
   console.log('Thsi is the erroro ;;;;',error)
 
@@ -60,7 +92,7 @@ const RescheduleRequestModal = ({
   const acceptedBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null;
   const requestSentBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null
 
-  const handleRejectionSubmit = async (e) => {
+  const handleRejectionSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('Rejection submitted:', rejectionData);
     const validateErrors = {
@@ -147,7 +179,7 @@ const RescheduleRequestModal = ({
               </div>
               <div className="flex justify-between items-center text-gray-700">
                 <span className="text-sm font-medium">New Date:</span>
-                <span className="text-sm font-medium text-gray-900">{new Date(rescheduleInfo?.newDate).toLocaleDateString()}</span>
+                <span className="text-sm font-medium text-gray-900"> {new Date(rescheduleInfo?.newDate ?? new Date()).toLocaleDateString()}</span>
               </div>
               <div className="pt-4 text-sm text-gray-700">
                 <span className="font-medium">Reason:</span>
@@ -263,7 +295,7 @@ const RescheduleRequestModal = ({
           </div>
           <div className="flex justify-between items-center text-gray-300">
             <span className="text-sm font-medium">New Date:</span>
-            <span className="text-sm font-medium text-white">{new Date(rescheduleInfo?.newDate).toLocaleDateString()}</span>
+            <span className="text-sm font-medium text-white"> {new Date(rescheduleInfo?.newDate ?? new Date()).toLocaleDateString()}</span>
           </div>
           <div className="pt-4 text-sm text-gray-300">
             <span className="font-medium">Reason:</span>

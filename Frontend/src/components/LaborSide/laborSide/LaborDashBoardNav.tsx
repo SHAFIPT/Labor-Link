@@ -12,7 +12,7 @@ import { Bell} from 'lucide-react';
 import { resetUser } from "../../../redux/slice/userSlice";
 import { resetLaborer, setFormData, setIsLaborAuthenticated, setLaborer } from "../../../redux/slice/laborSlice";
 import { logout } from "../../../services/LaborAuthServices";
-import NotificationModal from "../../UserSide/notificaionModal";
+import NotificationModal, { ChatNotification } from "../../UserSide/notificaionModal";
 import { auth, db } from "../../../utils/firbase";
 import { collection, doc, DocumentData, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
 import NotificaionModal from "../../UserSide/notificaionModal";
@@ -33,7 +33,7 @@ interface Chat {
   id: string;
   message?: string; // Make it optional if it's not always present
   unreadCount: number;
-  userData: DocumentData;
+  userData: DocumentData | null;
   laborId: string;
   userId: string;
   lastMessage: string;
@@ -45,7 +45,11 @@ interface Chat {
 }
 
 
-const LaborDashBoardNav = ({ setCurrentStage }) => {
+type LaborDashBoardNavProps = {
+  setCurrentStage: React.Dispatch<React.SetStateAction<string>>; // Example: for a number state
+};
+
+const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }) => {
   const user = useSelector((state: RootState) => state.user);
   const isUserAthenticated = useSelector(
     (state: RootState) => state.user.isUserAthenticated
@@ -55,7 +59,8 @@ const LaborDashBoardNav = ({ setCurrentStage }) => {
   );
   const laborer = useSelector((state: RootState) => state.labor.laborer);
   const loading = useSelector((state: RootState) => state.user.loading);
-  const bookingDetails = useSelector((state: RootState) => state.booking.bookingDetails);
+  const bookingDetails = useSelector((state: RootState) => state.booking?.bookingDetails || []);
+
   // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
 
 
@@ -123,7 +128,7 @@ const LaborDashBoardNav = ({ setCurrentStage }) => {
         }
   }
 
-    const fetchChats = (userUids) => {
+    const fetchChats = (userUids : string) => {
     if (!userUids) {
       throw new Error("Missing user credentials");
     }
@@ -212,6 +217,9 @@ const LaborDashBoardNav = ({ setCurrentStage }) => {
 
     return () => unsubscribe(); // Cleanup auth listener on unmount
   }, []);
+
+
+  
   
 
     
@@ -220,8 +228,8 @@ const LaborDashBoardNav = ({ setCurrentStage }) => {
       {notificaionOn && (
         <NotificationModal
           onClose={() => setNotificaionOn(false)}
-          chats={chats} 
-          bookingDetails={bookingDetails}
+          chats={(chats || []).filter(chat => chat.userData !== null) as ChatNotification[]} 
+          bookingDetails={bookingDetails || []}
           setCurrentStage={isLaborAuthenticated ? setCurrentStage : undefined}
         />
       )}
@@ -724,8 +732,8 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
             {notificaionOn && (
               <NotificaionModal
                 onClose={() => setNotificaionOn(false)}
-                chats={chats}
-                bookingDetails={bookingDetails}
+                chats={(chats || []).filter(chat => chat.userData !== null) as ChatNotification[]} 
+                bookingDetails={bookingDetails || []}
                 setCurrentStage={isLaborAuthenticated ? setCurrentStage : undefined}
               />
             )}
@@ -741,7 +749,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 {/* Notification Bell Icon */}
                 <i className="fas fa-bell text-2xl"></i>
 
-                {bookingDetails?.length > 0 &&
+                 {bookingDetails?.length > 0 &&
                   // bookingDetails[0]?.status === "canceled" &&
                   bookingDetails[0]?.cancellation?.canceledBy === "user" &&
                   !bookingDetails[0]?.cancellation?.isUserRead &&
@@ -759,7 +767,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 
 
 
-                 {bookingDetails?.length > 0 &&
+                  {bookingDetails?.length > 0 &&
                     bookingDetails[0]?.reschedule && // Ensure reschedule exists
                     bookingDetails[0]?.reschedule.isReschedule === false && // Request is still pending
                     bookingDetails[0]?.reschedule.requestSentBy === "user" && // Request sent by the user

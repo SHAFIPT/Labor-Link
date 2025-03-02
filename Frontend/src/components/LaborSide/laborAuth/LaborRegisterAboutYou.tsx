@@ -79,7 +79,7 @@ const LaborRegister = () => {
     dateOfBirth?: string;
     gender?: string;
     language?: string;
-  } = useSelector((state: RootState) => state.labor.error);
+  } = useSelector((state: RootState) => state.labor.error) ?? {};
 
 
     const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
@@ -99,27 +99,28 @@ const LaborRegister = () => {
 
 // console.log('thsi is phoneNumber',formData.phoneNumber)
   useEffect(() => {
- 
-    // dispatch(setLoading(false))
-    dispatch(setUnsavedChanges(true))
-    setFirstName(formData.firstName);
-    setLastName(formData.lastName);
-    setPhoneNumber(formData.phoneNumber || '+91-')     
-    setAddress({
-      street: formData.address?.street || '',
-      city: formData.address?.city || '',
-      state: formData.address?.state || '',
-      postalCode: formData.address?.postalCode || '',
-      country: formData.address?.country || '',
-      longitude: formData.location?.coordinates[0] || 0,
-      latitude: formData.location?.coordinates[1] || 0
-    });
-    setEmail(formData.email);
-    setPassword(formData.password);
-    setDateOfBirth(formData.dateOfBirth);
-    setGender(formData.gender);
-    setLanguage(formData.language);
-  }, [formData ,dispatch]);
+  dispatch(setUnsavedChanges(true));
+  
+  setFirstName(formData.firstName ?? '');
+  setLastName(formData.lastName ?? '');
+  setPhoneNumber(formData.phoneNumber ?? '+91-');
+  setAddress({
+    street: formData.address?.street ?? '',
+    city: formData.address?.city ?? '',
+    state: formData.address?.state ?? '',
+    postalCode: formData.address?.postalCode ?? '',
+    country: formData.address?.country ?? '',
+    longitude: formData.location?.coordinates?.[0] ?? 0,
+    latitude: formData.location?.coordinates?.[1] ?? 0
+  });
+  setEmail(formData.email ?? '');
+  setPassword(formData.password ?? '');
+  setDateOfBirth(formData.dateOfBirth ?? '');
+  setGender(formData.gender ?? '');
+  setLanguage(formData.language ?? '');
+
+}, [formData, dispatch]);
+
 
   useEffect(() => {
      console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')

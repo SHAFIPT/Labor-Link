@@ -6,11 +6,20 @@ import { useNavigate } from "react-router-dom"
 import {  Eye, Trash2} from 'lucide-react';
 import { fetchUser } from '../../../services/AdminAuthServices'
 import UseDebounce from '../../../Hooks/useDebounce'
+
+interface User {
+  _id: string;
+  firstName?: string;
+  email: string;
+  isBlocked: boolean;
+}
+
+
 const UserMangement = () => {
   const navigate = useNavigate()
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const debouncedSearchTerm = UseDebounce(searchTerm, 500);
@@ -23,7 +32,7 @@ const UserMangement = () => {
   console.log('hhhhhh',selectedFilter)
   const [isOpen, setIsOpen] = useState(false);
 
- const fetchUsers = async (query = "", pageNumber = 1, selectedFilter) => {
+ const fetchUsers = async (query = "", pageNumber = 1, selectedFilter : string) => {
     try {
       const response = await fetchUser(query, pageNumber,selectedFilter);
 
@@ -45,7 +54,7 @@ const UserMangement = () => {
   }, [debouncedSearchTerm, page,selectedFilter]);
 
 
-  const handleViewPage = (user) => {
+  const handleViewPage = (user : User) => {
     navigate('/admin/userView',{state : {user}})
   }
 
@@ -186,7 +195,7 @@ const UserMangement = () => {
                 <div className="space-y-2">
                   {users.map((user, index) => (
                     <div
-                      key={user.id}
+                      key={user._id}
                       className="grid grid-cols-11 gap-4 items-center bg-[#ABA0A0] rounded-lg shadow-md p-3 hover:bg-[#998F8F] transition-colors"
                     >
                       {/* Number */}

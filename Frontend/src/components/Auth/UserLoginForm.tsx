@@ -62,7 +62,7 @@ const UserLoginForm = () => {
         console.log("Thsis it hro role ::", role);
         const loginResponse = await Login({ email, password }, role);
 
-        if (loginResponse.status === 200) {
+        if (loginResponse && loginResponse.status === 200) {
           console.log("thsis ie the loginResponse", loginResponse);
           const { userFound, LaborFound, accessToken } =
             loginResponse.data.data;
@@ -93,15 +93,27 @@ const UserLoginForm = () => {
             }
           } catch (firebaseError) {
             console.error("Firebase Authentication failed:", firebaseError);
-            toast.error(
-              firebaseError.message || "Error during Firebase authentication."
-            );
+
+            if (firebaseError instanceof Error) {
+              toast.error(
+                firebaseError.message || "Error during Firebase authentication."
+              );
+            } else {
+              toast.error(
+                "An unknown error occurred during Firebase authentication."
+              );
+            }
+
             dispatch(setLoading(false));
           }
+
         } else {
-          toast.error(
-            loginResponse.data.message || "Error occurred during login."
-          );
+          if (loginResponse && loginResponse.data) {
+            toast.error(loginResponse.data.message || "Error occurred during login.");
+          } else {
+            toast.error("Unexpected error: No response received from the server.");
+          }
+
         }
       } catch (error) {
         if (axios.isAxiosError(error)) {
@@ -122,13 +134,13 @@ const UserLoginForm = () => {
       dispatch(setLoading(true));
       const response = await forgotPasswordSendOTP(email, role);
 
-      if (response.status == 200) {
+      if (response && response.status === 200) {
         toast.success(response.data.message || "Otp sended successfully");
         dispatch(setLoading(false));
         return true;
       }
 
-      if (response.status === 500 || response.status === 404) {
+      if (response && (response.status === 500 || response.status === 404)) {
         toast.error(
           response.data.message ||
             "An error occurred during the otp send for forgetpassword...!"
@@ -159,7 +171,7 @@ const UserLoginForm = () => {
       const role = imaUser ? "user" : "labor";
       const response = await forgetPasswordVerify(otp, email, role);
 
-      if (response.status == 200) {
+      if (response && response.status === 200) {
         toast.success("Otp verify successfully...!");
       }
 
@@ -189,7 +201,7 @@ const UserLoginForm = () => {
     }
   };
 
-  const handleConformResetPassword = async (password: string) => {
+  const handleConformResetPassword = async (password: string): Promise<boolean> => {
     try {
       dispatch(setLoading(true));
 
@@ -201,6 +213,9 @@ const UserLoginForm = () => {
 
         return true;
       }
+
+      dispatch(setLoading(false));
+       return false;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const message = error.response?.data?.message || error.message;
@@ -210,6 +225,7 @@ const UserLoginForm = () => {
         console.error("Unexpected error:", error);
         toast.error("An unexpected error occurred.");
       }
+      return false;
     }
   };
 
@@ -218,7 +234,7 @@ const UserLoginForm = () => {
       dispatch(setLoading(true));
       const googleResoponse = await googleAuth();
 
-      if (googleResoponse.status === 200) {
+      if (googleResoponse && googleResoponse.status === 200) {
         const { user, accessToken } = googleResoponse.data.data;
         localStorage.setItem("UserAccessToken", accessToken);
         dispatch(setUser(user));
@@ -228,7 +244,8 @@ const UserLoginForm = () => {
         toast.success("Successfully signed in with Google!");
         navigate("/");
       } else {
-        toast.error(googleResoponse.data?.message || "Google Sign-In failed.");
+        toast.error(googleResoponse?.data?.message || "Google Sign-In failed.");
+
       }
     } catch (error) {
       console.error("Google Sign-In error:", error);

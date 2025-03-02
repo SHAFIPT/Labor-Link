@@ -2,8 +2,31 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import { acceptRequst, rejectRequst } from '../../services/LaborServices';
 import { XCircle } from 'lucide-react';
+import { IBooking } from '../../@types/IBooking';
 
-const AdditionalChargeModal = ({ isOpen, onClose, bookingDetails ,onUpdateBooking}) => {
+interface AdditionalCharge {
+  amount: number;  // Assuming amount is a number. Change the type if it's different.
+  reason: string;  // Assuming reason is a string.
+}
+
+interface BookingDetails {
+  bookingId: string;
+  additionalChargeRequest: AdditionalCharge;  // Now it's an object of type AdditionalCharge.
+}
+
+interface AdditionalChargeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  bookingDetails: BookingDetails[];  // Array of booking details objects
+  onUpdateBooking: (updatedBooking: IBooking) => void;  // Function to update booking
+}
+
+const AdditionalChargeModal: React.FC<AdditionalChargeModalProps> = ({
+  isOpen,
+  onClose,
+  bookingDetails,
+  onUpdateBooking
+}) => {
   if (!isOpen || !bookingDetails || bookingDetails.length === 0) return null;
 
     const additionalCharge = bookingDetails[0].additionalChargeRequest;
