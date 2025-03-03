@@ -95,7 +95,7 @@ const LaborersSchema: Schema = new Schema<ILaborer>({
   },
   rating: { type: Number, default: 0 },  // Average rating (e.g., 4.5)
   reviews: [{
-    userId: { type: Schema.Types.ObjectId, ref: "Users", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "Users" },
     reviewerProfile : {type : String},
     reviewerName: { type: String},  // Reviewer's name
     reviewText: { type: String },   // Review text

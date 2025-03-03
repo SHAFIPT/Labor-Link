@@ -109,7 +109,7 @@ export class LaborSideRepository extends BaseRepository<ILaborer> implements ILa
       throw new Error("Failed to fetch laborers.");
     }
   }
-
+   
   async aboutMe(data: {
     userId: string;
     name: string;

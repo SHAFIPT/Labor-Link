@@ -2,7 +2,7 @@ import { identifyUserRole, verifyAnyRefreshTokenMiddleware } from "../../middlew
 import { UnifiedAuthController } from "../../controllers/authenticationControl";
 import { Router } from "express";
 
-const authRoute = Router();
+const authRoute = Router();   
 
 const authController = new UnifiedAuthController();
      

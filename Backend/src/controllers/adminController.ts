@@ -6,7 +6,7 @@ import { Request , Response ,NextFunction } from "express"
 import { ApiError } from "../middleware/errorHander";
 import { error } from "console";
 
-class adminController {
+class adminController {    
     private adminService: IAdminService
     
     constructor() {
