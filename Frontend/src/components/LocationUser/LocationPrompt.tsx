@@ -6,7 +6,7 @@ import locationImage1 from '../../assets/locationImage2-removebg-preview.png'
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../../redux/store/store";
 import MapSelector from "./MapSelector";
-const LocationPrompt = ({ setShowLocationModal}) => {
+const LocationPrompt = ({ setShowLocationModal }: { setShowLocationModal: (show: boolean) => void }) => {
   const theam = useSelector((state: RootState) => state.theme.mode)
   const [error, setError] = useState('');
   const [showMapModal, setShowMapModal] = useState(false);
@@ -23,9 +23,9 @@ const LocationPrompt = ({ setShowLocationModal}) => {
           setError(''); // Clear any previous error
           navigate('/laborListing');
         },
-        (err) => {
-          setError('Unable to access location. Please enable location services.');
-        },
+        (/* GeolocationPositionError */) => {
+        setError('Unable to access location. Please enable location services.');
+      },
       );
     } else {
       setError('Geolocation is not supported by your browser.');

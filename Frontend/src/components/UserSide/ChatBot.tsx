@@ -1,8 +1,14 @@
 import { useEffect } from "react";
 
+interface WindowWithChatbot extends Window {
+  chtlConfig?: {
+    chatbotId: string;
+  };
+}
+
 const Chatbot = () => {
   useEffect(() => {
-    (window as any).chtlConfig = { chatbotId: "9335149922" };
+    (window as WindowWithChatbot).chtlConfig = { chatbotId: "9335149922" };
     
     const script = document.createElement("script");
     script.src = "https://chatling.ai/js/embed.js";

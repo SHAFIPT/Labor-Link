@@ -17,7 +17,8 @@ const normalizeBaseURL = (url: string) => {
   // Validate URL format
   try {
     new URL(cleanUrl);
-  } catch (e) {
+  } catch (error) {
+    console.error(error)
     throw new Error(`Invalid API_URL: ${url}. URL must include protocol (e.g., http:// or https://)`);
   }
   

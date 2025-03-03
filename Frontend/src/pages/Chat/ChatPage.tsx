@@ -1,10 +1,10 @@
 import React from 'react'
-import ChatComponets from '../../components/ChatPage/ChatComponets'
+import ChatComponents from '../../components/ChatPage/ChatComponets'
 
 const ChatPage = () => {
   return (
     <div>
-      <ChatComponets/>
+      <ChatComponents/>
     </div>
   )
 }

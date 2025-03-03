@@ -5,7 +5,18 @@ import { setLocationOfUser } from "../../redux/slice/userSlice";
 import "leaflet/dist/leaflet.css";
 import { useNavigate } from "react-router-dom";
 
-const SelectLocation = ({ setLatLng }) => {
+interface SelectLocationProps {
+  setLatLng: (coords: { lat: number; lng: number }) => void;
+}
+
+
+interface MapSelectorProps {
+  setShowMapModal: (show: boolean) => void;
+  onClose: () => void;
+}
+
+
+const SelectLocation =  ({ setLatLng }: SelectLocationProps) => {
     useMapEvents({
         click(e) {
             setLatLng({ lat: e.latlng.lat, lng: e.latlng.lng });
@@ -14,7 +25,7 @@ const SelectLocation = ({ setLatLng }) => {
     return null;
 };
 
-const MapSelector = ({ setShowMapModal , onClose}) => {
+const MapSelector = ({ setShowMapModal, onClose }: MapSelectorProps) => {
     const dispatch = useDispatch();
     const navigate = useNavigate()
     const [latLng, setLatLng] = useState({ lat: 12.9716, lng: 77.5946 });

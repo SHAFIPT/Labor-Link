@@ -27,13 +27,13 @@ import { IUser } from "../../../@types/user"
 interface LaborData {
   firstName: string;
   lastName: string;
-  phone: string;
+  phone?: string;
   email?: string;
   address: string;
   profilePicture?: string;
   language: string;
-  skill: string | string[]; // Ensure skill is defined
-  responsibility: string;
+  skill?: string | string[]; // Ensure skill is defined
+  responsibility?: string;
   availability: string[]; // Assuming it's an array of strings
   startTime?: string;
   endTime?: string;
@@ -391,6 +391,7 @@ const prepareAvailabilityForSubmission = () => {
     setLaborData({
       ...Laborer,
       address: LaborfullAddress,
+      categories: Array.isArray(Laborer.categories) ? Laborer.categories :[Laborer.categories].filter(Boolean),
     });
   } else if (user) {
     console.log("kkkkkk kkkiiiii mmmmmmmmmm++++++-----");
@@ -411,7 +412,7 @@ const prepareAvailabilityForSubmission = () => {
 
   
 
-  const handleInputChangeAbout = (e) => {
+  const handleInputChangeAbout = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>)  => {
     const { name, value } = e.target;
     setAboutFromData(prevState => ({
       ...prevState,

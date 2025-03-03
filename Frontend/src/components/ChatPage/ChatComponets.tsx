@@ -27,9 +27,9 @@ import { IBooking } from '../../@types/IBooking';
 import { UserAddress } from '../../@types/userAddres';
 
 interface ChatComponentProps {
-  chatId: string;
-  onMenuClick: () => void; // ✅ Add this property
-  currentPage: string;
+  chatId?: string;
+  onMenuClick?: () => void; // ✅ Add this property
+  currentPage?: string;
 }
 
 

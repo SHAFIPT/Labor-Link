@@ -22,7 +22,7 @@ const WithdrowPendings = () => {
   const [pendingWallets, setPendingWallets] = useState<Withdrawal[] | null>(null);
   const handleAction = async (id  :string, status : string) => {
     try {
-      const response = await submitData(id, { status });
+      const response = await submitData( {id , status });
       if (response.status == 200) {
         toast.success("data uploaded succefully");
       }

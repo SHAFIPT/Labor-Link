@@ -34,7 +34,7 @@ const UserMangement = () => {
 
  const fetchUsers = async (query = "", pageNumber = 1, selectedFilter : string) => {
     try {
-      const response = await fetchUser(query, pageNumber,selectedFilter);
+      const response = await fetchUser({query, pageNumber,selectedFilter});
 
       if (response.status === 200) {
         const { totalPage, usersFound } = response.data.data;

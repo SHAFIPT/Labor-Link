@@ -1,4 +1,4 @@
-  import axios from "axios";
+  import axios, { AxiosError } from "axios";
   import store from "../../redux/store/store";
 import { resetLaborer } from "../../redux/slice/laborSlice";
 
@@ -15,7 +15,8 @@ import { resetLaborer } from "../../redux/slice/laborSlice";
 
     try {
       new URL(cleanUrl);
-    } catch (e) {
+    } catch (error) {
+      console.error(error)
       throw new Error(
         `Invalid API_URL: ${url}. URL must include protocol (e.g., http:// or https://)`
       );
@@ -89,8 +90,9 @@ import { resetLaborer } from "../../redux/slice/laborSlice";
       }
 
       return response.data.data.accessToken;
-    } catch (error) {
-      console.error("Detailed Refresh Token Error:", error.response?.data || error);
-      throw error;
-    }
+   } catch (error) {
+    const axiosError = error as AxiosError;
+    console.error("Detailed Refresh Token Error:", axiosError.response?.data || axiosError.message);
+    throw axiosError;
+  }
   }
