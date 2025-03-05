@@ -1901,26 +1901,20 @@ const findLaborIdByEmail = async (email  : string) => {
                 <div className="border bg-gray-800 rounded-xl p-4 sm:p-6 shadow-lg shadow-gray-900">
                   <div className="space-y-7">
                     <h2 className="text-center font-[Rockwell] lg:text-[25px] md:text-[16px] sm:text-[12px] font-semibold border-b-2 border-gray-700 pb-2 text-gray-200">
-                      Expert Electrician
+                       Expert {laborData?.categories?.[0] ?? "Unknown"}
                     </h2>
 
                     <div>
-                      <h4 className="font-semibold mb-3 text-gray-300">
-                        Expertise:
-                      </h4>
-                      <ul className="list-disc pl-5 font-[Roboto] space-y-2 marker:text-[#21A391] text-gray-300">
-                        <li className="md:text-base lg:text-lg font-medium">
-                          Residential Electrical Systems
-                        </li>
-                        <li className="md:text-base lg:text-lg font-medium">
-                          Commercial Electrical Installations
-                        </li>
-                        <li className="md:text-base lg:text-lg font-medium">
-                          Wiring and Circuit Design
-                        </li>
-                        <li className="md:text-base lg:text-lg font-medium">
-                          Lighting Installation and Repair
-                        </li>
+                      <h4 className="font-semibold mb-3">Expertise:</h4>
+                      <ul className="list-disc pl-5 font-[roboto] space-y-2 marker:text-[#21A391]">
+                        {parsedSkillsData.map((skill, index) => (
+                          <li
+                            key={index}
+                            className="md:text-base lg:text-lg font-medium"
+                          >
+                            {skill}
+                          </li>
+                        ))}
                       </ul>
                     </div>
 
