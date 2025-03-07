@@ -14,6 +14,9 @@ import { resetLaborer, setIsLaborAuthenticated, setLaborer } from "../../redux/s
 import Breadcrumb from "../BreadCrumb";
 import '../Auth/LoadingBody.css'
 import "leaflet/dist/leaflet.css";
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import { Icon } from 'leaflet';
 import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
 import { AxiosError } from "axios";
 
@@ -186,37 +189,18 @@ const LaborListingPage = () => {
     setFilteredLabors([]);
   };
 
-  // laborsList.map((labor) => {
-  //   labor.firstName
-  // })
-
-  //   const handleFiltersUpdate = () => {
-  //   const filteredResults = laborsList.filter(labor => {
-  //     const matchCountry = !selectedCountry || labor.address.country.trim() === selectedCountry;
-  //     const matchState = !selectedState || labor.address.state.trim() === selectedState;
-  //     const matchCity = !selectedCity || labor.address.city.trim() === selectedCity;
-  //     const matchZipCode = !selectedZipCode || labor.address.postalCode.trim() === selectedZipCode;
-  //     const matchCategory = !selectedCategory || labor.categories.includes(selectedCategory);
-  //     const matchRating = !selectedRating || labor.rating >= selectedRating;
-
-  //     return matchCountry && matchState && matchCity && matchZipCode && matchCategory && matchRating;
-  //   });
-
-  //   setFilteredLabors(filteredResults);
-  // };
-
-  // // Update filters dynamically when any filter changes
-  // useEffect(() => {
-  //   handleFiltersUpdate();
-  // }, [selectedCountry, selectedState, selectedCity, selectedZipCode, selectedCategory, selectedRating, laborsList]);
-
-  // First, fetch Firebase users to create email to UID mapping
-
   const breadcrumbItems = [
     { label: "Home", link: "/" },
     { label: "LaborListing Page", link: undefined }, // No link for the current page
   ];
 
+
+  const defaultIcon = new Icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+  });
 
 
   const LocationMap = ({ setLatLng, latLng }: LocationMapProps) => {
@@ -230,7 +214,7 @@ const LaborListingPage = () => {
     },
   });
 
-  return latLng.lat && latLng.lng ? <Marker position={[latLng.lat, latLng.lng]} /> : null;
+  return latLng.lat && latLng.lng ? <Marker position={[latLng.lat, latLng.lng]} icon={defaultIcon}/> : null;
 };
 
   return (
