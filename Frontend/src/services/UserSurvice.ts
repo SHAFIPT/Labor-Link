@@ -188,3 +188,16 @@ export const fetchAllBooings = async (userId  :string, page :number , limit : nu
     throw error;
   }
 }
+
+
+export const fetchSuggessions = async (query : string) => {
+  try {
+    const reponse = await api.get(`/api/user/users/suggestions?query=${query}`)
+
+    return reponse
+    
+  } catch (error) {
+    console.error("Error in serach term:", error);
+    throw error;
+  }
+}

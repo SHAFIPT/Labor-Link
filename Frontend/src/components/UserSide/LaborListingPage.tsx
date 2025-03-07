@@ -1082,9 +1082,14 @@ const LaborListingPage = () => {
                   <div className="flex flex-col">
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
                       {laborsList.length === 0 ? (
-                        <div className="text-center text-gray-500 py-10">
-                          No laborers available at the moment
-                        </div>
+                         <div className="text-center text-gray-500 py-10">
+                            <p>No laborers available at the moment.</p>
+                            <p className="mt-2 text-sm text-gray-600">
+                              Please choose a location on the left-side map or click on the 
+                              <span className="font-semibold text-[#21A391]"> "Browse All Labors" </span> 
+                              button above to find available laborers in your area.
+                            </p>
+                          </div>
                       ) : laborsList.length === 0  ? (
                         <div className="text-center text-gray-500 py-10">
                           {selectedCategory ||

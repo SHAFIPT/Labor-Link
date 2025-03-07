@@ -25,8 +25,8 @@ import rootMap6  from '../../assets/4th image.png';
 import rootMap7  from '../../assets/Payment.png';
 import rootMap8 from '../../assets/Rating.png';
 import smImage from '../../assets/david-cainImageCompressed.jpg'
-import { useSelector } from 'react-redux';
-import { RootState } from '../../redux/store/store';
+import {  useSelector } from 'react-redux';
+import {  RootState } from '../../redux/store/store';
 import { toast } from 'react-toastify';
 import { fetchLabors } from '../../services/LaborServices';
 import StarRating from './StarRating';
@@ -35,6 +35,10 @@ const ServiceCard = lazy(() => import('./serviceCards'))
 import { debounce } from 'lodash';
 import Chatbot from './ChatBot';
 import Footer from '../Footer';
+import UseDebounce from '../../Hooks/useDebounce';
+import { fetchSuggessions } from '../../services/UserSurvice';
+import { ILaborer } from '../../@types/labor';
+
 
 
 interface Labor {
@@ -45,7 +49,6 @@ interface Labor {
   rating: number;
   categories: string[];
 }
-
 
 const UserHome = () => {
   // console.log('iiiiiiiiiiiiiiiiiiiiiiiii');
@@ -58,9 +61,78 @@ const UserHome = () => {
   const isDarkmode = useSelector((state: RootState) => state.theme.mode)
   const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [suggestions, setSuggestions] = useState<ILaborer[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const debouncedSearchTerm = UseDebounce(searchTerm, 500);
+  const laborauth = useSelector((state: RootState) => state.labor.laborer)
+  // const dispatch = useDispatch()
+  console.log('This is the laborAuth ::::::',laborauth)
+
+
+//   useEffect(() => {
+//   const clearData = async () => {
+//     localStorage.removeItem("LaborAccessToken");
+//     dispatch(resetLaborer());
+//     dispatch(setLaborer({}));
+//     dispatch(setFormData({}));  
+//     dispatch(setIsLaborAuthenticated(false));
+//     await persistor.purge();
+//   };
+
+//   clearData();
+// }, []); // 
+
+   const fetchSuggestions = async (term: string) => {
+    if (!term.trim()) return;
+    setLoading(true);
+
+    try {
+      const result = await fetchSuggessions(term);
+      
+      // Check the response structure and handle it appropriately
+      if (result.status === 200) {
+        // Direct access to data array if that's the API's response structure
+        const suggestionsData = result.data?.data || [];
+        console.log('Thsi is the suggestionsData;;;',suggestionsData)
+        setSuggestions(suggestionsData);
+      } else {
+        setSuggestions([]);
+      }
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Using debounced search term
+  useEffect(() => {
+    if (debouncedSearchTerm && debouncedSearchTerm.length >= 2) {
+      fetchSuggestions(debouncedSearchTerm);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [debouncedSearchTerm]);
+  
 
   useEffect(() => {
-    console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################',displayCount)
+    const handleClickOutside = () => {
+      setShowSuggestions(false);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+
+  useEffect(() => {
     console.log('isDarkMode is this', isDarkmode);
   }, [isDarkmode]);
 
@@ -124,13 +196,14 @@ const UserHome = () => {
   const cardWidth = 400;
 
   useEffect(() => {
+    
     if (duplicatedLabors.length === 0 || isPaused) return;
 
     const scrollInterval = setInterval(() => {
       setScrollPosition((prevPosition) => {
         const maxScroll = allLabors.length * cardWidth;
         const newPosition = prevPosition + 1;
-
+console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
         if (newPosition >= maxScroll) {
           return 0;
         }
@@ -150,6 +223,22 @@ const UserHome = () => {
     }
   };
 
+  const handleFindLaborClick = () => {
+  if (suggestions.length === 0) {
+    alert("No laborers found. Please refine your search.");
+    return;
+  }
+
+  // Navigate to the first laborer’s profile
+ const firstLabor = { 
+    ...suggestions[0], 
+    categories: Array.isArray(suggestions[0].categories) ? suggestions[0].categories : [suggestions[0].categories]
+  };
+
+  handleNavigeProfilePage(firstLabor);
+};
+
+
   return (
     <>
       <HomeNavBar />
@@ -164,13 +253,6 @@ const UserHome = () => {
 
         <div className="block sm:hidden absolute inset-0">
           <img src={smImage} alt="" className="w-full h-full object-cover" />
-          {/* Mobile gradient overlay */}
-          {/* <div 
-        className="absolute inset-0 bg-gradient-to-r from-[#2C3333]/65 to-[#2C3333]/65
-          backdrop-blur-[1px] transform will-change-transform pointer-events-none
-          transition-all duration-700 ease-in-out origin-left
-          group-hover:scale-x-0"
-      /> */}
         </div>
 
         {/* Content container with responsive padding */}
@@ -206,9 +288,22 @@ const UserHome = () => {
           <div className="mt-6 sm:mt-8 md:mt-10 lg:mt-12 w-full">
             <div className="relative flex items-center w-full max-w-full sm:max-w-[500px] md:max-w-[600px] lg:max-w-[700px]">
               <input
-                type="search"
+          type="search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}  
+          onFocus={() => {
+            if (searchTerm.length >= 2) {
+              setShowSuggestions(true);
+            }
+          }}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent click from closing suggestions
+            if (searchTerm.length >= 2) {
+              setShowSuggestions(true);
+            }
+          }}  
                 placeholder="Find the labor by the name, category..."
-                className="w-full rounded-xl border border-gray-300
+                className="w-full rounded-xl border text-black border-gray-300
             h-[73px] sm:h-12 md:h-14 lg:h-16
             pl-4 sm:pl-6 md:pl-8 lg:pl-10
             pr-24 sm:pr-32 md:pr-36 lg:pr-44
@@ -221,9 +316,48 @@ const UserHome = () => {
           w-20 sm:w-28 md:w-32 lg:w-40
           text-xs sm:text-sm md:text-base lg:text-lg
           transition-all duration-200 hover:bg-[#1a8275]"
+                onClick={handleFindLaborClick}
               >
                 Find Labors
               </button>
+              {showSuggestions && (
+          <div 
+            onClick={(e) => e.stopPropagation()} // Prevent clicks inside from closing
+            className="absolute left-0 w-full mt-2 bg-white rounded-lg shadow-lg z-20 border border-gray-200
+                      top-[73px] sm:top-12 md:top-14 lg:top-16">
+            {loading ? (
+              <div className="p-4 text-center text-gray-500">Loading suggestions...</div>
+            ) : suggestions && suggestions.length > 0 ? (
+              <ul className="max-h-64 overflow-y-auto">
+                {suggestions.map((labor) => (
+                  <li 
+                    key={labor._id}
+                    onClick={() => handleNavigeProfilePage({ ...labor, categories: Array.isArray(labor.categories) ? labor.categories : [labor.categories] })} 
+                    className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 flex items-center"
+                  >
+                    {labor.profilePicture && (
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden mr-2 sm:mr-3 flex-shrink-0">
+                        <img 
+                          src={labor.profilePicture} 
+                          alt={labor.profilePicture}
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium block text-black truncate">{labor.firstName}</span>
+                      <span className="text-xs sm:text-sm text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-full inline-block">
+                        {labor.category}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : searchTerm.length >= 2 ? (
+              <div className="p-4 text-center text-gray-500">No results found</div>
+            ) : null}
+          </div>
+        )}
             </div>
           </div>
 

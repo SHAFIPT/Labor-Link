@@ -11,17 +11,6 @@ import LaborPublicRoute from '../components/Authentications/LaborPublicRoute'
 import LaborBookingDetails from '../pages/LaborSide/laborViewDetialpage'
 
 const LaborRout = () => {
-  // const navigate = useNavigate();
-  // const isLaborAuthenticated = useSelector(
-  //   (state: RootState) => state.labor.isLaborAuthenticated
-  // );
-
-  // useEffect(() => {
-  //   if (isLaborAuthenticated) {
-  //     navigate('/labor/ProfilePage');
-  //   }
-  // }, [isLaborAuthenticated, navigate]);
-
   return (
     <Suspense fallback={<div className="text-center mt-20">Loading...</div>}>
       <Routes>

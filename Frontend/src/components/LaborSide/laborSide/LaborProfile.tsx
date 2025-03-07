@@ -9,7 +9,7 @@ import BgImage from '../../../assets/image 6.png'// Assuming you're using React 
 import {auth} from '../../../utils/firbase';
 import { CalendarDaysIcon } from "@heroicons/react/24/solid";
 import '../../Auth/LoadingBody.css'
-import { Phone, Mail, MapPin, Clock,Globe, Heart, Star, Edit, User ,
+import { Phone, Mail, MapPin, Clock,Globe, Star, Edit, User ,
   Calendar, 
   Lock,
     X  } from 'lucide-react';
