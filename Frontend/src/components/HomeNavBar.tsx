@@ -1,5 +1,5 @@
 import { Link,  useNavigate } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Handman from '../assets/Icons/Handiman.png'
 import Electriion from '../assets/Icons/Electriion.png'
 import Carpender from '../assets/Icons/Carpender.png'
@@ -295,6 +295,12 @@ const HomeNavBar = () => {
 
     return hasRejection || hasRequest;
   };
+
+  const handlenotificaiotn = (e: React.FormEvent) => {
+    console.log('Iam clicke dedd noti')
+    e.stopPropagation(); // Prevent menu from closing
+  setNotificaionOn(true);
+  }
   
 
   return (
@@ -699,9 +705,12 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
         } lg:hidden`}
       >
 
-                  <div className="p-4 flex justify-end " onClick={()=> setIsMenuOn(true)}>
+                  <div className="p-4 flex justify-end ">
                     <button
-                      onClick={toggleMenu}
+                       onClick={() => {
+                        toggleMenu(); // Toggle menu
+                        setIsMenuOn(!isOpen); // Set isMenuOn based on new menu state 
+                      }}
                       className="p-2 focus:outline-none transition-colors duration-300 gap-3"
                       aria-label="Toggle menu"
                       aria-expanded={isOpen}
@@ -720,27 +729,58 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           className={`fixed inset-0 h-screen  bg-black bg-opacity-50 transform transition-all duration-500 ease-in-out z-40 ${
             isOpen ? 'translate-y-0' : '-translate-y-full'
           }`}
-          onClick={toggleMenu} // Close menu when clicking outside
+           onClick={() => {
+            toggleMenu();
+            setIsMenuOn(false); 
+          }} 
         >
           <div
-            className={`fixed inset-x-0 top-0 h-[50vh] bg-gradient-to-b from-teal-900 to-teal-800 
+            className={`fixed inset-x-0 top-0 h-[54vh] bg-gradient-to-b from-teal-900 to-teal-800 
                         transform transition-all duration-500 ease-in-out z-40
                         ${isOpen ? 'translate-y-0' : '-translate-y-full'} 
                         shadow-2xl`}
           >
             <nav className="container mx-auto px-4 h-full flex flex-col items-center justify-center space-y-1 relative">
               {/* Notification Icon */}
-              <div className="absolute top-6 left-8">
+              <div className="absolute bottom-0 left-8" onClick={handlenotificaiotn }>
                 <button className="relative group">
                   <Bell className="w-6 h-6 text-white transition-colors duration-200 group-hover:text-teal-300" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                    3
-                  </span>
+                  
+                  {/* Dynamic notification indicators - mirroring desktop logic */}
+                  {(
+                    ((bookingDetails || []).length > 0 && (
+                      (bookingDetails[0]?.additionalChargeRequest?.status === "pending" &&
+                        bookingDetails[0]?.additionalChargeRequest?.amount > 0 &&
+                        bookingDetails[0]?.additionalChargeRequest?.reason) ||
+                      (bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
+                        bookingDetails[0]?.reschedule?.rejectedBy === "user") ||
+                      (bookingDetails[0]?.reschedule &&
+                        hasRejectionDetails(bookingDetails[0]?.reschedule)) ||
+                      (bookingDetails[0]?.reschedule?.requestSentBy === "user" &&
+                        bookingDetails[0]?.reschedule?.acceptedBy === null &&
+                        bookingDetails[0]?.reschedule?.rejectedBy === null) ||
+                      (bookingDetails[0]?.status === "canceled" &&
+                        bookingDetails[0].cancellation?.canceledBy === "labor" &&
+                        !bookingDetails[0].cancellation?.isUserRead &&
+                        isUserAthenticated)
+                    )) ||
+                    (hasUnreadMessages && isUserAthenticated)
+                  ) && (
+                    <div className="absolute -top-1 -right-1">
+                      <div className="relative">
+                        {/* Static Red Dot */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center"></div>
+                        
+                        {/* Pulsating Glow Effect */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full absolute animate-ping opacity-75"></div>
+                      </div>
+                    </div>
+                  )}
                 </button>
               </div>
 
               {/* Menu Items */}
-              <div className="flex flex-col items-center space-y-8 w-full max-w-md mt-16">
+              <div className="flex flex-col items-center space-y-8 w-full max-w-md pt-[50px]">
                 <button
                   className="w-full py-3 px-6 text-white text-xl font-medium tracking-wide rounded-lg 
                             bg-teal-700/30 hover:bg-teal-700/50 transition-all duration-200 
@@ -761,13 +801,13 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                   <span>View Profile Page</span>
                 </button>
 
-                {shouldShowUserName && (
+                {shouldShowUserName ? (
                   <button
                     className="group flex items-center justify-center w-full max-w-xs h-12 
                               bg-gradient-to-r from-red-600 to-red-700 rounded-lg 
                               hover:from-red-700 hover:to-red-800
                               transition-all duration-300 transform hover:scale-105
-                              shadow-lg hover:shadow-xl"
+                              shadow-lg hover:shadow-xl "
                     onClick={handleLogout}
                   >
                     <div className="flex items-center justify-center space-x-3 px-4">
@@ -781,8 +821,20 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                       <span className="text-white text-lg font-semibold">Logout</span>
                     </div>
                   </button>
+                ):(
+                    <Link to='/login'
+                    className="group flex items-center justify-center w-full max-w-xs h-12 
+                              bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg 
+                              hover:from-blue-700 hover:to-blue-800
+                              transition-all duration-300 transform hover:scale-105
+                              shadow-lg hover:shadow-xl"
+                  >
+                    <div className="flex items-center justify-center space-x-3 px-4">
+                      <span className="text-white text-lg font-semibold">Login</span>
+                    </div>
+                  </Link>
                 )}
-              </div>
+                  </div>
             </nav>
           </div>
           </div>
@@ -801,7 +853,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
               />
             )}
 
-            {shouldShowUserName && (
+            {shouldShowUserName && (  
               <div className="di" onClick={() => setNotificaionOn(true)}>
                 <div className="relative cursor-pointer hidden md:block lg:block">
                   {/* Notification Bell Icon */}

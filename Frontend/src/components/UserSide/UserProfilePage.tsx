@@ -7,7 +7,6 @@ import { db} from '../../utils/firbase'; // Adjust path as needed
 import '../UserSide/chatPage.css'
 import {
   Mail ,
-  Heart,
   PenSquare,
   Calendar,
   ClockIcon,
@@ -818,20 +817,9 @@ const UserProfile = () => {
                       {userData?.email || "user@example.com"}
                     </span>
                   </div>
-
-                  <button
-                    className={`mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border rounded-md transition-colors ${
-                      theam === "dark" 
-                        ? "border-gray-500 text-white hover:bg-gray-700" 
-                        : "border-gray-300 text-gray-900 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Heart className="w-5 h-5" />
-                    <span>Save</span>
-                  </button>
                 </div>
 
-                  <div className="flex flex-col   gap-3 w-full lg:pl-36 sm:w-1/2">
+                  <div className="flex flex-col gap-3 w-full lg:pl-36 sm:w-1/2">
                     <button
                       className="flex items-center lg:w-[700px] justify-center gap-2 px-4 py-2 bg-[#A2906A] text-white rounded-full hover:bg-[#7d6e4d] transition-colors"
                       onClick={handleEditProfile}
@@ -839,16 +827,15 @@ const UserProfile = () => {
                       <PenSquare className="w-5 h-5" />
                       <span>Edit Profile</span>
                     </button>
-                    <Link to="/bookingDetails-and-history">
-                      <button className="flex items-center lg:w-[700px]  justify-center gap-2 px-4 py-2 bg-[#21A391] text-white rounded-full hover:bg-[#20796d] transition-colors">
+
+                    <button
+                      className="flex items-center lg:w-[700px] justify-center gap-2 px-4 py-2 bg-[#21A391] text-white rounded-full hover:bg-[#20796d] transition-colors"
+                    >
+                      <Link to="/bookingDetails-and-history" className="flex items-center gap-2 w-full justify-center text-white">
                         <Calendar className="w-5 h-5" />
                         <span>View & Manage Bookings</span>
-                      </button>
-                    </Link>
-                    {/* <button className="flex items-center lg:w-[700px]  justify-center gap-2 px-4 py-2 bg-[#1f9dcb] text-white rounded-full hover:bg-[#20796d] transition-colors">
-                      <Calendar className="w-5 h-5" />
-                      <span>My chats</span>
-                    </button> */}
+                      </Link>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1288,23 +1275,6 @@ const UserProfile = () => {
                               </button>
                             )}
                         </div>
-
-                        {/* Status */}
-                        {/* <div>
-                          <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
-                            Status:
-                          </h3>
-                          <p
-                            className={`border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] px-4 py-2 ${
-                              booking?.status === "canceled"
-                                ? "text-red-500"
-                                : "text-gray-700"
-                            }`}
-                          >
-                            {booking?.status || "N/A"}
-                          </p>
-                        </div> */}
-
                         {/* Scheduled Date and Time */}
                         <div>
                           <h3 className="font-semibold text-xl font-[rokkitt] text-[#1e40af] mb-2">
@@ -1336,7 +1306,7 @@ const UserProfile = () => {
                             Laborer Phone:
                           </h3>
                           <p className="border border-gray-300 p-2 rounded-full text-sm font-[RobotoMono] text-gray-700 px-4 py-2">
-                            {booking?.laborId?.phone || "N/A"}
+                            {booking.laborId?.phone || "N/A"}
                           </p>
                         </div>
 

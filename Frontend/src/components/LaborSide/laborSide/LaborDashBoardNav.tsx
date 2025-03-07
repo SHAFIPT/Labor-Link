@@ -4,11 +4,12 @@ import { toast } from "react-toastify"
 import '../../Auth/userLogin.css'
 import '../../userHomeNave.css'
 import '../../Auth/userLoginBody.css'
+import { FaCalendarCheck } from "react-icons/fa"; 
 import { persistor } from '../../../redux/store/store';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store";
 import { toggleTheme } from "../../../redux/slice/themeSlice";
-import { Bell} from 'lucide-react';
+import { Bell, Briefcase, HomeIcon, LucideIcon, MessageSquare, Receipt, User} from 'lucide-react';
 import { resetUser } from "../../../redux/slice/userSlice";
 import { resetLaborer, setFormData, setIsLaborAuthenticated, setLaborer } from "../../../redux/slice/laborSlice";
 import { logout } from "../../../services/LaborAuthServices";
@@ -17,6 +18,7 @@ import { auth, db } from "../../../utils/firbase";
 import { collection, doc, DocumentData, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
 import NotificaionModal from "../../UserSide/notificaionModal";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { IconType } from "react-icons/lib";
 // import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading, setAccessToken } from '../../../redux/slice/laborSlice'
 // import { checkIsBlock, logout } from "../services/UserAuthServices";
 interface ChatDocument {
@@ -43,7 +45,11 @@ interface Chat {
   lastReadTimestamp: Timestamp;
   lastMessageSender: string;
 }
-
+interface NavItem {
+  name: string;
+  icon: LucideIcon | IconType; // Or use the correct Lucide icon type
+  stage: string;
+}
 
 type LaborDashBoardNavProps = {
   setCurrentStage: React.Dispatch<React.SetStateAction<string>>; // Example: for a number state
@@ -82,9 +88,8 @@ const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }
   const [chats, setChats] = useState<Chat[]>([]);
   const hasUnreadMessages = chats.some((chat) => chat.unreadCount > 0);
   const [isScrolled, setIsScrolled] = useState(false);
-  console.log("Thsi si the chats..................", chats)
+  const [isMenuOn , setIsMenuOn] = useState(false)
   useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const handleScroll = () => {
       // Check if page is scrolled more than 50px
       setIsScrolled(window.scrollY > 50);
@@ -219,8 +224,25 @@ const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }
   }, []);
 
 
+
+    const navItems: NavItem[] = [
+    { name: "Dashboard", icon: HomeIcon, stage: "Dashboard" },
+    { name: "Bookings", icon: FaCalendarCheck, stage: "Bookings" },
+    { name: "Chats", icon: MessageSquare, stage: "Chats" },
+    { name: "  Bookings & History ", icon: Briefcase, stage: "Works" },
+    { name: "My Wallet", icon: Receipt, stage: "Wallet" },
+    { name: "My Profile", icon: User, stage: "User" },
+  ];
+
   
-  
+   const handlenotificaiotn = (e: React.FormEvent) => {
+     console.log('Iam clicke dedd noti')
+     toggleMenu();
+      setIsMenuOn(false); 
+      e.stopPropagation(); // Prevent menu from closing
+     setNotificaionOn(true);
+     
+    }
 
     
   return (
@@ -557,7 +579,8 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
               </div>
             </div>
 
-            <div
+            {!isMenuOn && (
+              <div
               className={`rightDarkLighMode relative z-[60] md:z-0   ${
                 theme === "dark"
                   ? "bg-darkBg text-darkText"
@@ -613,6 +636,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 )}
               </label>
             </div>
+            )}
 
             {/* <button
             className="BrowserButton bg-[#21A391] focus:outline-none hidden lg:block md:hidden text-white p-3 w-[220px] rounded-xl"
@@ -624,7 +648,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
             <div className="">
             {/* Menu Toggle Button for Mobile */}
                <div
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isOpen 
             ? 'bg-transparent' 
             : isScrolled 
@@ -637,7 +661,10 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
 
                   <div className="p-4 flex justify-end ">
                     <button
-                      onClick={toggleMenu}
+                      onClick={() => {
+                        toggleMenu(); // Toggle menu
+                        setIsMenuOn(!isOpen); // Set isMenuOn based on new menu state 
+                      }}
                       className="p-2 focus:outline-none transition-colors duration-300 gap-3"
                       aria-label="Toggle menu"
                       aria-expanded={isOpen}
@@ -656,46 +683,66 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
           className={`fixed inset-0 h-screen bg-black bg-opacity-50 transform transition-all duration-500 ease-in-out z-40 ${
             isOpen ? 'translate-y-0' : '-translate-y-full'
           }`}
-          onClick={toggleMenu} // Close menu when clicking outside
+          onClick={() => {
+            toggleMenu();
+            setIsMenuOn(false); 
+          }} // Close menu when clicking outside
         >
           <div
-            className={`fixed inset-x-0 top-0 h-[50vh] bg-gradient-to-b from-teal-900 to-teal-800 
+            className={`fixed inset-x-0 top-0 h-[100vh] bg-gradient-to-b from-teal-900 to-teal-800 
                         transform transition-all duration-500 ease-in-out z-40
                         ${isOpen ? 'translate-y-0' : '-translate-y-full'} 
                         shadow-2xl`}
           >
             <nav className="container mx-auto px-4 h-full flex flex-col items-center justify-center space-y-1 relative">
               {/* Notification Icon */}
-              <div className="absolute top-6 left-8 lg:hidden">
+              <div className="absolute bottom-0 left-8 lg:hidden" onClick={handlenotificaiotn }>
             <button className="relative group">
               <Bell className="w-6 h-6 text-white transition-colors duration-200 group-hover:text-teal-300" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                3
-              </span>
+              <div className="absolute -top-3 -right-1">
+                      <div className="relative">
+                        {/* Static Red Dot */}
+                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center"></div>
+                        
+                        {/* Pulsating Glow Effect */}
+                        <div className="w-4 h-4 -top-1 bg-red-500 rounded-full absolute animate-ping opacity-75"></div>
+                      </div>
+                    </div>
             </button>
           </div>
 
               {/* Menu Items */}
               <div className="flex flex-col items-center space-y-8 w-full max-w-md mt-16">
-                <button
-                  className="w-full py-3 px-6 text-white text-xl font-medium tracking-wide rounded-lg 
-                            bg-teal-700/30 hover:bg-teal-700/50 transition-all duration-200 
-                            transform hover:scale-105 hover:shadow-lg
-                            flex items-center justify-center space-x-2"
-                  // onClick={handleLaborList}
-                >
-                  <span>Browse all Labors</span>
-                </button>
+                 {/* Nav Items from the array */}
+                {navItems.map((item, index) => (
+                  item.name === "My Profile" ? (
+                    <Link
+                      key={index}
+                      to="/labor/ProfilePage"
+                      className="w-full py-3 px-6 text-white text-lg font-medium tracking-wide rounded-lg 
+                                bg-teal-700/30 hover:bg-teal-700/50 transition-all duration-200 
+                                transform hover:scale-105 hover:shadow-lg
+                                flex items-center space-x-3"
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.name}</span>
+                    </Link>
+                  ) : (
+                    <button
+                      key={index}
+                      className="w-full py-3 px-6 text-white text-lg font-medium tracking-wide rounded-lg 
+                              bg-teal-700/30 hover:bg-teal-700/50 transition-all duration-200 
+                              transform hover:scale-105 hover:shadow-lg
+                              flex items-center space-x-3"
+                      onClick={() => setCurrentStage && setCurrentStage(item.stage)}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.name}</span>
+                    </button>
+                  )
+                ))}
 
-                <button
-                  className="w-full py-3 px-6 text-white text-xl font-medium tracking-wide rounded-lg 
-                            bg-teal-700/30 hover:bg-teal-700/50 transition-all duration-200 
-                            transform hover:scale-105 hover:shadow-lg
-                            flex items-center justify-center space-x-2"
-                  // onClick={handleViewProfile}
-                >
-                  <span>View Profile Page</span>
-                </button>
+
 
                 {shouldShowUserName && (
                   <button

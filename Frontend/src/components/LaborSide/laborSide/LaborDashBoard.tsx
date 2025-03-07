@@ -32,26 +32,6 @@ interface ChatDocument {
   lastReadTimestamp: Timestamp;
   lastMessageSender : string
 }
-// interface BookingDetails {
-//   bookingId: string;
-//   customerName: string; // Add this
-//   id: string; // Add this
-//   date: string; // Add this
-//   time: string; // Add this
-//   laborId: string;
-//   status: string;
-//   reschedule?: {
-//     isReschedule: boolean;
-//     newTime: string | null;
-//     newDate: string | null;
-//     reasonForReschedule: string | null;
-//     requestSentBy: string | null;
-//     rejectedBy: string | null;
-//     rejectionNewDate: string | null;
-//     rejectionNewTime: string | null;
-//     rejectionReason: string | null;
-//   };
-// }
 
 interface UserData {
   // Add user fields based on your Users collection structure

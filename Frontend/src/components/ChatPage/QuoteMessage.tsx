@@ -65,123 +65,123 @@ const QuoteMessage: React.FC<QuoteMessageProps> = ({
 
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className={`flex items-start gap-6 p-4 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}>
-        {/* Profile Picture */}
-        <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
-          <img
-            src={senderProfilePic || '/api/placeholder/48/48'}
-            alt="Profile"
-            className="w-full h-full object-cover"
-          />
-        </div>
+  <div className="max-w-3xl mx-auto">
+    <div className={`flex items-start gap-3 p-2 sm:p-4 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}>
+      {/* Profile Picture */}
+      <div className="relative w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 mt-1">
+        <img
+          src={senderProfilePic || '/api/placeholder/48/48'}
+          alt="Profile"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-        {/* Main Content */}
-        <div className="flex-1 max-w-2xl">
-          <div className={`rounded-xl shadow-sm border border-gray-200 overflow-hidden
-            ${isCurrentUser ? "bg-blue-50" : "bg-white"}`}
-          >
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {isCurrentUser ? "Your Quote" : "Quote Received"}
-              </h3>
-            </div>
+      {/* Main Content */}
+      <div className="flex-1 max-w-full sm:max-w-2xl">
+        <div className={`rounded-xl shadow-sm border border-gray-200 overflow-hidden
+          ${isCurrentUser ? "bg-blue-50" : "bg-white"}`}
+        >
+          {/* Header */}
+          <div className="px-3 py-2 sm:px-6 sm:py-4 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+              {isCurrentUser ? "Your Quote" : "Quote Received"}
+            </h3>
+          </div>
 
-            {/* Content Section */}
-            <div className="p-6 space-y-6">
-              {/* Job Description */}
-              <div className="flex items-start gap-4">
-                <FileText className="w-5 h-5 text-gray-400 mt-1" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-700 mb-1">Job Description</p>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {message.content.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Cost Estimate */}
-              <div className="flex items-start gap-4">
-                <Banknote className="w-5 h-5 text-gray-400 mt-1" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-700 mb-1">Estimated Cost</p>
-                  <p className="text-xl font-semibold text-green-600">
-                    ₹{message.content.estimatedCost.toLocaleString('en-IN')}
-                  </p>
-                </div>
-              </div>
-
-              {/* Date and Time Group */}
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Available Date */}
-                <div className="flex items-start gap-4">
-                  <CalendarDays className="w-5 h-5 text-gray-400 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-700 mb-1">Available Date</p>
-                    <p className="text-gray-600 text-sm">
-                      {new Date(message.content.arrivalTime).toLocaleDateString('en-IN', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Available Time */}
-                <div className="flex items-start gap-4">
-                  <Clock className="w-5 h-5 text-gray-400 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-700 mb-1">Available Time</p>
-                    <p className="text-gray-600 text-sm">
-                      {new Date(message.content.arrivalTime).toLocaleTimeString('en-IN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </p>
-                  </div>
-                </div>
+          {/* Content Section */}
+          <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+            {/* Job Description */}
+            <div className="flex items-start gap-3">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-1 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job Description</p>
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed break-words">
+                  {message.content.description}
+                </p>
               </div>
             </div>
 
-             {message.content.status === "rejected" && (
-              <div className="px-6 py-4 bg-red-50 border-t border-red-100">
-                <div className="space-y-2">
-                  <h4 className="text-red-600 font-medium">Quote Rejected</h4>
-                  <p className="text-red-700 text-sm">
-                    Reason: {message.content.rejectionReason}
+            {/* Cost Estimate */}
+            <div className="flex items-start gap-3">
+              <Banknote className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-1 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Estimated Cost</p>
+                <p className="text-lg sm:text-xl font-semibold text-green-600">
+                  ₹{message.content.estimatedCost.toLocaleString('en-IN')}
+                </p>
+              </div>
+            </div>
+
+            {/* Date and Time Group */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+              {/* Available Date */}
+              <div className="flex items-start gap-3">
+                <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Available Date</p>
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    {new Date(message.content.arrivalTime).toLocaleDateString('en-IN', {
+                      weekday: 'short',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
                   </p>
                 </div>
               </div>
-            )}
+
+              {/* Available Time */}
+              <div className="flex items-start gap-3">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Available Time</p>
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    {new Date(message.content.arrivalTime).toLocaleTimeString('en-IN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {message.content.status === "rejected" && (
+            <div className="px-3 py-3 sm:px-6 sm:py-4 bg-red-50 border-t border-red-100">
+              <div className="space-y-1 sm:space-y-2">
+                <h4 className="text-red-600 font-medium text-sm sm:text-base">Quote Rejected</h4>
+                <p className="text-red-700 text-xs sm:text-sm">
+                  Reason: {message.content.rejectionReason}
+                </p>
+              </div>
+            </div>
+          )}
 
             {/* Action Button */}
-            {!isCurrentUser && message.content.status === "pending" && !isDisabled && (
-              <>
-              <div className="px-6 py-4 bg-gray-50 border-t space-x-4 flex border-gray-200">
+           {!isCurrentUser && message.content.status === "pending" && !isDisabled && (
+            <div className="px-3 py-3 sm:px-6 sm:py-4 bg-gray-50 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row gap-2 sm:space-x-4">
                 <button
                   onClick={() => onAcceptQuote(message.id, message.content)}
-                  className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 
-                    transition-colors duration-200 font-medium focus:outline-none focus:ring-2 
+                  className="w-full bg-green-600 text-white py-2 sm:py-3 px-4 rounded-lg hover:bg-green-700 
+                    transition-colors duration-200 text-sm font-medium focus:outline-none focus:ring-2 
                     focus:ring-green-500 focus:ring-offset-2 active:bg-green-800"
                 >
                   Accept Quote
                 </button>
                 <button
                   onClick={() => setShowRejectModal(true)}
-                  className="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 
-                    transition-colors duration-200 font-medium focus:outline-none focus:ring-2 
+                  className="w-full bg-red-600 text-white py-2 sm:py-3 px-4 rounded-lg hover:bg-red-700 
+                    transition-colors duration-200 text-sm font-medium focus:outline-none focus:ring-2 
                     focus:ring-red-500 focus:ring-offset-2 active:bg-red-800"
                 >
                   Reject Quote
                 </button>
               </div>
-              </>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
 
           {/* Timestamp */}
           <div className="mt-2 text-xs text-gray-500 px-1">
