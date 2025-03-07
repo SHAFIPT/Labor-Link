@@ -77,6 +77,7 @@ const HomeNavBar = () => {
   const [notificaionOn, setNotificaionOn] = useState(false)
   const [chats, setChats] = useState<Chat[]>([]);
   const hasUnreadMessages = chats.some((chat) => chat.unreadCount > 0);
+  const [isMenuOn , setIsMenuOn] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -624,6 +625,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
               </div>
             </div>
 
+          {!isMenuOn && (
             <div
               className={`rightDarkLighMode relative z-[60] md:z-0   ${
                 theme === "dark"
@@ -673,6 +675,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
                 )}
               </label>
             </div>
+            )}
 
             <button
               className="BrowserButton bg-[#21A391] focus:outline-none hidden lg:block md:hidden text-white p-3 w-[220px] rounded-xl"
@@ -696,7 +699,7 @@ l30 49 3 291 c2 195 0 304 -8 329 -14 49 -74 115 -125 138 -36 17 -71 19 -340
         } lg:hidden`}
       >
 
-                  <div className="p-4 flex justify-end ">
+                  <div className="p-4 flex justify-end " onClick={()=> setIsMenuOn(true)}>
                     <button
                       onClick={toggleMenu}
                       className="p-2 focus:outline-none transition-colors duration-300 gap-3"
