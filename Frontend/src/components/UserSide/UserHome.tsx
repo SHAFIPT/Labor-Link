@@ -68,7 +68,7 @@ const UserHome = () => {
   const debouncedSearchTerm = UseDebounce(searchTerm, 500);
   const laborauth = useSelector((state: RootState) => state.labor.laborer)
   // const dispatch = useDispatch()
-  console.log('This is the laborAuth ::::::',laborauth)
+  // console.log('This is the laborAuth ::::::',laborauth)
 
 
 //   useEffect(() => {
@@ -196,22 +196,26 @@ const UserHome = () => {
   const cardWidth = 400;
 
   useEffect(() => {
-    
     if (duplicatedLabors.length === 0 || isPaused) return;
-
+    
+    console.log('Scroll interval created'); 
+    
     const scrollInterval = setInterval(() => {
       setScrollPosition((prevPosition) => {
         const maxScroll = allLabors.length * cardWidth;
-        const newPosition = prevPosition + 1;
-console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
+        const newPosition = prevPosition + 2;
+        
         if (newPosition >= maxScroll) {
           return 0;
         }
         return newPosition;
       });
-    }, 30);
+    }, 100); 
 
-    return () => clearInterval(scrollInterval);
+    return () => {
+      console.log('Scroll interval cleared'); 
+      clearInterval(scrollInterval);
+    };
   }, [allLabors.length, isPaused, duplicatedLabors.length, cardWidth]);
 
   const handleNavigeProfilePage = (user : Labor) => {
