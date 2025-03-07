@@ -5,6 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { setError } from "../../redux/slice/userSlice";
 import { RootState } from "../../redux/store/store";
 import { Dispatch, SetStateAction } from "react";
+import { Icon } from 'leaflet';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 interface UserAddress {
   name?: string;
@@ -74,8 +77,15 @@ const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }
       },
     });
 
+    const defaultIcon = new Icon({
+      iconUrl: icon,
+      shadowUrl: iconShadow,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41]
+    });
+
     return userAddress.latitude !== undefined && userAddress.longitude !== undefined ? (
-      <Marker position={[userAddress.latitude ?? 0, userAddress.longitude ?? 0]} />
+      <Marker position={[userAddress.latitude ?? 0, userAddress.longitude ?? 0]} icon={defaultIcon} />
     ) : null;
   };
 

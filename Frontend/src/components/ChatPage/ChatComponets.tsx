@@ -990,23 +990,38 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       {theam === "light" ? (
         <div className="flex flex-col h-full bg-slate-50">
           {/* Header */}
-          <div className="flex items-center px-4 py-3 bg-white text-gray-900 shadow-md border-gray-200">
-             {isUserAthenticated && (
+           <div
+            className={`flex items-center px-4 py-3 shadow-md border-gray-200 
+            ${
+              currentPage === "laborDashBoard"
+                ? " text-white"
+                : " border-gray-200 "
+            }`}
+            >
+               {/* Back Arrow Button (Only visible on screens ≥ 768px) */}
+              {isUserAthenticated && (
                 <button 
                 onClick={() => window.history.back()} 
-                className="hidden md:block text-black px-2 py-1 rounded-lg"
+                className="hidden md:block text-white px-2 py-1 rounded-lg"
               >
                 ← Back
               </button>
                 )}
+            {!isMobileChatListOpen && (
+              <button
+                onClick={() => dispatch(toggleMobileChatList())}
+                className="md:hidden p-2 hover:bg-gray-700 rounded-full transition-colors"
+              >
+                <MenuIcon className="w-5 h-5 text-gray-300" />
+              </button>
+            )}  
 
             <div className="flex items-center flex-1 min-w-0 ml-2">
               <div className="relative">
                 <img
                   src={
-                    // If current user is logged in, show labor's profile picture
                     LaborLogin?.email === participants.labor.email
-                      ? // If current labor is logged in, show user's profile picture
+                      ? 
                         participants.user.profilePicture ||
                         "/default-avatar.png"
                       : participants.labor.profilePicture ||
@@ -1023,21 +1038,11 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                   {
                     // If current user is logged in, show labor's profile picture
                     LaborLogin?.email === participants.labor.email
-                      ? // If current labor is logged in, show user's profile picture
+                      ? 
                         participants.user.name || "/default-avatar.png"
                       : participants.labor.name || "/default-avatar.png"
                   }
                 </h1>
-                {/* {Object.keys(userLogin).length === 0 && (
-                  <div className="flex items-center gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-4 h-4 text-yellow-500 fill-current"
-                      />
-                    ))}
-                  </div>
-                )} */}
               </div>
             </div>
           </div>

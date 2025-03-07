@@ -775,7 +775,7 @@ useEffect(() => {
                       <div className="sticky top-0  z-10 bg-[#FFFFFF] border-b border-[#DEE2E6]">
                         <div className="p-4 flex items-center justify-between">
                           <h1 className="text-xl font-bold text-[#212529]">
-                            Labor Chats
+                            My Chats
                           </h1>
 
                           <button

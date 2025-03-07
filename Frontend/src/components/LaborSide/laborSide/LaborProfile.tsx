@@ -1759,15 +1759,6 @@ const findLaborIdByEmail = async (email  : string) => {
                         </span>
                       </div>
                     </div>
-
-                    {/* Save Button */}
-                    {Object.keys(Laborer).length === 0 && 
-                      (user || Object.keys(user).length !== 0) && (
-                        <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                          <Heart className="w-5 h-5 text-gray-600" />
-                          <span>Save</span>
-                        </button>
-                      )}
                   </div>
                 </div>
               ) : (
@@ -1832,14 +1823,7 @@ const findLaborIdByEmail = async (email  : string) => {
                       </div>
                     </div>
 
-                      {/* Save Button */}
-                      {isUserAuthenticated && (
-
-                    <button className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border rounded-md hover:bg-gray-500 transition-colors">
-                      <Heart className="w-5 h-5 " />
-                      <span>Save</span>
-                    </button>
-                      )}
+                      
                   </div>
                 </div>
               )}
@@ -1885,16 +1869,6 @@ const findLaborIdByEmail = async (email  : string) => {
                     )}
                   </div>
                 </div>
-                {/* {Laborer && Object.keys(Laborer).length > 0 && (
-                  <div className="flex flex-col sm:flex-row sm:space-x-9 space-y-4 sm:space-y-0 lg:mt-[195px] md:mt-[34px] sm:mt-[34px] mt-[45px]">
-                    <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
-                      Total Works and Earnings
-                    </button>
-                    <button className="w-full sm:w-[230px] py-2 bg-[#21A391] text-white rounded-md font-[Roboto] text-[12px] hover:scale-105 transition-all duration-300">
-                      View Current Status
-                    </button>
-                  </div>
-                )} */}
               </div>
             ) : (
               <div className="lg:w-[400px] lg:ml-36 sm:w-full">
