@@ -45,16 +45,9 @@ const AdminAuth = () => {
       const role = "admin";
       const response = await AdminLogin({ email, password }, role);
 
-      console.log("thsi si the front end response :", response);
-
       if (response.status === 200) {
-        console.log("Thei is the resonse as admin :", response);
 
         const { admin, accessToken } = response.data.data;
-
-        console.log("Thsi is the  accessToken", accessToken);
-        console.log("Thsi is the admin", admin);
-
         localStorage.setItem("AdminAccessToken", accessToken);
         dispatch(setAdmin(admin));
         dispatch(setIsAdminAuthenticated(true));

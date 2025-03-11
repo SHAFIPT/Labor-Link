@@ -1,5 +1,4 @@
 import LaborMangement from "../../components/Admin/Adminside/LaborMangement"
-
 const AdminLaborManagement = () => {
   return (
     <div>
