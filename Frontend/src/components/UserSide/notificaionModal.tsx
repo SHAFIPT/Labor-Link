@@ -100,9 +100,7 @@ const NotificationModal = ({
     const currentPages = location.pathname.split("/").pop();
     const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
     const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-    console.log('Ths is the curent page ::',currentPages)
   const handleNavigateChatPage = () => {
-      console.log('Ths is t clickced........')
         if (currentPages === 'userChatPage') {
             onClose()
         }
@@ -116,13 +114,6 @@ const NotificationModal = ({
       }
   }
 
-  console.log("Booking ID:hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh", bookingDetails);
-
-  console.log("Booking Details:", bookingDetails);
-  console.log("Reschedule Object:", bookingDetails[0]?.reschedule);
-  console.log('is labor auth',isLaborAuthenticated)
-
-  
   const handleNavigateToBookings = useCallback((bookingId: string) => {
      console.log('Ths is t clicked........')
     if (!bookingId) return;
@@ -137,7 +128,6 @@ const NotificationModal = ({
      if (isLaborAuthenticated) {
       console.log('Thsi is t bookingDetails')
       setCurrentStage?.("Bookings");
-      // navigate("/labor/bookings");
     }
   }, [dispatch, isLaborAuthenticated, isUserAthenticated, navigate, onClose, setCurrentStage]);
 
@@ -185,12 +175,6 @@ const NotificationModal = ({
       hour12: true,
     });
   };
-
-  console.log(
-    "Thsi is the cancelBooking :;;;;;;;;;;",
-    canceledBooking?.cancellation?.isUserRead
-  );
-
 
   const hasRejectionDetails = (reschedule: Reschedule | undefined) => {
     const hasRejection = 

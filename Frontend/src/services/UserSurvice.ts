@@ -1,29 +1,5 @@
+import { CancelFormData, PaymentData, RescheduleData, UpdateDatWorkcompleted } from "../@types/services.types";
 import { userAxiosInstance } from "./instance/userInstance";
-
-
-interface CancelFormData {
-  bookingId: string; // or number, depending on the type of bookingId
-  reason: string;
-  comments: string;
-  isWithin30Minutes: boolean;
-}
-
-interface UpdateData {
-  status?: string; // Example field, adjust the type based on the actual data
-  comments?: string; // Optional field, can be undefined
-  completedAt?: string; // Optional field for completion time (use string or Date)
-}
-
-interface PymnetData {
-  bookingId: string;
-  laborId: string;
-  userId : string
-}
-
-interface RescheduleData {
-  bookingId :string
-  requestSentBy: string | null;  // Allowing null
-}
 
 const api = userAxiosInstance
 
@@ -129,7 +105,7 @@ export const handleRescheduleWork = async  (reshedulDatas: RescheduleData) => {
     throw error;
   }
 }
-export const workCompletion = async (updateData: UpdateData, bookingId: string) => {
+export const workCompletion = async (updateData: UpdateDatWorkcompleted, bookingId: string) => {
   try {
     const response = await api.post(`/api/user/users/workCompletion/${bookingId}`, updateData)
     return response
@@ -139,9 +115,9 @@ export const workCompletion = async (updateData: UpdateData, bookingId: string) 
     throw error;
   }
 }
-export const pymnetSuccess = async (pymnetData: PymnetData) => {
+export const pymnetSuccess = async (paymenttData: PaymentData) => {
   try {
-    const response = await api.post('/api/user/users/pymnetSuccess', pymnetData)
+    const response = await api.post('/api/user/users/pymnetSuccess', paymenttData)
     return response
     
   } catch (error) {

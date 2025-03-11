@@ -54,13 +54,13 @@ const LaborRegisterExperience = () => {
     (state: RootState) => state.labor.unsavedChanges
   );
   const loading = useSelector((state: RootState) => state.labor.loading);
-  // const navigateBack = useSelector((state: RootState) => state.labor.navigateBack)
   const email = useSelector((state: RootState) => state.labor.formData.email);
   const formData = useSelector((state: RootState) => state.labor.formData);
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
   const password = useSelector((state: RootState) => state.labor.formData.password)
   const firstName = useSelector((state: RootState) => state.labor.formData.firstName)
   const lastName = useSelector((state: RootState) => state.labor.formData.lastName)
+  const profilePicture = useSelector((state: RootState) => state.labor.formData.profilePicture)
   
 
   useEffect(() => {
@@ -81,20 +81,6 @@ const LaborRegisterExperience = () => {
     responsiblity?: string;
     idProof?: string;
   } = useSelector((state: RootState) => state.labor.error)?? {};
-
-
-
-  //  useEffect(() => {
-  //   if (formData) {  // Only set data if formData exists
-  //     dispatch(setUnsavedChanges(true))
-  //     setCategory(formData.category || '')
-  //     setStartTime(formData.startTime || '')
-  //     setEndTime(formData.endTime || '')
-  //     setSkill(formData.skill || '')
-  //     setImage(formData.image || '')
-  //     setAvailability(Array.isArray(formData.availability) ? formData.availability : [])
-  //   }
-  //   }, [formData, dispatch])
 
   useEffect(() => {
     const handleBeforeunLoad = (event: BeforeUnloadEvent) => {
@@ -209,8 +195,6 @@ const LaborRegisterExperience = () => {
       startTime: validateStartDate(startDate),
     };
 
-    console.log("this is error in the all errors", validationErrors);
-
     // Check if there are any errors
     const hasErrors = Object.values(validationErrors).some((error) => !!error);
 
@@ -231,7 +215,7 @@ const LaborRegisterExperience = () => {
       }
       certificateImages.forEach((file) => {
         if (file instanceof File) {
-          formDataForAPI.append("certificateImages", file); // Changed to use the same field name for array
+          formDataForAPI.append("certificateImages", file);
         }
       });
 
@@ -258,12 +242,7 @@ const LaborRegisterExperience = () => {
       if (email) {
         formDataForAPI.append("email", email);
       }
-
-      // Log formData contents for debugging
-      // for (let pair of formDataForAPI.entries()) {
-      //   console.log("thsi si the fomrDatafroApit", pair[0] + ": " + pair[1]);
-      // }
-
+      
       const response = await ExperiencePage(formDataForAPI);
 
       console.log("response is this :", response);
@@ -285,6 +264,7 @@ const LaborRegisterExperience = () => {
             name: fullName,
             email,
             role: "labor",
+            profilePicture : profilePicture,
           });
         }
 

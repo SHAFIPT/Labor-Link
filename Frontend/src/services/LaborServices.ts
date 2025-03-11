@@ -1,75 +1,7 @@
+import { AboutMeData, AdditionalChargeData, CancelFormData, FetchLaborsParams, Filters, RejectionData, WithdrawalData } from "../@types/services.types";
 import { laborAxiosInstance } from "./instance/laborInstance";
 
-interface AboutMeData {
-  userId: string;
-  name: string;
-  experience: string;
-  description: string;
-}
-
-interface Filters {
-  latitude: number;
-  longitude: number;
-  country: string;
-  state: string;
-  city: string;
-  zipCode: string;
-  category: string;
-  rating: number;
-  sortOrder: string;
-}
-
-
-interface FetchLaborsParams {
-  latitude: number;
-  longitude: number;
-  categorie: string;
-  laborId: string;
-}
-
-interface CancelFormData {
-  bookingId: string;
-  reason: string;
-  comments: string;
-  isWithin30Minutes: boolean;
-}
-
-interface RejectionData {
-  newTime: string;  // or Date, depending on your expected format
-  newDate: string;  // or Date
-  rejectionReason: string;
-  bookingId: string; // assuming bookingId is a string
-  rejectedBy: string
-  requestSentBy: string; // assuming requestSentBy is a string
-}
-
-
-interface AdditionalChargeData {
-  bookingId: string;
-  amount: string;
-  reason: string;
-}
-
-interface WithdrawalData {
-  amount: number;
-  bankDetails: {
-    accountNumber: string;
-    bankName: string;
-    ifscCode: string;
-    accountName?: string; // Add if needed
-  };
-}
-
-// Define the type for the bank details (example structure, adjust as needed)
-// interface BankDetails {
-//   accountNumber: string;
-//   accountName: string;
-//   routingNumber: string;
-//   bankName: string;
-// }
-
 const api = laborAxiosInstance
-
 
 export const laborFetch = async () => {
   try {

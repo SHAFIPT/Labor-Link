@@ -203,6 +203,38 @@ export default class UserSideRepository implements IUserSideRepository {
       return Number((totalRating / allRatings.length).toFixed(1));
   }
 
+  async getSearchSuggest(query: string): Promise<{ id: string; name: string; category: string; profilePicture: string | null; }[]> {
+    try {
+
+      const searchRegex = new RegExp(query, "i");
+
+      const laborers = await Labor.find({
+            $or: [
+                { firstName: searchRegex },
+                { lastName: searchRegex },
+                { categories: searchRegex },
+                { skill: searchRegex }
+            ]
+      })
+        .select("-password -refreshToken")
+        .limit(10);
+
+        const suggestions = laborers.map(laborer => ({
+          id: laborer._id.toString(),  
+          name: `${laborer.firstName} ${laborer.lastName}`,
+          category: laborer.categories?.length ? laborer.categories[0] : (laborer.skill?.length ? laborer.skill[0] : "Labor"),
+          profilePicture: laborer.profilePicture || null,
+          ...laborer.toObject() // Convert Mongoose document to plain object
+        }));
+
+        return suggestions;
+      
+    } catch (error) {
+      console.error("Error fetching search suggestions:", error);
+        throw error;
+    }
+  }
+
 }
 
 

@@ -1,9 +1,9 @@
-import {  Route, Routes } from 'react-router-dom'; 
-import { ToastContainer } from 'react-toastify';
-import { Loader2 } from 'lucide-react';
-import React, { Suspense, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from './redux/store/store';
+import { Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import { Loader2 } from "lucide-react";
+import React, { Suspense, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "./redux/store/store";
 
 const MainLoadingFallback = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-white/80">
@@ -11,34 +11,28 @@ const MainLoadingFallback = () => (
   </div>
 );
 
-
-
-const UserRoute = React.lazy(() => import('./routes/UserRoute'));
-
-
+const UserRoute = React.lazy(() => import("./routes/UserRoute"));
 
 const App = () => {
-
-
-
-  const theme = useSelector((state: RootState) => state.theme.mode)
-  
+  const theme = useSelector((state: RootState) => state.theme.mode);
 
   useEffect(() => {
-       console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark'); 
-      } else {
-        document.documentElement.classList.remove('dark'); 
-      }
-    }, [theme]);
-
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
 
   return (
-    <div className={`App ${
-          theme === 'dark' ? 'bg-darkBg text-darkText' : 'bg-lightBg text-lightText'
-        }`}>
-       <ToastContainer theme="dark" />
+    <div
+      className={`App ${
+        theme === "dark"
+          ? "bg-darkBg text-darkText"
+          : "bg-lightBg text-lightText"
+      }`}
+    >
+      <ToastContainer theme="dark" />
       <Suspense fallback={<MainLoadingFallback />}>
         <Routes>
           <Route path="/*" element={<UserRoute />} />
@@ -46,6 +40,6 @@ const App = () => {
       </Suspense>
     </div>
   );
-};  
+};
 
 export default App;

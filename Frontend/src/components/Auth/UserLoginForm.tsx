@@ -8,9 +8,9 @@ import { auth } from '../../utils/firbase';
 import React, {  useState } from "react";
 import validate from "../../utils/userRegisterValidators";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading, setUser, setError, setisUserAthenticated }
+import { setLoading, setUser, setError, setisUserAthenticated, resetUser }
   from '../../redux/slice/userSlice'
-import { setLaborer , setIsLaborAuthenticated , setAccessToken ,setFormData} from '../../redux/slice/laborSlice'
+import { setLaborer , setIsLaborAuthenticated , setAccessToken ,setFormData, resetLaborer} from '../../redux/slice/laborSlice'
 import { RootState } from "../../redux/store/store";
 import { toast } from 'react-toastify';
 import axios from "axios";
@@ -39,9 +39,6 @@ const UserLoginForm = () => {
     password?: string;
   } = useSelector((state: RootState) => state.user.error);
 
-  // console.log(dispatch(setError({})))
-  console.log("this is errors :", error);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(setLoading(true));
@@ -63,7 +60,6 @@ const UserLoginForm = () => {
         const loginResponse = await Login({ email, password }, role);
 
         if (loginResponse && loginResponse.status === 200) {
-          console.log("thsis ie the loginResponse", loginResponse);
           const { userFound, LaborFound, accessToken } =
             loginResponse.data.data;
 
@@ -79,12 +75,16 @@ const UserLoginForm = () => {
             toast.success(loginResponse.data.message || "Login successful!");
 
             if (imaUser) {
+              dispatch(resetLaborer());
+              dispatch(setIsLaborAuthenticated(false));
               dispatch(setUser(userFound));
               dispatch(setFormData(userFound));
               dispatch(setAccessToken(accessToken));
               dispatch(setisUserAthenticated(true));
               navigate("/");
             } else if (imaLabor) {
+              dispatch(resetUser());
+              dispatch(setisUserAthenticated(false));
               dispatch(setLaborer(LaborFound));
               dispatch(setFormData(LaborFound));
               dispatch(setAccessToken(accessToken));
@@ -237,6 +237,8 @@ const UserLoginForm = () => {
       if (googleResoponse && googleResoponse.status === 200) {
         const { user, accessToken } = googleResoponse.data.data;
         localStorage.setItem("UserAccessToken", accessToken);
+        dispatch(resetLaborer());
+        dispatch(setIsLaborAuthenticated(false));
         dispatch(setUser(user));
         dispatch(setAccessToken(accessToken));
         dispatch(setisUserAthenticated(true));
@@ -301,31 +303,33 @@ const UserLoginForm = () => {
       </AnimatedPage>
 
       <LoginNav />
-      <div className="flex">
-        {/* Left Side Image */}
-        <div className="hidden sm:hidden md:mt-[40px] lg:mt-5 md:block w-[80%] md:w-[50%] lg:block lg:w-[60%] ml-12 ">
+      <div className="flex flex-col md:flex-row">
+        {/* Left Side Image - Hidden on mobile */}
+        <div className="hidden md:mt-[40px] lg:mt-5 md:block md:w-[50%] lg:w-[60%] md:ml-12">
           <img
             src={LoginImage}
             alt="Login"
-            className=" w-full h-auto rounded-md"
+            className="w-full h-auto rounded-md"
           />
         </div>
 
-        {/* Right Side Content */}
-        <div className="flex flex-col  lg:w-[50%] px-14 sm:px-20 md:px-20 lg:px-9">
+        {/* Right Side Content - Full width on mobile */}
+        <div className="flex flex-col w-full lg:w-[50%] px-4 sm:px-20 md:px-20 lg:px-9">
           {/* Heading */}
-          <div className="text-center lg:text-left mb-[30px] lg:ml-[73px]">
-            <h1 className="text-3xl font-serif relative">Sign In</h1>
+          <div className="text-center lg:text-left mb-5 mt-7 md:mb-[30px] lg:ml-[73px]">
+            <h1 className="text-2xl md:text-3xl font-serif relative">
+              Sign In
+            </h1>
           </div>
 
           {/* User/Labor Options with Line Below */}
-          <div className="relative ">
+          <div className="relative mb-6">
             {/* Options */}
-            <div className="flex justify-center items-center space-x-[253px]">
+            <div className="flex justify-between md:justify-center md:space-x-[253px] px-2">
               {/* I am a user option */}
               <div className="text-center cursor-pointer hover:text-blue-600 transition duration-200">
                 <h2
-                  className="text-[14px] font-medium font-poppins flex items-center justify-center gap-2"
+                  className="text-[13px] md:text-[14px] font-medium font-poppins flex items-center gap-1 md:gap-2"
                   onClick={() => handleLoginTypeChange("user")}
                 >
                   <i className="fas fa-user text-blue-500"></i> I am a user
@@ -335,7 +339,7 @@ const UserLoginForm = () => {
               {/* I am a labor option */}
               <div className="text-center cursor-pointer hover:text-yellow-600 transition duration-200">
                 <h2
-                  className="text-[14px] font-medium font-sans flex items-center justify-center gap-2"
+                  className="text-[13px] md:text-[14px] font-medium font-sans flex items-center gap-1 md:gap-2"
                   onClick={() => handleLoginTypeChange("labor")}
                 >
                   <i className="fas fa-hard-hat text-yellow-500"></i> I am a
@@ -344,20 +348,19 @@ const UserLoginForm = () => {
               </div>
             </div>
 
-            {/* Line below options */}
-
+            {/* Line below options - Responsive width */}
             {imaUser && !imaLabor ? (
               <span
-                className="absolute w-[450px] bottom-[-15px] h-[3.5px] left-1/2 transform -translate-x-1/2"
+                className="absolute w-full md:w-[450px] bottom-[-15px] h-[3.5px] left-1/2 transform -translate-x-1/2"
                 style={{
-                  background: `linear-gradient(to right, #21A391 50%, #8dcbdd  50%)`,
+                  background: `linear-gradient(to right, #21A391 50%, #8dcbdd 50%)`,
                 }}
               ></span>
             ) : (
               <span
-                className="absolute w-[450px] bottom-[-15px] h-[3.5px] left-1/2 transform -translate-x-1/2"
+                className="absolute w-full md:w-[450px] bottom-[-15px] h-[3.5px] left-1/2 transform -translate-x-1/2"
                 style={{
-                  background: `linear-gradient(to left, #21A391 50%, #8dcbdd  50%)`,
+                  background: `linear-gradient(to left, #21A391 50%, #8dcbdd 50%)`,
                 }}
               ></span>
             )}
@@ -367,7 +370,7 @@ const UserLoginForm = () => {
           <form onSubmit={handleSubmit}>
             <div className="formFields flex flex-col pt-7">
               {/* Email Field */}
-              <div className="form-control relative">
+              <div className="form-control relative mb-4">
                 <input
                   required
                   value={email}
@@ -397,7 +400,7 @@ const UserLoginForm = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   type={visiblePassword ? "text" : "password"}
-                  className="w-full bg-transparent outline-none "
+                  className="w-full bg-transparent outline-none"
                 />
                 <label className="flex">
                   <span style={{ transitionDelay: "0ms" }}>P</span>
@@ -428,7 +431,7 @@ const UserLoginForm = () => {
             </div>
             <div className="flex justify-center mt-4">
               <button
-                className="w-[450px] h-[48px] group/button relative inline-flex items-center justify-center overflow-hidden rounded-md"
+                className="w-full md:w-[450px] h-[48px] group/button relative inline-flex items-center justify-center overflow-hidden rounded-md"
                 style={{ backgroundColor: "#21A391" }}
               >
                 <span className="text-lg text-white">Sign In</span>
@@ -441,24 +444,25 @@ const UserLoginForm = () => {
 
           {imaUser && !imaLabor && (
             <div className="flex justify-center mt-2 mb-2">
-              <div className="flex items-center my-2">
-                <hr className="w-[199px] border-t border-gray-400" />
-                <span className="mx-4 text-gray-500">OR</span>
-                <hr className="w-[199px] border-t border-gray-400" />
-              </div>
+            <div className="flex items-center my-2">
+              <hr className="w-[147px] sm:w-32 md:w-[199px] border-t border-gray-400" />
+              <span className="mx-4">OR</span>
+              <hr className="w-[147px] sm:w-32 md:w-[199px] border-t border-gray-400" />
             </div>
+          </div>
+
           )}
 
           {imaUser && !imaLabor && (
             <div className="googleLogin flex justify-center">
               <button
-                className="border w-[450px] cursor-pointer text-black flex gap-2 items-center justify-center bg-white px-4 py-3 rounded font-medium text-sm hover:bg-zinc-300 transition-all ease-in duration-200"
+                className="border w-full md:w-[450px] cursor-pointer text-black flex gap-2 items-center justify-center bg-white px-4 py-3 rounded font-medium text-sm hover:bg-zinc-300 transition-all ease-in duration-200"
                 onClick={handleGoogleSignIn}
               >
                 <svg
                   viewBox="0 0 48 48"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-6"
+                  className="w-5 md:w-6"
                 >
                   <path
                     d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
@@ -482,8 +486,8 @@ const UserLoginForm = () => {
             </div>
           )}
 
-          <div className="div ml-0 sm:ml-[0px] md:ml-[0px] lg:ml-[85px]">
-            <div className="forgetpassword mt-2 ">
+          <div className="div text-start md:text-left md:ml-[85px] mt-4">
+            <div className="forgetpassword">
               <a
                 className="text-sm text-[#7747ff] underline"
                 href="#"
@@ -492,17 +496,18 @@ const UserLoginForm = () => {
                 Forgot your password?
               </a>
             </div>
-            <div className="text-sm mt-[5px]">Don’t have an account yet?</div>
+            <div className="text-sm mt-[5px]">Don't have an account yet?</div>
             <div className="signUnasuser">
-              <div className="flex gap-4 font-semibold text-[#23c7b1] mt-2">
-                <Link to={"/register"} className="hover:underline">
-                  Sign up as user
-                </Link>
-                <span className="text-gray-500">OR</span>
-                <Link to={"/labor/dashboard"} className="hover:underline">
-                  Sign up as labor
-                </Link>
-              </div>
+              <div className="flex flex-row sm:flex-row justify-center md:justify-start items-center gap-2 sm:gap-4 font-semibold text-[#23c7b1] mt-2">
+              <Link to="/register" className="hover:underline text-center sm:text-left text-[12px]">
+                Sign up as user
+              </Link>
+              <span className="text-gray-500 text-center text-[13px]">OR</span>
+              <Link to="/labor/dashboard" className="hover:underline text-center sm:text-left text-[12px]">
+                Sign up as labor
+              </Link>
+            </div>
+
             </div>
           </div>
         </div>

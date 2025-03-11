@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-// import { Users, Briefcase, Calendar, DollarSign } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import AdminSideRow from './AdminSideRow';
 import User from '../../../assets/UserKing.png'
@@ -27,23 +26,20 @@ const AdminDashBoard = () => {
     const [currentPage] = useState(1);
     const [limit] = useState(200);
     const [filter] = useState("");
-    // const [totalPages, setTotalPages] = useState(1);
-    // const [bookingDetils , setBookingDetils] = useState<IBooking[]>(null)
-    const [totalUsers, setTotalUsers] = useState(0); // Add state for total users
+    const [totalUsers, setTotalUsers] = useState(0); 
     const [totalLabors, setTotalLabors] = useState(0);
     const [totalBooking, setTotalBookings] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
     const [totalLaborErnigs, setTotalLaborErnigs] = useState(0);
     const [totalCompnyProfit, setTotalCompnyProfit] = useState(0);
     const [bookingStats, setbookingStats] = useState<BookingStats | null>(null);
-    console.log('This si eht bookingStatas',bookingStats)
     
      const statusData = [
-    { name: 'Completed', value: bookingStats?.completed || 0, color: '#10B981' },
-    { name: 'In Progress', value: bookingStats?.inProgress || 0, color: '#3B82F6' },
-    { name: 'Pending', value: bookingStats?.pending || 0, color: '#F59E0B' },
-    { name: 'Cancelled', value: bookingStats?.cancelled || 0, color: '#EF4444' }
-  ];
+        { name: 'Completed', value: bookingStats?.completed || 0, color: '#10B981' },
+        { name: 'In Progress', value: bookingStats?.inProgress || 0, color: '#3B82F6' },
+        { name: 'Pending', value: bookingStats?.pending || 0, color: '#F59E0B' },
+        { name: 'Cancelled', value: bookingStats?.cancelled || 0, color: '#EF4444' }
+      ];
 
   const total = statusData.reduce((acc, item) => acc + item.value, 0);
   const statusDataWithPercentage = statusData.map(item => ({
@@ -62,12 +58,10 @@ const AdminDashBoard = () => {
 
   const fetchBooings = async () => {
     try {
-      const response = await fetchAllBookings(currentPage, limit, ''); // Removed incorrect filter syntax
+      const response = await fetchAllBookings(currentPage, limit, '');
       if (response.status === 200) {
         console.log('Thsi si teh preosnf',response);
         const {
-          // bookings,
-          // totalPages,
           totalAmount,
           totalLabors,
           totalUsers,
@@ -76,9 +70,6 @@ const AdminDashBoard = () => {
           totalLaborErnigs,
           totalCompnyProfit
         } = response.data
-  
-        // setTotalPages(totalPages)
-        // setBookingDetils(bookings)
         setTotalUsers(totalUsers)
         setTotalLabors(totalLabors)
         setTotalBookings(total)
@@ -99,12 +90,7 @@ const AdminDashBoard = () => {
 
   return (
     <div className="flex min-h-screen bg-[#D6CCCC]">
-      {/* Sidebar - You can replace AdminSideRow with your actual sidebar component */}
-      {/* <div className="w-64 bg-white shadow-md">
-      </div> */}
       <AdminSideRow />
-      
-
       {/* Main Content */}
       <div className="flex-1 p-6">  
       <div className="text-center lg:p-7 md:p-7 p-6 sm:p-7 sm:text-left mb-4 sm:mb-0">
@@ -284,37 +270,3 @@ const AdminDashBoard = () => {
 };
 
 export default AdminDashBoard;
-
-
-
-
-
-
-
-
-
-
-
-
- {/* <div className="logout">
-        <button
-        onClick={handleLogout}
-          className="group flex items-center justify-start w-11 h-11 bg-red-600 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-lg active:translate-x-1 active:translate-y-1"
-        >
-          <div
-            className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 512 512" fill="white">
-              <path
-                d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z"
-              ></path>
-            </svg>
-          </div>
-          <div
-            className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
-          >
-            Logout
-          </div>
-        </button>
-
-      </div> */}

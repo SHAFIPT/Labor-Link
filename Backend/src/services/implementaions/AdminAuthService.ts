@@ -35,7 +35,7 @@ export class AdminService implements IAdminAuthService{
             await this.adminRepository.saveRefreshToken(id, refreshToken);
 
             return { 
-            admin: foundAdmin, // Return the found admin object
+            admin: foundAdmin,
             accessToken, 
             refreshToken 
         };
@@ -61,9 +61,6 @@ export class AdminService implements IAdminAuthService{
 
             return accessToken
         }
-
-
-
         return null
     }
 

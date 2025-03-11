@@ -1,54 +1,10 @@
 import { IAdmin } from "../@types/admin";
+import { ApproveParams, BlockLaborParams, BlockUserParams, DeleteLaborParams, FetchLaborParams, FetchUserParams, RejectionParams, SubmitDataParams, UnblockLaborParams, UnblockUserParams } from "../@types/services.types";
+
 import { adminAxiosInstance } from './instance/adminInstance'
-
-interface FetchUserParams {
-  query: string;  // Assuming query is a string, adjust based on actual data type
-  pageNumber: number;  // Assuming pageNumber is a number
-  selectedFilter: string;  // Assuming selectedFilter is a string, adjust if needed
-}
-
-interface BlockUserParams {
-  email: string;  // Define email as a string
-}
-
-interface UnblockUserParams {
-  email: string;  // Define email as a string
-}
-interface UnblockLaborParams {
-  email: string;  // Define email as a string
-}
-
-interface BlockLaborParams {
-  email: string;  // Define email as a string
-}
-
-interface DeleteLaborParams {
-  email: string;  // Define email as a string
-}
-
-interface ApproveParams {
-  email: string;  // Define email as a string
-}
-
-interface RejectionParams {
-  reason: string;  // Define reason as a string
-  email: string;   // Define email as a string
-}
-
-interface SubmitDataParams {
-  id: string | number;  // Define id as either string or number, based on your requirement
-  status: string;          // Define status based on its expected structure (could be string, object, etc.)
-}
-
-interface FetchLaborParams {
-  query: string;
-  pageNumber: number;
-  selectedFilter: string;
-}
 
 const api = adminAxiosInstance;
 
-// export default api;
 
 export const AdminLogin = async (credential: Partial<IAdmin>,role: string) => {
     const response = await api.post('/api/auth/login', {...credential, role})
@@ -134,7 +90,7 @@ export const fetchPending = async () => {
 
 export const submitData = async ({ id, status }: SubmitDataParams)  => {
   const response = await api.put(`/api/admin/user/submitAcitons/${id}`,
-    status
+   { status}
   )
   return response
 }

@@ -51,8 +51,6 @@ interface Labor {
 }
 
 const UserHome = () => {
-  // console.log('iiiiiiiiiiiiiiiiiiiiiiiii');
-  
   const [displayCount, setDisplayCount] = useState(4);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showMore, setShowMore] = useState(false);
@@ -60,29 +58,18 @@ const UserHome = () => {
   const [isPaused, setIsPaused] = useState(false);
   const isDarkmode = useSelector((state: RootState) => state.theme.mode)
   const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
+  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
+    const Laborer = useSelector((state: RootState) => state.labor.laborer)
+    
+    console.log('This is the user Home page authenticated labor ::',Laborer)
+    console.log('This is the Home page isLaborAuthenticated ::',isLaborAuthenticated)
+    console.log('This is the isUserAthenticated page isUserAthenticated ::',isUserAthenticated)
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [suggestions, setSuggestions] = useState<ILaborer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const debouncedSearchTerm = UseDebounce(searchTerm, 500);
-  const laborauth = useSelector((state: RootState) => state.labor.laborer)
-  // const dispatch = useDispatch()
-  // console.log('This is the laborAuth ::::::',laborauth)
-
-
-//   useEffect(() => {
-//   const clearData = async () => {
-//     localStorage.removeItem("LaborAccessToken");
-//     dispatch(resetLaborer());
-//     dispatch(setLaborer({}));
-//     dispatch(setFormData({}));  
-//     dispatch(setIsLaborAuthenticated(false));
-//     await persistor.purge();
-//   };
-
-//   clearData();
-// }, []); // 
 
    const fetchSuggestions = async (term: string) => {
     if (!term.trim()) return;

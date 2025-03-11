@@ -1,11 +1,15 @@
-import UserSideRepository from "../repositories/implementaions/UserSideRepository";
-import UserServices from "../services/implementaions/UserServices";
 import { IUserServices } from "../services/interface/IUserServices";
 import { Request, Response, NextFunction } from "express"
 import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
 import { IBooking } from "./entities/bookingEntity";
-import Booking from "../models/BookingModal";
+import Stripe from 'stripe';
+import { IBookingService } from "../services/interface/IBookingServices";
+import { IPaymentService } from "../services/interface/IPaymnetService";
+import { HttpStatus } from "../enums/HttpStatus";
+import { Messages } from "../constants/Messages";
+import { ApiError } from "../middleware/errorHander";
+
 interface DecodedToken {
   id: string;
   role: string;
@@ -13,33 +17,24 @@ interface DecodedToken {
   exp: number;
 }
 
-import Stripe from 'stripe';
-import Labor from "../models/LaborModel";
-import { IBookingSerivese } from "../services/interface/IBookingServices";
-import BookingRepository from "../repositories/implementaions/BookingRepository";
-import BookingServices from "../services/implementaions/BookingServices";
-import { IPaymentService } from "../services/interface/IPaymnetService";
-import PaymnetRepository from "../repositories/implementaions/PaymentRepository";
-import PaymentService from "../services/implementaions/PaymentService";
-
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-01-27.acacia',
 });
 
 
-export class userController {
+export class UserController {
   private userService: IUserServices;
-  private bookingService: IBookingSerivese
-  private paymentService : IPaymentService
+  private bookingService: IBookingService;
+  private paymentService: IPaymentService;
 
-  constructor() {
-    const userSideRepository = new UserSideRepository();
-    const bookingRepository = new BookingRepository();
-    const paymnetRepository = new PaymnetRepository()
-    this.userService = new UserServices(userSideRepository);
-    this.bookingService = new BookingServices(bookingRepository)
-    this.paymentService = new PaymentService(paymnetRepository)
+  constructor(
+    userService: IUserServices,
+    bookingService: IBookingService,
+    paymentService: IPaymentService
+  ) {
+    this.userService = userService;
+    this.bookingService = bookingService;
+    this.paymentService = paymentService;
   }
 
   public fetchUsers = async (
@@ -48,28 +43,24 @@ export class userController {
     next: NextFunction
   ) => {
     try {
-      console.log("Iama haer to seeeee...---------");
+      const userId = req.user?.id;
 
-      const userId = req.user?.id; // Access userId from the decoded token
       if (!userId) {
         return res.status(401).json({ message: "User ID not found" });
       }
 
-      console.log("this sit he userId :", userId);
-
       const fetchUserResponse = await this.userService.fetchUserDetails(userId);
 
-      console.log("This si the fetch user response", fetchUserResponse);
-
       if (fetchUserResponse) {
-        res
-          .status(200)
-          .json({ message: "User fetch successfully .", fetchUserResponse });
+        res.status(HttpStatus.OK).json({
+          message: Messages.USERS_FETCH_SUCCESS,
+          fetchUserResponse,
+        });
       } else {
-        throw new Error("error occurd during fetch userse....!");
+        throw new Error(Messages.USERS_FETCH_FAILURE);
       }
     } catch (error) {
-      console.error("Error in labor login:", error);
+      console.error(Messages.USERS_FETCH_FAILURE, error);
       next(error);
     }
   };
@@ -79,13 +70,12 @@ export class userController {
     res: Response,
     next: NextFunction
   ) => {
-    console.log("Starting profile update...");
-
     const form = formidable({ multiples: false });
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        console.error("Error parsing form data:", err);
-        return res.status(500).json({ error: "Error parsing form data." });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          message: Messages.FORM_PARSE_ERROR,
+        });
       }
 
       try {
@@ -104,13 +94,6 @@ export class userController {
           imageUrl = uploadResult.secure_url;
         }
 
-        console.log("Data to be passed:", {
-          firstName: firstName[0],
-          lastName: lastName[0],
-          email: email[0],
-          imageUrl,
-        });
-
         const response = await this.userService.UpdateUser({
           firstName: firstName[0],
           lastName: lastName[0],
@@ -119,17 +102,22 @@ export class userController {
         });
 
         if (response) {
-          return res.status(200).json({
-            message: "Profile updated successfully!",
+          return res.status(HttpStatus.OK).json({
+            message: Messages.PROFILE_UPDATE_SUCCESS,
             updatedUser: response,
+          });
+        } else {
+          return res.status(HttpStatus.BAD_REQUEST).json({
+            message: Messages.PROFILE_UPDATE_FAILURE,
           });
         }
       } catch (error) {
-        console.error("Error updating profile:", error);
+        console.error(Messages.PROFILE_UPDATE_FAILURE, error);
         next(error);
       }
     });
   };
+
   public UpdatePassword = async (
     req: Request,
     res: Response,
@@ -139,16 +127,24 @@ export class userController {
       const { email, password } = req.body;
 
       if (!email || !password) {
-        throw new Error("Email and Password is missing...!");
+        throw new ApiError(
+          HttpStatus.BAD_REQUEST,
+          Messages.EMAIL_PASSWORD_REQUIRED
+        );
       }
 
       const response = await this.userService.updatePassword(email, password);
 
       if (response) {
-        return res.status(200).json({
-          message: "Password updated successfully!",
+        return res.status(HttpStatus.OK).json({
+          message: Messages.PASSWORD_UPDATE_SUCCESS,
           updatedUser: response,
         });
+      } else {
+        throw new ApiError(
+          HttpStatus.BAD_REQUEST,
+          Messages.PASSWORD_UPDATE_FAILURE
+        );
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -166,17 +162,10 @@ export class userController {
     try {
       const { userId, laborId, quote, addressDetails } = req.body;
 
-      console.log("This is the Boooking data ", {
-        userId,
-        laborId,
-        quote,
-        addressDetails,
-      });
-
       if (!quote?.description || !quote?.estimatedCost || !quote?.arrivalTime) {
         return res
-          .status(400)
-          .json({ message: "Missing required quote fields" });
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.BOOKING_MISSING_QUOTE_FIELDS });
       }
 
       if (
@@ -188,8 +177,8 @@ export class userController {
         !addressDetails?.name
       ) {
         return res
-          .status(400)
-          .json({ message: "Missing required address fields" });
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.BOOKING_MISSING_ADDRESS_FIELDS });
       }
 
       const bookingDetails: Partial<IBooking> = {
@@ -207,10 +196,10 @@ export class userController {
         },
       };
 
-      // console.log("This si erhe boooikingDetails...................",bookingDetails)
-
       if (!userId || !laborId || !quote) {
-        return res.status(400).json({ message: "Missing required fields" });
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.BOOKING_MISSING_FIELDS });
       }
 
       const BookingResponse = await this.bookingService.bookingLabor(
@@ -218,12 +207,10 @@ export class userController {
       );
 
       if (BookingResponse) {
-        res
-          .status(201)
-          .json({
-            message: "Booking created successfully",
-            booking: BookingResponse,
-          });
+        res.status(201).json({
+          message: Messages.BOOKING_SUCCESS,
+          booking: BookingResponse,
+        });
       }
     } catch (error) {
       console.error("Error in booking labor:", error);
@@ -240,14 +227,19 @@ export class userController {
       const { email } = req.params;
 
       if (!email) {
-        throw new Error("Email is not found...........");
+        throw new Error(Messages.EMAIL_NOT_PROVIDED);
       }
 
       email as string;
 
       const laborId = await this.userService.fetchLaborId(email);
       if (laborId) {
-        res.status(200).json({ laborId });
+        res.status(HttpStatus.OK).json({ laborId });
+      } else {
+        throw new ApiError(
+          HttpStatus.NOT_FOUND,
+          Messages.LABOR_ID_FETCH_FAILURE
+        );
       }
     } catch (error) {
       console.error("Error in booking labor:", error);
@@ -255,24 +247,19 @@ export class userController {
     }
   };
 
-   //Done .....................................
-
   public fetchBookings = async (
     req: Request & { user: { id: string } },
     res: Response,
     next: NextFunction
   ) => {
     try {
-      console.log("fetchboooking......");
       const userId = req.user.id;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const status = req.query.status as string;
 
-      // console.log('jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
-
       if (!userId) {
-        throw new Error("User is not found.");
+        throw new Error(Messages.USER_NOT_FOUND);
       }
 
       const filter = status ? { status } : {};
@@ -285,8 +272,8 @@ export class userController {
       );
 
       if (bookings) {
-        return res.status(200).json({
-          message: "fetching booking succesfully ..",
+        return res.status(HttpStatus.OK).json({
+          message: Messages.BOOKINGS_FETCH_SUCCESS,
           bookings,
           total,
           page,
@@ -300,9 +287,6 @@ export class userController {
     }
   };
 
-  
-  //Done .....................................
-
   public cancelBooking = async (
     req: Request,
     res: Response,
@@ -313,7 +297,9 @@ export class userController {
         req.body;
 
       if (!bookingId) {
-        throw new Error("No booking id is found...");
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.CANCEL_BOOKING_MISSING_ID });
       }
 
       const cancelledBooking = await this.bookingService.cancelBooking({
@@ -325,11 +311,13 @@ export class userController {
       });
 
       if (!cancelledBooking) {
-        throw new Error("Failed to cancel booking.");
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.CANCEL_BOOKING_FAILURE });
       }
 
-      res.status(200).json({
-        message: "Booking canceled successfully",
+      res.status(HttpStatus.OK).json({
+        message: Messages.CANCEL_BOOKING_SUCCESS,
         booking: cancelledBooking,
       });
     } catch (error) {
@@ -337,9 +325,6 @@ export class userController {
       next(error);
     }
   };
-
-
-
 
   public updateReadStatus = async (
     req: Request,
@@ -351,7 +336,9 @@ export class userController {
       const { isUserRead } = req.body;
 
       if (!bookingId) {
-        return res.status(400).json({ message: "Booking ID is required" });
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.BOOKING_ID_REQUIRED });
       }
 
       const updatedBooking = await this.bookingService.updateReadStatus(
@@ -359,19 +346,15 @@ export class userController {
         isUserRead
       );
 
-      return res
-        .status(200)
-        .json({
-          message: "Read status updated successfully",
-          data: updatedBooking,
-        });
+      return res.status(200).json({
+        message: Messages.BOOKING_READ_STATUS_UPDATED,
+        data: updatedBooking,
+      });
     } catch (error) {
       console.error("Error in updating read status", error);
       next(error);
     }
   };
-
-
 
   public reshedulRequest = async (
     req: Request,
@@ -381,13 +364,6 @@ export class userController {
     try {
       const { bookingId, newDate, newTime, reason, requestSentBy } = req.body;
 
-      console.log("this is the reonsponse data aa :", {
-        newDate,
-        newTime,
-        reason,
-        bookingId,
-      });
-
       const resheduleRequst = await this.bookingService.resheduleRequst(
         bookingId,
         newDate,
@@ -396,15 +372,11 @@ export class userController {
         requestSentBy
       );
 
-      console.log("HHHHHHHHHHHHHHHIIIIIIIIIIIIIIIIIIIII", resheduleRequst);
-
       if (resheduleRequst) {
-        return res
-          .status(200)
-          .json({
-            message: "resheduleRequst has been sent....",
-            reshedule: resheduleRequst,
-          });
+        return res.status(HttpStatus.OK).json({
+          message: Messages.RESCHEDULE_SUCCESS,
+          reshedule: resheduleRequst,
+        });
       }
     } catch (error) {
       console.error("Error in reshedule request.", error);
@@ -418,19 +390,13 @@ export class userController {
     next: NextFunction
   ) => {
     try {
-      console.log("This is the request Body lllll", req.body);
-
       const { bookingId } = req.params;
       const updateData = req.body;
 
-      console.log("This is geting dataaa :;;", {
-        bookingId,
-        updateData,
-      });
-      console.log("hiiiiiiiiiiiiiiiiiiiiiiiiii");
-
       if (!bookingId || !updateData) {
-        return res.status(400).json({ message: "missing nesssory fields...." });
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.WORK_COMPLETION_MISSING_FIELDS });
       }
 
       const response = await this.bookingService.workCompletion(
@@ -438,15 +404,11 @@ export class userController {
         updateData
       );
 
-      console.log("thsi sie th repsnses :::", response);
-
       if (response) {
-        return res
-          .status(200)
-          .json({
-            message: "resheduleRequst has been sent....",
-            reshedule: response,
-          });
+        return res.status(HttpStatus.OK).json({
+          message: Messages.WORK_COMPLETION_SUCCESS,
+          reshedule: response,
+        });
       }
     } catch (error) {
       console.error("Error in workCompletions.", error);
@@ -454,29 +416,18 @@ export class userController {
     }
   };
 
-
-
-
   public pymnetSuccess = async (
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
     try {
-      console.log("The is the bodyyyyyyyyyyy", req.body);
-
       const { bookingId, laborId, userId } = req.body;
-
-      console.log("this is the bookingId detisl ll................", {
-        bookingId,
-        laborId,
-        userId,
-      });
 
       if (!bookingId || !laborId || !userId) {
         return res
-          .status(404)
-          .json({ message: "missing Requaerud Fields ....." });
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.PAYMENT_MISSING_FIELDS });
       }
 
       const successResponse = await this.paymentService.pymentSuccess(
@@ -486,12 +437,10 @@ export class userController {
       );
 
       if (successResponse) {
-        return res
-          .status(200)
-          .json({
-            message: "Payment is succcessfullll........",
-            pymentRespnose: successResponse,
-          });
+        return res.status(HttpStatus.OK).json({
+          message: Messages.PAYMENT_SUCCESS,
+          pymentRespnose: successResponse,
+        });
       }
     } catch (error) {
       console.error("Error in pyment section.", error);
@@ -499,78 +448,88 @@ export class userController {
     }
   };
 
-
   public handleStripeWebhook = async (req: Request, res: Response) => {
-    console.log("hooook calledddddddddddddddddddddddd ffffffffffffffffffff");
-
-    console.log("Webhook called");
-    console.log("signature", req.headers);
     const sig = req.headers["stripe-signature"] as string;
     let event: Stripe.Event;
     try {
-       event = stripe.webhooks.constructEvent(req.body, sig, "whsec_8fed201d762c6c7205f81574e77174f99eab11a6ebb18b1d2aed78baec8395af");
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        "whsec_8fed201d762c6c7205f81574e77174f99eab11a6ebb18b1d2aed78baec8395af"
+      );
       await this.paymentService.updateWebhook(event, sig);
 
-      res.status(200).send({ received: true });
+      res.status(HttpStatus.OK).send({ received: true });
     } catch (error) {
       console.log(error);
     }
   };
 
-
-
-  public fetchBookingWithId = async (req: Request, res: Response, next: NextFunction) => {
+  public fetchBookingWithId = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
+      const { bookingId } = req.params;
 
-      const { bookingId } = req.params
-      
       if (!bookingId) {
-        return res.status(404)
-        .json({message : 'Booking id is not found'})
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: Messages.BOOKING_NOT_FOUND });
       }
 
-      const fetchedBooking = await this.bookingService.fetchBookinById(bookingId)
-
-
-      console.log('myyyyyyyyyyyyyyyyyyyyyy',fetchedBooking)
+      const fetchedBooking = await this.bookingService.fetchBookinById(
+        bookingId
+      );
 
       if (!fetchedBooking) {
-          throw new Error("Failed to fetch booking");
-        }
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: Messages.BOOKINGS_FETCH_FAILURE });
+      }
 
       if (fetchedBooking) {
-        return res.status(200)
-        .json({message : 'fetched succefuluy',fetchedBooking })
+        return res.status(HttpStatus.OK).json({
+          message: Messages.BOOKINGS_FETCH_SUCCESS,
+          fetchedBooking,
+        });
       }
-      
     } catch (error) {
       console.log(error);
+      next(error);
     }
-  }
+  };
 
-
-
-  public reviewSubmit = async (req: Request, res: Response, next: NextFunction) => {
+  public reviewSubmit = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
+      const { bookingId } = req.params;
 
-      const { bookingId } = req.params
-      
       if (!bookingId) {
-        return res.status(404)
-        .json({message : 'Booking id is not found'})
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: Messages.REVIEW_MISSING_BOOKING_ID });
       }
 
-      const form = formidable({ multiples: false });   
-    
+      const form = formidable({ multiples: false });
+
       form.parse(req, async (err, fields, files) => {
         if (err) {
-          return res.status(500)
-          .json({error : 'Error parsing form data'})
+          return res
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .json({ error: Messages.REVIEW_FORM_PARSE_ERROR });
         }
 
-        const rating = Array.isArray(fields.rating) ? fields.rating[0] : fields.rating;
-        const feedback = Array.isArray(fields.feedback) ? fields.feedback[0] : fields.feedback;
-
+        const rating = Array.isArray(fields.rating)
+          ? fields.rating[0]
+          : fields.rating;
+        const feedback = Array.isArray(fields.feedback)
+          ? fields.feedback[0]
+          : fields.feedback;
 
         const images: string[] = [];
 
@@ -599,75 +558,109 @@ export class userController {
           rating,
           feedback,
           images
-        )
+        );
 
         if (!reiveSubmiting) {
-          return res.status(500)
-          .json({error : 'Error in reivew sumbinting.....'})
+          return res
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .json({ error: Messages.REVIEW_UPLOAD_ERROR });
         }
 
-        return res.status(200)
-        .json({message : 'Review sumbitted succefullly',reiveSubmiting})
-
-
-      })
-      
+        return res.status(200).json({
+          message: Messages.REVIEW_SUBMIT_SUCCESS,
+          reiveSubmiting,
+        });
+      });
     } catch (error) {
       console.log(error);
+      next(error)
     }
-  }
-  public fetchAllBooings = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  };
 
-      const { userId } = req.params
-      
+  public fetchAllBooings = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { userId } = req.params;
+
       if (!userId) {
-        return res.status(404)
-        .json({error : 'User id is miising .....'})
+        return res.status(HttpStatus.NOT_FOUND).json({ error: Messages.BOOKING_USER_ID_MISSING });
       }
 
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const status = req.query.status as string | undefined;
 
-
       const filter = status ? { status } : {};
-
 
       const {
         bookings,
         total,
         completedBookings,
         canceledBookings,
-        totalAmount
-      } = await this.bookingService.fetchAllBookings(userId, page, limit, filter)
+        totalAmount,
+      } = await this.bookingService.fetchAllBookings(
+        userId,
+        page,
+        limit,
+        filter
+      );
 
       if (!bookings) {
-        return res.status(404)
-        .json({error : 'error in fetchBooking .....'})
-      }
-      console.log('This is the bookings vinuuuuuuuuuuuu',bookings)
-
-      return  res.status(200).json({
-          message: "fetching booking succesfully ..",
-          bookings,
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit),
-          completedBookings,
-          canceledBookings,
-          totalAmount
+        return res.status(HttpStatus.NOT_FOUND).json({
+          error: Messages.BOOKINGS_FETCH_FAILURE 
         });
-      
+      }
+
+      return res.status(HttpStatus.OK).json({
+        message: Messages.BOOKINGS_FETCH_SUCCESS,
+        bookings,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        completedBookings,
+        canceledBookings,
+        totalAmount,
+      });
     } catch (error) {
       console.log(error);
-      next()
+      next();
     }
-  }
+  };
+
+  public getSearchSuggestions = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { query } = req.query;
+
+      if (typeof query !== "string" || query.length < 2) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+                status: HttpStatus.BAD_REQUEST,
+                message: Messages.SEARCH_QUERY_TOO_SHORT,
+            });
+      }
+
+      const suggestions = await this.userService.getSearchSuggest(query);
+
+      return res.status(HttpStatus.OK).json({
+        status: HttpStatus.OK,
+        data: suggestions,
+        message: Messages.SEARCH_SUGGESTIONS_SUCCESS,
+      });
+    } catch (error) {
+      console.log(error);
+      next();
+    }
+  };
 }
 
-export default userController;
+export default UserController;
 
 
 

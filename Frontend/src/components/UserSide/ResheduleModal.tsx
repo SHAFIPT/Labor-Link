@@ -2,42 +2,50 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setError } from "../../redux/slice/userSlice";
 import { RootState } from "../../redux/store/store";
-import { validateNewDate, validateNewTime, validateReason } from "../../utils/userRegisterValidators";
+import {
+  validateNewDate,
+  validateNewTime,
+  validateReason,
+} from "../../utils/userRegisterValidators";
 import { toast } from "react-toastify";
-import '../Auth/LoadingBody.css'
+import "../Auth/LoadingBody.css";
 import { handleRescheduleWork } from "../../services/UserSurvice";
 import { BookingDetails } from "../../redux/slice/bookingSlice";
 
 interface ResheduleModalProps {
   onClose: () => void;
-  bookingId: string; 
+  bookingId: string;
   onUpdateBooking: (reshedule: BookingDetails) => void;
 }
 
-const ResheduleModal = ({ onClose, bookingId, onUpdateBooking }: ResheduleModalProps) => {
-  
-
-  console.log("Thsi is the bookingId.....",bookingId)
-
-  const dispatch = useDispatch()
+const ResheduleModal = ({
+  onClose,
+  bookingId,
+  onUpdateBooking,
+}: ResheduleModalProps) => {
+  const dispatch = useDispatch();
   const [reshedulDatas, setReshedulDatas] = useState({
-    newDate: '',
-    newTime: '',
-    reason: ''
+    newDate: "",
+    newTime: "",
+    reason: "",
   });
-   const error: {
+  const error: {
     newDate?: string;
     newTime?: string;
     reason?: string;
   } = useSelector((state: RootState) => state.user.error);
-  console.log('Thsi is th eroroors ;;;;;',error)
-    const loading  = useSelector((state: RootState) => state.user.loading)
-    const theam = useSelector((state: RootState) => state.theme.mode)
-    const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
-    const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
+  const loading = useSelector((state: RootState) => state.user.loading);
+  const theam = useSelector((state: RootState) => state.theme.mode);
+  const isUserAthenticated = useSelector(
+    (state: RootState) => state.user.isUserAthenticated
+  );
+  const isLaborAuthenticated = useSelector(
+    (state: RootState) => state.labor.isLaborAuthenticated
+  );
 
-
-  const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChangeInput = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setReshedulDatas((prev) => ({
       ...prev,
@@ -45,10 +53,13 @@ const ResheduleModal = ({ onClose, bookingId, onUpdateBooking }: ResheduleModalP
     }));
   };
 
+  const requestSentBy = isUserAthenticated
+    ? "user"
+    : isLaborAuthenticated
+    ? "labor"
+    : null;
 
-  const requestSentBy = isUserAthenticated ? "user" : isLaborAuthenticated ? "labor" : null
-
-  const handleReschedule = async  (e: React.FormEvent) => {
+  const handleReschedule = async (e: React.FormEvent) => {
     e.preventDefault();
     const validateErrors = {
       newDate: validateNewDate(reshedulDatas.newDate),
@@ -56,36 +67,28 @@ const ResheduleModal = ({ onClose, bookingId, onUpdateBooking }: ResheduleModalP
       reason: validateReason(reshedulDatas.reason),
     };
     dispatch(setError(validateErrors));
-    if (!validateErrors.newDate && !validateErrors.newTime && !validateErrors.reason) {
-        
-        try {
+    if (
+      !validateErrors.newDate &&
+      !validateErrors.newTime &&
+      !validateErrors.reason
+    ) {
+      try {
+        const resheduleResponse = await handleRescheduleWork({
+          ...reshedulDatas,
+          bookingId,
+          requestSentBy,
+        });
 
-            console.log("this is the reschedule.......................eeeeeee",reshedulDatas)
-            console.log("this is the bookingId......................eeeeeee",bookingId)
-            const resheduleResponse = await handleRescheduleWork({
-                ...reshedulDatas,
-                bookingId,
-                requestSentBy
-            })
-
-          if (resheduleResponse.status === 200) {
-            const { reshedule } = resheduleResponse.data
-            
-            console.log("TTTTTHAAAAANIVIRAAAAAAAAAAAAA:", reshedule)
-            onUpdateBooking(reshedule);
-              // dispatch(setBookingDetails(resheduleResponse.data.reshedule))
-                // dispatch(updateSingleBooking(reshedule));
-                toast.success("reshedule successfull")
-                onClose();
-            }
-
-
-        } catch (error) {
-            console.error(error)
-            toast.error('error isn the resheduleRequstSend')
+        if (resheduleResponse.status === 200) {
+          const { reshedule } = resheduleResponse.data;
+          onUpdateBooking(reshedule);
+          toast.success("reshedule successfull");
+          onClose();
         }
-
-      
+      } catch (error) {
+        console.error(error);
+        toast.error("error isn the resheduleRequstSend");
+      }
     }
   };
 

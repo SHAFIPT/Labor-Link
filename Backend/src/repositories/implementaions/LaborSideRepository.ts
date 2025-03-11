@@ -1,20 +1,16 @@
 import { IAboutMe, ILaborer } from "../../controllers/entities/LaborEntity";
-import { ILaborSidRepository } from "../../repositories/interface/ILaborSideRepository";
+import { ILaborSideRepository } from "../../repositories/interface/ILaborSideRepository";
 import Labor from "../../models/LaborModel";
-import mongoose, { SortOrder } from "mongoose";
-import { IBooking } from "../../controllers/entities/bookingEntity";
-import Booking from "../../models/BookingModal";
-import User from "../../models/userModel";
+import  { SortOrder } from "mongoose";
 import { IWallet } from "controllers/entities/withdrawalRequstEntity";
 import WithdrawalRequest from "../../models/WithdrawalRequestModal";
 import { BaseRepository } from "../../repositories/BaseRepository/BaseRepository";
 
-export class LaborSideRepository extends BaseRepository<ILaborer> implements ILaborSidRepository {
+export class LaborSideRepository extends BaseRepository<ILaborer> implements ILaborSideRepository {
   
   constructor() {
     super(Labor)
   }
-
 
   async fetchLabor(laborId: string): Promise<ILaborer | null> {
     return Labor.findById(laborId).select("-password -refreshToken");
@@ -42,9 +38,9 @@ export class LaborSideRepository extends BaseRepository<ILaborer> implements ILa
     NewPassword: string
   ): Promise<ILaborer | null> {
     return await Labor.findOneAndUpdate(
-      { email }, // Query by email
-      { $set: { password: NewPassword } }, // Update password field
-      { new: true } // Return the updated document
+      { email }, 
+      { $set: { password: NewPassword } }, 
+      { new: true } 
     );
   }
 
@@ -60,7 +56,6 @@ export class LaborSideRepository extends BaseRepository<ILaborer> implements ILa
     sortOrder?: "asc" | "desc";
   }): Promise<ILaborer[]> {
     try {
-      // console.log("TTTTTTTTTTTheeeeeeeeeeees ratingggggggggggggg:",params.rating)
 
       // Construct filter object dynamically
       const filter: any = { isApproved: true };
@@ -118,13 +113,6 @@ export class LaborSideRepository extends BaseRepository<ILaborer> implements ILa
   }): Promise<IAboutMe> {
     try {
       const { userId, name, experience, description } = data;
-
-      console.log("Thsi sthe user detials : ", {
-        userId,
-        name,
-        description,
-        experience,
-      });
 
       const labor = await Labor.findById(userId);
 

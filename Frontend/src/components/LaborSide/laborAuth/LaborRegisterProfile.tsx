@@ -50,7 +50,6 @@ const navigate = useNavigate()
     availability?: string;
   } = useSelector((state: RootState) => state.labor.error) ?? {}
 
-  console.log('this is profile page form data :',formData)
   useEffect(() => {
   if (formData) {  // Only set data if formData exists
     dispatch(setUnsavedChanges(true))
@@ -63,8 +62,6 @@ const navigate = useNavigate()
   }
   }, [formData, dispatch])
   
-  console.log('endTime from formData:', formData.endTime);
-
 
     const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
   
@@ -134,11 +131,8 @@ const navigate = useNavigate()
   
 
   const updateFirebaseLaborProfilePicture = async (email : string, profilePictureUrl  :string) => {
-  try {
-    console.log("Starting Firebase labor profile update...");
-    console.log("Email:", email);
-    console.log("Profile Picture URL:", profilePictureUrl);
-
+    try {
+    
     const usersRef = collection(db, "Labors");
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
@@ -150,16 +144,14 @@ const navigate = useNavigate()
         await updateDoc(userDocRef, { profilePicture: profilePictureUrl || "" });
       });
       await Promise.all(updatePromises);
-      console.log("Labor profile picture updated successfully in Firebase.");
+
     } else {
-      // If no document exists, create a new one
-      console.log("No existing labor found, creating a new profile...");
+
       await addDoc(usersRef, {
         email,
         profilePicture: profilePictureUrl || "",
         createdAt: new Date()
       });
-      console.log("New labor profile created in Firebase.");
     }
   } catch (error) {
     console.error("Error updating labor profile picture in Firebase:", error);
@@ -186,10 +178,6 @@ const navigate = useNavigate()
     const startTimeError = validateStartTime(startTime);
     const endTimeError = validateEndTime(endTime);
     const availabilityError = validateAvailability(availability);
-
-
-    console.log('this is the error from starttime:',startTimeError)
-    console.log('this is the error from endTimeError:',endTimeError)
 
     const formDataError = {
       image: imageError,
@@ -230,17 +218,9 @@ const navigate = useNavigate()
       }
 
 
-       // Log formData contents for debugging
-        // for (let pair of formDataForAPI.entries()) {
-        //   console.log(pair[0] + ': ' + pair[1]);
-        // }
-
       try {
 
-          const response = await profilePage(formDataForAPI)
-
-        console.log('thsi is response of the labor page update :::::::::::::::', response)
-        
+        const response = await profilePage(formDataForAPI)
         const { profilePicture, email } = response.data.data
         
         if (profilePicture) {
@@ -249,8 +229,7 @@ const navigate = useNavigate()
         } else {
           console.warn("Profile picture is missing in API response.");
         }
-          
-        console.log('thsi is response of profilePicture:::::::::::::::', profilePicture)
+        
           if (response.status === 200) {
 
             const reduxData = {
@@ -302,7 +281,6 @@ const navigate = useNavigate()
       endTime,
       availability,
       email,
-      // Handle image URL from response if needed
       image,
     };
     dispatch(setFormData(reduxData))

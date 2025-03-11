@@ -1,17 +1,11 @@
-
-import { LaborSideRepository } from "../repositories/implementaions/LaborSideRepository"
 import { ILaborService } from "../services/interface/ILaborServices"
-import { LaborServices } from "../services/implementaions/LaborServices"
 import { Request , Response ,NextFunction } from "express"
 import cloudinary from "../utils/CloudineryCongif";
 import formidable from 'formidable';
-import { error } from "console";
-import { IBookingSerivese } from "../services/interface/IBookingServices";
-import BookingRepository from "../repositories/implementaions/BookingRepository";
-import BookingServices from "../services/implementaions/BookingServices";
+import { IBookingService } from "../services/interface/IBookingServices";
 import { IPaymentService } from "../services/interface/IPaymnetService";
-import PaymnetRepository from "../repositories/implementaions/PaymentRepository";
-import PaymentService from "../services/implementaions/PaymentService";
+import { Messages } from "../constants/Messages";
+import { HttpStatus } from "../enums/HttpStatus";
 
 
 interface DecodedToken {
@@ -22,18 +16,19 @@ interface DecodedToken {
 }
 
 
-class laborSideController {
+class LaborSideController {
   private laborService: ILaborService;
-  private bookingService: IBookingSerivese;
-  private paymentService : IPaymentService
+  private bookingService: IBookingService;
+  private paymentService: IPaymentService;
 
-  constructor() {
-    const laborRepository = new LaborSideRepository();
-    const bookingRepository = new BookingRepository();
-    const paymentRepository = new PaymnetRepository()
-    this.laborService = new LaborServices(laborRepository);
-    this.bookingService = new BookingServices(bookingRepository)
-    this.paymentService = new PaymentService(paymentRepository)
+  constructor(
+    laborService: ILaborService,
+    bookingService: IBookingService,
+    paymentService: IPaymentService
+  ) {
+    this.laborService = laborService;
+    this.bookingService = bookingService;
+    this.paymentService = paymentService;
   }
 
   public fetchLabors = async (
@@ -42,34 +37,30 @@ class laborSideController {
     next: NextFunction
   ) => {
     try {
-      console.log("Iama haer to seeeee...---------");
-
-      const laborId = req.labor?.id; // Access userId from the decoded token
+      const laborId = req.labor?.id;
       if (!laborId) {
-        return res.status(401).json({ message: "Laobr ID not found" });
+        return res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json({ message: Messages.LABOR_ID_NOTFOUND });
       }
-
-      console.log("this sit he laborId :", laborId);
 
       const fetchUserResponse = await this.laborService.fetchLaborDetails(
         laborId
       );
 
-      console.log("This si the fetch labor response", fetchUserResponse);
-
       if (fetchUserResponse) {
-        res
-          .status(200)
-          .json({ message: "Labor fetch successfully .", fetchUserResponse });
+        res.status(HttpStatus.OK).json({
+          message: Messages.LABOR_LOGIN_SUCCESSFULLY,
+          fetchUserResponse,
+        });
       } else {
-        throw new Error("error occurd during fetch labors....!");
+        throw new Error(Messages.ERROR_IN_FETCH_LABORS);
       }
     } catch (error) {
-      console.error("Error in labor login:", error);
+      console.error(Messages.ERROR_IN_FETCH_LABORS, error);
       next(error);
     }
   };
-
 
   public updateProfile = async (
     req: Request,
@@ -79,7 +70,9 @@ class laborSideController {
     const form = formidable({ multiples: false });
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        return res.status(500).json({ error: "Error parsing form data." });
+        return res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ error: Messages.ERROR_PARSE_FORM_DATA });
       }
 
       try {
@@ -99,6 +92,7 @@ class laborSideController {
 
         const imageFile = files.profilePicture ? files.profilePicture[0] : null;
         let profilePictureUrl;
+
         // Upload image to Cloudinary if provided
         if (imageFile) {
           const uploadResult = await cloudinary.uploader.upload(
@@ -110,27 +104,11 @@ class laborSideController {
           profilePictureUrl = uploadResult.secure_url;
         }
 
-        console.log("this si data Labor profiel ----+++00 :", {
-          firstName,
-          lastName,
-          email,
-          phone,
-          address,
-          language,
-          availability,
-          skills,
-          responsibilities,
-          startTime,
-          endTime,
-          profilePictureUrl,
-        });
-
         const response = await this.laborService.updateLaborProfile({
           firstName: firstName[0],
           lastName: lastName[0],
           email: email[0],
           phone: phone[0],
-          // address: address[0],
           language: language[0],
           availability: JSON.parse(availability[0]),
           skill: skills,
@@ -139,19 +117,17 @@ class laborSideController {
           endTime: endTime[0],
           profilePicture: profilePictureUrl,
         });
-        console.log("Thsis ie the resoponse for labor updae ", response);
 
-        return res.status(200).json({
-          message: "Labor profile updated successfully!",
+        return res.status(HttpStatus.OK).json({
+          message: Messages.LABOR_PROFILE_UPDATED_SUCCESSFULLY,
           updatedLabor: response,
         });
       } catch (error) {
-        console.error("Error updating labor profile:", error);
+        console.error(Messages.ERROR_UPDATE_LABOR_PROFILE, error);
         next(error);
       }
     });
   };
-
 
   public UpdatePassword = async (
     req: Request,
@@ -162,19 +138,19 @@ class laborSideController {
       const { email, password } = req.body;
 
       if (!email || !password) {
-        throw new Error("Email and Password is missing...!");
+        throw new Error(Messages.EMIAL_PASSWORD_MISSING);
       }
 
       const response = await this.laborService.updatePassword(email, password);
 
       if (response) {
-        return res.status(200).json({
-          message: "Password updated successfully!",
+        return res.status(HttpStatus.OK).json({
+          message: Messages.PASSWORD_UPDATED_SUCCESSFULLY,
           updatedUser: response,
         });
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error(Messages.ERROR_IN_UPDATE_PASSWORD, error);
       next(error);
     }
   };
@@ -187,16 +163,11 @@ class laborSideController {
     try {
       const { latitude, longitude, sortOrder } = req.query;
 
-      console.log("This is the latitude and longitude:", {
-        latitude,
-        longitude,
-      });
-
       // Check if latitude and longitude are provided
       if (!latitude || !longitude) {
         return res
-          .status(400)
-          .json({ message: "Latitude and Longitude are required." });
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.LATITTUDE_LOGITUDE_REQUIERD });
       }
 
       // Convert latitude and longitude to numbers
@@ -206,8 +177,8 @@ class laborSideController {
       // Check if the conversion resulted in valid numbers
       if (isNaN(lat) || isNaN(lng)) {
         return res
-          .status(400)
-          .json({ message: "Invalid latitude or longitude." });
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.INVALID_LATITUDE_AND_LOGITUDE });
       }
 
       const validatedSortOrder =
@@ -236,22 +207,9 @@ class laborSideController {
         sortOrder: validatedSortOrder,
       });
 
-      // console.log("YYYYYYYYYYYYYYYYYYYYYYYY", {
-      //   latitude: lat,
-      //       longitude: lng,
-      //       country,
-      //       state,
-      //       city,
-      //       zipCode,
-      //       category,
-      //       rating
-      // })
-
-      // console.log("This is the laborers:", laborers);
-
-      return res.status(200).json({ laborers });
+      return res.status(HttpStatus.OK).json({ laborers });
     } catch (error) {
-      console.error("Error fetching labors:", error);
+      console.error(Messages.ERROR_IN_FETCH_LABOR_BY_LOCATION, error);
       next(error);
     }
   };
@@ -260,13 +218,6 @@ class laborSideController {
     try {
       const { userId, name, experience, description } = req.body;
 
-      console.log("Thie is body data :", {
-        userId,
-        name,
-        experience,
-        description,
-      });
-
       const AboutData = {
         userId,
         name,
@@ -274,22 +225,16 @@ class laborSideController {
         description,
       };
 
-      console.log("Thsis ie the response of AboutDat", AboutData);
-
       const AboutMe = await this.laborService.aboutMe(AboutData);
 
-      console.log("This sie the reponse :", AboutMe);
-
       return res
-        .status(200)
-        .json({ message: "Abbout udpated successfully....", AboutMe });
+        .status(HttpStatus.OK)
+        .json({ message: Messages.ABOUT_PAGE_UPDTAED_SUCCESSFULLY, AboutMe });
     } catch (error) {
-      console.error("Error about me:", error);
+      console.error(Messages.ERROR_IN_ABOUT_PAGE, error);
       next(error);
     }
   };
-
-  //Donee............\
 
   public fetchBooking = async (
     req: Request & { labor: { id: string } },
@@ -297,8 +242,6 @@ class laborSideController {
     next: NextFunction
   ) => {
     try {
-      console.log("iumaaaaaaaaaaa heeeeeeeeeereeeeeeeeeeeee................");
-
       const laborId = req.labor.id;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -306,10 +249,10 @@ class laborSideController {
 
       const filter = status ? { status } : {};
 
-      console.log('hllllllll',filter)
-
       if (!laborId) {
-        res.status(404).json({ message: "Labor not Found." });
+        res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: Messages.LABOR_NOT_FOUND });
       }
 
       const {
@@ -317,8 +260,9 @@ class laborSideController {
         total,
         completedBookings,
         canceledBookings,
-        pendingBookings ,
-        totalAmount } = await this.bookingService.fetchBookingsToLabor(
+        pendingBookings,
+        totalAmount,
+      } = await this.bookingService.fetchBookingsToLabor(
         laborId,
         page,
         limit,
@@ -326,11 +270,13 @@ class laborSideController {
       );
 
       if (!bookings) {
-        res.status(404).json({ message: "No bookings found by labor" });  
+        res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: Messages.NO_BOOKING_FOUND_BY_LABOR });
       }
 
-      res.status(200).json({
-        message: "fetching booking succesfully ..",
+      res.status(HttpStatus.OK).json({
+        message: Messages.BOOKINGS_FETCH_SUCCESS,
         bookings,
         total,
         page,
@@ -339,391 +285,412 @@ class laborSideController {
         completedBookings,
         canceledBookings,
         totalAmount,
-        pendingBookings
+        pendingBookings,
       });
     } catch (error) {
-      console.error("Error labor:", error);
+      console.error(Messages.BOOKINGS_FETCH_FAILURE, error);
       next(error);
     }
   };
 
- public fetchSimilorLabors = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { latitude, longitude, categorie } = req.query;
-    
-    const laborId: string = typeof req.query.laborId === "string"
-      ? req.query.laborId
-      : Array.isArray(req.query.laborId) && typeof req.query.laborId[0] === "string"
-      ? req.query.laborId[0]
-      : "";
-
-
-    console.log("Received latitude, longitude, and category:", {
-      latitude,
-      longitude,
-      categorie,
-       laborId
-    });
-
-    if (!latitude || !longitude) {
-      return res.status(400).json({
-        message: "Latitude and longitude are required.",
-      });
-    }
-
-    const lat = parseFloat(latitude as string);
-    const lng = parseFloat(longitude as string);
-
-    // Ensure categorie is always a string
-   const category: string = 
-    typeof categorie === "string"
-      ? categorie
-      : Array.isArray(categorie)
-      ? String(categorie[0]) // Ensure it's converted to a string
-      : "";
-
-    if (!category) {
-      return res.status(400).json({
-        message: "Category is required.",
-      });
-    }
-
-
-    console.log("Thei si before passing it;;;;;;;;;;;;;", {
-      lat,
-      lng,
-      category,
-      laborId
-    })
-
-    // Fetch similar labors
-    const labors = await this.laborService.fetchSimilorLabors(lat, lng, category ,laborId);
-
-    console.log("Thsi sie th the labor to kkkkkkkkkkkkkkkkk",labors)
-
-    res.status(200).json({
-      message: "Similar labors fetched successfully.",
-      labors,
-    });
-  } catch (error) {
-    console.error("Error fetching similar labors:", error);
-    next(error);
-  }
-  };
-  
-
-
-  public fetchBookings = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { bookingId } = req.params;
-    
-    if (!bookingId) {
-      return res.status(404).json({ message: 'Booking id is not found...' });
-    }
-
-    const bookingDetails = await this.bookingService.fetchBookingDetils(bookingId);
-
-    if (bookingDetails) {
-      return res.status(200).json({ message: 'Booking fetched successfully', bookings: bookingDetails });
-    } else {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-    
-  } catch (error) {
-    console.error("Error fetching bookings:", error);
-    next(error);
-  }      
-  };
-  
-  public submitRejection = async (req: Request, res: Response, next: NextFunction) => {
+  public fetchSimilorLabors = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
+      const { latitude, longitude, categorie } = req.query;
 
-      const { newTime, newDate, rejectionReason, bookingId , rejectedBy  ,requestSentBy} = req.body
-      
-      console.log("this is the reonsponse data aa :", {
-        newDate, 
-        newTime,  
+      const laborId: string =
+        typeof req.query.laborId === "string"
+          ? req.query.laborId
+          : Array.isArray(req.query.laborId) &&
+            typeof req.query.laborId[0] === "string"
+          ? req.query.laborId[0]
+          : "";
+
+      if (!latitude || !longitude) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: Messages.LATITTUDE_LOGITUDE_REQUIERD,
+        });
+      }
+
+      const lat = parseFloat(latitude as string);
+      const lng = parseFloat(longitude as string);
+
+      // Ensure categorie is always a string
+      const category: string =
+        typeof categorie === "string"
+          ? categorie
+          : Array.isArray(categorie)
+          ? String(categorie[0]) // Ensure it's converted to a string
+          : "";
+
+      if (!category) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          message: Messages.CATEGORY_REQUIERD,
+        });
+      }
+
+      // Fetch similar labors
+      const labors = await this.laborService.fetchSimilorLabors(
+        lat,
+        lng,
+        category,
+        laborId
+      );
+
+      res.status(HttpStatus.OK).json({
+        message: Messages.SIMILOR_LABOR_FETCHED_SUCCESSFULY,
+        labors,
+      });
+    } catch (error) {
+      console.error(Messages.ERROR_IN_FETCH_SIMILOR_LABOR, error);
+      next(error);
+    }
+  };
+
+  public fetchBookings = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { bookingId } = req.params;
+
+      if (!bookingId) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: Messages.BOOKING_ID_NOT_FOUND });
+      }
+
+      const bookingDetails = await this.bookingService.fetchBookingDetils(
+        bookingId
+      );
+
+      if (bookingDetails) {
+        return res.status(HttpStatus.OK).json({
+          message: Messages.BOOKINGS_FETCH_SUCCESS,
+          bookings: bookingDetails,
+        });
+      } else {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: Messages.BOOKING_NOT_FOUND });
+      }
+    } catch (error) {
+      console.error(Messages.BOOKING_FETCH_FAILD, error);
+      next(error);
+    }
+  };
+
+  public submitRejection = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const {
+        newTime,
+        newDate,
         rejectionReason,
         bookingId,
-        requestSentBy
-      })
+        rejectedBy,
+        requestSentBy,
+      } = req.body;
 
-       const resheduleRequst = await this.bookingService.rejectResheduleRequst(
+      const resheduleRequst = await this.bookingService.rejectResheduleRequst(
         bookingId,
         newDate,
         newTime,
         rejectionReason,
         rejectedBy,
         requestSentBy
-      )
+      );
 
       if (resheduleRequst) {
-        return res.status(200)
-        .json({message : 'resheduleRequst has been sent....', reshedule : resheduleRequst})
+        return res.status(HttpStatus.OK).json({
+          message: Messages.RESHEDULE_REQUEST_SENT_SUCCESSFULLY,
+          reshedule: resheduleRequst,
+        });
       }
-      
-
-      
     } catch (error) {
-      console.error("Error submit Rejection:", error);
-    next(error);
+      console.error(Messages.ERROR_IN_RESHEDULE_REJECTION, error);
+      next(error);
     }
-  }
+  };
 
-
-  public acceptBooking = async (req: Request, res: Response, next: NextFunction) => {
+  public acceptBooking = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
+      const { bookingId } = req.params;
+      const { acceptedBy } = req.body;
 
-      const { bookingId } = req.params; 
-      const { acceptedBy } = req.body; 
-      
       if (!bookingId) {
-            return res.status(400).json({ message: "Booking ID is required" });
-        }
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.BOOKING_ID_REQUIRED });
+      }
 
-      const updatedBooking  = await this.bookingService.acceptResheduleRequst(bookingId , acceptedBy);
+      const updatedBooking = await this.bookingService.acceptResheduleRequst(
+        bookingId,
+        acceptedBy
+      );
 
-      return res.status(200).json({ message: "Accept reshedule successfully",reshedule : updatedBooking });
-      
-      
+      return res.status(HttpStatus.OK).json({
+        message: Messages.ACCEPT_RESHEDULE_REQUEST,
+        reshedule: updatedBooking,
+      });
     } catch (error) {
-      console.error("Error accetpt rejection:", error);
-    next(error);
+      console.error(Messages.ERROR_IN_ACCEPT_RESHEDULE_REQUEST, error);
+      next(error);
     }
-  }
+  };
 
-  public additionalCharge = async (req: Request, res: Response, next: NextFunction) => {
+  public additionalCharge = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-
       const { bookingId, amount, reason } = req.body;
 
       if (!bookingId || !amount || !reason) {
-            return res.status(400).json({ message: "Missing required fields" });
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.FIELDS_REQUEIRD });
       }
-      
-      const additionalCharge = await this.bookingService.additionalCharge(bookingId, amount, reason)
-      
-       if (additionalCharge) {
-        return res.status(200)
-          .json({
-            message: 'additional charge is has been updatedSucceffly ',
-            additnalChageAdd: additionalCharge
-          })
+
+      const additionalCharge = await this.bookingService.additionalCharge(
+        bookingId,
+        amount,
+        reason
+      );
+
+      if (additionalCharge) {
+        return res.status(HttpStatus.OK).json({
+          message: Messages.ADDITIONAL_CHARGE_UPDATED_SUCCESSFULLY,
+          additnalChageAdd: additionalCharge,
+        });
       }
-      
     } catch (error) {
-       console.error("Error in additionalCharge:", error);
+      console.error(Messages.ERROR_IN_ADDITIONAL_CHARGE, error);
       next(error);
     }
-  }
+  };
 
-  public acceptRequst = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-
-      const { bookingId } = req.params; 
-
-      console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiii accepttt',bookingId)
-
-       if (!bookingId) {
-            return res.status(400).json({ message: "Booking ID is required" });
-      }
-      
-      const acceptRequstRespnse = await this.bookingService.acceptRequst(bookingId)
-
-
-      if (acceptRequstRespnse) {
-        return res.status(200).json({ message: 'additional charge accept ,,,,', acceptRequst: acceptRequstRespnse });
-      } else {
-        return res.status(404).json({ message: 'Booking not found' });
-      }
-      
-      
-    } catch (error) {
-      console.error("Error in additional charge accept:", error);
-      next(error);
-    }
-  }
-  public rejectRequst = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-
-      const { bookingId } = req.params; 
-
-       if (!bookingId) {
-            return res.status(400).json({ message: "Booking ID is required" });
-      }
-      
-      const rejectRequstRespnse = await this.bookingService.rejectRequst(bookingId)
-
-
-      if (rejectRequstRespnse) {
-        return res.status(200).json({ message: 'additional charge reject ,,,,', rejectRequst : rejectRequstRespnse });
-      } else {
-        return res.status(404).json({ message: 'additional charge reject' });
-      }
-      
-
-      
-    } catch (error) {
-      console.error("Error in additional charge reject:", error);
-      next(error);
-    }
-  }
-  public fetchIsBookingExist = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-
-      console.log('this is requsags :',req.query)
-
-      // const { userEmail, laborEmail } = req.query
-      
-      
-      const userEmail = req.query.userEmail as string;
-      const laborEmail = req.query.laborEmail as string;
-      
-      if (!userEmail || !laborEmail) {
-           return res.status(400).json({ message: "Missing userId or laborId" });
-     }
-      const bookingData = {
-        userEmail,
-        laborEmail
-      }
-
-      console.log('This is the Baaabuu0',bookingData)
-      
-      const fetchBookings = await this.bookingService.fetchExistBooking(bookingData)
-
-      return res.status(200)
-      .json({messsage : 'bookingFetchsucceffluuly',fetchBookings})
-
-        
-    } catch (error) {
-      console.error("Error in exitst bookings ", error);
-      next(error);
-    }
-  } 
-
-  public fetchAllBookingOfLabor = async(
+  public acceptRequst = async (
     req: Request,
     res: Response,
-    next : NextFunction
+    next: NextFunction
   ) => {
     try {
+      const { bookingId } = req.params;
 
-      const laborEmail = req.query.email as string;
-      
-      if (!laborEmail) {
-           return res.status(400).json({ message: "Missing laborId" });
+      if (!bookingId) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.BOOKING_ID_NOT_FOUND });
       }
-      
+
+      const acceptRequstRespnse = await this.bookingService.acceptRequst(
+        bookingId
+      );
+
+      if (acceptRequstRespnse) {
+        return res.status(HttpStatus.OK).json({
+          message: Messages.ADDITIONAL_CHARGE_ACCEPTED_SUCCESSFULLY,
+          acceptRequst: acceptRequstRespnse,
+        });
+      } else {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: Messages.BOOKING_ID_NOT_FOUND });
+      }
+    } catch (error) {
+      console.error(Messages.ERROR_ID_ADDITIONAL_CHARGE_ACCEPT, error);
+      next(error);
+    }
+  };
+
+  public rejectRequst = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { bookingId } = req.params;
+
+      if (!bookingId) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.BOOKING_ID_NOT_FOUND });
+      }
+
+      const rejectRequstRespnse = await this.bookingService.rejectRequst(
+        bookingId
+      );
+
+      if (rejectRequstRespnse) {
+        return res.status(HttpStatus.OK).json({
+          message: Messages.ADDITIONAL_CHARGE_REJECTED_SUCESSFULLY,
+          rejectRequst: rejectRequstRespnse,
+        });
+      } else {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.ERROR_IN_ADDITINAL_CHARGE_REJECTED });
+      }
+    } catch (error) {
+      console.error(Messages.ERROR_IN_ADDITINAL_CHARGE_REJECTED, error);
+      next(error);
+    }
+  };
+  
+  public fetchIsBookingExist = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userEmail = req.query.userEmail as string;
+      const laborEmail = req.query.laborEmail as string;
+
+      if (!userEmail || !laborEmail) {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.MISSING_USER_ID_LABOR_ID });
+      }
+      const bookingData = {
+        userEmail,
+        laborEmail,
+      };
+
+      const fetchBookings = await this.bookingService.fetchExistBooking(
+        bookingData
+      );
+
+      return res
+        .status(HttpStatus.OK)
+        .json({ messsage: Messages.BOOKINGS_FETCH_SUCCESS, fetchBookings });
+    } catch (error) {
+      console.error(Messages.BOOKING_FETCH_FAILD, error);
+      next(error);
+    }
+  };
+
+  public fetchAllBookingOfLabor = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const laborEmail = req.query.email as string;
+
+      if (!laborEmail) {
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ message: Messages.MISSING_LABOR_EMAIL });
+      }
+
       const fetchBookings = await this.bookingService.fetchAllBookingsById(
         laborEmail
-      )
+      );
 
-      return res.status(200)
-      .json({messsage : 'bookingFetchsucceffluuly',fetchBookings})
-
-      
+      return res
+        .status(HttpStatus.OK)
+        .json({ messsage: Messages.BOOKINGS_FETCH_SUCCESS, fetchBookings });
     } catch (error) {
-      console.error("Error in fethall booking bookings ", error);
+      console.error(Messages.BOOKING_FETCH_FAILD, error);
       next(error);
     }
-  }
+  };
 
-  public fetchAllLabors = async(
+  public fetchAllLabors = async (
     req: Request & { labor: { id: string } },
     res: Response,
-    next : NextFunction
+    next: NextFunction
   ) => {
     try {
+      const fetchedLabors = await this.laborService.fetchAllLabor();
 
-
-      const fetchedLabors = await this.laborService.fetchAllLabor()
-
-      return res.status(200)
-      .json({messsage : 'labors fetch succef fullyy',fetchedLabors})
-
-      
+      return res
+        .status(HttpStatus.OK)
+        .json({ messsage: Messages.FETCH_LABOR_SUCCESSFULLY, fetchedLabors });
     } catch (error) {
-      console.error("Error in fetch alll labors.... ", error);
+      console.error(Messages.ERROR_IN_FETCH_LABORS, error);
       next(error);
     }
-  }
+  };
 
-  public witdrowWalletAmount = async(
+  public witdrowWalletAmount = async (
     req: Request & { labor: { id: string } },
     res: Response,
-    next : NextFunction
+    next: NextFunction
   ) => {
     try {
-
-      const laborId = req.labor.id
+      const laborId = req.labor.id;
 
       if (!laborId) {
-        return res.status(404)
-        .json({error : 'Cannot get the labor id '})
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ error: Messages.LABOR_ID_NOTFOUND });
       }
 
-      const { amount, bankDetails } = req.body
-      
+      const { amount, bankDetails } = req.body;
+
       if (!amount || !bankDetails) {
-        return res.status(404)
-        .json({error : 'Amount and bankdetisl are missing '})
+        return res
+          .status(HttpStatus.NOT_FOUND)
+          .json({ error: Messages.AMOUNT_AND_BANKDETAILS_MISSING });
       }
 
-      const withdrawalResponse  = await this.laborService.walletWithrow(
+      const withdrawalResponse = await this.laborService.walletWithrow(
         laborId,
         amount,
         bankDetails
-      )
+      );
 
-      res.status(200)
-      .json({message : 'wallet Withdrow requst send succeffuly....',withdrawalResponse })
-
-
-      
+      res.status(HttpStatus.OK).json({
+        message: Messages.WALLET_WITHDROW_REQUEST_SEND_SUCCESSFULLY,
+        withdrawalResponse,
+      });
     } catch (error) {
-      console.error("Error in withdrawal request: ", error);
+      console.error(Messages.ERROR_IN_WITHDROW_REQUEST, error);
       next(error);
     }
-  }
+  };
 
   public withdrowalRequests = async (
     req: Request,
     res: Response,
-    next : NextFunction
+    next: NextFunction
   ) => {
-    const { laborId } = req.params
-    
+    const { laborId } = req.params;
+
     try {
-
       if (!laborId) {
-            return res.status(400).json({ message: "laborId ID is required" });
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ message: Messages.LABOR_ID_NOTFOUND });
       }
-
 
       const withdrowalRequests = await this.paymentService.withdrowalRequests(
         laborId
-      )
+      );
 
-       res.status(200)
-        .json({message : 'withdrowal Requsets fetched succussfully......',withdrowalRequests })
-
-
+      res.status(HttpStatus.OK).json({
+        message: Messages.WITHDROW_REQUEST_FETCHED_SUCCESSFULY,
+        withdrowalRequests,
+      });
     } catch (error) {
-      console.error("Error in witthrowal requests....: ", error);
+      console.error(Messages.ERROR_IN_WITHDROW_REQUEST_FETCH, error);
       next(error);
     }
-  }
-
+  };
 }
 
-// public fetchBooking = async (
-//     req: Request & { labor: { id: string } },
-//     res: Response,
-//     next: NextFunction
-//   ) => {
-
-export default laborSideController;
+export default LaborSideController;

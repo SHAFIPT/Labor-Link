@@ -12,13 +12,11 @@ import { resetAdmin, setAdmin, setIsAdminAuthenticated } from '../../../redux/sl
 import { Clock, IndianRupee } from 'lucide-react';
 
 const AdminSideRow = () => {
-  // State to control sidebar visibility
   const currentPages = location.pathname.split("/").pop();
   console.log('curetnPages',currentPages)
   const [isOpen, setIsOpen] = useState(true);
   const [currentPage , setCurrentPage] = useState(currentPages)
 
-  // Function to toggle sidebar
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
@@ -27,7 +25,6 @@ const AdminSideRow = () => {
 
 
   const handleLogout = async () => {
-      console.log('hlooooooooooooooooooooooooooo')
       try {
         const response = await logout();
         

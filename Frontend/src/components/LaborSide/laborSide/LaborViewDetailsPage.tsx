@@ -32,16 +32,11 @@ interface Reschedule {
 const LaborViewDetailsPage = () => {
   const location = useLocation();
   const booking = location.state?.booking;
-  // console.log("This is BBBBBBBBBBBBBB",booking)
   const bookingdetislss = useSelector((state: RootState) => state.booking.bookingDetails);
   const [updatedBooking, setUpdatedBooking] = useState<BookingDetails | null>(null);
-
-  console.log('this ist eh resheudelullll',updatedBooking)
-
   const handleRescheduleUpdate = (newBooking: BookingDetails) => {
     setUpdatedBooking(newBooking);
   };
-
   const [cancelBooking, setCancelBooking] = useState(false)
   const loading = useSelector((state: RootState) => state.user.loading);
   const [resheduleModal, setResheduleModalOpen] = useState(null)
@@ -51,18 +46,13 @@ const LaborViewDetailsPage = () => {
   const { Userlatitude, Userlongitude } = booking.addressDetails
   const { coordinates: laborCoordinates } = booking.laborId.location;
   const theme = useSelector((state: RootState) => state.theme.mode);
-  const [updatedBookingDetails , setUpdatedBookingDetails] = useState("")
-  // console.log("TTTTTTTTT",Userlatitude)
-  console.log("rrrrrrrrrrrrrrrrrrrrrrrrrrrrr", bookingdetislss)
-  console.log("55555555555rrrrrkaaaaaaaaabolarrrrrrrrrrrrrd", updatedBookingDetails)
   
  const bookingDetails = updatedBooking 
   ? updatedBooking  // Use the updated booking details if rescheduled
   : (Array.isArray(bookingdetislss) 
       ? bookingdetislss.find(b => b.bookingId === booking?.bookingId) 
       : booking);
-
-  console.log("ppppppppppppppppppp", bookingDetails)
+  
   const navigate = useNavigate();
   const dispatch = useDispatch()
 
@@ -77,8 +67,6 @@ const LaborViewDetailsPage = () => {
     additionalChargeRequest,
     addressDetails
   } = booking;
-
-console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
 
   const formatDate = (dateString  :string) => {
     return new Date(dateString).toLocaleString();
@@ -99,7 +87,6 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
   }), [Userlatitude, Userlongitude, laborCoordinates]);
 
   useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     mapboxgl.accessToken = "pk.eyJ1IjoiYXJycnUiLCJhIjoiY202bmtpMDZ0MDdyMzJpcGQ1Y3Q3d3JveCJ9.KjVmyabdUcsKhNFsWLe9-Q";
 
     if (!mapContainerRef.current) return;
@@ -225,9 +212,7 @@ console.log("BBBEEEEESSSSSSSSSSSSSSSSSSSSSSSSS",bookingId)
     try {
       const response = await fetchBookings(bookingId);
       if (response.status === 200) {
-         const { bookings  } = response.data;
         dispatch(setBookingDetails(response.data.bookings));
-        setUpdatedBookingDetails(bookings);
       } else {
         toast.error('Error fetching booking details');
       }

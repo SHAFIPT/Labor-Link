@@ -22,7 +22,6 @@ import { toast } from 'react-toastify';
 import OtpForm from "./OtpModel";
 
 const UserRegisterPage = () => {
-  const commonPasswords = ["password", "123456", "qwerty", "abc123", "letmein"];
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -35,7 +34,7 @@ const UserRegisterPage = () => {
     length: false,
     lowerCase: false,
     upperCase: false,
-    unCommen: true,
+    specialChar: false, 
   });
 
   const error: {
@@ -50,7 +49,7 @@ const UserRegisterPage = () => {
       length: input.length >= 8,
       lowerCase: /[a-z]/.test(input),
       upperCase: /[A-Z]/.test(input),
-      unCommen: !commonPasswords.includes(input),
+      specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(input)
     });
   };
 
@@ -162,44 +161,17 @@ const UserRegisterPage = () => {
         </div>
 
         {/* Right Side Content */}
-        <div className="flex flex-col  lg:w-[50%] px-16 md:px-16 lg:px-8">
+        <div className="flex flex-col w-full lg:w-[50%] px-4 sm:px-20 md:px-20 lg:px-9">
           {/* Heading */}
-          <div className="text-center lg:text-left mb-[30px] mt-12 lg:mt-0 lg:ml-[73px]">
-            <h1 className="text-3xl font-serif relative">Sign Up</h1>
+          <div className="text-center lg:text-left mb-0  mt-7 md:mb-[30px] lg:ml-[73px]">
+            <h1 className="text-2xl md:text-3xl font-serif relative">Sign Up</h1>
           </div>
-
-          {/* User/Labor Options with Line Below */}
-          {/* <div className="relative ">
- 
-            <div className="flex justify-center items-center space-x-[253px]">
-       
-              <div className="text-center cursor-pointer hover:text-blue-600 transition duration-200">
-                <h2 className="text-[14px] font-medium font-poppins flex items-center justify-center gap-2">
-                  <i className="fas fa-user text-blue-500"></i> I am a user
-                </h2>
-              </div>
-
-              <div className="text-center cursor-pointer hover:text-yellow-600 transition duration-200">
-                <h2 className="text-[14px] font-medium font-sans flex items-center justify-center gap-2">
-                  <i className="fas fa-hard-hat text-yellow-500"></i> I am a
-                  labor
-                </h2>
-              </div>
-            </div>
-
-            <span
-              className="absolute w-[450px] bottom-[-15px] h-[3.5px] left-1/2 transform -translate-x-1/2"
-              style={{
-                background: `linear-gradient(to right, #21A391 50%, #8dcbdd  50%)`,
-              }}
-            ></span>
-          </div> */}
 
           <form className="" onSubmit={handleSubmit}>
             {/* Form Fields */}
             <div className="formFields  gap-3 flex flex-col pt-7">
               {/* Email Field */}
-              <div className="form-control relative">
+              <div className="form-control relative mb-4">
                 <input
                   required
                   value={firstName}
@@ -319,8 +291,8 @@ const UserRegisterPage = () => {
                 <li className={criteria.upperCase ? "text-green-500" : ""}>
                   Must include one uppercase character
                 </li>
-                <li className={criteria.unCommen ? "text-green-500" : ""}>
-                  Can't be too common
+                <li className={criteria.specialChar ? "text-green-500" : ""}>
+                  Must include one special character (!@#$%^&*)
                 </li>
               </ul>
             </div>
@@ -336,15 +308,15 @@ const UserRegisterPage = () => {
               </button>
             </div>
             <div className="flex justify-center mt-2 mb-2">
-              <div className="flex items-center my-2">
-                <hr className="w-[199px] border-t border-gray-400" />
-                <span className="mx-4 ">OR</span>
-                <hr className="w-[199px] border-t border-gray-400" />
-              </div>
+            <div className="flex items-center my-2">
+              <hr className="w-[147px] sm:w-32 md:w-[199px] border-t border-gray-400" />
+              <span className="mx-4">OR</span>
+              <hr className="w-[147px] sm:w-32 md:w-[199px] border-t border-gray-400" />
             </div>
+          </div>
             <div className="googleLogin flex justify-center">
               <button
-                className="border w-[450px] cursor-pointer text-black flex gap-2 items-center justify-center bg-white px-4 py-3 rounded font-medium text-sm hover:bg-zinc-300 transition-all ease-in duration-200"
+                className="border w-[450px] mb-6 cursor-pointer text-black flex gap-2 items-center justify-center bg-white px-4 py-3 rounded font-medium text-sm hover:bg-zinc-300 transition-all ease-in duration-200"
                 onClick={handleGoogleSignIn}
               >
                 <svg
@@ -384,7 +356,7 @@ const UserRegisterPage = () => {
               </span>
             </Link>
 
-            <div className="text-sm mt-[26px]">
+            <div className="text-sm mt-[16px] mb-3">
               Looking to join us as a Labor ?
               <span>
                 <Link

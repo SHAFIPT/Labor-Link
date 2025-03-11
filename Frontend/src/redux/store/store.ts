@@ -46,8 +46,7 @@ export const clearAllStates = () => {
   localStorage.removeItem("persist:userState");
   localStorage.removeItem("persist:laborState");
   localStorage.removeItem("persist:adminState");
-  localStorage.removeItem("persist:bookingState"); // Clear booking state
-  // Optionally keep theme: localStorage.removeItem('persist:themeState');
+  localStorage.removeItem("persist:bookingState"); 
 };
 
 export const persistor = persistStore(store);

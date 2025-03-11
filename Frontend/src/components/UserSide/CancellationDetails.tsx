@@ -62,15 +62,7 @@ const CancellationModal = ({ booking, onClose, isOpen }: CancellationModalProps)
     const dispath = useDispatch()
     const theam = useSelector((state: RootState) => state.theme.mode);
     const [similorLabors , setSimilorLabors] = useState<Labor[]>([])
-    console.log("Booking is this", booking)
-    
-    console.log("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmeeeeeee",similorLabors)
-
-
-    console.log("HHHHHHHHHHHHHHHHHH",booking?.laborId.location?.coordinates[1])
-
   useEffect(() => {
-       console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
         const fetchSimilaorLabors = async () => {
             dispath(setLoading(true))
             try {

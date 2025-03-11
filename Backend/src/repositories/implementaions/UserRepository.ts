@@ -8,9 +8,9 @@ export default class UserRepository implements IUserRepository{
     async LoginUser(email : string): Promise<IUser | null> {
         try {
                 const registedUser = await User.findOneAndUpdate(
-                { email: email },  // Search for the user by email
-                { $set: { lastLogin: new Date() } },  // Update lastLogin field
-                { new: true }  // Return the updated user
+                { email: email }, 
+                { $set: { lastLogin: new Date() } },
+                { new: true } 
             );
 
             
@@ -101,9 +101,9 @@ export default class UserRepository implements IUserRepository{
         try {
 
             const updatePassword = await User.findOneAndUpdate(
-            { email: email }, // Query by email
-            { $set: { password: password } }, // Update password
-            { new: true } // Return the updated document
+            { email: email },
+            { $set: { password: password } }, 
+            { new: true }
         );
             return updatePassword
             

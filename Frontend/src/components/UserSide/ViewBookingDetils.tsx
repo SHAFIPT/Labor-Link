@@ -25,9 +25,6 @@ const ViewBookingDetils = () => {
     { title: "Total Amount Pay", value: "₹0" },
   ]);
 
-  console.log("this is the bookingDetils.....", bookingDetils);
-
-  
 const fetchBookings = useCallback(async () => {
     const resoponse = await fetchAllBooings(UserId, currentPage, limit, filter);
     if (resoponse.status === 200) {
@@ -39,7 +36,6 @@ const fetchBookings = useCallback(async () => {
         canceledBookings,
         totalAmount,
       } = resoponse.data;
-      console.log("this is the fetchbooking ", resoponse);
       setBookingDetils(bookings);
       setTotalPages(totalPages);
       setStats([
@@ -63,14 +59,6 @@ useEffect(() => {
   const handleFilterChange = (value  :string) => {
     setFilter(value);
   };
-
-  // const stats = [
-  //   { title: 'Total Bookings', value: '40' },
-  //   { title: 'Total Work Completed', value: '30' },
-  //   { title: 'Total Cancelations', value: '20' },
-  //   { title: 'Total Amount Pay', value: '₹14,000' }
-  // ];
-
   const bookings = [
     {
       date: "2024-12-25",

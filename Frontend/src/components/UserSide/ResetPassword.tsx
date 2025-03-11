@@ -24,7 +24,6 @@ const ResetPassword = ({
     onCancel,
     email
 }: ResetPasswordProps) => {
-  console.log('Thsi si eth email............',email)
 
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)

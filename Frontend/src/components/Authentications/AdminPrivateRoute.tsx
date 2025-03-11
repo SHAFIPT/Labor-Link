@@ -8,7 +8,6 @@ interface AdminPrivateRouteProps {
 
 const AdminPrivateRoute= ({ children }: AdminPrivateRouteProps) => {
   const isAuthenticated= useSelector((state:RootState)=>state.admin.isAuthenticated)
-    console.log('this is admin  isAthenticated',isAuthenticated)
   return isAuthenticated?children:<Navigate to='/admin/login'/>;
 }
 

@@ -39,11 +39,6 @@ export default class BookingRepository
         throw new Error("Missing address details");
       }
 
-      console.log(
-        "This is the CreateBooooking ;;;;;;;;;;;;;;;",
-        bookingDetails
-      );
-
       const bookingId = uuidv4();
 
       const newBooking = new Booking({
@@ -61,8 +56,6 @@ export default class BookingRepository
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-
-      console.log("This is the newBokkkoioooooooooooooonng , ", newBooking);
 
       const savedBooking = await newBooking.save();
       return savedBooking;
@@ -131,7 +124,7 @@ export default class BookingRepository
     }
   ): Promise<IBooking | null> {
     try {
-      const { reason, comments, isWithin30Minutes, canceledBy } = data;
+      const { reason, comments, canceledBy } = data;
 
       // Get the current time and the booking's arrival time
       const currentTime = new Date();
@@ -214,7 +207,7 @@ export default class BookingRepository
 
       await booking.save();
 
-      booking.populate({
+      await booking.populate({
         path: "laborId", // Field to populate
         select: "firstName lastName  phone  location.coordinates categories", // Fields to include from the Labor schema
       });
@@ -259,6 +252,11 @@ export default class BookingRepository
       }
 
       await booking.save();
+
+      await booking.populate({
+        path: "laborId", // Field to populate
+        select: "firstName lastName  phone  location.coordinates categories", // Fields to include from the Labor schema
+      });
 
       return booking;
     } catch (error) {
@@ -719,10 +717,6 @@ export default class BookingRepository
         laborId: labor._id,
       }).sort({ createdAt: -1 });
 
-      // if (!existingBooking) {
-      //   throw new Error("No confirmed booking found");
-      // }
-
       return existingBooking;
     } catch (error) {
       console.error("Error in existing booking fetching...", error);
@@ -741,11 +735,7 @@ export default class BookingRepository
             laborId: labor._id,
             status: 'confirmed',
         }).sort({ createdAt: -1 }); 
-
-        // if (confirmedBookings.length === 0) {
-        //     throw new Error("No confirmed bookings found");
-        // }
-
+      
         return confirmedBookings;
     } catch (error) {
         console.error(error);

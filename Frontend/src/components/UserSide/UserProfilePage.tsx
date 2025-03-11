@@ -68,14 +68,10 @@ const UserProfile = () => {
   const [cancelDetilsModal , setCancelDetilsModal] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("");
   const location = useLocation();
-  // const [updatedBookingDetails , setUpdatedBookingDetails] = useState("")
   const currentPages = location.pathname.split("/").pop() || "defaultPage";
   const [currentPage, setCurrentPage] = useState(1);
   const [updatedBooking, setUpdatedBooking] = useState<BookingDetails | null>(null);
-  
-    console.log('this ist eh resheudelullll',updatedBooking)
-  
-    const handleRescheduleUpdate = (newBooking  :BookingDetails) => {
+  const handleRescheduleUpdate = (newBooking  :BookingDetails) => {
       setUpdatedBooking(newBooking); // Update state when reschedule is accepted
     };
   const [filter, setFilter] = useState(""); 
@@ -100,11 +96,8 @@ const UserProfile = () => {
   } = useSelector((state: RootState) => state.user.error);
   const bookingFromStore = useSelector(
   (state: RootState) => state.booking.bookingDetails
-);
-
-  console.log("Thiis is the BoookingDETAilssssssssssssss vavaaa:", bookingFromStore);
-  console.log("Thiis is the updatedBooking:", updatedBooking);
-
+  );
+  
   const bookingDetails = updatedBooking
     ? Array.isArray(updatedBooking) 
       ? updatedBooking 
@@ -112,15 +105,12 @@ const UserProfile = () => {
     : bookingFromStore;
 
   useEffect(() => {
-    // console.log('hlooooooooooooooooooooooooooo')
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const fetchUser = async () => {
       try {
         const data = await userFetch();
 
         const { fetchUserResponse } = data;
 
-        // console.log("This is the data:::::::::::::",fetchUserResponse)
         setUser(fetchUserResponse);
         setUserData(fetchUserResponse);
       } catch (error) {
@@ -173,11 +163,6 @@ const UserProfile = () => {
     name : string
   ) => {
     try {
-      console.log("Starting Firebase profile update...");
-      console.log("Email:", email);
-      console.log("Profile Picture URL:", profilePictureUrl);
-      console.log("Name:", name);
-
       // Query the user by email
       const usersRef = collection(db, "Users");
       const q = query(usersRef, where("email", "==", email));
@@ -203,9 +188,6 @@ const UserProfile = () => {
         });
 
         await Promise.all(updatePromises);
-        console.log(
-          "Profile picture and name updated successfully in Firebase."
-        );
       } else {
         console.error("No user found with the provided email.");
       }
@@ -215,7 +197,6 @@ const UserProfile = () => {
   };
 
   const handleSave = async () => {
-    // console.log("Starting handleSave function");
     dispatch(setLoading(true));
 
     try {
@@ -223,10 +204,8 @@ const UserProfile = () => {
         firstName: formData?.firstName,
         lastName: formData?.lastName,
       };
-      console.log("Profile data:", profileData); // Log profile data
 
       const validationErrors = await editProfileValidate(profileData);
-      console.log("Validation errors:", validationErrors); // Check validation results
 
       if (validationErrors) {
         dispatch(setLoading(false));
@@ -251,20 +230,15 @@ const UserProfile = () => {
         image: formDataObj.get("image"),
       });
 
-      console.log("About to call updateUser"); // Add this before API call
       const response = await updateUser(formDataObj);
-      console.log("Response from updateUser:", response); // Log full response
 
       if (response.status === 200) {
         const { updatedUser } = response.data;
-        console.log("Updated user data:", updatedUser); // Log updated user data
 
         const { ProfilePic, email, firstName, lastName } = updatedUser;
         const fullName = `${firstName} ${lastName}`.trim();
 
-        console.log("About to update Firebase"); // Add this before Firebase update
         await updateFirebaseProfilePicture(email, ProfilePic, fullName);
-        console.log("Firebase update completed"); // Add this after Firebase update
 
         dispatch(setUser(updatedUser));
         setUserData(updatedUser);
@@ -304,7 +278,6 @@ const UserProfile = () => {
 
     try {
       dispatch(setError({}));
-      // console.log('this sthe the PasswodDatat ------+++++-------:',PasswodData)
       const response = await editPassword(PasswodData);
 
       if (response.status === 200) {
@@ -330,15 +303,12 @@ const UserProfile = () => {
   
 
   useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const fetchBooking = async () => {
       try {
         const response = await fetchBookings(currentPage, limit , filter); // Assuming fetchBookings is an API call
         if (response.status === 200) {
           console.log("Bookings fetched successfully:", response.data);
           const { bookings , totalPages } = response.data;
-
-          console.log("Thsi si eth BookingDATAAAAAAAAAAAAA:", bookings);
           dispatch(setBookingDetails(bookings));
           setUpdatedBooking(bookings);
           setTotalPages(totalPages);

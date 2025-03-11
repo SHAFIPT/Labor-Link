@@ -46,21 +46,7 @@ const LaborRegister = () => {
   const [showErrors, setShowErrors] = useState(false)
   const loading  = useSelector((state: RootState) => state.labor.loading)
   const formData = useSelector((state: RootState) => state.labor.formData)
-  const laobrPassowrd = useSelector((state: RootState) => state.labor.formData.password)
-  const laborEmail = useSelector((state: RootState) => state.labor.formData.email)
-
-
-  console.log('heloooo gggggggggggggggg', {
-    laborEmail,
-    laobrPassowrd
-  })
-
   const unsavedChanges = useSelector((state: RootState) => state.labor.unsavedChanges)
-  // console.log('this is loading :',loading)
-  console.log('Thsi is showErrors showErrors : ', showErrors)
-  
-
-
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const error: {
@@ -88,16 +74,8 @@ const LaborRegister = () => {
       if (isLaborAuthenticated) {
         navigate('/labor/laborDashBoard')
       }
-    },[isLaborAuthenticated , navigate])
-
-
-
-  console.log('this is Abut page redex fomrdada' , formData)
-  console.log('this is Abut error error error &&&&&&&', error)
+    }, [isLaborAuthenticated, navigate])
   
-
-
-// console.log('thsi is phoneNumber',formData.phoneNumber)
   useEffect(() => {
   dispatch(setUnsavedChanges(true));
   
@@ -123,7 +101,6 @@ const LaborRegister = () => {
 
 
   useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     const handleBeforeunLoad = (event: BeforeUnloadEvent) => {
       if (unsavedChanges) {
         event.preventDefault()
@@ -161,15 +138,14 @@ const LaborRegister = () => {
   };
 
   useEffect(() => {
-         console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     setAddress({
       street: formData.address?.street || '',
       city: formData.address?.city || '',
       state: formData.address?.state || '',
       postalCode: formData.address?.postalCode || '',
       country: formData.address?.country || '',
-      longitude: formData.location?.coordinates[0] || 0, // Add longitude from location
-      latitude: formData.location?.coordinates[1] || 0,  // Add latitude from location
+      longitude: formData.location?.coordinates[0] || 0, 
+      latitude: formData.location?.coordinates[1] || 0, 
     });
   }, [formData]);
   
@@ -279,19 +255,6 @@ const LaborRegister = () => {
       gender: genderError,
       language: languageError,
     };
-
-    console.log("Thsi is the from errror:",formDataError)
-    
-    console.log(firstNameError)
-    console.log(lastNameError)
-    console.log(emailError)
-    console.log(passwordError)
-    console.log(phoneNumberError)
-    console.log('This si the address Errorr +++======',addressError)
-    console.log(dateOfBirthError)
-    console.log(genderError)
-    console.log(languageError)
-
     
     if (
       firstNameError ||
@@ -331,27 +294,8 @@ const LaborRegister = () => {
       };
 
       try {
-        //  const firebaseUser = await createUserWithEmailAndPassword(auth, email, password);
-      
-        // if (firebaseUser) {
-        //   console.log("User registered in Firebase: ", firebaseUser.user);
 
-        //   const fullName = `${firstName} ${lastName}`;
-
-        //   // Store the full name in Firestore
-        //   await setDoc(doc(db, "Labors", firebaseUser.user.uid), {
-        //     name: fullName, // Use full name here
-        //     email,
-        //     role: "labor", // Add role if needed
-        //   });
-          
-        // }
-
-        console.log('this is data is this dfdfdfdfd :  ++++++____++++++)))))+++++', dataTOStore)
-      
         const Response = await registerAboutYou(dataTOStore)
-
-        console.log('This si the repsonse in backend :',Response)
 
         if (Response.status === 200) {
           toast.success('About page completed ')

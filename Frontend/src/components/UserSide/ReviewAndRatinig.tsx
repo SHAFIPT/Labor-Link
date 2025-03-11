@@ -17,17 +17,6 @@ const ReviewAndRating = () => {
     const bookingId = searchParams.get("bookingId");
     const [bookingDetils, setBookingDetils] = useState<IBooking>()
     const [error, setError] = useState({ rating: "", feedback: "" });
-    
-    console.log('th9is is the bookign detils ::', bookingDetils)
-
-    console.log("Booking ID:", bookingId);
-
-    // useEffect(() => {
-    //     if (bookingDetils?.laborId?.reviews && bookingDetils?.laborId?.reviews.length > 0) {
-    //         navigate('/');
-    //     }
-    // }, [bookingDetils]);
-    
     const validateForm = () => {
         let isValid = true;
         const errors = { rating: "", feedback: "" };
@@ -46,9 +35,6 @@ const ReviewAndRating = () => {
             return isValid;
         };
     }
-
-    console.log('Thissssssssssssssis eh error :',error)
-
         const handleStarClick = (index: number): void => {
             setRating(index + 1);
         };
@@ -57,50 +43,46 @@ const ReviewAndRating = () => {
             setFeedback(e.target.value);
         };
 
-        const handleSubmit = async (e: React.FormEvent)  => {
-            e.preventDefault(); 
-            console.log('tiam hereeeeeeeeeeeeeee.')
-            console.log(validateForm())
-            if (validateForm()) return;
-      
-            const formData = new FormData();
-            if (bookingId) {
-                formData.append("bookingId", bookingId || ""); // Ensure bookingId is not null
-            }
-            formData.append("rating", rating.toString());
-            formData.append("feedback", feedback);
-            // formData.append("bookingId", bookingId);
+        const handleSubmit = async (e: React.FormEvent) => {
+          e.preventDefault();
+          console.log(validateForm());
+          if (validateForm()) return;
 
-            if (image1) {
-                formData.append("image1", image1);
+          const formData = new FormData();
+          if (bookingId) {
+            formData.append("bookingId", bookingId || ""); // Ensure bookingId is not null
+          }
+          formData.append("rating", rating.toString());
+          formData.append("feedback", feedback);
+
+          if (image1) {
+            formData.append("image1", image1);
+          }
+          if (image2) {
+            formData.append("image2", image2);
+          }
+          try {
+            const reviewSumbitResponse = await reviewSubmit(
+              formData,
+              bookingId || ""
+            );
+            if (reviewSumbitResponse.status == 200) {
+              toast.success("Review sumiteed sussfully...");
+              navigate("/");
             }
-            if (image2) {
-                formData.append("image2", image2);
-            }
-                // console.log("FormData content:");
-                // for (let [key, value] of formData.entries()) {
-                //     console.log(key, value);
-                // }
-      
-            try {
-                 console.log('submitted......')          
-                const reviewSumbitResponse = await reviewSubmit(formData, bookingId || ""); 
-                console.log('Riveiw respnse ',reviewSumbitResponse)
-                if (reviewSumbitResponse.status == 200) {
-                    toast.success('Review sumiteed sussfully...')
-                    navigate('/')
-                }
-        
-            } catch (error) {
-                console.error("Error submitting review:", error);
-            }
+          } catch (error) {
+            console.error("Error submitting review:", error);
+          }
         };
-    
-        const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, setImage: React.Dispatch<React.SetStateAction<File | null>>): void => {
-            const file = e.target.files?.[0];
-            if (file) {
-                setImage(file); // Set the specific image state
-            }
+
+        const handleImageUpload = (
+          e: React.ChangeEvent<HTMLInputElement>,
+          setImage: React.Dispatch<React.SetStateAction<File | null>>
+        ): void => {
+          const file = e.target.files?.[0];
+          if (file) {
+            setImage(file); // Set the specific image state
+          }
         };
 
 

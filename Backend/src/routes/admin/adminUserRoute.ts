@@ -1,42 +1,41 @@
 import { authenticate } from "../../middleware/authMiddleware";
-import adminController from "../../controllers/adminController";
 import { Router } from "express";
 
 const adminUserRoute = Router()
-const adminUserController = new adminController()
+import { adminController } from "../../config/container";
 
 
 // users fetch
-adminUserRoute.get('/usersFetch',authenticate,adminUserController.fetchUser.bind(adminUserController))
+adminUserRoute.get('/usersFetch',authenticate,adminController.fetchUser.bind(adminController))
     
 // labor fetch
-adminUserRoute.get('/laborsFetch', authenticate,adminUserController.fetchLabor.bind(adminUserController))
+adminUserRoute.get('/laborsFetch', authenticate,adminController.fetchLabor.bind(adminController))
 
-adminUserRoute.get('/fetchLaborBookins/:laborId', authenticate, adminUserController.fetchLaborBookins.bind(adminUserController))
+adminUserRoute.get('/fetchLaborBookins/:laborId', authenticate, adminController.fetchLaborBookins.bind(adminController))
 
-adminUserRoute.get('/fetchAllBookins', authenticate, adminUserController.fetchAllBookins.bind(adminUserController))
+adminUserRoute.get('/fetchAllBookins', authenticate, adminController.fetchAllBookins.bind(adminController))
 
-adminUserRoute.get('/fetchPendingWidrowRequsts', authenticate, adminUserController.fetchPendingWidrowRequsts.bind(adminUserController))
+adminUserRoute.get('/fetchPendingWidrowRequsts', authenticate, adminController.fetchPendingWidrowRequsts.bind(adminController))
 
-adminUserRoute.put('/submitAcitons/:id', authenticate, adminUserController.submitAcitons.bind(adminUserController))
+adminUserRoute.put('/submitAcitons/:id', authenticate, adminController.submitAcitons.bind(adminController))
 
 // user block and unBlock
-adminUserRoute.patch('/userBlock',authenticate,adminUserController.userBlock.bind(adminUserController))
-adminUserRoute.patch('/userUnblock',authenticate, adminUserController.userUnblock.bind(adminUserController))
+adminUserRoute.patch('/userBlock',authenticate,adminController.userBlock.bind(adminController))
+adminUserRoute.patch('/userUnblock',authenticate, adminController.userUnblock.bind(adminController))
 
 // labor block and unBlock
-adminUserRoute.patch('/laborBlock',authenticate,adminUserController.laborBlock.bind(adminUserController))
-adminUserRoute.patch('/laborUnblock', authenticate,adminUserController.laborUnblock.bind(adminUserController))
+adminUserRoute.patch('/laborBlock',authenticate,adminController.laborBlock.bind(adminController))
+adminUserRoute.patch('/laborUnblock', authenticate,adminController.laborUnblock.bind(adminController))
 
 //labor aproove and unApprove
-adminUserRoute.patch('/laborApprove',authenticate,adminUserController.Approve.bind(adminUserController))
-adminUserRoute.patch('/UnApprove', authenticate, adminUserController.UnApprove.bind(adminUserController))
+adminUserRoute.patch('/laborApprove',authenticate,adminController.Approve.bind(adminController))
+adminUserRoute.patch('/UnApprove', authenticate, adminController.UnApprove.bind(adminController))
 
 //labor rejection with reason
-adminUserRoute.post('/rejectionReson', authenticate, adminUserController.rejectionReson.bind(adminUserController))
+adminUserRoute.post('/rejectionReson', authenticate, adminController.rejectionReson.bind(adminController))
 
 //labor delete
-adminUserRoute.delete('/deleteLabor', authenticate, adminUserController.deleteLabor.bind(adminUserController))
+adminUserRoute.delete('/deleteLabor', authenticate, adminController.deleteLabor.bind(adminController))
 
 
 export default adminUserRoute

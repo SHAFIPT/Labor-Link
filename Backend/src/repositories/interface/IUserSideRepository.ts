@@ -15,5 +15,6 @@ export interface IUserSideRepository {
   paymentSuccess(bookingId: string, laborId: string, userId: string): Promise<Stripe.PaymentIntent> 
   
   reviewSubmiting(labor: ILaborer, user: IUser, rating: string, feedback: string, imageUrls: string[]): Promise<IBooking | null>
+   getSearchSuggest(query: string): Promise<{ id: string; name: string; category: string; profilePicture: string | null }[]> 
   
 }                

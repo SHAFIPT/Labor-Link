@@ -69,23 +69,19 @@ export class AdminService implements IAdminService {
   ): Promise<ILaborer | null> {
       const existLabor = await this.adminRepositery.existLabor(email);
       
-      console.log('tis is the labor name',existLabor.firstName)
-      console.log('tis is the labor email',existLabor.email)
-
     if (existLabor) {
       const isEmailSent = await sendRejectionEmail(
         existLabor.email,
         reason,
         existLabor.firstName
-        );
-        console.log('The maail sented succeffuly.....!',isEmailSent)
-
+      );
+      
       if (isEmailSent) {
         // Ensure updateStatus is properly handled
         const updateStatus = await this.adminRepositery.updateStatus(
           existLabor.email
-          );
-          console.log('thsi is the updated status :',updateStatus)
+        );
+        
         if (updateStatus) {
           return updateStatus;
         } else {

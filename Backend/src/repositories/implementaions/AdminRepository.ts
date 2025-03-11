@@ -19,15 +19,12 @@ export class AdminRepositooy implements IAdminRepository {
     try {
       let searchQuery: any = {};
 
-      // Apply search query if provided
       if (query) {
         searchQuery.$or = [
           { firstName: { $regex: query, $options: "i" } },
           { email: { $regex: query, $options: "i" } },
         ];
       }
-
-      console.log("joooooooooooooooooooooi", filter);
 
       if (filter === "Active") {
         searchQuery.isBlocked = false;
@@ -308,10 +305,6 @@ export class AdminRepositooy implements IAdminRepository {
   ): Promise<{ bookings: IBooking[]; total: number }> {
     try {
       let query = { laborId };
-
-      // if (filter) {
-      //   query.status = filter
-      // }
 
       const total = await Booking.countDocuments(query);
       const bookings = await Booking.find(query)

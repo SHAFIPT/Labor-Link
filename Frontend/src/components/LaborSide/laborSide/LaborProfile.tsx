@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux"
-import { RootState } from "../../../redux/store/store"
+import { persistor, RootState } from "../../../redux/store/store"
 import { useEffect, useState } from "react"
 import { setIsLaborAuthenticated, setLaborer, resetLaborer ,setError, setLoading} from "../../../redux/slice/laborSlice"
 import { resetUser, setAccessToken, setisUserAthenticated, setUser } from '../../../redux/slice/userSlice'
@@ -59,32 +59,25 @@ const LaborProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode)
   const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated); 
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-  const Laborer = useSelector((state : RootState) => state.labor.laborer)
+  const Laborer = useSelector((state: RootState) => state.labor.laborer)
+  
+  console.log('This is the authenticated labor ::',Laborer)
+  console.log('This is the isLaborAuthenticated ::',isLaborAuthenticated)
+
   const email = useSelector((state : RootState) => state.labor.laborer.email)
   const loading = useSelector((state : RootState) => state.labor.loading)
   const currentUser = useSelector((state: RootState) => state.labor.laborer._id)
   const { state: user } = useLocation();
-
-  
-  
- 
-  console.log('Thsi is eth current Laborer shafiiii Laborer  +++++++++++++++ :',user)
-  console.log('Thsi is eth current Laborer aaaaaaabuu Laborer  +++++++++++++++ :',Laborer)
-  // console.log('Thsi is eth currentisLaborAuthenticated :',isLaborAuthenticated)
   const location = useLocation();
   const currentPage = location.pathname.split('/').pop()|| "defaultPage"; 
-
-  console.log("Thsi is the current paaaaaaaaaaaaaaaaaaageeeeeeeeeeeeeeeeee",currentPage)
   const [openEditProfile, setOpenEditProfile] = useState(false)
   const [laborData, setLaborData] = useState<LaborData | null>(null);
-  console.log('Thsi is the laborDataalllllllllllll',laborData)
   const [openAbout, setOpenAbout] = useState(false)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [openChangePassword, setOpenChangePasswod] = useState(false)
   const [similorLabors, setSimilorLabors] = useState<ILaborer[]>([])
-  console.log('%%%%%%%%%%%%%##########&&&&&&&&',similorLabors)
   const [AboutFromData, setAboutFromData] = useState({
     name: "",
     experience: "",
@@ -138,11 +131,12 @@ const LaborProfile = () => {
   responsibilities: '',
   image: null
 });
-   
-  // useEffect(() => {
-  //    console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
-  //   console.log('This is the formData :',email)
-  // },[])
+  
+//   if (isUserAuthenticated) {
+//     dispatch(resetLaborer())
+//     dispatch(setIsLaborAuthenticated(false))
+//  }
+
   
 const error: {
      firstName?: string;
@@ -159,14 +153,13 @@ const error: {
 
   const laborId = user?._id;
   const categorie = user?.categories?.[0];
-  const latitude = user?.location?.coordinates?.[1]; // Latitude
-  const longitude = user?.location?.coordinates?.[0]; // Longitude
+  const latitude = user?.location?.coordinates?.[1]; 
+  const longitude = user?.location?.coordinates?.[0];
 
 useEffect(() => {
   const fetchSimilarLabors = async () => {
     if (latitude && longitude && categorie && laborId) {
-      const response = await fetchLaobrs({ latitude, longitude, categorie, laborId }); // Pass an object
-      console.log('rooooooooooooooooooI*******************', response);
+      const response = await fetchLaobrs({ latitude, longitude, categorie, laborId }); 
       const { labors } = response.data
       setSimilorLabors(labors)
     }
@@ -193,9 +186,7 @@ useEffect(() => {
   }
   return []; // Default to empty array if parsing fails
 })();
-      
-      console.log("This is partsed Skills ........ +++++ ========= ",parsedSkills)
-  
+
   // Reset formData with actual labor data
   setFormData({
     firstName: laborData?.firstName || "",
@@ -223,17 +214,12 @@ useEffect(() => {
   };
   
 
-  useEffect(() => {
-      console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
+  useEffect(() => { 
     const fetchUser = async () => {
       try {
         const data = await laborFetch();
-        console.log("This is the Data LLLLLLLLLLLLLLLLLLLLLLLLLL", data);
   
         const { fetchUserResponse } = data
-        
-        //  console.log("This is the laborData LLLLLLLLLLLLLLLLlaborData", fetchUserResponse);
-  
         dispatch(setLaborer(fetchUserResponse))
       } catch (error) {
          if (error instanceof Error) {
@@ -241,7 +227,7 @@ useEffect(() => {
         } else {
           console.error("Unknown error:", error);
         
-                localStorage.removeItem("LaborAccessToken");
+          localStorage.removeItem("LaborAccessToken");
   
           // Reset User State
           dispatch(setUser({}));
@@ -266,7 +252,6 @@ useEffect(() => {
 
 
   useEffect(() => {
-   console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
   // Parse the availability from the string array
    const availableDays =laborData?.availability 
   ? laborData.availability.join(", ")
@@ -294,7 +279,6 @@ useEffect(() => {
   
 
   useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
   if (!isUserAuthenticated && !isLaborAuthenticated) {
     navigate('/login');
   }
@@ -358,7 +342,6 @@ const handleAllDaysChange = () => {
   };
 
   
-
 const prepareAvailabilityForSubmission = () => {
   const days = Object.keys(formData.availability)
     .filter(day => day !== 'All' && formData.availability[day as keyof typeof formData.availability]) // ✅ Explicitly cast `day`
@@ -373,15 +356,7 @@ const prepareAvailabilityForSubmission = () => {
   return days;
 };
 
-  
-  // console.log('Thsi is eth current user:', user)
-  // console.log('Thsi is eth current Laborer :', Laborer)
-
-
-   
-   
   useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
   if (Laborer && Object.keys(Laborer).length > 0) {  // Check if Laborer is not empty
     console.log("Hi I am here++++++-----");
    const LaborfullAddress = Laborer?.address 
@@ -394,7 +369,6 @@ const prepareAvailabilityForSubmission = () => {
       categories: Array.isArray(Laborer.categories) ? Laborer.categories :[Laborer.categories].filter(Boolean),
     });
   } else if (user) {
-    console.log("kkkkkk kkkiiiii mmmmmmmmmm++++++-----");
     // Ensure user address is handled similarly to Laborer
     const UserLaborfullAddress = user?.address 
       ? typeof user.address === 'string'
@@ -420,16 +394,8 @@ const prepareAvailabilityForSubmission = () => {
     }));
   };
 
-console.log("This is the currentUser:", currentUser);
-
 const handleSubmit = async () => {
   const userId = currentUser || user?._id;
-
-  console.log('Thsi shte userId/////',userId)
-
-
-  console.log("This is the current user:", currentUser);
-    console.log("This is the userId:", userId);
    
   if (!userId) return;
 
@@ -440,22 +406,15 @@ const handleSubmit = async () => {
     description: AboutFromData.description
   };
 
-  // Save to user-specific localStorage
-  // localStorage.setItem(`aboutData_${userId}`, JSON.stringify(newData));
-  // setSubmittedData(newData);
   setOpenAbout(false);
   setIsEditing(false);
 
 
   try {
 
-      console.log("This is the newData:", newData);
-
     const response = await aboutMe(newData)
 
     const { AboutMe } = response.data
-
-    console.log("Thsi sie About me ;;;;;kkkkkk ++++++ __))(((())))",AboutMe)
 
     if (response.status === 200) {
 
@@ -481,11 +440,6 @@ const updateFirebaseLaborProfilePicture = async (
   name: string | undefined
 ): Promise<void> => {
   try {
-    console.log("Starting Firebase labor profile update...");
-    console.log("Email:", email);
-    console.log("Profile Picture URL:", profilePictureUrl);
-    console.log("Name:", name);
-
     // Query the labor by email
     const usersRef = collection(db, "Labors");
     const q = query(usersRef, where("email", "==", email));
@@ -574,22 +528,9 @@ const updateFirebaseLaborProfilePicture = async (
         formDataToSubmit.append('profilePicture', formData.image, formData.image.name);
       }
 
-
-      console.log('thde formDatat to submit....______++++++-0------')
-
-      // Log FormData contents
-      // for (let [key, value] of formDataToSubmit.entries()) {
-      //   console.log(`${key}:`, value);
-      // }
-
       const response = await updateProfile(formDataToSubmit);
-
-      console.log("Profile updated: succefully.....+++++ =======", response);
-
+      
       if (response.status === 200) {
-
-
-        console.log('Thsi sie the labor profile update page data ::::::::::::',response.data)
 
         const { profilePicture, firstName, lastName } = response.data.updatedLabor
 
@@ -640,7 +581,6 @@ const updateFirebaseLaborProfilePicture = async (
   
       try {
         dispatch(setError({}));
-        // console.log('this sthe the PasswodDatat ------+++++-------:',PasswodData)
         const response = await editPassword(PasswodData)
   
         if (response.status === 200) {
@@ -684,8 +624,6 @@ const updateFirebaseLaborProfilePicture = async (
   };
 
 
-
-  // console.log('This labor daata . skills and dispal  ++++ 8888888 *(****)', JSON.parse(laborData?.skill?.[0]))
    const parsedSkillsData: string[] = (() => {
   try {
     if (Array.isArray(laborData?.skill)) {
@@ -700,21 +638,13 @@ const updateFirebaseLaborProfilePicture = async (
     return [];
   }
 })();
-  console.log('Role   ++++ &&%%%parsedSkillsData',parsedSkillsData)
- 
-  console.log("Thsi sieth laborData +++++{{{{{{{}}}}}}} :",formData) 
   
   if (!currentUser && !user?._id) {
   return null;
   }
-  
-
-  // console.log("This is the user object length ++___))((((()))))::", Object.keys(Laborer).length === 0)
-  console.log("This is the leabor emeaillll+___))((((()))))::", user?.email)
 
 // Updated chat creation function
 const handleChatPage = async (user : IUser) => {
-  console.log("The chatting page is triggering ;;;");
   const laborEmail = user?.email;
   if (!laborEmail) {
     console.log("Labor email is undefined");
@@ -733,10 +663,6 @@ const handleChatPage = async (user : IUser) => {
       console.log("Labor not found");
       return;
     }
-
-    console.log("Firebase labor email:", laborEmail);
-    console.log("Firebase userId:", userId);
-    console.log("Firebase laborId:", laborId);
 
     const db = getFirestore(app);
     
@@ -762,11 +688,9 @@ const handleChatPage = async (user : IUser) => {
       };
       const newChatRef = await addDoc(collection(db, 'Chats'), newChat);
       chatId = newChatRef.id;
-      console.log("New chat created with ID:", chatId);
     } else {
       // Use existing chat
       chatId = chatSnapshot.docs[0].id;
-      console.log("Existing chat found with ID:", chatId);
 
       // Mark as read by updating lastReadTimestamp
       const chatDocRef = doc(db, 'Chats', chatId);
@@ -828,10 +752,6 @@ const findLaborIdByEmail = async (email  : string) => {
 
 
   const LaborDetails = user ? user : Laborer ? Laborer : null;
- 
-
-  console.log('This si the usek kkkkkkkk', LaborDetails)
-
   
   const showMoreReviews = () => {
     setVisibleReviews(LaborDetails.reviews.length);
@@ -841,11 +761,6 @@ const findLaborIdByEmail = async (email  : string) => {
     setVisibleReviews(3);
   };
   
-  // const breadcrumbItems = [
-  //   { label: "Home", link: "/" },
-  //   { label: "LaborProfilePage", link: null }, // No link for the current page
-  // ];
-
     const handleNavigeProfilePage = (user : ILaborer) => {
       navigate("/labor/ProfilePage", { state: user });
   };

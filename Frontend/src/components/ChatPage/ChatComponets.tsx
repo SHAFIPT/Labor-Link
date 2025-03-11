@@ -5,8 +5,7 @@ import Picker from '@emoji-mart/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
 import { EmojiClickData } from "emoji-picker-react"; 
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc , where, getDocs, documentId, DocumentData, Timestamp  } from 'firebase/firestore';
-// import { getAuth } from 'firebase/auth';
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, updateDoc , where, getDocs, documentId,  Timestamp  } from 'firebase/firestore';
 import { auth , db } from '../../utils/firbase';
 import { useLocation} from 'react-router-dom';
 import QuoteMessage from './QuoteMessage';
@@ -28,7 +27,7 @@ import { UserAddress } from '../../@types/userAddres';
 
 interface ChatComponentProps {
   chatId?: string;
-  onMenuClick?: () => void; // ✅ Add this property
+  onMenuClick?: () => void; 
   currentPage?: string;
 }
 
@@ -57,33 +56,25 @@ export type QuoteDetailsType = {
 
 interface BookingData {
   status: string;
-  // Add other properties if needed
 }
 
 
 
 const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, currentPage = null }) => {
-  
-  console.log('hoooooooooooooo')
+  console.log("hoooooooooooooo");
   const userLogin = useSelector((state: RootState) => state.user.user);
   const LaborLogin = useSelector((state: RootState) => state.labor.laborer);
-  const isMobileChatListOpen = useSelector((state: RootState) => state.labor.isMobileChatListOpen);
-
-  console.log('jjjjjjjjjjjjjjj',userLogin)
-  console.log('kkkkkkkkkkkk',LaborLogin)
-
-
-  // const { chatId } = useParams();
+  const isMobileChatListOpen = useSelector(
+    (state: RootState) => state.labor.isMobileChatListOpen
+  );
   const location = useLocation();
-  const { user, chatId: chatIdState } = location.state || {}; 
-
-  console.log('Ngttttttttttttttttt',user)
-  
+  const { user, chatId: chatIdState } = location.state || {};
+  const currentPages = location.pathname.split("/").pop() || "";
   const chatId = chatIdProp || chatIdState;
-  // const { state: chatId } = useLocation();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
-  const [selectedQuoteDetails, setSelectedQuoteDetails] = useState<QuoteDetailsType | null>(null);
+  const [selectedQuoteDetails, setSelectedQuoteDetails] =
+    useState<QuoteDetailsType | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -95,22 +86,13 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   const [chatDetails, setChatDetails] = useState<ChatDetails | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [fetchedLaborId, setFetchedLaborId] = useState(null);
-  const [chatData, setChatData] = useState<DocumentData | null>(null);
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
-  const [allBookingExist, setAllBookingExist] = useState([])
-  console.log('This is th4echata Data ;;;', chatData)
-  console.log('Thsis it eh llokingg diillyy',bookingData)
-  console.log('laaaaaaaaaaaaaay suguuu',allBookingExist)
+  const [allBookingExist, setAllBookingExist] = useState([]);
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const theam = useSelector((state: RootState) => state.theme.mode);
-  const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated);
-  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
-
-
-  console.log('is laborAuthenticcate :::::',isLaborAuthenticated)
-  console.log('is isUserAthenticated :::::',isUserAthenticated)
-
-
+  const isUserAthenticated = useSelector(
+    (state: RootState) => state.user.isUserAthenticated
+  );
   const [userAddress, setUserAddress] = useState<UserAddress>({
     name: "",
     phone: "",
@@ -126,7 +108,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     user: {
       profilePicture: "",
       name: "",
-      email: ""
+      email: "",
     },
     labor: {
       profilePicture: "",
@@ -134,37 +116,12 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       email: "",
     },
   });
-
-  console.log('This si the chatIdddddddddddddd<',chatId)
-  
-  console.log("888888888888888", participants)
-  
-  // const laborId = bookingData?.laborId
-
-  // console.log('This si the booking labor id ...........',laborId)
-
   const [quoteData, setQuoteData] = useState({
     description: "",
     estimatedCost: "",
     arrivalTime: "",
   });
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const fetchChatData = async () => {
-      if (!chatId) return;
-      const chatRef = doc(db, "Chats", chatId);
-      const chatSnap = await getDoc(chatRef);
-
-      if (chatSnap.exists()) {
-        setChatData(chatSnap.data());
-      }
-    };
-    fetchChatData();
-  }, [chatId]);
-
-  // console.log("This is the chatDAAAAAADDDAAAATTTTAAA",chatData?.quoteAccepted)
-  console.log("This is the chatDAAAAAADDDAAAATTTTAAA", LaborLogin);
 
   useEffect(() => {
     const fetchLaborId = async () => {
@@ -191,7 +148,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       fetchLaborId(); // Only call fetchLaborId if labor email is available
     }
   }, [participants.labor.email]);
-
 
   const laborId = fetchedLaborId || user?.user?._id;
   const userId = userLogin?._id;
@@ -261,7 +217,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
           user: {
             profilePicture: userData.profilePicture || "",
             name: userData.name || "",
-            email : userData.email || ""
+            email: userData.email || "",
           },
         }));
       } else {
@@ -312,41 +268,15 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     };
   }, [chatDetails]);
 
-  // console.log("Thsi si ethe currentUserData :::::::::::", currentUserData);
-  // console.log("Thsi si ethe userLogin?.email :::::::::::", userLogin?.ProfilePic);
-
   // Add this useEffect to fetch user data from Firebase
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Get the email of the currently logged in user
         const email = userLogin?.email || LaborLogin?.email;
-
-        // console.log("This is the emilof chated user................kkkkkkkkkkkkffffffffkkkkkkkkkkkkk......",email)
 
         if (!email) {
           console.log("No email found");
           return;
-        }
-
-        // Query Firebase for user data
-        const usersRef = collection(db, "Users");
-        const q = query(usersRef, where("email", "==", email));
-        const querySnapshot = await getDocs(q);
-        // console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",querySnapshot.docs)
-
-        if (!querySnapshot.empty) {
-          // Get the first matching document
-          // const userData = querySnapshot.docs[0].data();
-          // setCurrentUserData({
-          //   profilePicture: userData.profilePicture || "",
-          //   name: userData.name || "",
-          //   email: userData.email || "",
-          // });
-
-          // console.log("This is the mmmmmmmmmmyyyyyyyyyyyyyyyyymmmmmmmmmmmmmmmmmm",setCurrentUserData)
-        } else {
-          console.log("No user found with this email");
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -381,7 +311,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       }
     };
 
-
     // Listen to messages in real-time
     const messagesRef = collection(db, "Chats", chatId, "messages");
     const q = query(messagesRef, orderBy("timestamp", "asc"));
@@ -402,11 +331,16 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
 
       setMessages(newMessages);
       scrollToBottom();
-});
+    });
 
     fetchChatDetails();
     return () => unsubscribe();
   }, [chatId, db]);
+
+  console.log(
+    "Thsi is the login labaor Profile image :::",
+    participants.labor.profilePicture
+  );
 
   // Send message function
   // Modify your handleSendMessage function to handle both text and media
@@ -414,10 +348,10 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
-     if (!auth.currentUser) {
-        console.error("No user is signed in.");
-        return;
-      }
+    if (!auth.currentUser) {
+      console.error("No user is signed in.");
+      return;
+    }
 
     try {
       let messageData;
@@ -435,13 +369,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       const ChatData = chatSnap.data();
       const laborId = ChatData?.laborId;
 
-      // console.log("Thsi is the Loabor id from chat lllllllllllllkkkkkkkkkkkkkkkkkkk",laborId)
-      // console.log("Thsi is the User id from chat lllllllllllllkkkkkkkkkkkkkkkkkkkk", userId)
-
       const isLabor = senderId === laborId;
       const lastMessageSender = isLabor ? "labor" : "user";
-
-      // const
 
       if (mediaFile) {
         // Handle media message
@@ -451,7 +380,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
           : "Sent a video";
 
         messageData = {
-          content:                                lastMessageContent,
+          content: lastMessageContent,
           mediaUrl: mediaUrl,
           type: mediaFile.type.startsWith("image/") ? "image" : "video",
           senderId: auth.currentUser.uid,
@@ -497,50 +426,58 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       // Optionally add error handling UI feedback here
     }
   };
-  
 
-  const isTimeSlotAvailable = (requestedTime: string, allBookings: IBooking[]): boolean => {
-  const requestedDate = new Date(requestedTime);
+  const isTimeSlotAvailable = (
+    requestedTime: string,
+    allBookings: IBooking[]
+  ): boolean => {
+    const requestedDate = new Date(requestedTime);
 
-  // Calculate the 1-hour before and 1-hour after time ranges
-  const oneHourBefore = new Date(requestedDate.getTime() - 60 * 60 * 1000); // 1 hour before
-  const oneHourAfter = new Date(requestedDate.getTime() + 60 * 60 * 1000); // 1 hour after
+    // Calculate the 1-hour before and 1-hour after time ranges
+    const oneHourBefore = new Date(requestedDate.getTime() - 60 * 60 * 1000); // 1 hour before
+    const oneHourAfter = new Date(requestedDate.getTime() + 60 * 60 * 1000); // 1 hour after
 
-  for (const booking of allBookings) {
-    const existingBookingDate = new Date(booking.quote.arrivalTime);
+    for (const booking of allBookings) {
+      const existingBookingDate = new Date(booking.quote.arrivalTime);
 
-    // Check if the existing booking overlaps with the 1-hour before or after range
-    if (
-      (existingBookingDate >= oneHourBefore && existingBookingDate <= oneHourAfter)
-    ) {
-      return false; // Time slot is not available
+      // Check if the existing booking overlaps with the 1-hour before or after range
+      if (
+        existingBookingDate >= oneHourBefore &&
+        existingBookingDate <= oneHourAfter
+      ) {
+        return false; // Time slot is not available
+      }
     }
-  }
 
-  return true; // Time slot is available
-};
-  
-  
+    return true; // Time slot is available
+  };
+
   // Send quote function
   const handleSubmitQuote = async () => {
     try {
-
-      if (!quoteData.description.trim() || !quoteData.estimatedCost.trim() || !quoteData.arrivalTime) {
+      if (
+        !quoteData.description.trim() ||
+        !quoteData.estimatedCost.trim() ||
+        !quoteData.arrivalTime
+      ) {
         toast.error("All fields are required. Please fill in all details.");
         return;
       }
 
-
-
-         const arrivalTimeError = validateDate(quoteData.arrivalTime);
-          if (arrivalTimeError) {
-            toast.error(arrivalTimeError)
-            return; // Stop execution if validation fails
+      const arrivalTimeError = validateDate(quoteData.arrivalTime);
+      if (arrivalTimeError) {
+        toast.error(arrivalTimeError);
+        return; // Stop execution if validation fails
       }
-      
-      const isAvailable = isTimeSlotAvailable(quoteData.arrivalTime, allBookingExist);
+
+      const isAvailable = isTimeSlotAvailable(
+        quoteData.arrivalTime,
+        allBookingExist
+      );
       if (!isAvailable) {
-        toast.error("The requested time and date slot is already booked. Please choose another time.");
+        toast.error(
+          "The requested time and date slot is already booked. Please choose another time."
+        );
         return; // Stop execution if the time slot is unavailable
       }
 
@@ -548,7 +485,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         toast.error("User is not authenticated.");
         return;
       }
-
 
       const quoteMessage = {
         type: "quote",
@@ -561,8 +497,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         senderId: auth.currentUser.uid,
         timestamp: serverTimestamp(),
       };
-
-      console.log("Sending quote message:", quoteMessage);
 
       await addDoc(collection(db, "Chats", chatId, "messages"), quoteMessage);
 
@@ -579,69 +513,97 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   };
 
   const formatTimestamp = (
-  timestamp: Timestamp | Date | number | null | undefined
-): string => {
-  if (!timestamp) return ''; // Handle null or undefined
+    timestamp: Timestamp | Date | number | null | undefined
+  ): string => {
+    if (!timestamp) return ""; // Handle null or undefined
 
-  // Define options to exclude seconds
-  const options: Intl.DateTimeFormatOptions = {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true, // Optional: Change to 'false' for 24-hour format
+    // Define options to exclude seconds
+    const options: Intl.DateTimeFormatOptions = {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true, // Optional: Change to 'false' for 24-hour format
+    };
+
+    // If it's a Date object, directly format the time
+    if (timestamp instanceof Date) {
+      return timestamp.toLocaleTimeString([], options); // Show only hours and minutes
+    }
+
+    // Handle number (timestamp in milliseconds)
+    if (typeof timestamp === "number") {
+      return new Date(timestamp).toLocaleTimeString([], options); // Show only hours and minutes
+    }
+
+    // Handle Firebase Timestamp (Firestore Timestamp)
+    const milliseconds =
+      timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000;
+    return new Date(milliseconds).toLocaleTimeString([], options); // Show only hours and minutes
   };
 
-  // If it's a Date object, directly format the time
-  if (timestamp instanceof Date) {
-    return timestamp.toLocaleTimeString([], options); // Show only hours and minutes
-  }
-
-  // Handle number (timestamp in milliseconds)
-  if (typeof timestamp === 'number') {
-    return new Date(timestamp).toLocaleTimeString([], options); // Show only hours and minutes
-  }
-
-  // Handle Firebase Timestamp (Firestore Timestamp)
-  const milliseconds = timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000;
-  return new Date(milliseconds).toLocaleTimeString([], options); // Show only hours and minutes
-};
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>)  => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
+
+    // Apply validation only if the input field is "estimatedCost"
+    if (name === "estimatedCost") {
+      const isValidNumber = /^\d*\.?\d*$/.test(value); // Allows only digits and optional decimal point
+
+      if (!isValidNumber) {
+        toast.error("Please enter a valid positive estimate cost number!");
+        return;
+      }
+
+      if (value.startsWith("0") && value.length > 1 && !value.includes(".")) {
+        toast.error("Leading zeros are not allowed!");
+        return;
+      }
+
+      if (value && Number(value) < 0) {
+        toast.error("Estimated cost cannot be negative!");
+        return;
+      }
+    }
+
     setQuoteData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
-
-  const handleAcceptQuote = (messageId: string, quoteDetails: QuoteDetailsType)  => {
-    // console.log("Thsi sie messageId dddddddddddddddd",messageId)
-    // console.log("Thsi sie quoteDetailsssssssssssss",quoteDetails)  
+  
+  const handleAcceptQuote = (
+    messageId: string,
+    quoteDetails: QuoteDetailsType
+  ) => {
     setSelectedQuoteId(messageId);
     setSelectedQuoteDetails(quoteDetails);
     setIsConfirmModalOpen(true);
   };
 
-  const handleRejectQuote = async (messageId: string, rejectionReason : string) => {
-  try {
-    // Update the quote status in the message
-    const messageRef = doc(db, "Chats", chatId, "messages", messageId);
-    await updateDoc(messageRef, {
-      "content.status": "rejected",
-      "content.rejectionReason": rejectionReason
-    });
+  const handleRejectQuote = async (
+    messageId: string,
+    rejectionReason: string
+  ) => {
+    try {
+      // Update the quote status in the message
+      const messageRef = doc(db, "Chats", chatId, "messages", messageId);
+      await updateDoc(messageRef, {
+        "content.status": "rejected",
+        "content.rejectionReason": rejectionReason,
+      });
 
-    // Update the chat document
-    await updateDoc(doc(db, "Chats", chatId), {
-      quoteRejected: true,
-      lastUpdated: serverTimestamp(),
-    });
+      // Update the chat document
+      await updateDoc(doc(db, "Chats", chatId), {
+        quoteRejected: true,
+        lastUpdated: serverTimestamp(),
+      });
 
-    toast.success("Quote rejected successfully");
-  } catch (error) {
-    console.error("Error rejecting quote:", error);
-    toast.error("Failed to reject quote");
-  }
-};
+      toast.success("Quote rejected successfully");
+    } catch (error) {
+      console.error("Error rejecting quote:", error);
+      toast.error("Failed to reject quote");
+    }
+  };
 
   const handleConfirmQuoteAcceptance = async () => {
     setAddressModalOpen(true); // Show the modal before booking
@@ -673,14 +635,11 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         return;
       }
 
-      // Update the chat document with the accepted quote
       await updateDoc(doc(db, "Chats", chatId), {
         quoteAccepted: true,
         acceptedQuoteAmount: selectedQuoteDetails.estimatedCost,
         quoteAcceptedAt: serverTimestamp(),
       });
-
-      console.log("Thissssssssssssiis the userAddress", userAddress);
 
       const sanitizedUserAddress = {
         name: userAddress.name ?? "",
@@ -692,7 +651,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         latitude: userAddress.latitude ?? 0, // Provide default value
         longitude: userAddress.longitude ?? 0, // Provide default value
       };
-      
+
       // Send booking request with the address details
       const response = await bookTheLabor(
         userId,
@@ -714,7 +673,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   };
 
   const onEmojiSelect = (emoji: EmojiClickData) => {
-    setNewMessage((prevMessage) => prevMessage + emoji.emoji); // Append selected emoji
+    console.log("This is the emoji to send ......", emoji);
+    setNewMessage((prevMessage) => prevMessage + emoji.native); // Use native instead of emoji
     setShowEmojiPicker(false); // Close picker after selection
   };
 
@@ -733,7 +693,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
 
   const cancelMediaUpload = () => {
     if (previewUrl) {
-      URL.revokeObjectURL(previewUrl); // Clean up the preview URL
+      URL.revokeObjectURL(previewUrl); 
     }
     setMediaFile(null);
     setPreviewUrl(null);
@@ -742,72 +702,60 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     }
   };
 
-  const userEmail = participants?.user?.email
-  const laborEmail = participants?.labor?.email
-
-  // const participentsData = {
-  //   userEmail,
-  //   laborEmail
-  // }
-
-  // console.log('this is the my shafi participentsData',participentsData)
+  const userEmail = participants?.user?.email;
+  const laborEmail = participants?.labor?.email;
 
   useEffect(() => {
     if (laborEmail) {
       const fetchBookingsWithEmil = async () => {
         try {
-        const response = await fetchAllBookingOfLabor(laborEmail);
-        if (response.status === 200) {
-          console.log('99999999999999999999999999999999 :',
-            response
-          )
-          const {fetchBookings} = response.data
-          setAllBookingExist(fetchBookings);
+          const response = await fetchAllBookingOfLabor(laborEmail);
+          if (response.status === 200) {
+            const { fetchBookings } = response.data;
+            setAllBookingExist(fetchBookings);
+          }
+        } catch (error) {
+          console.error(error);
         }
-      } catch (error) {
-        console.error(error);
-        // toast.error('Error in booking Exist');
-      }
-      }
-      fetchBookingsWithEmil()
+      };
+      fetchBookingsWithEmil();
     }
-  },[laborEmail])
+  }, [laborEmail]);
 
   useEffect(() => {
-  if (userEmail && laborEmail) {  // Ensure both values exist
-    const isBookingExist = async () => {
-      try {
-        const response = await fetchIsBookingExist({ userEmail, laborEmail });
-        if (response.status === 200) {
-          console.log('thsis ie the response :',
-            response
-          )
-          const {fetchBookings} = response.data
-          setBookingData(fetchBookings);
+    if (userEmail && laborEmail) {
+      const isBookingExist = async () => {
+        try {
+          const response = await fetchIsBookingExist({ userEmail, laborEmail });
+          if (response.status === 200) {
+            const { fetchBookings } = response.data;
+            setBookingData(fetchBookings);
+          }
+        } catch (error) {
+          console.error(error);
         }
-      } catch (error) {
-        console.error(error);
-        // toast.error('Error in booking Exist');
-      }
-    };
-    isBookingExist();
-  } 
-}, [userEmail, laborEmail]); 
-
-  // Type guard function to check if content is QuoteDetailsType
-    function isQuoteDetailsType(content: string | QuoteDetailsType): content is QuoteDetailsType {
-      return typeof content !== 'string' && 
-            'description' in content && 
-            'estimatedCost' in content && 
-            'arrivalTime' in content &&
-            'status' in content;
+      };
+      isBookingExist();
+    }
+  }, [userEmail, laborEmail]);
+ 
+  function isQuoteDetailsType(
+    content: string | QuoteDetailsType
+  ): content is QuoteDetailsType {
+    return (
+      typeof content !== "string" &&
+      "description" in content &&
+      "estimatedCost" in content &&
+      "arrivalTime" in content &&
+      "status" in content
+    );
   }
-  
-  function isValidQuoteMessage(message: Message): message is Message & { content: QuoteDetailsType } {
-  return message.type === 'quote' && isQuoteDetailsType(message.content);
-}
 
-  // console.log("This is the selected Queet4e in chat page leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",)
+  function isValidQuoteMessage(
+    message: Message
+  ): message is Message & { content: QuoteDetailsType } {
+    return message.type === "quote" && isQuoteDetailsType(message.content);
+  }
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -990,39 +938,38 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       {theam === "light" ? (
         <div className="flex flex-col h-full bg-slate-50">
           {/* Header */}
-           <div
+          <div
             className={`flex items-center px-4 py-3 shadow-md border-gray-200 
             ${
               currentPage === "laborDashBoard"
                 ? " text-white"
                 : " border-gray-200 "
             }`}
-            >
-               {/* Back Arrow Button (Only visible on screens ≥ 768px) */}
-              {isUserAthenticated && (
-                <button 
-                onClick={() => window.history.back()} 
+          >
+            {/* Back Arrow Button (Only visible on screens ≥ 768px) */}
+            {isUserAthenticated && currentPages == "chatingPage" && (
+              <button
+                onClick={() => window.history.back()}
                 className="hidden md:block text-white px-2 py-1 rounded-lg"
               >
                 ← Back
               </button>
-                )}
-            {!isMobileChatListOpen && (
+            )}
+            {currentPages !== "chatingPage" && !isMobileChatListOpen && (
               <button
                 onClick={() => dispatch(toggleMobileChatList())}
                 className="md:hidden p-2 hover:bg-gray-700 rounded-full transition-colors"
               >
                 <MenuIcon className="w-5 h-5 text-gray-300" />
               </button>
-            )}  
+            )}
 
             <div className="flex items-center flex-1 min-w-0 ml-2">
               <div className="relative">
                 <img
                   src={
                     LaborLogin?.email === participants.labor.email
-                      ? 
-                        participants.user.profilePicture ||
+                      ? participants.user.profilePicture ||
                         "/default-avatar.png"
                       : participants.labor.profilePicture ||
                         "/default-avatar.png"
@@ -1038,8 +985,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                   {
                     // If current user is logged in, show labor's profile picture
                     LaborLogin?.email === participants.labor.email
-                      ? 
-                        participants.user.name || "/default-avatar.png"
+                      ? participants.user.name || "/default-avatar.png"
                       : participants.labor.name || "/default-avatar.png"
                   }
                 </h1>
@@ -1048,26 +994,32 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
           </div>
 
           {/* Messages Area */}
-          <div
-            className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
-           
-          >
-            {messages.map((message : Message, index) => {
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+            {messages.map((message: Message, index) => {
               const isCurrentUser = message.senderId === auth.currentUser?.uid;
               const isLabor = message.senderId === chatDetails?.laborId;
               const senderProfilePic = isLabor
                 ? participants.labor.profilePicture
                 : participants.user.profilePicture;
               const isQuoteMessage = isValidQuoteMessage(message);
-              const isDisabled = messages.slice(index + 1).some(m => m.type === "quote");
-              console.log('TRhis is th timestaaabmghp ppppoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',message); 
+              const isDisabled = messages
+                .slice(index + 1)
+                .some((m) => m.type === "quote");
+              console.log(
+                "TRhis is th timestaaabmghp ppppoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
+                message
+              );
               return (
-                  <div
+                <div
                   key={message.id}
-                  className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
+                  className={`flex items-end gap-2 ${
+                    isCurrentUser ? "flex-row-reverse" : "flex-row"
+                  }`}
                 >
                   <div
-                    className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[75%]`}
+                    className={`flex flex-col ${
+                      isCurrentUser ? "items-end" : "items-start"
+                    } max-w-[75%]`}
                   >
                     {/* Render QuoteMessage only if it's a quote */}
                     {isQuoteMessage && (
@@ -1097,7 +1049,11 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                     )} */}
                     {message.type !== "quote" && (
                       <>
-                        <div className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}>
+                        <div
+                          className={`flex items-end gap-2 ${
+                            isCurrentUser ? "flex-row-reverse" : "flex-row"
+                          }`}
+                        >
                           <img
                             src={senderProfilePic || "/default-avatar.png"}
                             alt="Profile"
@@ -1107,31 +1063,40 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                           <div
                             className={`
                               px-4 py-2 rounded-2xl shadow-sm
-                              ${isCurrentUser ? "bg-[#cdffcd] rounded-tr-none" : "bg-[#b0b0f4] rounded-tl-none"}
+                              ${
+                                isCurrentUser
+                                  ? "bg-[#cdffcd] rounded-tr-none"
+                                  : "bg-[#b0b0f4] rounded-tl-none"
+                              }
                             `}
                           >
-                            
                             {message.type === "text" ? (
-                            <p className="text-gray-800 text-sm"> {typeof message.content === "string" ? message.content : message.content.description}</p>
-                          ) : message.type === "image" ? (
-                            <img
-                              src={message.mediaUrl}
-                              alt="Shared"
-                              className="rounded-lg max-w-[250px] max-h-[250px] object-cover"
-                            />
-                          ) : message.type === "video" ? (
-                            <video
-                              src={message.mediaUrl}
-                              controls
-                              className="rounded-lg max-w-[250px] max-h-[250px]"
-                            />
-                          ) : null}
-
+                              <p className="text-gray-800 text-sm">
+                                {" "}
+                                {typeof message.content === "string"
+                                  ? message.content
+                                  : message.content.description}
+                              </p>
+                            ) : message.type === "image" ? (
+                              <img
+                                src={message.mediaUrl}
+                                alt="Shared"
+                                className="rounded-lg max-w-[250px] max-h-[250px] object-cover"
+                              />
+                            ) : message.type === "video" ? (
+                              <video
+                                src={message.mediaUrl}
+                                controls
+                                className="rounded-lg max-w-[250px] max-h-[250px]"
+                              />
+                            ) : null}
                           </div>
                         </div>
 
                         <span className="text-xs text-gray-500 mt-1 px-12">
-                          {message.timestamp ? formatTimestamp(message.timestamp) : ""}
+                          {message.timestamp
+                            ? formatTimestamp(message.timestamp)
+                            : ""}
                         </span>
                       </>
                     )}
@@ -1143,8 +1108,12 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
           </div>
 
           {previewUrl && (
-              <MediaPreview previewUrl={previewUrl} onCancel={cancelMediaUpload} mediaFile={mediaFile}/>
-           )} 
+            <MediaPreview
+              previewUrl={previewUrl}
+              onCancel={cancelMediaUpload}
+              mediaFile={mediaFile}
+            />
+          )}
 
           {/* Input Area */}
           <div className="bg-[#f8f9fa] p-4 shadow-lg">
@@ -1234,7 +1203,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         </div>
       ) : (
         <div className="flex flex-col h-full bg-slate-50">
-            {/* Header */}
+          {/* Header */}
           <div
             className={`flex items-center px-4 py-3 shadow-md border-gray-200 
             ${
@@ -1242,24 +1211,24 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                 ? "bg-gray-700 text-white"
                 : "bg-[#373749] border-gray-200 "
             }`}
-            >
-               {/* Back Arrow Button (Only visible on screens ≥ 768px) */}
-              {isUserAthenticated && (
-                <button 
-                onClick={() => window.history.back()} 
-                className="hidden md:block text-white px-2 py-1 rounded-lg"
+          >
+            {/* Back Arrow Button (Only visible on screens ≥ 768px) */}
+            {isUserAthenticated && currentPages == "chatingPage" && (
+              <button
+                onClick={() => window.history.back()}
+                className=" text-white px-2 py-1 rounded-lg"
               >
                 ← Back
               </button>
-                )}
-            {!isMobileChatListOpen && (
+            )}
+            {currentPages !== "chatingPage" && !isMobileChatListOpen && (
               <button
                 onClick={() => dispatch(toggleMobileChatList())}
                 className="md:hidden p-2 hover:bg-gray-700 rounded-full transition-colors"
               >
                 <MenuIcon className="w-5 h-5 text-gray-300" />
               </button>
-            )}  
+            )}
 
             <div className="flex items-center flex-1 min-w-0 ml-2">
               <div className="relative">
@@ -1268,13 +1237,15 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                     LaborLogin?.email === participants.labor.email
                       ? participants.user.profilePicture ||
                         "/default-avatar.png"
-                      : userLogin?.email === participants.user.email
-                      ? participants.labor.profilePicture ||
+                      : participants.labor.profilePicture ||
                         "/default-avatar.png"
-                      : "/default-avatar.png"
                   }
                   alt="Profile"
-                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-600"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null; // Prevent infinite loop
+                    e.currentTarget.src = "/default-avatar.png";
+                  }}
                 />
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
               </div>
@@ -1289,16 +1260,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                       : participants.labor.name || "/default-avatar.png"
                   }
                 </h1>
-                {/* {Object.keys(userLogin).length === 0 && (
-                  <div className="flex items-center gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-4 h-4 text-yellow-400 fill-current"
-                      />
-                    ))}
-                  </div>
-                )} */}
               </div>
             </div>
           </div>
@@ -1318,25 +1279,29 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
               msOverflowStyle: "none", // IE/Edge
             }}
           >
-            {messages.map((message,index) => {
+            {messages.map((message, index) => {
               const isCurrentUser = message.senderId === auth.currentUser?.uid;
               const isLabor = message.senderId === chatDetails?.laborId;
               const senderProfilePic = isLabor
                 ? participants.labor.profilePicture
                 : participants.user.profilePicture;
-              
+
               const isQuoteMessage = isValidQuoteMessage(message);
-               const isDisabled = messages.slice(index + 1).some(m => m.type === "quote");  
-              
-              console.log('TRhis is th timestaaabmghp ppppoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',message);
-          
+              const isDisabled = messages
+                .slice(index + 1)
+                .some((m) => m.type === "quote");
+
               return (
-               <div
+                <div
                   key={message.id}
-                  className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
+                  className={`flex items-end gap-2 ${
+                    isCurrentUser ? "flex-row-reverse" : "flex-row"
+                  }`}
                 >
                   <div
-                    className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"} max-w-[75%]`}
+                    className={`flex flex-col ${
+                      isCurrentUser ? "items-end" : "items-start"
+                    } max-w-[75%]`}
                   >
                     {/* Render QuoteMessage only if it's a quote */}
                     {isQuoteMessage && (
@@ -1352,11 +1317,13 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                       />
                     )}
 
-                    
-
                     {message.type !== "quote" && (
                       <>
-                        <div className={`flex items-end gap-2 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}>
+                        <div
+                          className={`flex items-end gap-2 ${
+                            isCurrentUser ? "flex-row-reverse" : "flex-row"
+                          }`}
+                        >
                           <img
                             src={senderProfilePic || "/default-avatar.png"}
                             alt="Profile"
@@ -1366,45 +1333,58 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                           <div
                             className={`
                               px-4 py-2 rounded-2xl shadow-sm
-                              ${isCurrentUser ? "bg-[#cdffcd] rounded-tr-none" : "bg-[#b0b0f4] rounded-tl-none"}
+                              ${
+                                isCurrentUser
+                                  ? "bg-[#cdffcd] rounded-tr-none"
+                                  : "bg-[#b0b0f4] rounded-tl-none"
+                              }
                             `}
                           >
-                           {message.type === "text" ? (
-                            <p className="text-gray-800 text-sm"> {typeof message.content === "string" ? message.content : message.content.description}</p>
-                          ) : message.type === "image" ? (
-                            <img
-                              src={message.mediaUrl}
-                              alt="Shared"
-                              className="rounded-lg max-w-[250px] max-h-[250px] object-cover"
-                            />
-                          ) : message.type === "video" ? (
-                            <video
-                              src={message.mediaUrl}
-                              controls
-                              className="rounded-lg max-w-[250px] max-h-[250px]"
-                            />
-                          ) : null}
-
+                            {message.type === "text" ? (
+                              <p className="text-gray-800 text-sm">
+                                {" "}
+                                {typeof message.content === "string"
+                                  ? message.content
+                                  : message.content.description}
+                              </p>
+                            ) : message.type === "image" ? (
+                              <img
+                                src={message.mediaUrl}
+                                alt="Shared"
+                                className="rounded-lg max-w-[250px] max-h-[250px] object-cover"
+                              />
+                            ) : message.type === "video" ? (
+                              <video
+                                src={message.mediaUrl}
+                                controls
+                                className="rounded-lg max-w-[250px] max-h-[250px]"
+                              />
+                            ) : null}
                           </div>
                         </div>
 
                         <span className="text-xs text-gray-500 mt-1 px-12">
-                          {message.timestamp ? formatTimestamp(message.timestamp) : ""}
+                          {message.timestamp
+                            ? formatTimestamp(message.timestamp)
+                            : ""}
                         </span>
                       </>
                     )}
                   </div>
                 </div>
-
               );
             })}
             <div ref={messagesEndRef} />
-            </div>
+          </div>
 
-            {previewUrl && (
-              <MediaPreview previewUrl={previewUrl} onCancel={cancelMediaUpload} mediaFile={mediaFile}/>
-           )} 
-           
+          {previewUrl && (
+            <MediaPreview
+              previewUrl={previewUrl}
+              onCancel={cancelMediaUpload}
+              mediaFile={mediaFile}
+            />
+          )}
+
           {/* Input Area */}
           <div
             className={`${
@@ -1453,38 +1433,37 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
                 </div>
               </div>
 
-                {Object.keys(userLogin).length === 0 &&
-                 bookingData?.status !== "confirmed" &&
-                  (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(true)}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
-                  >
-                    Send Quote
-                  </button>
-
-                  <div className="relative">
+              {Object.keys(userLogin).length === 0 &&
+                bookingData?.status !== "confirmed" && (
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onMouseEnter={() => setShowTooltip(true)}
-                      onMouseLeave={() => setShowTooltip(false)}
-                      className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+                      onClick={() => setShowModal(true)}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
                     >
-                      <Info className="w-5 h-5 text-gray-300" />
+                      Send Quote
                     </button>
 
-                    {showTooltip && (
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">
-                        Click to send a formal quote including job details,
-                        estimated cost, and payment terms.
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45" />
-                      </div>
-                    )}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onMouseEnter={() => setShowTooltip(true)}
+                        onMouseLeave={() => setShowTooltip(false)}
+                        className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+                      >
+                        <Info className="w-5 h-5 text-gray-300" />
+                      </button>
+
+                      {showTooltip && (
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg">
+                          Click to send a formal quote including job details,
+                          estimated cost, and payment terms.
+                          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </form>
           </div>
 

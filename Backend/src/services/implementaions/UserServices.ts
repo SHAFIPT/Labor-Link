@@ -96,4 +96,7 @@ export default class UserServices implements IUserServices {
       console.error(error);
     }
   }
+  async getSearchSuggest(query: string): Promise<{ id: string; name: string; category: string; profilePicture: string | null; }[]> {
+    return this.userRepository.getSearchSuggest(query)
+  }
 }

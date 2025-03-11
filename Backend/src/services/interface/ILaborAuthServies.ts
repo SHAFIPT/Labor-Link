@@ -1,6 +1,6 @@
 import { IOTP } from "../../controllers/entities/OtpEntity";
 import { ILaborer } from "../../controllers/entities/LaborEntity"
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 export interface ILaborAuthSerives {
     registerAboutYou(labor: Partial<ILaborer>): Promise<ILaborer | null> 

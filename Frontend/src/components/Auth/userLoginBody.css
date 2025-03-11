@@ -1,13 +1,30 @@
 .form-control {
   position: relative;
-  margin: 9px 0 9px;
-  width: 450px;
+  margin: 9px 0;
+  width: 100%;
+  /* Ensures it adapts to smaller screens */
+  max-width: 350px;
+  /* Ideal for phones */
 }
 
-/* @media screen and (max-width: 1020px) {
-  .formFields {
-    align-items: center;
-  } */
+/* Medium screens (tablets) */
+@media (min-width: 664px) {
+  .form-control {
+    max-width: 450px;
+  }
+}
+@media (min-width: 790px) {
+  .form-control {
+    max-width: 450px;
+  }
+}
+
+/* Large screens (laptops/desktops) */
+@media (min-width: 1024px) {
+  .form-control {
+    max-width: 450px;
+  }
+}
 
 .formFields {
   display: flex;

@@ -26,7 +26,7 @@ interface ChatDocument {
   laborId: string;
   userId: string;
   lastMessage: string;
-  lastUpdated: Timestamp;  // Change to Timestamp, not string
+  lastUpdated: Timestamp;
   quoteSent: boolean;
   messagesCount: number;
   lastReadTimestamp: Timestamp;
@@ -34,18 +34,16 @@ interface ChatDocument {
 }
 
 interface UserData {
-  // Add user fields based on your Users collection structure
   name?: string;
   email?: string;
   profilePicture? : string
-  // ... other user fields
   online?: boolean;
 }
 
 export interface IWithrowalBooking {
   _id: string;
   status: "pending" | "approved" | "rejected";
-  amount?: number;  // Add this field
+  amount?: number;  
   createdAt: string;
   paymentMethod: string;
   paymentDetails: string;
@@ -58,13 +56,12 @@ interface Chat extends ChatDocument {
   id: string;
   userData?: UserData | null;
   unreadCount: number;
-
 }
 
 
 interface NavItem {
   name: string;
-  icon: LucideIcon | IconType; // Or use the correct Lucide icon type
+  icon: LucideIcon | IconType; 
   stage: string;
 }
 
@@ -111,8 +108,6 @@ const LaborDashBoard = () => {
   const navigate = useNavigate();
   const [updatedBooking, setUpdatedBooking] = useState<BookingDetails | null>(null);
   
-  console.log('Thsis is the updatedBooking::',updatedBooking)
-
   const sortedTransactions = laborer?.wallet?.transactions 
     ? [...laborer.wallet.transactions].sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -204,18 +199,14 @@ const LaborDashBoard = () => {
     const auth = getAuth();
     const currentLabor = auth.currentUser;
 
-    console.log('111111111111111111',currentLabor)
-
     if (!currentLabor || !currentLabor.uid) {
       throw new Error("User is not authenticated");
     }
 
     const laborUid = currentLabor.uid;
-    console.log('this it s the laborUIddddddddddddddd',laborUid)
 
     const chatCollection = collection(db, "Chats");
     const chatQuery = query(chatCollection, where("laborId", "==", laborUid));
-    console.log('77777777777777777',chatQuery)
 
     const unsubscribe = onSnapshot(chatQuery, async (chatSnapshot) => {
       const chatData = await Promise.all(
@@ -349,8 +340,6 @@ const LaborDashBoard = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        console.log("this si the filter.....", filter);
-        // dispatch(resetLaborer())
         const responseInBacked = await fetchLaborBookings(
           currentPage,
           limit,
@@ -429,21 +418,6 @@ useEffect(() => {
     fetchLabors();
   }, []); 
 
-  // useEffect(() => {
-  //   dispatch(resetLaborer())
-  //     dispatch(setUser({}));
-  //         dispatch(resetUser());
-  //         dispatch(setisUserAthenticated(false));
-  //         dispatch(setAccessToken(""));
-
-  //         // Reset Labor State
-  //         dispatch(setLaborer({}));
-  //         dispatch(resetLaborer());
-  //         dispatch(setIsLaborAuthenticated(false));
-
-  //         navigate("/");
-  // },[])
-
   const handleWithdraw = async () => {
     // Add withdrawal logic here
     console.log("Withdrawing:", amount, bankDetails);
@@ -486,9 +460,7 @@ useEffect(() => {
       const response = await fetchWithdrowalRequests(laborId)
       if (response.status === 200) {
         const { withdrowalRequests } = response.data
-        // console.log('Thsi si the rrrrrrrrrrrre333333333333333##############################',response)
         setUpdatedBooking(withdrowalRequests)
-        // toast.success('Requsts fetch succesfully for withdrowallss')
       }
     }
     fetchWithdrowalRequest()

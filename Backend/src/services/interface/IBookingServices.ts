@@ -1,7 +1,7 @@
 import { IBooking } from "../../controllers/entities/bookingEntity";
 
 
-export interface IBookingSerivese {
+export interface IBookingService {
     bookingLabor(bookingDetails: Partial<IBooking>): Promise<IBooking | null>;
 
     fetchBooking(

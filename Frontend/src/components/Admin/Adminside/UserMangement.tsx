@@ -28,8 +28,7 @@ const UserMangement = () => {
     { value: "Active", label: "Active", color: "bg-green-500" },
     { value: "InActive", label: "InActive", color: "bg-red-500" },
   ];
-  const [selectedFilter, setSelectedFilter] = useState("Filter"); // Default label
-  console.log('hhhhhh',selectedFilter)
+  const [selectedFilter, setSelectedFilter] = useState("Filter"); 
   const [isOpen, setIsOpen] = useState(false);
 
  const fetchUsers = async (query = "", pageNumber = 1, selectedFilter : string) => {
@@ -172,8 +171,6 @@ const UserMangement = () => {
             <div className="overflow-x-auto">
               <div className="min-w-[600px]">
                 {" "}
-                {/* Minimum width container for horizontal scroll */}
-                {/* List Headings */}
                 <div className="grid grid-cols-11 gap-4 items-center bg-gray-200 p-3 rounded-lg shadow mb-4">
                   <div className="col-span-1 text-center text-xs sm:text-sm font-semibold text-gray-700">
                     No

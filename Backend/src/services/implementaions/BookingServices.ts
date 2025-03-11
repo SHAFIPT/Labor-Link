@@ -1,10 +1,10 @@
 import { IBooking } from "../../controllers/entities/bookingEntity";
 
-import { IBookingSerivese } from "../interface/IBookingServices";
+import { IBookingService } from "../interface/IBookingServices";
 import { IBookingRepository } from "../../repositories/interface/IBookingRepository";
 
 
-export default class BookingServices implements IBookingSerivese{
+export default class BookingServices implements IBookingService{
     private bookingRepository: IBookingRepository
     
     constructor(bookingRepository: IBookingRepository) {
@@ -162,6 +162,4 @@ export default class BookingServices implements IBookingSerivese{
     async fetchAllBookingsById(email: string): Promise<IBooking[] | null> {
        return this.bookingRepository.fetchAllBookingsById(email)
     }
-    
-    
 }

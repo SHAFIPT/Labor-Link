@@ -49,7 +49,6 @@ const UserChatPage = () => {
 
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
-  const currentPage = 1
   const dispatch = useDispatch();
   console.log("This is my chatssssssssssssss:",chats)
 
@@ -58,14 +57,6 @@ const UserChatPage = () => {
     { label: 'LaborProfilePage', link: '/userProfilePage' }, 
     { label: 'ChatLising', link: undefined }, // No link for the current page
   ];
-
-  const itemsPerPage = 6;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentChats = chats.slice(startIndex, endIndex);
-
-  console.log("This is the currrenet chattttttttttttttttttttts :",currentChats)
- 
 
   const fetchChats = (userUids  :string) => {
     if (!userUids) {

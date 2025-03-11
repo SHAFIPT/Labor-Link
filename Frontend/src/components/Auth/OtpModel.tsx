@@ -18,6 +18,7 @@ import { toast } from 'react-toastify';
 import './LoadingBody.css'
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
+import { resetLaborer, setIsLaborAuthenticated } from '../../redux/slice/laborSlice';
 
 interface OtpFormProps {
   isVisible: boolean;
@@ -51,9 +52,6 @@ const OtpForm: React.FC<OtpFormProps> = ({ isVisible, onClose }) => {
     e.preventDefault();
 
     const otpCode = otp.join("");
-    console.log("This is otpCode :", otpCode);
-    console.log("this is the user formData :", formData);
-
     if (!formData.email) {
       toast.error("Email is required for OTP verification.");
       return;
@@ -113,13 +111,14 @@ const OtpForm: React.FC<OtpFormProps> = ({ isVisible, onClose }) => {
 
             const { user } = firebaseUserCredential;
 
-            console.log("This is the firebase user:", user);
+            const DEFAULT_PROFILE_PICTURE =
+  "https://res.cloudinary.com/dni3mqui7/image/upload/v1741595871/user_profiles/zc75ffpiqbyhfxvh1c6f.avif";
 
             // Save user data to Firestore
             const userData = {
               email: formData.email,
               name: formData.name || "", // Default name if not provided
-              profilePicture: formData.profilePicture || "", // Default empty string if no profile picture
+              profilePicture:  DEFAULT_PROFILE_PICTURE, // Default empty string if no profile picture
               role: "user", // Default role for chat users
             };
 
@@ -141,7 +140,8 @@ const OtpForm: React.FC<OtpFormProps> = ({ isVisible, onClose }) => {
                 const { user, accessToken } = registernewUser.data.data;
 
                 localStorage.setItem("UserAccessToken", accessToken);
-
+                dispatch(resetLaborer());
+                dispatch(setIsLaborAuthenticated(false));
                 dispatch(setUser(user));
                 dispatch(setAccessToken(accessToken));
                 dispatch(setisUserAthenticated(true));
@@ -242,7 +242,8 @@ const OtpForm: React.FC<OtpFormProps> = ({ isVisible, onClose }) => {
     <StyledWrapper>
       {loading && <div className="loader "></div>}
 
-      <div className="modal-overlay fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-80">
+      <div className="modal-overlay fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-40">
+
         <form
           className="otp-Form bg-white p-6 rounded-lg shadow-lg"
           onSubmit={handleSubmit}

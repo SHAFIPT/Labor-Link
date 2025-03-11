@@ -1,8 +1,8 @@
 import axios, { AxiosError } from "axios";
 
-export const uploadToCloudinary = async (file  :File) => {
-  // First, ensure your upload preset is properly configured
-  const UPLOAD_PRESET = "laborlinkPresist"; // Must be configured in Cloudinary dashboard
+export const uploadToCloudinary = async (file: File) => {
+  
+  const UPLOAD_PRESET = "laborlinkPresist"; 
   const CLOUD_NAME = "dni3mqui7";
   
   const formData = new FormData();
@@ -12,7 +12,7 @@ export const uploadToCloudinary = async (file  :File) => {
 
   try {
     const response = await axios.post(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, // Added 'auto' for automatic resource type detection
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, 
       formData,
       {
         headers: {

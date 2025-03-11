@@ -15,8 +15,8 @@ import '../Auth/LoadingBody.css'
 import { cancelSubmision } from '../../services/UserSurvice';
 
 interface CancelBookingFormProps {
-  onClose: () => void; // Define onClose type (function with no parameters)
-  bookingId: string; // Define bookingId type (assuming it's a string, adjust if necessary)
+  onClose: () => void; 
+  bookingId: string; 
 }
 
 const CancelBookingForm: React.FC<CancelBookingFormProps> = ({ onClose, bookingId }) => {
@@ -40,9 +40,6 @@ const CancelBookingForm: React.FC<CancelBookingFormProps> = ({ onClose, bookingI
     reason?: string;
     comments?: string;
     } = useSelector((state: RootState) => state.user.error);
-    
-    console.log("Thsi is the ERRRRRROoooooors ",error.name)
-
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const newValue = type === "checkbox" && e.target instanceof HTMLInputElement ? e.target.checked : value;

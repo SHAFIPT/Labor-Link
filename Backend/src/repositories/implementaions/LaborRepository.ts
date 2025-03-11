@@ -13,7 +13,6 @@ export class LaborRepository implements ILaborRepository {
   async createLabor(labor: Partial<ILaborer>): Promise<ILaborer | null> {
     try {
       const newLabor = new Labor(labor);
-      console.log("this is my newLabor:", newLabor);
       return await newLabor.save();
     } catch (error) {
       console.error("Error in create user :", error);
@@ -95,6 +94,7 @@ export class LaborRepository implements ILaborRepository {
     await newOtp.save();
     return newOtp;
   }
+
   async findOTP(user: Partial<ILaborer>): Promise<IOTP | null> {
     const OTPFound = await otpModel
       .findOne({ email: user.email })
@@ -110,9 +110,9 @@ export class LaborRepository implements ILaborRepository {
   ): Promise<ILaborer | null> {
     try {
       const updatePassword = await Labor.findOneAndUpdate(
-        { email: email }, // Query by email
-        { $set: { password: password } }, // Update password
-        { new: true } // Return the updated document
+        { email: email },
+        { $set: { password: password } }, 
+        { new: true } 
       );
       return updatePassword;
     } catch (error) {

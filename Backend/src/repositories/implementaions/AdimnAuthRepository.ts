@@ -12,7 +12,6 @@ export class AdminAuthRepository implements IAdminAuthRepositoy {
   async createAdmin(admin: Partial<IAdmin>): Promise<IAdmin | null> {
     try {
       const newAdmin = new Admin(admin);
-      console.log("This is the newAdmin :", newAdmin);
       return await newAdmin.save();
     } catch (error) {
       console.error("Error in create Admin :", error);
@@ -58,7 +57,6 @@ export class AdminAuthRepository implements IAdminAuthRepositoy {
 
   async findById(userId: string): Promise<IAdmin | null> {
     const adminData = await Admin.findOne({ _id: userId });
-
     return adminData;
   }
 }

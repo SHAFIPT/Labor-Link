@@ -19,8 +19,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, role }) => {
   if (role === 'labor' && isLaborAuthenticated) {
      return <>{children}</>;
   }
-
-  // Redirect to login if the user is not authenticated or role doesn't match
+  
   return <Navigate to='/'/>;
 };
 

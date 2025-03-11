@@ -1,7 +1,6 @@
 import { ILaborer } from "../../controllers/entities/LaborEntity";
 import { ILaborAuthSerives } from "../../services/interface/ILaborAuthServies";
 import bycript from "bcrypt";
-import Labor from "../../models/LaborModel";
 import { ILaborRepository } from "../../repositories/interface/ILaborRepository";
 import {
     accessTokenForReset,
@@ -34,8 +33,8 @@ export class LaborAuthServies implements ILaborAuthSerives {
         labor.email.toString()
       );
 
-        if (!LaborFound) {
-          throw new Error('Invalid Creadential')
+      if (!LaborFound) {
+        throw new Error("Invalid Creadential");
       }
 
       const compairPassword = await bycript.compare(
@@ -43,8 +42,8 @@ export class LaborAuthServies implements ILaborAuthSerives {
         LaborFound.password.toString()
       );
 
-        if (!compairPassword) {
-          throw new Error("Invalid Password.....!")
+      if (!compairPassword) {
+        throw new Error("Invalid Password.....!");
       }
 
       const accessToken = generateAccessToken({
@@ -93,7 +92,7 @@ export class LaborAuthServies implements ILaborAuthSerives {
         if (labor.password) {
           bcryptPassword = await bycript.hash(labor.password, 10);
         }
-        console.log("this is let bcryptPassword; :", bcryptPassword);
+
         return this.laborRepository.createLabor({
           ...labor,
           password: bcryptPassword,
@@ -111,8 +110,6 @@ export class LaborAuthServies implements ILaborAuthSerives {
       const isExistOfLabor = await this.laborRepository.findByEmail(
         labor.email
       );
-
-      console.log("this is exisitng userse :", isExistOfLabor);
 
       if (isExistOfLabor) {
         return this.laborRepository.updateLabor(isExistOfLabor._id, {
@@ -133,8 +130,6 @@ export class LaborAuthServies implements ILaborAuthSerives {
       const isExistOfLabor = await this.laborRepository.findByEmail(
         labor.email
       );
-
-      console.log("Existing laborer:", isExistOfLabor);
 
       if (isExistOfLabor) {
         const updatedLabor = await this.laborRepository.updateLabor(
@@ -190,8 +185,6 @@ export class LaborAuthServies implements ILaborAuthSerives {
     try {
       const userFound = await this.laborRepository.findByUserEmil(email);
 
-      console.log("this is service userFound :", userFound);
-
       if (userFound) {
         return userFound;
       } else {
@@ -223,10 +216,7 @@ export class LaborAuthServies implements ILaborAuthSerives {
   }
 
   async isVerify(user: Partial<ILaborer>, otp: IOTP): Promise<IOTP | null> {
-    console.log("This is getted otp :", otp);
     const OTPFound = await this.laborRepository.findOTP(user);
-
-    console.log("This is OtpFound :", OTPFound);
 
     if (!OTPFound) {
       return null;
@@ -244,21 +234,18 @@ export class LaborAuthServies implements ILaborAuthSerives {
   }
   decodeAndVerifyToken(token: string): Promise<Partial<ILaborer | null>> {
     try {
-      console.log("This is tokeen to dedode :", token);
-
       const decode = decodeAndVerifyToken(token);
-
-      console.log("This is decodeAndVerifyToken", decode);
 
       return decode;
     } catch (error) {
       return null;
     }
   }
-  async changePassword(password: string, email: string): Promise<ILaborer | null> {
+  async changePassword(
+    password: string,
+    email: string
+  ): Promise<ILaborer | null> {
     const hashPassword = await bycript.hash(password.toString(), 10);
-
-    console.log("this is hashPassword :", hashPassword, email);
 
     const userAfterUpdate = await this.laborRepository.changePassword(
       hashPassword,
@@ -268,24 +255,20 @@ export class LaborAuthServies implements ILaborAuthSerives {
     return userAfterUpdate;
   }
 
-   async refreshAccessToken(userId:string): Promise <string| null> {
-        
-        const UserFound  = await this.laborRepository.findById(userId)
+  async refreshAccessToken(userId: string): Promise<string | null> {
+    const UserFound = await this.laborRepository.findById(userId);
 
+    if (UserFound) {
+      const id = UserFound._id?.toString();
 
-        if(UserFound){
-            const id = UserFound._id?.toString();
-            
-            const accessToken = generateAccessToken({
-                id,
-                role: UserFound.role,
-            });
+      const accessToken = generateAccessToken({
+        id,
+        role: UserFound.role,
+      });
 
-            return accessToken
-        }
-
-
-
-        return null
+      return accessToken;
     }
+
+    return null;
+  }
 }

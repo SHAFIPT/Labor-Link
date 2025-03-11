@@ -42,8 +42,6 @@ const CancelBookingForm: FC<CancelBookingFormProps> = ({ onClose, bookingId }) =
     comments?: string;
   } = useSelector((state: RootState) => state.labor.error) ?? {}
 
-  console.log("Thsi is the ERRRRRROoooooors ", error?.name);
-
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
   const { name, value, type } = e.target;
   const newValue = type === "checkbox" && e.target instanceof HTMLInputElement ? e.target.checked : value;

@@ -1,22 +1,19 @@
 
 import { signInWithPopup } from "firebase/auth";
-import { googleProvider, auth } from "../utils/firbase";
+import { googleProvider, auth, db } from "../utils/firbase";
 import { IUser } from "../@types/user";
 import { userAxiosInstance } from "./instance/userInstance";
 import { AxiosError } from "axios";
+import { doc, setDoc } from "firebase/firestore";
 
 
 const api = userAxiosInstance
-
-console.log('this is my api :', api)
 
 export const sendOtp = async (credentials: Partial<IUser>) => {
     try {
         const role = 'user'
         const responce = await api.post('/api/auth/send-otp', {...credentials,role})
 
-        // console.log(re)
-    
         return responce
     } catch (error) {
         console.error(error)
@@ -84,20 +81,42 @@ export const resendOtp = async (credentials: Partial<IUser>) => {
 
 
 export const googleAuth = async () => {
-    try {
-        console.log('Ima first')
-      const role = 'user'
-      const result = await signInWithPopup(auth, googleProvider);
-      
-    console.log('this is the google responce : ',result)
+  try {
+    console.log('Starting Google authentication')
+    const role = 'user'
+    const result = await signInWithPopup(auth, googleProvider);
+    
+    console.log('Google auth response:', result)
 
-      const { user } = result;
+    const { user } = result;
+    const { displayName, photoURL, email, uid } = user;
+    
+    console.log('This is the diplay Nmae ::',displayName)
+    console.log('This is the photoURL ::',photoURL)
+    console.log('This is the email Nmae ::',email)
+    console.log('This is the uid Nmae ::',uid)
+    
+      console.log('Google user:', user)
       
-       console.log('this is the google user : ',user)
+      
 
-        const response = await api.post("/api/auth/google-sign-in", {...user,role});
-        
-    console.log('this is the google Response : ',response)
+      const defaultProfilePicture = "https://i.pravatar.cc/150";
+
+    // Save user data to Firestore
+    const userData = {
+      email: email || "",
+      name: displayName || "", 
+      profilePicture: defaultProfilePicture, 
+      role: "user",
+    };
+
+    // Set the document in Firestore with the user's UID
+    await setDoc(doc(db, "Users", uid), userData);
+    console.log("Google user data saved to Firestore successfully");
+
+    // Continue with your API call
+    const response = await api.post("/api/auth/google-sign-in", {...user, role});
+    console.log('API response:', response)
 
     return response;
   } catch (error) {

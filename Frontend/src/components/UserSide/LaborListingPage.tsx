@@ -55,15 +55,7 @@ const LaborListingPage = () => {
     (state: RootState) => state.user.locationOfUser
   );
 
-  //  const locationOfUse = useMemo(() => ({
-  //   latitude: 11.151827,
-  //   longitude:  75.894107
-  //  }), []);
-
   const loading = useSelector((state: RootState) => state.user.loading);
-
-  console.log("Thsi si the locationOfUser :",locationOfUser)
-
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
@@ -71,24 +63,15 @@ const LaborListingPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedRating, setSelectedRating] = useState(0);
   const [latLng, setLatLng] = useState({ lat: 12.9716, lng: 77.5946 });
-
   const [filteredLabors, setFilteredLabors] = useState([]);
-
   const [showFilters, setShowFilters] = useState(false);
   const [laborsList, setLaborsList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const location = useLocation();
   const [sortOrder, setSortOrder] = useState("desc");
   const currentPages = location.pathname.split("/").pop() || "defaultPage";
-  // const itemsPerPage = 4;
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  console.log("This is the laborsList", laborsList)
-
-  {
-    /* Define pagination variables */
-  }
   const itemsPerPage = 4;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -126,8 +109,6 @@ const LaborListingPage = () => {
     fetchUser();
   }, [navigate, dispatch]);
 
-
-  console.log("Thsi sis the laborsList :  ++++++ ====-- --- -- ", laborsList);
   const toggleFilters = () => {
     setShowFilters((prev) => !prev);
   };
@@ -167,7 +148,6 @@ const LaborListingPage = () => {
 
 // Use Effect to call fetchLabors when location updates
   useEffect(() => {
-   console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
   fetchLabors();
 }, [fetchLabors]);
 

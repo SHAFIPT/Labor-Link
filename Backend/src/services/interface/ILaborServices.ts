@@ -1,5 +1,4 @@
 import { IWallet } from "../../controllers/entities/withdrawalRequstEntity";
-import { IBooking } from "../../controllers/entities/bookingEntity";
 import { IAboutMe, ILaborer } from "../../controllers/entities/LaborEntity";
 
 

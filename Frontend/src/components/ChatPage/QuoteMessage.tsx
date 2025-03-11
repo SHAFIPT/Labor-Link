@@ -3,13 +3,6 @@ import { Banknote, CalendarDays, Clock, FileText, X } from "lucide-react";
 import { useState } from "react";
 import { Message, QuoteDetailsType } from "./ChatComponets";
 
-// interface Timestamp {
-//   toDate(): Date;
-//   seconds: number;
-//   nanoseconds: number;
-// }
-
-
 interface QuoteMessageProps {
   message: Message & { content: QuoteDetailsType }; // Enforce that content is QuoteDetailsType
   isCurrentUser: boolean;

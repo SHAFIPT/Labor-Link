@@ -4,19 +4,25 @@ import 'dotenv/config'
 import cookieParser from 'cookie-parser'
 import connectDB from './config/db'
 import router from './routes/router'
-import bodyParser from 'body-parser';
 import  {errorHandler } from './middleware/errorHander'
 
 const app = express()
 const port = process.env.PORT || 5000
 connectDB()
 
+app.use((req, res, next) => {
+  console.log('Origin:', req.headers.origin);
+  next();
+});
+
 app.use(express.urlencoded({ extended: true })); 
 app.use(cookieParser())
-app.use(cors({
-    origin: ['https://www.laborlink.store', 'http://localhost:5173'],
-    credentials: true
-}));
+app.use(
+  cors({
+    origin: [process.env.CORS_ORIGIN, "http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use('/',router)
 
 app.get('/', (req, res) => { 

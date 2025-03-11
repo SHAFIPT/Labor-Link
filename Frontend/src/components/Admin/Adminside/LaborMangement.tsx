@@ -18,10 +18,9 @@ interface Labor {
 }
 
 const LaborMangement = () => {
+
   const navigate = useNavigate()
-  
   const [searchTerm, setSearchTerm] = useState("");
-  // const [selectedStatus, setSelectedStatus] = useState("");
   const [Labors, setLabors] = useState<Labor[]>([]);
   const [page, setPage] = useState(1);
   const filterOptions = [
@@ -34,16 +33,6 @@ const LaborMangement = () => {
   const [selectedFilter, setSelectedFilter] = useState("Filter");
   const [totalPages, setTotalPages] = useState(1);
   const debouncedSearchTerm = UseDebounce(searchTerm, 500);
-  
-
-  console.log("this is the repnse of the users users :", Labors);
-  Labors.map((user) => {
-    const userName = `${user.firstName} ${user.lastName}`; // Combine first and last name
-    const isBlocked = user.isBlocked; // Get the isBlocked status
-
-    console.log("User is name :", userName);
-    console.log("isBlocked is this:", isBlocked);
-  });
 
   const fetchUsers = async (query = "", pageNumber = 1 ,selectedFilter  :string) => {
       const resoponse = await fetchLabor({ query, pageNumber, selectedFilter });
@@ -51,14 +40,8 @@ const LaborMangement = () => {
 
     if (resoponse.status === 200) {
       const { totalPage, laborFound } = resoponse.data.data;
-
-      console.log("Thsi is the requestBody :", resoponse);
-      console.log("Thsi is the totalPages :", totalPage);
-      console.log("Thsi is the laborFound :", laborFound);
-
       setLabors(laborFound);
       setTotalPages(totalPage);
-      console.log("thhi is the response :", resoponse);
     } else {
       toast.error("Error occurd during fetchUser....!");
     }
@@ -74,8 +57,6 @@ const LaborMangement = () => {
 
   const handleDeleteLabor = async (labor: Labor) => {
   try {
-    console.log("This is the deleting labor:", labor.email);
-
     const response = await deleteLabor({ email: labor.email });
 
     if (response.status === 200) {
@@ -93,7 +74,6 @@ const LaborMangement = () => {
 };
 
   const handleViewPage = (labor : Labor) => {
-    //  console.log('this is passing user :',user)
     navigate("/admin/laborView", { state: { labor } });
   };
 

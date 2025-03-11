@@ -25,21 +25,12 @@ const RescheduleRequestModal = ({
   onUpdateBooking
 }: RescheduleRequestModalProps) => {
 
-    console.log("This is the bookingDetails;;;;;;;;;;;;;;", bookingDetails)
-    
-
-    
-
     const rescheduleInfo = bookingDetails?.[0]?.reschedule;
     const bookingId = bookingDetails?.[0]?.bookingId;
-    console.log("VVVVVVVVVVVVVVVVVVVVVVVVV",bookingId)
     const [showRejectionForm, setShowRejectionForm] = useState(false);
     const theme = useSelector((state: RootState) => state.theme.mode);
-    const bookingDetailss = useSelector((state: RootState) => state.booking.bookingDetails);
     const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
     const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-    // const [updatedBooking , setUpdatedBooking] = useState(null)
-    console.log("iaaaaaaaaaaaaaaa heeeeeeeeeeeeeee",bookingDetailss)
     const loading  = useSelector((state: RootState) => state.labor.loading)
     const dispatch = useDispatch()
     const [rejectionData, setRejectionData] = useState({
@@ -52,11 +43,8 @@ const RescheduleRequestModal = ({
         newTime?: string;
         reason?: string;
   } = useSelector((state: RootState) => state.labor.error) ?? {}  
-  
-  console.log('Thsi is the erroro ;;;;',error)
 
   useEffect(() => {
-     console.log('Kyu3333333333333333333333333llllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa$$############################')
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -74,7 +62,6 @@ const requestSentBy = isUserAthenticated ? "user" : (isLaborAuthenticated ? "lab
 
   const handleRejectionSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Rejection submitted:', rejectionData);
     const validateErrors = {
         newTime : validateNewTime(rejectionData.newTime),
         newDate : validateNewDate(rejectionData.newDate),
@@ -86,12 +73,9 @@ const requestSentBy = isUserAthenticated ? "user" : (isLaborAuthenticated ? "lab
             //   const rejectedBy = 'labor'
               const response = await rejectReshedule({...rejectionData , bookingId , rejectedBy , requestSentBy})
 
-              if (response.status === 200) {
-                  console.log("This si tthe repns...............", response)
-                  
+            if (response.status === 200) {
+                
                   const {reshedule} = response.data
-                  console.log("This si tthe reshedule...PPPPPPPPPPPP............", reshedule)
-                  // dispatch(setBookingDetails(reshedule))
                 onClose()
                 onUpdateBooking(reshedule);
                   toast.success('Rejeect submitted succesfully....')
@@ -102,7 +86,6 @@ const requestSentBy = isUserAthenticated ? "user" : (isLaborAuthenticated ? "lab
             toast.error('error isn the rejectReshedule')
           }
        }
-    // onClose();
   };
     const handleAcceptRequst = async () => {
       try {
@@ -111,9 +94,7 @@ const requestSentBy = isUserAthenticated ? "user" : (isLaborAuthenticated ? "lab
         if (response.status === 200) {
           const { reshedule } = response.data
           
-          console.log("Thanveeeeeeeeraaaaaaaaaaaaaa>>>>>>", reshedule)
           onUpdateBooking(reshedule);
-          // dispatch(updateSingleBooking(reshedule))
           onClose();
           toast.success("reshedule requst accepted succesfully....");
 

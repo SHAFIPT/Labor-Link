@@ -29,36 +29,6 @@ interface TokenSource {
   property: 'admin' | 'labor' | 'user';
 }
 
-// interface AuthenticatedRequest extends Request {
-//   user?: any;
-//   labor?: any;
-//   admin?: any;
-// }
-
-
-// export const authenticateRole = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-//     try {
-//         const authHeader = req.headers.authorization;
-//         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//             return res.status(401).json(new ApiError(401, "Unauthorized"));
-//         }
-
-//         const token = authHeader.split(" ")[1];
-//         const decoded: DecodedToken = jwt.verify(token, process.env.JWT_SECRET) as DecodedToken;
-
-//         if (decoded.role === "user") {
-//             req.user = await User.findById(decoded.id);
-//         } else if (decoded.role === "labor") {
-//             req.labor = await Labor.findById(decoded.id);
-//         } else if (decoded.role === "admin") {
-//             req.admin = await Admin.findById(decoded.id);
-//         }
-
-//         next();
-//     } catch (error) {
-//         return res.status(401).json(new ApiError(401, "Invalid token"));
-//     }
-// };
 export const identifyUserRole = (
     req: Request & { user?: any; labor?: any; admin?: any },
     res: Response,
@@ -116,22 +86,12 @@ export const verifyAnyRefreshTokenMiddleware: RequestHandler = (
   next: NextFunction
 ) => {
 
-      console.log('refersh Tokeeeeeeeeeen called..................................................')
-
-
-      console.log('=== Starting Token Verification ===');
-      console.log('Request Path:', req.path);
-      console.log('Request Headers:', req.headers);
-      console.log('Request Cookies:', req.cookies);
-  // Define token sources with their specific names
   const tokenSources: TokenSource[] = [
     { cookie: 'AdminRefreshToken', header: 'adminRefreshToken', property: 'admin' },
     { cookie: 'LaborRefreshToken', header: 'laborRefreshToken', property: 'labor' },
     { cookie: 'UserRefreshToken', header: 'userRefreshToken', property: 'user' }
   ];
 
-  // Get all present tokens
-    // Log each token source check
   const presentTokens = tokenSources.map(source => {
     const cookieToken = req.cookies[source.cookie];
     const headerToken = req.header(source.header);
@@ -186,99 +146,12 @@ export const verifyAnyRefreshTokenMiddleware: RequestHandler = (
 };
 
 
-// export const authenticateUserOrLabor = async (
-//   req: Request & Partial<{ user: string | jwt.JwtPayload; labor: string | jwt.JwtPayload }>,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<void> => {
-  
-//   // Public routes that do not require authentication
-//   const publicRoutes = [
-//     '/api/auth/login',
-//     '/api/auth/register',
-//     '/api/auth/google-sign-in',
-//   ];
-  
-//   if (publicRoutes.includes(req.path)) {
-//     return next();
-//   }
-
-//   // Get token from header
-//   const token = req.headers['authorization']?.split(' ')[1] || req.header('authorization');
-
-//   if (!token) {
-//     res.status(401).json(new ApiResponse(401, null, 'Access denied. No token provided.'));
-//     return;
-//   }
-
-//   try {
-//     const decoded = verifyAccessToken(token) as { id: string; role: string };
-
-//     if (!decoded || !decoded.id || !decoded.role) {
-//       res.status(401).json(new ApiResponse(401, null, 'Invalid token structure.'));
-//       return;
-//     }
-
-//     let userOrLabor;
-
-//     if (decoded.role === 'user') {
-//       const user = await User.findById(decoded.id);
-//       if (!user) {
-//         res.status(404).json(new ApiResponse(404, null, 'User not found.'));
-//         return;
-//       }
-//       if (user.isBlocked) {
-//         res.status(403).json(new ApiResponse(403, null, 'Your account has been blocked. Please contact support.'));
-//         return;
-//       }
-//       req.user = decoded;
-//       userOrLabor = user;
-//     } 
-//     else if (decoded.role === 'labor') {
-//       const labor = await Labor.findById(decoded.id);
-//       if (!labor) {
-//         res.status(404).json(new ApiResponse(404, null, 'Labor not found.'));
-//         return;
-//       }
-//       if (labor.isBlocked) {
-//         res.status(403).json(new ApiResponse(403, null, 'Your account has been blocked. Please contact support.'));
-//         return;
-//       }
-//       if (labor.status === 'rejected') {
-//         res.status(403).json(new ApiResponse(403, null, 'You are rejected by the authorized team. Please contact support.'));
-//         return;
-//       }
-//       req.labor = decoded;
-//       userOrLabor = labor;
-//     } 
-//     else {
-//       res.status(401).json(new ApiResponse(401, null, 'Invalid role.'));
-//       return;
-//     }
-
-//     console.log('Authenticated:', {
-//       id: decoded.id,
-//       role: decoded.role,
-//       userOrLabor,
-//     });
-
-//     next();
-//   } catch (err) {
-//     console.error('Authentication Error:', err);
-//     res.status(401).json(new ApiResponse(401, null, 'Invalid token or expired.'));
-//   }
-// };
-
-
-
 export const authenticateLabor = async (
   req: Request & Partial<{ labor: string | jwt.JwtPayload }>,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
 
-  // console.log('Hi iiii imaa here ......!!!!!!-----------')
-  
   const publicRoutes = [
     '/api/labor/auth/login',
     '/api/labor/auth/register',
@@ -296,11 +169,8 @@ export const authenticateLabor = async (
   }
 
   try {
-    const decoded = verifyAccessToken(token) as DecodedToken; // Ensure DecodedToken includes `userId` type definition
+    const decoded = verifyAccessToken(token) as DecodedToken; 
     req.labor = decoded;
-      // console.log("Decoded Token: --------++++------", decoded);
-    // console.log("Decoded Token  and rolee........!: --------++++------", decoded.role);
-    
 
     const {id } = req.labor
 
@@ -336,9 +206,7 @@ export const authenticateUser = async (
   req: Request & Partial<{ user: string | jwt.JwtPayload }>,
   res: Response,
   next: NextFunction
-): Promise<void>=> {
-
-  // console.log('Hi iiii imaa here ......!!!!!!-----------')
+): Promise<void> => {
   
   const publicRoutes = [
     '/api/user/auth/login',
@@ -357,18 +225,12 @@ export const authenticateUser = async (
   }
 
   try {
-    const decoded = verifyAccessToken(token) as DecodedToken; // Ensure DecodedToken includes `userId` type definition
+    const decoded = verifyAccessToken(token) as DecodedToken; 
     req.user = decoded;
-      console.log('Iam heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-      // console.log("Decoded Token  and rolee........!: --------++++------", decoded.role);
-    
-    // Check role
-    
+
     const {id } = req.user
 
     const user = await User.findById(id);
-
-      console.log("This is The user ..................................",user)
 
     if (decoded.role !== 'user') {
       res.status(401).json(new ApiResponse(401, null, 'You are not authorized'));

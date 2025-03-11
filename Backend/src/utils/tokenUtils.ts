@@ -43,12 +43,7 @@ export const verifyRefreshToken = (token: string): string | jwt.JwtPayload => {
 
 export const decodeAndVerifyToken = (token: string): any => {
   try {
-    console.log('Token received for decoding:', token);
-
     const decoded: any = jwt.verify(token, ACCESS_TOKEN_SECRET);
-
-    console.log('Decoded JWT:', decoded);
-
     return decoded;
   } catch (error) {
     console.error('Error verifying token:', error.message);

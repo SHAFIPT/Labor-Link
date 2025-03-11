@@ -16,10 +16,8 @@ const QuoteConfirmationModal: React.FC<QuoteConfirmationModalProps> = ({
   onConfirm,
   quoteDetails,
 }) => {
-    if (!isOpen) return null;
-    
-      console.log("This is the selected Queet4e leeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",quoteDetails)
-
+  if (!isOpen) return null;
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-40">
       <div className="bg-white rounded-lg max-w-[600px] w-full p-6 shadow-xl">

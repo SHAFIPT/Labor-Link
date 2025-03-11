@@ -6,8 +6,6 @@ import { IWallet } from "controllers/entities/withdrawalRequstEntity";
 
 export default class PaymentService implements IPaymentService{
     private paymentRepository: IPaymnetRepository
-    
-
     constructor(paymentRepository: IPaymnetRepository) {
         this.paymentRepository = paymentRepository
     }

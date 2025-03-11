@@ -18,6 +18,8 @@ import formidable from 'formidable';
 import cloudinary from '../utils/CloudineryCongif';
 import { IAuthStrategy } from './entities/AuthStrategy';
 import { IAdminAuthStrategy } from './entities/AdminAuthStrategy';
+import { HttpStatus } from '../enums/HttpStatus';
+import { Messages } from '../constants/Messages';
 
 // User authentication strategy
 class UserAuthStrategy implements IAuthStrategy {
@@ -110,10 +112,6 @@ class LaborAuthStrategy implements IAuthStrategy {
         return this.laborAuthService.registerAboutYou(data);
   }
   
-  // async findUserWithEmail(email: string) {
-  //       return this.laborAuthService.findUserWithEmail(email)
-  //   }
-
     async logout(token: string, id: string) {
         return this.laborAuthService.logout(token, id);
     }
@@ -209,8 +207,6 @@ export class UnifiedAuthController {
 
       const result = await strategy.login(credentials);
 
-      console.log('Thsi is the refreshToken.....jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj',result)
-
       if (!result) {
         return res.status(401).json(new ApiError(401, "Invalid Credentials"));
       }
@@ -223,7 +219,7 @@ export class UnifiedAuthController {
           : "AdminRefreshToken";
 
       return res
-        .status(200)
+        .status(HttpStatus.OK)
         .cookie(cookieName, result.refreshToken, this.options)
         .json(new ApiResponse(200, result));
     } catch (error) {
@@ -246,7 +242,7 @@ export class UnifiedAuthController {
         role === "user" ? "UserRefreshToken" : "LaborRefreshToken";
 
       return res
-        .status(201)
+        .status(HttpStatus.CREATED)
         .cookie(cookieName, result.refreshToken, this.options)
         .json(new ApiResponse(201, result));
     } catch (error) {
@@ -259,24 +255,17 @@ export class UnifiedAuthController {
     res: Response,
     next: NextFunction
   ) => {
-    console.log("User:", req.user);
-    console.log("Labor:", req.labor);
-    console.log("Admin:", req.admin);
     try {
-      console.log("H8iiiiiiiiiiiiiiiiiii");
       const role = req.user ? "user" : req.labor ? "labor" : "admin";
-      console.log("Thsi is the role......", role);
       const entity = req.user || req.labor || req.admin;
-      console.log("Thsi is the entity....", entity);
 
       if (!entity) {
         return res
-          .status(400)
-          .json(new ApiError(400, "Authentication required"));
+        .status(HttpStatus.BAD_REQUEST)
+        .json(new ApiError(HttpStatus.BAD_REQUEST, Messages.AUTH_REQUIRED));
       }
 
       const strategy = AuthStrategyFactory.createStrategy(role);
-      console.log("Thsi si eth strategy ...", strategy);
       const result = await strategy.logout(entity.rawToken, entity.id);
 
       const cookieName =
@@ -288,12 +277,12 @@ export class UnifiedAuthController {
 
       if (result) {
         return res
-          .status(200)
+          .status(HttpStatus.OK)
           .clearCookie(cookieName)
-          .json(new ApiResponse(200, null, "Logout successful"));
+          .json(new ApiResponse(HttpStatus.OK, null, Messages.LOGOUT_SUCCESS));
       }
 
-      throw new ApiError(400, "Logout failed");
+      throw new ApiError(HttpStatus.BAD_REQUEST, Messages.LOGOUT_FAILED);
     } catch (error) {
       next(error);
     }
@@ -312,8 +301,8 @@ export class UnifiedAuthController {
 
     if (!entity) {
       return res
-        .status(400)
-        .json(new ApiError(400, "Authentication required"));
+        .status(HttpStatus.BAD_REQUEST)
+        .json(new ApiError(HttpStatus.BAD_REQUEST, Messages.AUTH_REQUIRED));
     }
 
     const strategy = AuthStrategyFactory.createStrategy(role);
@@ -322,49 +311,44 @@ export class UnifiedAuthController {
 
     if (accessToken) {
       return res
-        .status(200)
+        .status(HttpStatus.OK)
         .json(
           new ApiResponse(
-            200,
+            HttpStatus.OK,
             { accessToken },
-            "Token refreshed successfully"
+             Messages.TOKEN_REFRESHED
           )
         );
     }
 
-    throw new ApiError(400, "Token refresh failed");
+    throw new ApiError(HttpStatus.BAD_REQUEST, Messages.TOKEN_REFRESHED_FAILD);
   } catch (error) {
     throw error;
   }
 };
   
    public sendOtp = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+     try {
+      
         const { role, ...user } = req.body;
 
-        
-        console.log('Thsi sit her roel and ures s ', {
-            role,
-            user
-        })
-
       if (!user) {
-        return res.status(400).json(new ApiError(400, "user is required"));
+        return res.status(400).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.USER_REQUIERD));
       }
 
       const strategy = AuthStrategyFactory.createStrategy(role);
 
       if (!strategy.sendOtp) {
-        return res.status(400).json(new ApiError(400, "OTP sending not supported for this role"));
+        return res.status(400).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.NOT_SUPPORT_OTP));
       }
 
       const result = await strategy.sendOtp(user);
 
       if (!result) {
-        return res.status(400).json(new ApiError(400, "Failed to send OTP"));
+        return res.status(400).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.FAILED_TO_SEND_OTP));
       }
 
-      return res.status(200).json(new ApiResponse(200, result, "OTP sent successfully"));
+      return res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, result, Messages.OTP_SEND_SUCCESSFULLY));
     } catch (error) {
       next(error);
     }
@@ -375,22 +359,22 @@ export class UnifiedAuthController {
         const { email, otp, role } = req.body;
 
         if (!email || !otp) {
-            return res.status(400).json(new ApiError(400, "Email and OTP are required."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.EMAIL_AND_OTP_REQUIRD));
         }
 
         const strategy = AuthStrategyFactory.createStrategy(role);
 
         if (!strategy?.verifyOtp) {
-            return res.status(400).json(new ApiError(400, "OTP verification not supported for this role"));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.NOT_SUPPORT_VERIFICATION_OTP));
         }
 
         const result = await strategy.verifyOtp(email, otp);
 
         if (!result) {
-            return res.status(400).json(new ApiError(400, "Failed to verify OTP"));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, "Failed to verify OTP"));
         }
 
-        return res.status(200).json({ message: "OTP verified successfully!" })
+        return res.status(HttpStatus.OK).json({ message: Messages.OTP_VERIFIED_SUCCESSFULLY })
     } catch (error) {
         next(error); 
     }
@@ -403,7 +387,7 @@ export class UnifiedAuthController {
         const strategy = AuthStrategyFactory.createStrategy(role);
   
         if (!strategy?.googleSignIn) {
-            return res.status(400).json(new ApiError(400, "Google Sign-In not supported for this role"));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST,Messages.GOOGLE_SIGN_IN_NOT_SUPPPORT ));
         }
 
         const result = await strategy.googleSignIn({
@@ -413,7 +397,7 @@ export class UnifiedAuthController {
         });
 
         if (!result) {
-            return res.status(400).json(new ApiError(400, "Google Sign-In failed"));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.GOOGLE_SIGN_IN_FAILD));
         }
 
         const cookieName =
@@ -423,50 +407,39 @@ export class UnifiedAuthController {
           ? "LaborRefreshToken"
           : "AdminRefreshToken";
 
-        return res.status(200)
+        return res.status(HttpStatus.OK)
         .cookie(cookieName, result.refreshToken, this.options)    
-        .json(new ApiResponse(200, result, "Google Sign-In successful"));
+        .json(new ApiResponse(HttpStatus.OK, result, Messages.GOOGLE_SIGN_IN_SUCCESS));
 
     } catch (error) {
-        console.error("Google Sign-In Error:", error);
-        return res.status(500).json(new ApiError(500, "Internal Server Error"));
+        console.error(Messages.GOOGLE_SIGN_IN_ERROR, error);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, Messages.INTERNAL_SERVER_ERROR));
     }
 };
    
    public forgetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, role } = req.body;
-      
-      console.log('This arre the roless.....',
-        email,
-        role
-      )
 
         // Validate required fields
         if (!email || !role) {
-            return res.status(400).json(new ApiError(400, "Email and role are required."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.EMAIL_AND_ROLE_REQUIRED));
         }
 
         // Get authentication strategy
       const strategy = AuthStrategyFactory.createStrategy(role);
-      console.log('This is the strategy.......',strategy)
         if (!strategy) {
-            return res.status(400).json(new ApiError(400, "Invalid role provided."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.INVALID_ROLE));
         }
-
-        // Check if Google Sign-In is supported
-        // if (!strategy.googleSignIn) {
-        //     return res.status(400).json(new ApiError(400, "Google Sign-In is not supported for this role."));
-        // }
 
         // Check if the user exists and is not blocked
         const user = await strategy.findUserWithEmail(email);
         if (!user || user.isBlocked) {
-            return res.status(400).json(
+            return res.status(HttpStatus.BAD_REQUEST).json(
                 new ApiResponse(
-                    400,
+                    HttpStatus.BAD_REQUEST,
                     null,
-                    user?.isBlocked ? "Account is blocked" : "User not found. Check your email."
+                    user?.isBlocked ? Messages.ACCOUNT_IS_BLOCKED  : Messages.USER_NOT_FOUND_CHECK_YOU_EMIL
                 )
             );
         }
@@ -474,14 +447,14 @@ export class UnifiedAuthController {
         // Send OTP
         const otpSent = await strategy.sendForgetOtp(req.body);
         if (!otpSent) {
-            return res.status(500).json(new ApiError(500, "Error occurred while sending OTP."));
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, Messages.ERROR_OCCURED_IN_OTP_SENT));
         }
 
-        return res.status(200).json({ message: "OTP sent successfully" });
+        return res.status(HttpStatus.OK).json({ message: Messages.OTP_SEND_SUCCESSFULLY });
 
     } catch (error) {
-        console.error("Error in forgetPassword:", error);
-        return res.status(500).json(new ApiError(500, "Internal Server Error"));
+        console.error(Messages.FORGET_PASSWORD_ERROR, error);
+        return res.status(500).json(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, Messages.INTERNAL_SERVER_ERROR));
     }
 };
 
@@ -491,29 +464,29 @@ export class UnifiedAuthController {
 
         // Validate required fields
         if (!email || !role || !otp) {
-            return res.status(400).json(new ApiError(400, "Email, OTP, and role are required."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.EMAIL_AND_OTP_REQUIRD));
         }
 
         // Get authentication strategy
         const strategy = AuthStrategyFactory.createStrategy(role);
         if (!strategy) {
-            return res.status(400).json(new ApiError(400, "Invalid role provided."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.INVALID_ROLE));
         }
 
         // Check if the user exists and is not blocked
         const user = await strategy.findUserWithEmail(email);
         if (!user) {
-            return res.status(400).json(new ApiResponse(400, null, "Check Your Email"));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiResponse(HttpStatus.BAD_REQUEST, null, Messages.CHECK_YOU_EMIL));
         }
 
         if (user.isBlocked) {
-            return res.status(403).json(new ApiResponse(403, null, "Account is blocked."));    
+            return res.status(HttpStatus.FORBIDDEN).json(new ApiResponse(HttpStatus.FORBIDDEN, null, Messages.ACCOUNT_IS_BLOCKED));    
         }
 
         // Verify OTP
         const isOtpValid = await strategy.isVerify(user, req.body);
         if (!isOtpValid) {
-            return res.status(400).json(new ApiError(400, "Entered wrong OTP."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.ENTERD_WRONG_OTP));
         }
 
         // Generate access token
@@ -521,9 +494,9 @@ export class UnifiedAuthController {
         const accessToken = await strategy.generateTokenForForgotPassword(userData);
 
         return res
-            .status(200)
+            .status(HttpStatus.OK)
             .cookie("userOtpAccessToken", accessToken, { httpOnly: true })
-            .json(new ApiResponse(200, { accessToken }, "OTP Verified Successfully"));
+            .json(new ApiResponse(HttpStatus.OK, { accessToken }, Messages.OTP_VERIFIED_SUCCESSFULLY));
     } catch (error) {
         return next(error);
     }
@@ -532,23 +505,21 @@ export class UnifiedAuthController {
     try {
         const { password, token, role } = req.body;
 
-        console.log('This are teh datsaaaaaaaaaaaas , ',password ,role)
-
         // Validate required fields
         if (!password || !role || !token) {
-            return res.status(400).json(new ApiError(400, "Password, role, and token are required."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.PASSWORD_ROLE_TOKEN_REQURIED));
         }
 
         // Get authentication strategy
         const strategy = AuthStrategyFactory.createStrategy(role);
         if (!strategy) {
-            return res.status(400).json(new ApiError(400, "Invalid role provided."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.INVALID_ROLE_PROVIDED));
         }
 
         // Decode and verify token
         const decoded = await strategy.decodeAndVerifyToken(token);
         if (!decoded) {
-            return res.status(401).json(new ApiResponse(401, null, "Session expired. Try again."));
+            return res.status(HttpStatus.UNAUTHORIZED).json(new ApiResponse(HttpStatus.UNAUTHORIZED, null, Messages.SESSION_EXPIRED));
         }
 
         req.body.user = decoded;
@@ -557,22 +528,20 @@ export class UnifiedAuthController {
         const user = decoded as { _doc: Partial<IUser> };
 
         const email = user._doc?.email;
-        console.log('Thsi sie the emils. .. .... ',email)
 
         // Check if user exists
         const isUserExists = await strategy.findUserWithEmail(email);
-        console.log('Thsi sie the user .....',user)
         if (!isUserExists) {
-            return res.status(404).json(new ApiResponse(404, null, "User not found."));
+            return res.status(HttpStatus.NOT_FOUND).json(new ApiResponse(HttpStatus.NOT_FOUND, null, Messages.USER_NOT_FOUND));
         }
 
         // Change password
         const passwordUpdated = await strategy.changePassword(password, email);
         if (passwordUpdated) {
-            return res.status(200).json(new ApiResponse(200, null, "Password reset successful."));
+            return res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, null, Messages.PASSWORD_RESET_SUCCESSFULY));
         }
 
-        return res.status(500).json(new ApiError(500, "Something went wrong. Reset failed."));
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, Messages.INTERNAL_SERVER_ERROR));
     } catch (error) {
         return next(error);
     }
@@ -581,33 +550,26 @@ export class UnifiedAuthController {
     public resendOtp = async (req: Request, res: Response, next: NextFunction) => {
         try {
         
-            console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
         const { role, ...user } = req.body;
 
-        console.log('Thsis it eh user and roel ::', {
-            role , user
-        })
-
         if (!role || Object.keys(user).length === 0) {
-            return res.status(400).json(new ApiError(400, "Role and user data are required."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.ROLE_AND_USER_DATA_REQURIED));
         }
 
         // Get authentication strategy
         const strategy = AuthStrategyFactory.createStrategy(role);
         if (!strategy || !strategy.resendOtp) {
-            return res.status(400).json(new ApiError(400, "Invalid role or resend OTP not supported."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST,Messages.INVALID_ROLE_OR_RESEND_OTP_NOT_SUPPORTED ));
         }
 
         // Attempt to resend OTP
         const response = await strategy.resendOtp(user as IUser);
 
         if (!response) {
-            return res.status(400).json(new ApiError(400, "Failed to resend OTP."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST,Messages.FAILD_TO_RESEND_OTP ));
         }
 
-        console.log("Resend OTP Response:", response);
-
-        return res.status(200).json(new ApiResponse(200, response, "OTP resent successfully!"));
+        return res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, response, Messages.OTP_RESEND_SUCCESSFULLY));
 
     } catch (error) {
         next(error);
@@ -632,12 +594,10 @@ export class UnifiedAuthController {
             role
         } = req.body;
 
-        console.log('Theeeeeeeeeeeeeee aoubt ROleeeeeeeeee:',role)
-
         const strategy = AuthStrategyFactory.createStrategy(role);
 
         if (!strategy.registerAboutYou) {
-            return res.status(400).json(new ApiError(400, "registerAboutYou method is not defined in the strategy."));
+            return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.REGITSTER_ABOUT_NOT_DEFIND));
         }
 
         const laborer = await strategy.registerAboutYou({
@@ -655,13 +615,12 @@ export class UnifiedAuthController {
             language,
         });
 
-        return res.status(200).json({ success: true, data: laborer });
+        return res.status(HttpStatus.OK).json({ success: true, data: laborer });
 
     } catch (error) {
-        // It's important to log or handle the error properly
         console.error(error);
         next(error)
-        return res.status(500).json(new ApiError(500, "Internal Server Error"));
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, Messages.INTERNAL_SERVER_ERROR));
     }
     };
     
@@ -671,58 +630,33 @@ export class UnifiedAuthController {
         res: Response,
         next: NextFunction
       ) => { 
-          console.log('iam  here see ;')
-         const { email } = req.body
+        
          const role = 'labor'
-    
-         console.log('this is email : ', email)
-         console.log('Thsi sie th reole ',role)
         const form = formidable({ multiples: true });
-    console.log('ebddddddddddddddddd')
         form.parse(req, async (err, field, files) => {
           if (err) {
-            console.error("Error parsing form data :", err);
-            return res.status(500).json({ error: "Errror parse form data..." });
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: Messages.ERROR_PARSE_FORM_DATA });
             }
             
-                console.log('mayreeeeeeeeeeeeeeeee')
-    
-            const imageFile = files.image ? files.image[0] : null;
-
-            console.log('this is image file is back end :',imageFile)
+          const imageFile = files.image ? files.image[0] : null;
+          
           if (imageFile) {
             try {
     
                 const result = await cloudinary.uploader.upload(imageFile.filepath,{folder : 'labor_profiles'})
-    
-                console.log('this is image result :', result)
-                
+  
                 const imageUrl = result.secure_url;
-            
-                console.log('this is the image url to save :', imageUrl)
                 
                 const { category, skill, startTime, endTime, availability ,email } = field;
     
-                console.log('this is category :',category)
-                console.log('this is skill :',skill)
-                console.log('this is startTime :',startTime)
-                console.log('this is endTime :',endTime)
-                console.log('this is availability :', availability)
-                console.log('this is email :', email)
-    
-                const parsedAvailability = JSON.parse(field.availability[0]);
-    
-                console.log('this is parsedAvailability :  ++++++======&&&&&^^^#####3333', parsedAvailability)
-
+                const parsedAvailability = JSON.parse(field.availability[0])
 
                 const strategy = AuthStrategyFactory.createStrategy(role);
 
                 if (!strategy.registerAboutYou) {
-                    return res.status(400).json(new ApiError(400, "registerAboutYou method is not defined in the strategy."));
+                    return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.REGITSTER_ABOUT_NOT_DEFIND));
                 }
 
-
-                console.log('Tiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
                 const response = await strategy.registerProfile({
                     profilePicture: imageUrl,
                     categories : category,
@@ -732,23 +666,23 @@ export class UnifiedAuthController {
                     availability: parsedAvailability,
                     email : email[0]
                 })
-                console.log('resoponse from backend :', response)
+              
                 if (response) {
-                   return res.status(200).json({   
+                   return res.status(HttpStatus.OK).json({   
                     success: true, data: response 
                 }); 
                 } else {
-                    return res.status(400).json({ error: 'error occurred ducing profile page submisingon...' });
+                    return res.status(HttpStatus.BAD_REQUEST).json({ error: Messages.ERROR_PROFILE_PAGE_LABOR });
                 }
     
             } catch (error) {
-              console.error("Error in profile controller:", error);
+              console.error(Messages.ERROR_IN_PROFILE_CONTROLLER, error);
               next(error);
-              console.error('Cloudinary upload error:', error);
-              return res.status(500).json({ error: 'Error uploading image to Cloudinary.' });
+              console.error(Messages.ERROR_IN_PROFILE_CONTROLLER, error);
+              return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: Messages.ERROR_UPLOAD_IMAGE_CLOUDINERY });
             }
           } else {
-              return res.status(400).json({ error: 'Image is required.' });
+              return res.status(HttpStatus.BAD_REQUEST).json({ error: Messages.IMAGE_REQUERD });
           }
         });
     };
@@ -760,8 +694,7 @@ export class UnifiedAuthController {
     
         form.parse(req, async (err, fields, files) => {
           if (err) {
-            console.error("Error parsing form data:", err);
-            return res.status(500).json({ error: "Error parsing form data" });
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: Messages.ERROR_PARSE_FORM_DATA });
           }
     
           // Handle ID Image
@@ -774,8 +707,8 @@ export class UnifiedAuthController {
               });
               idImageUrl = result.secure_url;
             } catch (error) {
-              console.error("Error uploading ID image:", error);
-              return res.status(500).json({ error: "Failed to upload ID image" });
+              console.error(Messages.Error_UPLOADING_ID_IMAGE, error);
+              return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: Messages.FAILD_TO_UPLOAD_IMAGE_ID });
             }
           }
     
@@ -790,7 +723,7 @@ export class UnifiedAuthController {
               });
               certificateUrls.push(result.secure_url);
             } catch (error) {
-              console.error("Error uploading certificate image:", error);
+              console.error(Messages.ERROR_UPLOAD_CERTIFICATE_IMAGE, error);
               continue;
             }
           }
@@ -833,7 +766,7 @@ export class UnifiedAuthController {
             const strategy = AuthStrategyFactory.createStrategy(role);
 
                 if (!strategy.registerAboutYou) {
-                    return res.status(400).json(new ApiError(400, "registerAboutYou method is not defined in the strategy."));
+                    return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(400, Messages.REGITSTER_ABOUT_NOT_DEFIND));
                 }
     
              const response = await strategy.registerExperience(experienceData);
@@ -845,14 +778,11 @@ export class UnifiedAuthController {
             delete laborData.password;
             delete laborData.refreshToken;
     
-    
-            console.log("Thsi sithe labordeata ++++_________++++++++",laborData)
-    
-            return res.status(200)
+            return res.status(HttpStatus.OK)
               .cookie("LaborRefreshToken", response.refreshToken, this.options) // HTTP-only cookie for refresh token
               .json({
                 success: true,
-                message: "Experience data saved successfully",
+                message: Messages.EXPERIENCE_SAVED_SUCCESSFULLY,
                 data: {
                   ...experienceData,
                   certificateUrls,
@@ -861,19 +791,15 @@ export class UnifiedAuthController {
                 },
               });
           } else {
-            return res.status(400).json({ 
-              error: 'Error occurred during ExperiencePage submission!' 
+            return res.status(HttpStatus.BAD_REQUEST).json({ 
+              error:  Messages.ERROR_IN_EXPERIENCE_SUBMIT
             });
           }
         });
       } catch (error) {
-        console.error("Error in experiencePage controller:", error);
+        console.error(Messages.ERROR_IN_EXPERIENCE_SUBMIT, error);
         next(error);
-        return res.status(500).json({ error: "Internal server error" });
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: Messages.INTERNAL_SERVER_ERROR });
       }
     };
-
-
-
-  // Additional methods like forgetPassword, resetPassword, etc. would follow the same pattern
 }

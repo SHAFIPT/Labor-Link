@@ -1,13 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { IUser } from '../../@types/user';
 
-// interface FormData extends IUser {
-//     firstName: string;
-//     lastName: string;
-//     email: string;
-//     password: string;
-// }
-
 interface InitialState {
     user: IUser;
     role:  'user' 

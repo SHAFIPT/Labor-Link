@@ -1,22 +1,22 @@
-import userController from "../../controllers/userController";
 import express, { Router } from "express";
 import { authenticateUser } from "../../middleware/authMiddleware";
-const userSideController = new userController()
+import { userController } from "../../config/container";
 
 const usersRoutes = Router()
-usersRoutes.get('/fetchUser',authenticateUser ,userSideController.fetchUsers.bind(userSideController))
-usersRoutes.post('/profileUpdate',authenticateUser ,userSideController.profileUpdate.bind(userSideController))
-usersRoutes.post('/UpdatePassword',authenticateUser ,userSideController.UpdatePassword.bind(userSideController))
-usersRoutes.post('/bookingLabor',userSideController.bookingLabor.bind(userSideController))
-usersRoutes.get('/fetchId/:email',userSideController.fetchLaborId.bind(userSideController))
-usersRoutes.get('/fetchBookings',authenticateUser,userSideController.fetchBookings.bind(userSideController))
-usersRoutes.post('/cancelBooking',userSideController.cancelBooking.bind(userSideController))
-usersRoutes.put('/update-read-status/:bookingId',userSideController.updateReadStatus.bind(userSideController))
-usersRoutes.post('/resheduleRequst',userSideController.reshedulRequest.bind(userSideController))
-usersRoutes.post('/workCompletion/:bookingId',userSideController.workCompletion.bind(userSideController))
-usersRoutes.post('/pymnetSuccess', userSideController.pymnetSuccess.bind(userSideController))
-usersRoutes.post('/payment/webhook', express.raw({ type: 'application/json' }), userSideController.handleStripeWebhook.bind(userSideController));
-usersRoutes.get('/fetchBookingWithId/:bookingId',authenticateUser,userSideController.fetchBookingWithId.bind(userSideController))
-usersRoutes.post('/reviewSubmit/:bookingId', authenticateUser,userSideController.reviewSubmit.bind(userSideController))
-usersRoutes.get('/fetchAllBooings/:userId',userSideController.fetchAllBooings.bind(userSideController))
+usersRoutes.get('/fetchUser',authenticateUser ,userController.fetchUsers.bind(userController))
+usersRoutes.post('/profileUpdate',authenticateUser ,userController.profileUpdate.bind(userController))
+usersRoutes.post('/UpdatePassword',authenticateUser ,userController.UpdatePassword.bind(userController))
+usersRoutes.post('/bookingLabor',userController.bookingLabor.bind(userController))
+usersRoutes.get('/fetchId/:email',userController.fetchLaborId.bind(userController))
+usersRoutes.get('/fetchBookings',authenticateUser,userController.fetchBookings.bind(userController))
+usersRoutes.post('/cancelBooking',userController.cancelBooking.bind(userController))
+usersRoutes.put('/update-read-status/:bookingId',userController.updateReadStatus.bind(userController))
+usersRoutes.post('/resheduleRequst',userController.reshedulRequest.bind(userController))
+usersRoutes.post('/workCompletion/:bookingId',userController.workCompletion.bind(userController))
+usersRoutes.post('/pymnetSuccess', userController.pymnetSuccess.bind(userController))
+usersRoutes.post('/payment/webhook', express.raw({ type: 'application/json' }), userController.handleStripeWebhook.bind(userController));
+usersRoutes.get('/fetchBookingWithId/:bookingId',authenticateUser,userController.fetchBookingWithId.bind(userController))
+usersRoutes.get('/suggestions',userController.getSearchSuggestions.bind(userController))
+usersRoutes.post('/reviewSubmit/:bookingId', authenticateUser,userController.reviewSubmit.bind(userController))
+usersRoutes.get('/fetchAllBooings/:userId',userController.fetchAllBooings.bind(userController))
 export default usersRoutes

@@ -13,7 +13,7 @@ router.use(express.json())
 router.use('/api/user',userRouter)
 router.use('/api/labor',laborRoute)
 router.use('/api/admin',adminRoute)
-router.use('/api/auth',authRoute)
-// /api/user/labors/fetchLabor
+router.use('/api/auth', authRoute)
+
 export default router
 

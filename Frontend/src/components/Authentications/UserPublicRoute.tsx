@@ -9,18 +9,12 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, role }) => {
-  // const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated);
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
-
-  // if (role === 'user' && isUserAuthenticated) {
-  //   return <>{children}</>;
-  // }
 
   if (role === 'labor' && isLaborAuthenticated) {
      return <Navigate to="/" />;
   }
-
-  // Redirect to login if the user is not authenticated or role doesn't match
+  
   return <>{children}</>;
 };
 

@@ -3,9 +3,7 @@ import React, { Suspense } from 'react';
 import { Route, Routes} from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
-// Route guards - these are typically small and can be imported directly
 import PublicRoute from '../components/Authentications/PublicRoute';
-// import PrivateRoute from '../components/Authentications/UserPrivateRoute';
 import UserPublicRoute from '../components/Authentications/UserPublicRoute';
 import UserProfilePage from '../pages/userSide/UserProfilePage';
 import ChatPage from '../pages/Chat/ChatPage';
@@ -29,16 +27,6 @@ const LaborLisingPage = React.lazy(() => import('../pages/userSide/LaborListingp
 const AdminRoute = React.lazy(() => import('./AdminRoute'));
 const LaborRoute = React.lazy(() => import('./LaborRout'));
 const UserRoute = () => {
-  // const navigate = useNavigate()
-
-  // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
-  // const laborRole = useSelector((state: RootState) => state.labor.laborer.role);
-
-  //   if (isLaborAuthenticated && laborRole === 'labor') {
-  //   console.log("its true gys...");
-  //   navigate('/login');
-  // }
-
   return (
     <Suspense fallback={<PageLoadingFallback />}>
       <Routes>
@@ -73,7 +61,6 @@ const UserRoute = () => {
             </UserPublicRoute>
           }
         />
-        ;{/* Protected routes - only accessible when authenticated as user */}
         <Route
           path="/userProfilePage"
           element={

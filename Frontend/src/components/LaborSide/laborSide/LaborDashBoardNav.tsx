@@ -19,13 +19,12 @@ import { collection, doc, DocumentData, getCountFromServer, getDoc, onSnapshot, 
 import NotificaionModal from "../../UserSide/notificaionModal";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { IconType } from "react-icons/lib";
-// import { setisUserAthenticated, setUser, resetUser,setFormData, setLoading, setAccessToken } from '../../../redux/slice/laborSlice'
-// import { checkIsBlock, logout } from "../services/UserAuthServices";
+
 interface ChatDocument {
   laborId: string;
   userId: string;
   lastMessage: string;
-  lastUpdated: Timestamp;  // Change to Timestamp, not string
+  lastUpdated: Timestamp; 
   quoteSent: boolean;
   messagesCount: number;
   lastReadTimestamp: Timestamp;
@@ -33,7 +32,7 @@ interface ChatDocument {
 }
 interface Chat {
   id: string;
-  message?: string; // Make it optional if it's not always present
+  message?: string; 
   unreadCount: number;
   userData: DocumentData | null;
   laborId: string;
@@ -47,7 +46,7 @@ interface Chat {
 }
 interface NavItem {
   name: string;
-  icon: LucideIcon | IconType; // Or use the correct Lucide icon type
+  icon: LucideIcon | IconType; 
   stage: string;
 }
 
@@ -56,34 +55,13 @@ type LaborDashBoardNavProps = {
 };
 
 const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }) => {
-  const user = useSelector((state: RootState) => state.user);
-  const isUserAthenticated = useSelector(
-    (state: RootState) => state.user.isUserAthenticated
-  );
-  const isLaborAuthenticated = useSelector(
-    (state: RootState) => state.labor.isLaborAuthenticated
-  );
-  const laborer = useSelector((state: RootState) => state.labor.laborer);
+  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated);
   const loading = useSelector((state: RootState) => state.user.loading);
   const bookingDetails = useSelector((state: RootState) => state.booking?.bookingDetails || []);
-
-  // const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-
-
-  console.log("Thsisi the teh bookdingdeeeeeeeeeeeeeeeeeeeeeee",bookingDetails)
-
-  
-  useEffect(() => {
-    console.log("isLaborAuthenticated :", isLaborAuthenticated);
-    console.log("isUserAthenticated :", isUserAthenticated);
-    console.log("laborer :", laborer);
-    console.log("user :", user);
-  }, [isLaborAuthenticated, isUserAthenticated, laborer, user]);
-  
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Get dispatch function
+  const navigate = useNavigate(); 
   const theme = useSelector((state: RootState) => state.theme.mode);
-  const [isOpen, setIsOpen] = useState(false); // Get the current theme
+  const [isOpen, setIsOpen] = useState(false); 
   const [notificaionOn, setNotificaionOn] = useState(false)
   const [chats, setChats] = useState<Chat[]>([]);
   const hasUnreadMessages = chats.some((chat) => chat.unreadCount > 0);
@@ -91,7 +69,6 @@ const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }
   const [isMenuOn , setIsMenuOn] = useState(false)
   useEffect(() => {
     const handleScroll = () => {
-      // Check if page is scrolled more than 50px
       setIsScrolled(window.scrollY > 50);
     };
 
@@ -100,7 +77,7 @@ const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }
   }, []);
   
   const toggleDarkMode = () => {
-    dispatch(toggleTheme()); // Dispatch toggle action
+    dispatch(toggleTheme());
   };
 
   const toggleMenu = () => {
@@ -108,17 +85,9 @@ const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }
   };
 
   const shouldShowUserName = isLaborAuthenticated;
-  // const shouldShowLaborName = isLaborAuthenticated
-  useEffect(() => {
-    console.log("shouldShowUserName :", shouldShowUserName);
-  }, [shouldShowUserName]);
-    
-    
+  
       const handleLogoutLabor = async () => {
-      console.log('this is logout going logooiiu :')
-      const response = await logout()
-      console.log('this is logout response :',response)
-      
+        const response = await logout()
         
         if (response.status === 200) {
           localStorage.removeItem('LaborAccessToken');

@@ -1,28 +1,27 @@
 import { authenticateLabor, authenticateUser } from "../../middleware/authMiddleware";
-import laborSideController from "../../controllers/laborControllers";
 import { Router } from "express";
 
 
 const laborRoutes = Router()
-const laborSideContorller = new laborSideController()
+import { laborSideController } from "../../config/container";
 
-laborRoutes.get('/fetchLabor',authenticateLabor , laborSideContorller.fetchLabors.bind(laborSideContorller))
-laborRoutes.post('/updateProfile',authenticateLabor , laborSideContorller.updateProfile.bind(laborSideContorller))
-laborRoutes.post('/UpdatePassword',authenticateLabor , laborSideContorller.UpdatePassword.bind(laborSideContorller))
-laborRoutes.get('/fetchLaborsByLocation',laborSideContorller.fetchLaborsByLocation.bind(laborSideContorller))
-laborRoutes.post('/abouteMe',authenticateLabor , laborSideContorller.abouteMe.bind(laborSideContorller))
-laborRoutes.get('/fetchBooking',authenticateLabor , laborSideContorller.fetchBooking.bind(laborSideContorller))
-laborRoutes.get('/fetchSimilorLabors' , laborSideContorller.fetchSimilorLabors.bind(laborSideContorller))
-laborRoutes.get('/fetchBooking/:bookingId' , laborSideContorller.fetchBookings.bind(laborSideContorller))
-laborRoutes.post('/submitRejection',laborSideContorller.submitRejection.bind(laborSideContorller))
-laborRoutes.put('/acceptBooking/:bookingId',laborSideContorller.acceptBooking.bind(laborSideContorller))
-laborRoutes.post('/additionalCharge',authenticateLabor,laborSideContorller.additionalCharge.bind(laborSideContorller))
-laborRoutes.patch('/acceptRequst/:bookingId',laborSideContorller.acceptRequst.bind(laborSideContorller))
-laborRoutes.patch('/rejectRequst/:bookingId', laborSideContorller.rejectRequst.bind(laborSideContorller))
-laborRoutes.get('/withdrowalRequests/:laborId', laborSideContorller.withdrowalRequests.bind(laborSideContorller))
-laborRoutes.get('/fetchIsBookingExist', laborSideContorller.fetchIsBookingExist.bind(laborSideContorller))
-laborRoutes.get('/fetchAllBookingOfLabor', laborSideContorller.fetchAllBookingOfLabor.bind(laborSideContorller))
-laborRoutes.get('/fetchAllLabors', laborSideContorller.fetchAllLabors.bind(laborSideContorller))
-laborRoutes.post('/witdrowWalletAmount',authenticateLabor, laborSideContorller.witdrowWalletAmount.bind(laborSideContorller))
+laborRoutes.get('/fetchLabor',authenticateLabor , laborSideController.fetchLabors.bind(laborSideController))
+laborRoutes.post('/updateProfile',authenticateLabor , laborSideController.updateProfile.bind(laborSideController))
+laborRoutes.post('/UpdatePassword',authenticateLabor , laborSideController.UpdatePassword.bind(laborSideController))
+laborRoutes.get('/fetchLaborsByLocation',laborSideController.fetchLaborsByLocation.bind(laborSideController))
+laborRoutes.post('/abouteMe',authenticateLabor , laborSideController.abouteMe.bind(laborSideController))
+laborRoutes.get('/fetchBooking',authenticateLabor , laborSideController.fetchBooking.bind(laborSideController))
+laborRoutes.get('/fetchSimilorLabors' , laborSideController.fetchSimilorLabors.bind(laborSideController))
+laborRoutes.get('/fetchBooking/:bookingId' , laborSideController.fetchBookings.bind(laborSideController))
+laborRoutes.post('/submitRejection',laborSideController.submitRejection.bind(laborSideController))
+laborRoutes.put('/acceptBooking/:bookingId',laborSideController.acceptBooking.bind(laborSideController))
+laborRoutes.post('/additionalCharge',authenticateLabor,laborSideController.additionalCharge.bind(laborSideController))
+laborRoutes.patch('/acceptRequst/:bookingId',laborSideController.acceptRequst.bind(laborSideController))
+laborRoutes.patch('/rejectRequst/:bookingId', laborSideController.rejectRequst.bind(laborSideController))
+laborRoutes.get('/withdrowalRequests/:laborId', laborSideController.withdrowalRequests.bind(laborSideController))
+laborRoutes.get('/fetchIsBookingExist', laborSideController.fetchIsBookingExist.bind(laborSideController))
+laborRoutes.get('/fetchAllBookingOfLabor', laborSideController.fetchAllBookingOfLabor.bind(laborSideController))
+laborRoutes.get('/fetchAllLabors', laborSideController.fetchAllLabors.bind(laborSideController))
+laborRoutes.post('/witdrowWalletAmount',authenticateLabor, laborSideController.witdrowWalletAmount.bind(laborSideController))
 
 export default laborRoutes             

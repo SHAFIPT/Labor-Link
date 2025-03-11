@@ -20,12 +20,8 @@ const AdditionalChargeModal: React.FC<AdditionalChargeModalProps> = ({
   if (!isOpen || !bookingDetails || bookingDetails.length === 0) return null;
 
     const additionalCharge = bookingDetails[0].additionalChargeRequest;
-
-    console.log("ttttttttttttttttttttttt", bookingDetails[0].bookingId)
     
     const bookingId = bookingDetails[0].bookingId
-    
-    console.log("VVVVVVVVVVVVVVVVVVVV", bookingId)
 
     const handleAcceptRequest = async () => {
       try {
@@ -33,11 +29,7 @@ const AdditionalChargeModal: React.FC<AdditionalChargeModalProps> = ({
 
         if (response.status === 200) {
           const { acceptRequst } = response.data;
-
-          console.log("additional charge for acccept resonponose :", acceptRequst);
-          // dispatch(setBookingDetails(rejectRequst))
           onUpdateBooking(acceptRequst)
-          // dispatch(updateSingleBooking(rejectRequst));
           toast.success("reshedule successfull");
           onClose();
         }
@@ -51,10 +43,6 @@ const AdditionalChargeModal: React.FC<AdditionalChargeModalProps> = ({
         const response = await rejectRequst(bookingId);
         if (response.status === 200) {
           const { rejectRequst } = response.data;
-
-          console.log("additional charge for reject resonponose :", response);
-          // dispatch(setBookingDetails(rejectRequst))
-          // dispatch(updateSingleBooking(rejectRequst));
           onUpdateBooking(rejectRequst)
           toast.success("reshedule successfull");
           onClose();

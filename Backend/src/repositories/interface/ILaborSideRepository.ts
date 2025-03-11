@@ -3,7 +3,7 @@ import { IBooking } from "../../controllers/entities/bookingEntity";
 import { IAboutMe, ILaborer } from "../../controllers/entities/LaborEntity";
 
 
-export interface ILaborSidRepository{
+export interface ILaborSideRepository{
     fetchLabor(laborId: string): Promise<ILaborer | null>
     updateProfile(labor: Partial<ILaborer>): Promise<ILaborer | null>
     updatePassword(email: string, NewPassword: string): Promise<ILaborer | null>
