@@ -58,6 +58,9 @@ interface BookingData {
   status: string;
 }
 
+interface ExtendedEmojiClickData extends EmojiClickData {
+  native: string;
+}
 
 
 const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, currentPage = null }) => {
@@ -668,9 +671,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     }
   };
 
-  const onEmojiSelect = (emoji: EmojiClickData) => {
-    console.log("This is the emoji to send ......", emoji);
-    setNewMessage((prevMessage) => prevMessage + (emoji?.native || ''));
+  const onEmojiSelect = (emoji: ExtendedEmojiClickData) => {
+    setNewMessage((prevMessage) => prevMessage + emoji.native);
     setShowEmojiPicker(false); 
   };
 
