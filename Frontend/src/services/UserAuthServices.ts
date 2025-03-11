@@ -100,7 +100,7 @@ export const googleAuth = async () => {
       
       
 
-      const defaultProfilePicture = "https://i.pravatar.cc/150";
+      const defaultProfilePicture = "https://res.cloudinary.com/dni3mqui7/image/upload/v1740922929/labor_profiles/cem3eten6knkkbtbqz2z.jpg";
 
     // Save user data to Firestore
     const userData = {
