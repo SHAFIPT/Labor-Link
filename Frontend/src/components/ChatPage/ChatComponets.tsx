@@ -289,10 +289,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   //   const [laborData , setLaborData] = useState('')
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  console.log("Thsi sie userLogin : ", userLogin.ProfilePic);
-  console.log("Thsi sie LaborLogin : ", LaborLogin);
-  // setLaborData(La)
-
   // Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -674,8 +670,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
 
   const onEmojiSelect = (emoji: EmojiClickData) => {
     console.log("This is the emoji to send ......", emoji);
-    setNewMessage((prevMessage) => prevMessage + emoji.native); // Use native instead of emoji
-    setShowEmojiPicker(false); // Close picker after selection
+    setNewMessage((prevMessage) => prevMessage + (emoji?.native || ''));
+    setShowEmojiPicker(false); 
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
