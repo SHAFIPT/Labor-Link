@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { IBooking } from '../../@types/IBooking';
 import { toast } from 'react-toastify';
 import { fetchBookingWithId, reviewSubmit } from '../../services/UserSurvice';
+import { setLoading } from '../../redux/slice/userSlice';
+import '../Auth/LoadingBody.css'
 
 const ReviewAndRating = () => {
     const [rating, setRating] = useState(0);
@@ -13,10 +15,13 @@ const ReviewAndRating = () => {
     const [image2, setImage2] = useState<File | null>(null);
     const navigate = useNavigate()
     const theam = useSelector((state: RootState) => state.theme.mode);
+    const loading = useSelector((state: RootState) => state.user.loading);
     const [searchParams] = useSearchParams();
     const bookingId = searchParams.get("bookingId");
     const [bookingDetils, setBookingDetils] = useState<IBooking>()
     const [error, setError] = useState({ rating: "", feedback: "" });
+    const dipatch = useDispatch()
+
     const validateForm = () => {
         let isValid = true;
         const errors = { rating: "", feedback: "" };
@@ -44,6 +49,7 @@ const ReviewAndRating = () => {
         };
 
         const handleSubmit = async (e: React.FormEvent) => {
+            dipatch(setLoading(true))
           e.preventDefault();
           console.log(validateForm());
           if (validateForm()) return;
@@ -67,11 +73,13 @@ const ReviewAndRating = () => {
               bookingId || ""
             );
             if (reviewSumbitResponse.status == 200) {
+                dipatch(setLoading(false))
               toast.success("Review sumiteed sussfully...");
               navigate("/");
             }
           } catch (error) {
-            console.error("Error submitting review:", error);
+              console.error("Error submitting review:", error);
+              dipatch(setLoading(false))
           }
         };
 
@@ -87,15 +95,16 @@ const ReviewAndRating = () => {
 
 
     useEffect(() => {
-            const fetchBooking = async () => {
+        const fetchBooking = async () => {
+                dipatch(setLoading(true))
                 const response = await fetchBookingWithId(bookingId || ""); 
                 if (response.status === 200) {
                     const { fetchedBooking } = response.data
                     console.log('helooooooooooooooooooooooo',fetchedBooking)
                     setBookingDetils(fetchedBooking)
-                    // toast.success('Booking fetched succesffull')
+                    dipatch(setLoading(false))
                 } else {
-                    // toast.error('Eroor in fetched booking')
+                    dipatch(setLoading(false))
                 }
             }
             fetchBooking()
@@ -103,6 +112,7 @@ const ReviewAndRating = () => {
 
         return (
             <>
+                {loading && <div className="loader"></div>}
                 {theam === "light" ? (
                     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
                         <h2 className="text-2xl font-bold text-center mb-2">Review Rating</h2>
