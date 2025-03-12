@@ -21,7 +21,7 @@ import {
   setLaborer,
 } from "../../../redux/slice/laborSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../../redux/store/store";
+import { clearAllStates, RootState } from "../../../redux/store/store";
 import { ExperiencePage } from "../../../services/LaborAuthServices";
 import "../../Auth/LoadingBody.css";
 import { auth, db } from "../../../utils/firbase";
@@ -86,15 +86,20 @@ const LaborRegisterExperience = () => {
     const handleBeforeunLoad = (event: BeforeUnloadEvent) => {
       if (unsavedChanges) {
         event.preventDefault();
-        event.returnValue =
-          "You have unsaved changes. Do you really want to leave?";
+        event.returnValue = "You have unsaved changes. Do you really want to leave?";
       }
     };
-
+  
+    const handleUnload = () => {
+      clearAllStates(); // Clear persisted Redux state on reload
+    };
+  
     window.addEventListener("beforeunload", handleBeforeunLoad);
-
+    window.addEventListener("unload", handleUnload); // Triggers on page unload (reload or close)
+  
     return () => {
       window.removeEventListener("beforeunload", handleBeforeunLoad);
+      window.removeEventListener("unload", handleUnload);
     };
   }, [unsavedChanges]);
 
@@ -264,7 +269,7 @@ const LaborRegisterExperience = () => {
             name: fullName,
             email,
             role: "labor",
-            profilePicture : profilePicture,
+             profilePicture: profilePicture || "",
           });
         }
 

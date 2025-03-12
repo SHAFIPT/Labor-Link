@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 // import userIMage from '../../../assets/userImage.jpg'
 import React, { useState , useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { RootState } from "../../../redux/store/store"
+import { clearAllStates, RootState } from "../../../redux/store/store"
 import axios from "axios"
 import {
   setUnsavedChanges,
@@ -74,18 +74,23 @@ const navigate = useNavigate()
     useEffect(() => {
       const handleBeforeunLoad = (event: BeforeUnloadEvent) => {
         if (unsavedChanges) {
-          event.preventDefault()
-          event.returnValue = 'You have unsaved changes. Do you really want to leave?';
+          event.preventDefault();
+          event.returnValue = "You have unsaved changes. Do you really want to leave?";
         }
-      }
-  
-      window.addEventListener('beforeunload', handleBeforeunLoad)
-      
+      };
+    
+      const handleUnload = () => {
+        clearAllStates(); // Clear persisted Redux state on reload
+      };
+    
+      window.addEventListener("beforeunload", handleBeforeunLoad);
+      window.addEventListener("unload", handleUnload); // Triggers on page unload (reload or close)
+    
       return () => {
-        window.removeEventListener('beforeunload', handleBeforeunLoad)
-      }
-  
-    }, [unsavedChanges])
+        window.removeEventListener("beforeunload", handleBeforeunLoad);
+        window.removeEventListener("unload", handleUnload);
+      };
+    }, [unsavedChanges]);
 
   const handleInputChange =
   (setter: React.Dispatch<React.SetStateAction<string>>) =>

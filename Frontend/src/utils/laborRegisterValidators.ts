@@ -30,7 +30,8 @@ const phoneSchema = Joi.string()
 
 // First Name Validation Schema
 const firstNameSchema = Joi.string()
-  .min(2)
+  .trim()
+  .min(4)
   .max(50)
   .regex(/^[A-Za-z\s]+$/) // Only letters and spaces allowed
   .required()
@@ -43,7 +44,8 @@ const firstNameSchema = Joi.string()
 
 // Last Name Validation Schema
 const lastNameSchema = Joi.string()
-  .min(2)
+  .trim()
+  .min(4)
   .max(50)
   .required()
   .messages({
@@ -87,38 +89,6 @@ const phoneNumberSchema = Joi.string()
     "string.empty": "Phone number is required",
     "any.required": "Phone number is required"
   });
-
-// Address Validation Schema
-// Validation for each individual address field
-// const addressSchema = Joi.object({
-//   street: Joi.string().min(5).max(200).required().messages({
-//     "string.min": "Street address should be at least 5 characters",
-//     "string.max": "Street address should be less than 200 characters",
-//     "string.empty": "Street address is required",
-//   }),
-//   city: Joi.string().min(2).max(100).required().messages({
-//     "string.min": "City name should be at least 2 characters",
-//     "string.max": "City name should be less than 100 characters",
-//     "string.empty": "City is required",
-//   }),
-//   state: Joi.string().min(2).max(100).required().messages({
-//     "string.min": "State name should be at least 2 characters",
-//     "string.max": "State name should be less than 100 characters",
-//     "string.empty": "State is required",
-//   }),
-//   postalCode: Joi.string().min(5).max(10).required().messages({
-//     "string.min": "Postal code should be at least 5 characters",
-//     "string.max": "Postal code should be less than 10 characters",
-//     "string.empty": "Postal code is required",
-//   }),
-//   country: Joi.string().min(2).max(100).required().messages({
-//     "string.min": "Country name should be at least 2 characters",
-//     "string.max": "Country name should be less than 100 characters",
-//     "string.empty": "Country is required",
-//   }),
-// })
-
-
 
 // Date of Birth Validation Schema
 const dateOfBirthSchema = Joi.date()
@@ -174,15 +144,6 @@ export const skillSchema = (skills: string[]) => {
     return "At least one skill is required";
   }
 
-  // // Optional: Additional validation for each skill
-  // const invalidSkills = skills.filter(skill => 
-  //   skill.length < 2 || skill.length > 50
-  // );
-
-  // if (invalidSkills.length > 0) {
-  //   return "Some skills do not meet the length requirements";
-  // }
-
   return null;
 };
 // Time Schema (Start and End Time)
@@ -201,28 +162,6 @@ const timeSchema = Joi.string()
     'any.only': 'Please select a valid ID type.',
     'string.empty': 'ID type is required.',
   });
-
-  // const certificationsSchema = Joi.string()
-  // .max(500)
-  // .allow('')
-  // .messages({
-  //   'string.max': 'Certifications and training description should be less than 500 characters.',
-  // });
-
-//  const idProofSchema = Joi.object({
-//   idType: Joi.string()
-//     .valid('drivers-license', 'voter-id', 'others')
-//     .required()
-//     .messages({
-//       'any.only': 'Please select a valid ID type.',
-//       'any.required': 'ID type is required.',
-//     }),
-//   idImage: Joi.any()
-//     .required()
-//     .messages({
-//       'any.required': 'ID proof image is required.',
-//     }),
-// });
 
 const arrivalTimeSchema = Joi.date()
   .greater('now') // Ensure the date is in the future

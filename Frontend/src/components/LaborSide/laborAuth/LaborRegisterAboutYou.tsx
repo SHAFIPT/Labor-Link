@@ -18,7 +18,7 @@ import {
 } from "../../../utils/laborRegisterValidators"
 import { setError , setLoading ,setFormData , setUnsavedChanges} from '../../../redux/slice/laborSlice'
 import { useDispatch, useSelector } from "react-redux"
-import { RootState } from "../../../redux/store/store"
+import { clearAllStates, RootState } from "../../../redux/store/store"
 import '../../Auth/LoadingBody.css'
 import { toast } from 'react-toastify';
 import { registerAboutYou } from "../../../services/LaborAuthServices"
@@ -101,20 +101,25 @@ const LaborRegister = () => {
 
 
   useEffect(() => {
-    const handleBeforeunLoad = (event: BeforeUnloadEvent) => {
-      if (unsavedChanges) {
-        event.preventDefault()
-        event.returnValue = 'You have unsaved changes. Do you really want to leave?';
-      }
+  const handleBeforeunLoad = (event: BeforeUnloadEvent) => {
+    if (unsavedChanges) {
+      event.preventDefault();
+      event.returnValue = "You have unsaved changes. Do you really want to leave?";
     }
+  };
 
-    window.addEventListener('beforeunload', handleBeforeunLoad)
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeunLoad)
-    }
+  const handleUnload = () => {
+    clearAllStates(); // Clear persisted Redux state on reload
+  };
 
-  }, [unsavedChanges])
+  window.addEventListener("beforeunload", handleBeforeunLoad);
+  window.addEventListener("unload", handleUnload); // Triggers on page unload (reload or close)
+
+  return () => {
+    window.removeEventListener("beforeunload", handleBeforeunLoad);
+    window.removeEventListener("unload", handleUnload);
+  };
+}, [unsavedChanges]);
   
     const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>, field: string) => (
       event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -325,6 +330,10 @@ const LaborRegister = () => {
     }
   }
 
+  const handlenavigation = () => {
+    navigate('/labor/dashboard')
+  }
+
 
       const countries = [
       'India', 'United States', 'Canada', 'United Kingdom', 'Australia'
@@ -468,11 +477,12 @@ const LaborRegister = () => {
                         className="px-3 h-10 w-[340px] text-black text-[14px] bg-white border rounded-md outline-none ring-2 ring-blue-500/0 focus:ring-blue-500 my-2"
                         value={address.postalCode || ''}
                         onChange={(e) => {
-                          // Allow only numbers
-                          const numericValue = e.target.value.replace(/\D/g, '');
-                          setAddress(prev => ({...prev, postalCode: numericValue}));
-                        }}
-                        maxLength={6} // Typical postal code length
+  // Remove all non-numeric characters, including spaces
+  const numericValue = e.target.value.replace(/[^0-9]/g, '');
+  setAddress(prev => ({ ...prev, postalCode: numericValue }));
+}}
+maxLength={6} // Ensuring postal code length limit
+
                       />
                       {error?.address?.postalCode && (
                           <p className="text-red-500 text-sm">{error.address.postalCode}</p>
@@ -594,10 +604,10 @@ const LaborRegister = () => {
           <button
             type="button"
             className="w-[170px] sm:w-[190px] md:w-[290px] lg:w-[440px] relative inline-block p-px font-semibold leading-6 text-white bg-[#1C3D7A] cursor-pointer rounded-xl shadow-zinc-900 transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95"
-            onClick={() => window.history.back()}
+            onClick={handlenavigation}
           >
             <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-teal-400 via-blue-500 to-purple-500 p-[2px] opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
-            <span className="relative z-10 block px-6 py-3 rounded-xl bg-[#1C3D7A]">
+            <span className="relative z-10 block px-6 py-3 rounded-xl bg-[#151617]">
               <div className="relative z-10 flex items-center justify-center space-x-2">
                 <svg
                   className="w-6 h-6 transition-transform duration-500 group-hover:-translate-x-1"
