@@ -164,6 +164,7 @@ const LaborRegister = () => {
       ...prevAddress,
       [field]: value,
     }));
+       
 
     // Re-trigger geocoding when address fields are updated
     if ( field === "city" || field === "state" || field === "postalCode" || field === "country") {

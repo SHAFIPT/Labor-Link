@@ -259,15 +259,28 @@ export const validatePhoneNumber = (phoneNumber: string) => {
   return error ? error.details[0].message : null;
 };
 
-// Validation functions for individual address fields
 export const validateStreet = (street: string) => {
-  const streetSchema = Joi.string().min(5).max(200).required().messages({
-    "string.min": "Street address should be at least 5 characters",
-    "string.max": "Street address should be less than 200 characters",
-    "string.empty": "Street address is required",
-  });
-  const { error } = streetSchema.validate(street);
-  return error ? error.details[0].message : null;
+  // Check if the input is empty or only contains whitespace
+  if (!street || street.trim() === '') {
+    return "Street address is required";
+  }
+  
+  // Check if the input contains only letters, spaces, and parentheses
+  const validCharsRegex = /^[a-zA-Z\s()]+$/;
+  if (!validCharsRegex.test(street)) {
+    return "Street address should only contain letters, spaces, and parentheses";
+  }
+  
+  // Check length requirements
+  if (street.trim().length < 5) {
+    return "Street address should be at least 5 characters";
+  }
+  
+  if (street.length > 200) {
+    return "Street address should be less than 200 characters";
+  }
+  
+  return null;
 };
 
 export const validateCity = (city: string) => {
