@@ -34,6 +34,7 @@ export default class UserRepository implements IUserRepository{
                 throw new ApiError(404, 'User Already exist...!')
             }
 
+            user.authType = "local";
             const newUser = new User(user)
             const savedUser = await newUser.save()
 
@@ -64,14 +65,17 @@ export default class UserRepository implements IUserRepository{
 
     async googleSignIn(user: Partial<IUser>): Promise<IUser | null>{
         try {
-
+            console.log('Iam hererrrrrrrrrrrrr..............')
             const userExist = await User.findOne({ email: user.email })
             
             if (userExist) {
                 return userExist
             }
 
-            const newUser = new User(user)
+             const newUser = new User({
+                ...user, 
+                authType: "google" 
+            });
 
             const userData = await newUser.save()
 

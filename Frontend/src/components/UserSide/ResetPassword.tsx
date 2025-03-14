@@ -8,6 +8,9 @@ import { toast } from 'react-toastify';
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../utils/firbase"; // Import your Firebase instance
 import { FirebaseError } from 'firebase/app';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // Success icon
+import { motion } from "framer-motion"; // For smooth animations
 
 interface ResetPasswordProps {
     conform: (password: string) => Promise<boolean>; // Typing conform function to return a Promise
@@ -24,12 +27,13 @@ const ResetPassword = ({
     onCancel,
     email
 }: ResetPasswordProps) => {
-
+     const [openModal, setOpenModal] = useState(false);
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [confirmPassword, setConfirmPassword] = useState('')
     const dispatch = useDispatch()
     const error : { password?: string } = useSelector((state: RootState) => state.user.error);
+    const theam = useSelector((state: RootState) => state.theme.mode);
     
 
     const handleConfirm = async () => {
@@ -51,9 +55,8 @@ const ResetPassword = ({
 
 
       if (response) {
-        handleFirebasePasswordReset(email);
-        toast.success("Password reset successfully");
-        onCancel();
+        await handleFirebasePasswordReset(email);
+        setOpenModal(true);
         }
 
   }
@@ -86,9 +89,165 @@ const ResetPassword = ({
             toast.error("An unexpected error occurred. Please try again later.");
         }
     }
-};
+  };
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+  
 
-   return (
+  return (
+     <>
+      {theam === "light" ? (
+              <>
+                {openModal && (
+                  <Dialog
+                    open={openModal}
+                    onClose={handleCloseModal}
+                    maxWidth="xs"
+                    fullWidth
+                    PaperProps={{
+                      sx: {
+                        borderRadius: "12px",
+                        p: 2,
+                        boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.2)",
+                      },
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      sx={{ textAlign: "center", p: 3 }}
+                    >
+                      {/* Animated Success Icon */}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <CheckCircleIcon sx={{ fontSize: 60, color: "#4CAF50" }} />
+                      </motion.div>
+      
+                      {/* Title */}
+                      <DialogTitle
+                        sx={{ fontSize: "20px", fontWeight: "600", mt: 2 }}
+                      >
+                        Password Reset Email Sent
+                      </DialogTitle>
+      
+                      {/* Message */}
+                      <DialogContent>
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "#555", fontSize: "16px", mt: 1 }}
+                        >
+                          A password reset link has been sent to your email. Please
+                          check your inbox and set your new password.
+                        </Typography>
+                      </DialogContent>
+      
+                      {/* Button */}
+                      <DialogActions sx={{ mt: 2 }}>
+                        <Button
+                          onClick={handleCloseModal}
+                          variant="contained"
+                          sx={{
+                            background:
+                              "linear-gradient(135deg, #007BFF 0%, #0056D2 100%)",
+                            color: "white",
+                            borderRadius: "8px",
+                            px: 4,
+                            "&:hover": { background: "#0056D2" },
+                          }}
+                        >
+                          OK
+                        </Button>
+                      </DialogActions>
+                    </Box>
+                  </Dialog>
+                )}
+              </>
+            ) : (
+              <>
+                {openModal && (
+                  <Dialog
+                    open={openModal}
+                    onClose={handleCloseModal}
+                    maxWidth="xs"
+                    fullWidth
+                    PaperProps={{
+                      sx: {
+                        borderRadius: "12px",
+                        p: 2,
+                        bgcolor: "#1E1E1E", // Dark mode background
+                        color: "#E0E0E0", // Light text for dark mode
+                        boxShadow: "0px 4px 30px rgba(0, 255, 128, 0.3)",
+                      },
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      sx={{ textAlign: "center", p: 3 }}
+                    >
+                      {/* Animated Success Icon */}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <CheckCircleIcon sx={{ fontSize: 60, color: "#4CAF50" }} />
+                      </motion.div>
+      
+                      {/* Title */}
+                      <DialogTitle
+                        sx={{
+                          fontSize: "20px",
+                          fontWeight: "600",
+                          mt: 2,
+                          color: "#E0E0E0",
+                        }}
+                      >
+                        Password Reset Email Sent
+                      </DialogTitle>
+      
+                      {/* Message */}
+                      <DialogContent>
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "#B0B0B0", fontSize: "16px", mt: 1 }}
+                        >
+                          A password reset link has been sent to your email. Please
+                          check your inbox and set your new password.
+                        </Typography>
+                      </DialogContent>
+      
+                      {/* Button */}
+                      <DialogActions sx={{ mt: 2 }}>
+                        <Button
+                          onClick={handleCloseModal}
+                          variant="contained"
+                          sx={{
+                            background:
+                              "linear-gradient(135deg, #0044CC 0%, #002A80 100%)",
+                            color: "white",
+                            borderRadius: "8px",
+                            px: 4,
+                            "&:hover": { background: "#003399" },
+                          }}
+                        >
+                          OK
+                        </Button>
+                      </DialogActions>
+                    </Box>
+                  </Dialog>
+                )}
+              </>
+            )}
+     
     <div
       className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 `}
     >
@@ -150,6 +309,7 @@ const ResetPassword = ({
         </div>
       </div>
     </div>
+    </>
   );
 }
 

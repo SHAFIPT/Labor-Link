@@ -29,6 +29,7 @@ import { auth, db } from "../utils/firbase";
 import { collection, doc, getCountFromServer, getDoc, onSnapshot, query, Timestamp, where } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Bell } from "lucide-react";
+import Button from "./ui/button";
 
 interface ChatDocument {
   laborId: string;
@@ -224,7 +225,7 @@ const HomeNavBar = () => {
         return () => chatListenerUnsubscribe && chatListenerUnsubscribe(); 
       } else {
         setChats([]);
-        toast.error("Please sign in to view chats");
+        // toast.error("Please sign in to view chats");
       }
     });
 
@@ -384,12 +385,7 @@ const HomeNavBar = () => {
             </div>
             )}
 
-            <button
-              className="BrowserButton bg-[#21A391] focus:outline-none hidden lg:block md:hidden text-white p-3 w-[220px] rounded-xl"
-              onClick={handleLaborList}
-            >
-              Brouse all labors
-            </button>
+            <Button onClick={handleLaborList}>Browse all labours</Button>
 
             {/* Navigation Container */}
             <div className="">
@@ -539,13 +535,7 @@ const HomeNavBar = () => {
             </nav>
           </div>
           </div>
-            {/* 
-
-            {shouldShowUserName && (
-              <> */}
-
-            {/* Bell Iconnnnnnnnnnnnnn */}
-
+          
             {notificaionOn && (
               <NotificaionModal
                 onClose={() => setNotificaionOn(false)}

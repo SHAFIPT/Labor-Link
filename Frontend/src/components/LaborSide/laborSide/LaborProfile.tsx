@@ -1,13 +1,16 @@
 import { useDispatch, useSelector } from "react-redux"
-import { persistor, RootState } from "../../../redux/store/store"
+import { RootState } from "../../../redux/store/store"
 import { useEffect, useState } from "react"
 import { setIsLaborAuthenticated, setLaborer, resetLaborer ,setError, setLoading} from "../../../redux/slice/laborSlice"
 import { resetUser, setAccessToken, setisUserAthenticated, setUser } from '../../../redux/slice/userSlice'
 import { toast } from "react-toastify"
 import { useLocation, useNavigate } from "react-router-dom"
-import BgImage from '../../../assets/image 6.png'// Assuming you're using React Router for navigation
+import BgImage from '../../../assets/image 6.png'
 import {auth} from '../../../utils/firbase';
 import { CalendarDaysIcon } from "@heroicons/react/24/solid";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // Success icon
+import { motion } from "framer-motion"; // For smooth animations
 import '../../Auth/LoadingBody.css'
 import { Phone, Mail, MapPin, Clock,Globe, Star, Edit, User ,
   Calendar, 
@@ -23,6 +26,7 @@ import { db , app } from '../../../utils/firbase';
 import Breadcrumb from "../../BreadCrumb"
 import { sendPasswordResetEmail } from "firebase/auth"
 import { IUser } from "../../../@types/user"
+import { FirebaseError } from "firebase/app"
 
 interface LaborData {
   firstName: string;
@@ -87,6 +91,7 @@ const LaborProfile = () => {
   const [submittedData] = useState(null);
   const [newSkill, setNewSkill] = useState('');
   const [modalImage, setModalImage] = useState<string | null>(null);
+  const [openModal, setOpenModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<{
   firstName: string;
@@ -132,11 +137,6 @@ const LaborProfile = () => {
   image: null
 });
   
-//   if (isUserAuthenticated) {
-//     dispatch(resetLaborer())
-//     dispatch(setIsLaborAuthenticated(false))
-//  }
-
   
 const error: {
      firstName?: string;
@@ -556,6 +556,37 @@ const updateFirebaseLaborProfilePicture = async (
       dispatch(setLoading(false))
     }
   }
+
+  const handleFirebasePasswordReset = async (userEmail : string) => {
+            // Ensure email is properly formatted and validated
+            if (!userEmail || typeof userEmail !== 'string' || !userEmail.includes('@')) {
+                toast.error("Valid email is required for Firebase password reset");
+                return;
+            }
+            
+            try {
+                // Send Firebase password reset email
+                await sendPasswordResetEmail(auth, userEmail.trim());
+                toast.info("A password reset email has been sent to your email address. Please check your inbox to complete the Firebase authentication update.");
+             } catch (error: unknown) {
+            if (error instanceof FirebaseError) {
+                // Now TypeScript knows that error has a 'code' property
+                console.error("Failed to send Firebase password reset email:", error);
+    
+                if (error.code === 'auth/invalid-email') {
+                    toast.error("The email address format is not valid. Please check your email.");
+                } else if (error.code === 'auth/user-not-found') {
+                    toast.info("If you haven't used Firebase login before, you may need to create an account first.");
+                } else {
+                    toast.warning("There was an issue sending the password reset email. You may need to use the 'Forgot Password' option at login if you have trouble signing in.");
+                }
+            } else {
+                // Handle other errors that aren't Firebase errors
+                toast.error("An unexpected error occurred. Please try again later.");
+            }
+        }
+    };
+    
   
 
   const handleConfirm = async () => {
@@ -584,11 +615,9 @@ const updateFirebaseLaborProfilePicture = async (
         const response = await editPassword(PasswodData)
   
         if (response.status === 200) {
-           await sendPasswordResetEmail(auth, email);
-          toast.success("Password reset email sent! Check your inbox.");
-          setOpenChangePasswod(false)
+           await handleFirebasePasswordReset(email);
+            setOpenModal(true);
           dispatch(setLoading(false))
-          toast.success('Password updated successfully..')
         } else {
           toast.error('errro in passord update...>!')
         }
@@ -775,10 +804,162 @@ const findLaborIdByEmail = async (email  : string) => {
       "Sunday",
     ];
 
-  
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
 
   return (
     <>
+       {theam === "light" ? (
+              <>
+                {openModal && (
+                  <Dialog
+                    open={openModal}
+                    onClose={handleCloseModal}
+                    maxWidth="xs"
+                    fullWidth
+                    PaperProps={{
+                      sx: {
+                        borderRadius: "12px",
+                        p: 2,
+                        boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.2)",
+                      },
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      sx={{ textAlign: "center", p: 3 }}
+                    >
+                      {/* Animated Success Icon */}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <CheckCircleIcon sx={{ fontSize: 60, color: "#4CAF50" }} />
+                      </motion.div>
+      
+                      {/* Title */}
+                      <DialogTitle
+                        sx={{ fontSize: "20px", fontWeight: "600", mt: 2 }}
+                      >
+                        Password Reset Email Sent
+                      </DialogTitle>
+      
+                      {/* Message */}
+                      <DialogContent>
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "#555", fontSize: "16px", mt: 1 }}
+                        >
+                          A password reset link has been sent to your email. Please
+                          check your inbox and set your new password.
+                        </Typography>
+                      </DialogContent>
+      
+                      {/* Button */}
+                      <DialogActions sx={{ mt: 2 }}>
+                        <Button
+                          onClick={handleCloseModal}
+                          variant="contained"
+                          sx={{
+                            background:
+                              "linear-gradient(135deg, #007BFF 0%, #0056D2 100%)",
+                            color: "white",
+                            borderRadius: "8px",
+                            px: 4,
+                            "&:hover": { background: "#0056D2" },
+                          }}
+                        >
+                          OK
+                        </Button>
+                      </DialogActions>
+                    </Box>
+                  </Dialog>
+                )}
+              </>
+            ) : (
+              <>
+                {openModal && (
+                  <Dialog
+                    open={openModal}
+                    onClose={handleCloseModal}
+                    maxWidth="xs"
+                    fullWidth
+                    PaperProps={{
+                      sx: {
+                        borderRadius: "12px",
+                        p: 2,
+                        bgcolor: "#1E1E1E", // Dark mode background
+                        color: "#E0E0E0", // Light text for dark mode
+                        boxShadow: "0px 4px 30px rgba(0, 255, 128, 0.3)",
+                      },
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      sx={{ textAlign: "center", p: 3 }}
+                    >
+                      {/* Animated Success Icon */}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <CheckCircleIcon sx={{ fontSize: 60, color: "#4CAF50" }} />
+                      </motion.div>
+      
+                      {/* Title */}
+                      <DialogTitle
+                        sx={{
+                          fontSize: "20px",
+                          fontWeight: "600",
+                          mt: 2,
+                          color: "#E0E0E0",
+                        }}
+                      >
+                        Password Reset Email Sent
+                      </DialogTitle>
+      
+                      {/* Message */}
+                      <DialogContent>
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "#B0B0B0", fontSize: "16px", mt: 1 }}
+                        >
+                          A password reset link has been sent to your email. Please
+                          check your inbox and set your new password.
+                        </Typography>
+                      </DialogContent>
+      
+                      {/* Button */}
+                      <DialogActions sx={{ mt: 2 }}>
+                        <Button
+                          onClick={handleCloseModal}
+                          variant="contained"
+                          sx={{
+                            background:
+                              "linear-gradient(135deg, #0044CC 0%, #002A80 100%)",
+                            color: "white",
+                            borderRadius: "8px",
+                            px: 4,
+                            "&:hover": { background: "#003399" },
+                          }}
+                        >
+                          OK
+                        </Button>
+                      </DialogActions>
+                    </Box>
+                  </Dialog>
+                )}
+              </>
+            )}
       {loading && <div className="loader"></div>}
 
       {openChangePassword && (

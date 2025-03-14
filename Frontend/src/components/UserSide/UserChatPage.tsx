@@ -6,7 +6,6 @@ import { RootState } from '../../redux/store/store';
 import {auth, db} from '../../utils/firbase'
 import { collection, doc, getCountFromServer, getDoc, onSnapshot, query, serverTimestamp, Timestamp, updateDoc, where } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { toast } from 'react-toastify';
 import { format } from 'date-fns';
 import ChatComponents from '../ChatPage/ChatComponets';
 import { MenuIcon, MessageCircle } from 'lucide-react';
@@ -152,7 +151,7 @@ const UserChatPage = () => {
         return () => chatListenerUnsubscribe && chatListenerUnsubscribe(); // Cleanup listener
       } else {
         setChats([]); // Clear chats if no user is authenticated
-        toast.error("Please sign in to view chats");
+        // toast.error("Please sign in to view chats");
       }
     });
 

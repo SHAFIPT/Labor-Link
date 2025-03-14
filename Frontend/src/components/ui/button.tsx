@@ -1,40 +1,20 @@
-import type { ButtonProps as ChakraButtonProps } from "@chakra-ui/react"
-import {
-  AbsoluteCenter,
-  Button as ChakraButton,
-  Span,
-  Spinner,
-} from "@chakra-ui/react"
-import * as React from "react"
+import React from "react";
 
-interface ButtonLoadingProps {
-  loading?: boolean
-  loadingText?: React.ReactNode
+interface ButtonProps {
+  onClick?: () => void;  // Function type, optional
+  children: React.ReactNode;  // React nodes (text, elements, etc.)
+  className?: string;  // Optional className for styling
 }
 
-export interface ButtonProps extends ChakraButtonProps, ButtonLoadingProps {}
+const Button: React.FC<ButtonProps> = ({ onClick, children, className = "" }) => {
+  return (
+    <button
+      className={`bg-[#21A391] focus:outline-none hidden lg:block md:hidden text-white p-3 w-[220px] rounded-xl ${className}`}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  function Button(props, ref) {
-    const { loading, disabled, loadingText, children, ...rest } = props
-    return (
-      <ChakraButton disabled={loading || disabled} ref={ref} {...rest}>
-        {loading && !loadingText ? (
-          <>
-            <AbsoluteCenter display="inline-flex">
-              <Spinner size="inherit" color="inherit" />
-            </AbsoluteCenter>
-            <Span opacity={0}>{children}</Span>
-          </>
-        ) : loading && loadingText ? (
-          <>
-            <Spinner size="inherit" color="inherit" />
-            {loadingText}
-          </>
-        ) : (
-          children
-        )}
-      </ChakraButton>
-    )
-  },
-)
+export default Button;

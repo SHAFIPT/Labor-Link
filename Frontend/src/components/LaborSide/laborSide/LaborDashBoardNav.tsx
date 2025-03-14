@@ -185,7 +185,7 @@ const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }
         return () => chatListenerUnsubscribe && chatListenerUnsubscribe(); // Cleanup listener
       } else {
         setChats([]); // Clear chats if no user is authenticated
-        toast.error("Please sign in to view chats");
+        // toast.error("Please sign in to view chats");
       }
     });
 

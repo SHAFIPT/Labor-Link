@@ -11,6 +11,7 @@ const UserSchema: Schema<IUser> = new Schema({
   isBlocked: { type: Boolean, default: false },
   refreshToken: { type: [String], default: [] }, 
   lastLogin: { type: Date, default: null },
+  authType: { type: String, enum: ["local", "google"], required: true },
 }, {timestamps : true});
 
 const User = mongoose.model<IUser>('Users', UserSchema)

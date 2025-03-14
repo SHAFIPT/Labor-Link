@@ -407,7 +407,6 @@ class AdminController {
     try {
       const { id } = req.params;
 
-      console.log('The id is getting ;::',id)
 
       if (!id) {
         return res
@@ -416,8 +415,6 @@ class AdminController {
       }
 
       const { status } = req.body;
-
-      console.log('Thsi is teh status ::::',status)
 
       if (!status) {
         return res

@@ -11,7 +11,6 @@ import { AdminAuthRepository } from '../repositories/implementaions/AdimnAuthRep
 import OTPservices from '../services/implementaions/OTPservices';
 import OTPRepository from '../repositories/implementaions/OTPRepository';
 import { sendEmailOtp } from '../utils/emailService';
-import { error } from 'console';
 import { IOTP } from './entities/OtpEntity';
 import { ILaborer } from './entities/LaborEntity';
 import formidable from 'formidable';
@@ -405,7 +404,9 @@ export class UnifiedAuthController {
           ? "UserRefreshToken"
           : role === "labor"
           ? "LaborRefreshToken"
-          : "AdminRefreshToken";
+            : "AdminRefreshToken";
+      
+      console.log('This is teh google auth user ::::',result)
 
         return res.status(HttpStatus.OK)
         .cookie(cookieName, result.refreshToken, this.options)    
