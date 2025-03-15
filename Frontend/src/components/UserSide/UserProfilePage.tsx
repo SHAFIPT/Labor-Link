@@ -61,6 +61,8 @@ const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email);
   const loading = useSelector((state: RootState) => state.user.loading);
+  const formDataUser = useSelector((state: RootState) => state.user);
+  console.log('Thsi is the formData :::: ',formDataUser)
   const dispatch = useDispatch();
   const [openEditProfile, setOpenEditProfile] = useState(false);
   const [OpenCancelationModal, setOpenCancelationModal] = useState(false);

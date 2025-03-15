@@ -11,6 +11,10 @@ import LaborViewAllDetials from '../pages/adminSide/LaborViewAllDetials';
 import BookingListingPage from '../pages/adminSide/BookingListingPage';
 import PaymentEarnigsPage from '../pages/adminSide/PaymentEarnigs';
 import WithdrowalPendings from '../pages/adminSide/WithdrowalPendings';
+// import NewAdminDash from '../pages/newAdminSide/NewAdminDash';
+// import UserManagentPage from '../pages/newAdminSide/UserMangements';
+// import LaborMangementPage from '../pages/newAdminSide/LaborMangements';
+// import BookingMangementPage from '../pages/newAdminSide/BookingMangement';
 
 const AdminRoute = () => {
   return (
@@ -24,7 +28,12 @@ const AdminRoute = () => {
       <Route path='/viewAllDetails' element={<AdminPrivateRoute><LaborViewAllDetials/></AdminPrivateRoute>}/>
       <Route path='/bookingListing' element={<AdminPrivateRoute><BookingListingPage/></AdminPrivateRoute>}/>
       <Route path='/paymentEarnigs' element={<AdminPrivateRoute><PaymentEarnigsPage/></AdminPrivateRoute>}/>
-      <Route path='/withdrowPendings' element={<AdminPrivateRoute><WithdrowalPendings/></AdminPrivateRoute>}/>
+      <Route path='/withdrowPendings' element={<AdminPrivateRoute><WithdrowalPendings /></AdminPrivateRoute>} />
+      
+      {/* <Route path='/adminDashBoard' element={<NewAdminDash/>}/>
+      <Route path='/userManagentPage' element={<UserManagentPage/>}/>
+      <Route path='/laborManagentPage' element={<LaborMangementPage/>}/>
+      <Route path='/bookingsManagementPage' element={<BookingMangementPage/>}/> */}
     </Routes>
   )
 }
