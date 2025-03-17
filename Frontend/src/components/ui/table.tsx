@@ -7,76 +7,117 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { toast } from 'react-toastify';
 import { deleteLabor, submitData} from "../../services/AdminAuthServices";
+
+// Base interface for all table items
+interface BaseTableItem {
+  [key: string]: string | number | boolean | null | undefined | object | object[];
+}
+
+// Interface for User table items
+interface UserTableItem extends BaseTableItem, Partial<User> {
+  profilePic?: string;
+  status?: string;
+  email: string;
+}
+
+// Interface for Labor table items
+interface LaborTableItem extends BaseTableItem, Partial<ILaborer> {
+  laborProfilePic?: string;
+  email: string;
+  status?: string;
+}
+
+// Interface for Booking table items
+interface BookingTableItem extends BaseTableItem {
+  userProfilePic?: string;
+  status?: string;
+}
+
+// Interface for Payment table items
+interface PaymentTableItem extends BaseTableItem {
+  amount: number;
+  paymentStatus?: string;
+}
+
+// Interface for Withdrawal table items
+interface WithdrawalTableItem extends BaseTableItem {
+  _id: string;
+  amount: number;
+  status: string;
+}
+
+// Union type for all table item types
+type TableItemType = UserTableItem | LaborTableItem | BookingTableItem | PaymentTableItem | WithdrawalTableItem;
+
 // Define the Column interface
-interface Column {
-  key: string;
+interface Column<T> {
+  key: keyof T | string;
   label: string;
   sortable?: boolean;
-  render?: (item: any) => React.ReactNode;
+  render?: (item: T) => React.ReactNode;
 }
 
 // Define the props interface for AdminTable
-interface AdminTableProps {
+interface AdminTableProps<T> {
   title: string;
-  columns: Column[];
-  data: any[];
+  columns: Column<T>[];
+  data: T[];
   itemsPerPage?: number;
   tableType: 'users' | 'labors' | 'bookings' | 'payments' | 'withdrawals';
 }
 
-const AdminTable: React.FC<AdminTableProps> = ({ 
+const AdminTable = <T extends TableItemType>({ 
   title,
   columns, 
   data, 
-  itemsPerPage =6,
+  itemsPerPage = 6,
   tableType,
-}) => {
-  console.log('Thsi is the table data ::::',data)
+}: AdminTableProps<T>) => {
+  console.log('This is the table data ::::', data);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<string | null>(null);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [searchTerm, setSearchTerm] = useState('');
   const [openConfirm, setOpenConfirm] = useState(false);
   const [selectedLabor, setSelectedLabor] = useState<string | null>(null);
 
   const handleNavigateUserView = (user: User) => {
-    navigate('/admin/viewUser',{state : user})
-  }
+    navigate('/admin/viewUser', { state: user });
+  };
 
   const confirmDelete = async () => {
-  if (!selectedLabor) return;
-  try {
-    const response = await deleteLabor({ email: selectedLabor }); // Ensure deleteLabor accepts an ID
-    
-    if (response.status === 200) {
-      toast.success("Labor deleted successfully!");
-      setOpenConfirm(false)
-    } else {
+    if (!selectedLabor) return;
+    try {
+      const response = await deleteLabor({ email: selectedLabor });
+      
+      if (response.status === 200) {
+        toast.success("Labor deleted successfully!");
+        setOpenConfirm(false);
+      } else {
+        toast.error("Error occurred during deletion!");
+      }
+    } catch (error) {
+      console.error("Error during deletion:", error);
       toast.error("Error occurred during deletion!");
     }
-  } catch (error) {
-    console.error("Error during deletion:", error);
-    toast.error("Error occurred during deletion!");
-  }
   };
   
-  const handleAction = async (id  :string, status : string) => {
-      try {
-        const response = await submitData( {id , status });
-        if (response.status == 200) {
-          toast.success("data uploaded succefully");
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error("Errorn is submit actions...");
+  const handleAction = async (id: string, status: string) => {
+    try {
+      const response = await submitData({ id, status });
+      if (response.status === 200) {
+        toast.success("Data uploaded successfully");
       }
-    };
-
+    } catch (error) {
+      console.log(error);
+      toast.error("Error in submit actions...");
+    }
+  };
 
   const handleNavigeLaborView = (labor: ILaborer) => {
-    navigate('/admin/viewLabor',{state : labor})
-  }
+    navigate('/admin/viewLabor', { state: labor });
+  };
 
   const handleDeleteClick = (laborId: string) => {
     setSelectedLabor(laborId);
@@ -93,23 +134,23 @@ const AdminTable: React.FC<AdminTableProps> = ({
     }
   };
   
-  // Filter data based on search
   const filteredData = data.filter(item => {
     return columns.some(column => {
-      const value = item[column.key];
+      const value = item[column.key as keyof TableItemType]; 
       if (typeof value === 'string') {
         return value.toLowerCase().includes(searchTerm.toLowerCase());
       }
       return false;
     });
   });
+
   
   // Sort data
   const sortedData = sortBy
     ? [...filteredData].sort((a, b) => {
-        const aValue = a[sortBy];
-        const bValue = b[sortBy];
-        
+        const aValue = a[sortBy as keyof TableItemType] ?? ""; // Provide a default value
+        const bValue = b[sortBy as keyof TableItemType] ?? "";
+
         if (sortDirection === 'asc') {
           return aValue > bValue ? 1 : -1;
         } else {
@@ -122,58 +163,69 @@ const AdminTable: React.FC<AdminTableProps> = ({
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage);
-  
-  // Generate status badge
-  const getStatusBadge = (status: string) => {
-    let bgColor = '';
-    const textColor = 'text-white';
-    
-    if (status.toLowerCase() === 'active' || status.toLowerCase() === 'approved' || status.toLowerCase() === 'completed' || status.toLowerCase() === 'paid') {
-      bgColor = 'bg-green-500';
-    } else if (status.toLowerCase() === 'pending') {
-      bgColor = 'bg-yellow-500';
-    } else if (status.toLowerCase() === 'rejected' || status.toLowerCase() === 'cancelled' || status.toLowerCase() === 'inactive') {
-      bgColor = 'bg-red-500';
-    } else {
-      bgColor = 'bg-blue-500';
+
+  const renderCellValue = (value: string | number | boolean | null | undefined | object | object[]): React.ReactNode => {
+    if (value === null || value === undefined) {
+      return '';
     }
     
-    return (
-      <span className={`${bgColor} ${textColor} py-1 px-3 rounded-full text-sm font-medium`}>
-        {status}
-      </span>
-    );
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+    
+    // For object types, stringify them
+    return JSON.stringify(value);
+  };
+  
+  // Generate status badge
+  const getStatusBadge = (status: string | number | boolean | null | undefined | object | object[]): React.ReactNode => {
+    if (!status) return <span className="px-2 py-1 text-xs bg-gray-600 text-gray-200 rounded-full">Unknown</span>;
+    
+    const statusStr = String(status).toLowerCase();
+    
+    if (statusStr === 'active' || statusStr === 'approved' || statusStr === 'paid') {
+      return <span className="px-2 py-1 text-xs bg-green-800 text-green-200 rounded-full">{String(status)}</span>;
+    } else if (statusStr === 'pending') {
+      return <span className="px-2 py-1 text-xs bg-yellow-800 text-yellow-200 rounded-full">{String(status)}</span>;
+    } else if (statusStr === 'inactive' || statusStr === 'rejected' || statusStr === 'failed') {
+      return <span className="px-2 py-1 text-xs bg-red-800 text-red-200 rounded-full">{String(status)}</span>;
+    }
+    
+    return <span className="px-2 py-1 text-xs bg-blue-800 text-blue-200 rounded-full">{String(status)}</span>;
   };
   
   // Action buttons based on table type
-  const getActionButtons = (item) => {
+  const getActionButtons = (item: TableItemType) => {
     switch (tableType) {
-      case 'users':
+      case "users":
         return (
           <div className="flex space-x-2">
-            <button className="p-2 text-yellow-500 hover:bg-gray-700 rounded-full transition-colors"
-            onClick={()=> handleNavigateUserView(item)}
-            >
-          <Eye size={18} />
-        </button>
-          </div>
-        );
-      case 'labors':
-        return (
-          <div className="flex space-x-2">
-            <button className="p-2 text-yellow-500 hover:bg-gray-700 rounded-full transition-colors"
-            onClick={()=> handleNavigeLaborView(item)}
+            <button
+              className="p-2 text-yellow-500 hover:bg-gray-700 rounded-full transition-colors"
+              onClick={() => handleNavigateUserView(item as User)}
             >
               <Eye size={18} />
             </button>
-            <button className="p-2 text-red-500 hover:bg-gray-700 rounded-full transition-colors"
-            onClick={() => handleDeleteClick(item.email)}
+          </div>
+        );
+      case "labors":
+        return (
+          <div className="flex space-x-2">
+            <button
+              className="p-2 text-yellow-500 hover:bg-gray-700 rounded-full transition-colors"
+              onClick={() => handleNavigeLaborView(item as ILaborer)}
+            >
+              <Eye size={18} />
+            </button>
+            <button
+              className="p-2 text-red-500 hover:bg-gray-700 rounded-full transition-colors"
+              onClick={() => handleDeleteClick((item as LaborTableItem).email)}
             >
               <Trash size={18} />
             </button>
           </div>
         );
-      case 'bookings':
+      case "bookings":
         return (
           <div className="flex space-x-2">
             <button className="p-2 text-blue-500 hover:bg-gray-700 rounded-full transition-colors">
@@ -184,7 +236,7 @@ const AdminTable: React.FC<AdminTableProps> = ({
             </button>
           </div>
         );
-      case 'payments':
+      case "payments":
         return (
           <div className="flex space-x-2">
             <button className="p-2 text-blue-500 hover:bg-gray-700 rounded-full transition-colors">
@@ -195,35 +247,45 @@ const AdminTable: React.FC<AdminTableProps> = ({
             </button>
           </div>
         );
-      case 'withdrawals':
+      case "withdrawals": {
+        const withdrawalItem = item as WithdrawalTableItem;
         // For withdrawals, check the status and show different UI based on status
-        if (item.status && item.status.toLowerCase() === 'pending') {
+        if (
+          withdrawalItem.status &&
+          withdrawalItem.status.toLowerCase() === "pending"
+        ) {
           return (
             <div className="flex space-x-2">
               <button
                 className="p-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center space-x-1 transition-colors"
-                onClick={() => handleAction(item._id, "approved")}
+                onClick={() => handleAction(withdrawalItem._id, "approved")}
               >
                 <Check size={16} />
                 <span>Approve</span>
               </button>
               <button
                 className="p-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-md flex items-center space-x-1 transition-colors"
-                onClick={() => handleAction(item._id, "rejected")}
+                onClick={() => handleAction(withdrawalItem._id, "rejected")}
               >
                 <X size={16} />
                 <span>Reject</span>
               </button>
             </div>
           );
-        } else if (item.status && item.status.toLowerCase() === 'approved') {
+        } else if (
+          withdrawalItem.status &&
+          withdrawalItem.status.toLowerCase() === "approved"
+        ) {
           return (
             <div className="flex items-center space-x-1 p-2 px-4 bg-green-600 text-white rounded-md">
               <CheckCircle size={16} />
               <span>Approved</span>
             </div>
           );
-        } else if (item.status && item.status.toLowerCase() === 'rejected') {
+        } else if (
+          withdrawalItem.status &&
+          withdrawalItem.status.toLowerCase() === "rejected"
+        ) {
           return (
             <div className="flex items-center space-x-1 p-2 px-4 bg-red-600 text-white rounded-md">
               <XCircle size={16} />
@@ -232,6 +294,7 @@ const AdminTable: React.FC<AdminTableProps> = ({
           );
         }
         return null;
+      }
       default:
         return null;
     }
@@ -288,13 +351,13 @@ const AdminTable: React.FC<AdminTableProps> = ({
             <tr>
               {columns.map((column) => (
                 <th
-                  key={column.key}
-                  onClick={() => column.sortable && handleSort(column.key)}
+                  key={String(column.key)}
+                  onClick={() => column.sortable && handleSort(String(column.key))}
                   className={`px-6 py-4 text-left text-sm font-medium text-gray-300 uppercase tracking-wider ${column.sortable ? 'cursor-pointer hover:text-white' : ''}`}
                 >
                   <div className="flex items-center space-x-1">
                     <span>{column.label}</span>
-                    {column.sortable && sortBy === column.key && (
+                    {column.sortable && sortBy === String(column.key) && (
                       sortDirection === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />
                     )}
                   </div>
@@ -306,33 +369,44 @@ const AdminTable: React.FC<AdminTableProps> = ({
             {paginatedData.length > 0 ? (
               paginatedData.map((item, index) => (
                 <tr key={index} className="hover:bg-gray-750 transition-colors">
-                  {columns.map((column) => (
-                    <td key={column.key} className="px-6 py-4 whitespace-nowrap">
-                      {column.render ? (
-                        column.render(item)
-                      ) : column.key === 'index' ? (
-                        <span className="text-gray-300">{startIndex + index + 1}</span>
-                      ) : column.key === 'profilePic' || column.key === 'laborProfilePic' || column.key === 'userProfilePic' ? (
-                        <div className="flex-shrink-0 h-12 w-12">
-                          <img 
-                            className="h-12 w-12 rounded-full object-cover border-2 border-gray-700"
-                            src={item[column.key] || "/api/placeholder/60/60"} 
-                            alt="Profile"
-                          />
-                        </div>
-                      ) : column.key === 'status' || column.key === 'approvalStatus' || column.key === 'paymentStatus' ? (
-                        getStatusBadge(item[column.key])
-                      ) : column.key === 'actions' ? (
-                        getActionButtons(item)
-                      ) : column.key === 'amount' || column.key === 'laborAmount' || column.key === 'totalAmount' || column.key === 'commissionAmount' || column.key === 'laborEarnings' ? (
-                        <span className="text-gray-200 font-medium">₹{item[column.key].toLocaleString()}</span>
-                      ) : (
-                        <span className="text-gray-200 font-medium">
-  ₹{item[column.key] ? item[column.key].toLocaleString() : '0'}
-</span>
-                      )}
-                    </td>
-                  ))}
+                  {columns.map((column) => {
+                    const columnKey = String(column.key);
+                    const cellValue = item[columnKey];
+                    
+                    return (
+                      <td key={columnKey} className="px-6 py-4 whitespace-nowrap">
+                        {column.render ? (
+                          column.render(item)
+                        ) : columnKey === 'index' ? (
+                          <span className="text-gray-300">{startIndex + index + 1}</span>
+                        ) : ['profilePic', 'laborProfilePic', 'userProfilePic'].includes(columnKey) ? (
+                          <div className="flex-shrink-0 h-12 w-12">
+                            <img 
+                              className="h-12 w-12 rounded-full object-cover border-2 border-gray-700"
+                              src={typeof cellValue === 'string' ? cellValue : "/api/placeholder/60/60"} 
+                              alt="Profile"
+                            />
+                          </div>
+                        ) : ['status', 'approvalStatus', 'paymentStatus'].includes(columnKey) ? (
+                          getStatusBadge(cellValue)
+                        ) : columnKey === 'actions' ? (
+                          getActionButtons(item)
+                        ) : ['amount', 'laborAmount', 'totalAmount', 'commissionAmount', 'laborEarnings'].includes(columnKey) ? (
+                          <span className="text-gray-200 font-medium">
+                            ₹{typeof cellValue === 'number' ? cellValue.toLocaleString() : '0'}
+                          </span>
+                        ) : (
+                          <span className="text-gray-200 font-medium">
+                            {Array.isArray(cellValue) 
+                              ? cellValue.join(', ')  // ✅ Convert array to a comma-separated string
+                              : typeof cellValue === 'number' 
+                              ? `₹${cellValue.toLocaleString()}`
+                              : renderCellValue(cellValue)}
+                          </span>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))
             ) : (
