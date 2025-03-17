@@ -1,18 +1,8 @@
 import React, { useEffect, useState } from "react";
-import AdminTable from "../../ui/table";
+import AdminTable, { WithdrawalTableItem } from "../../ui/table";
 import { toast } from "react-toastify";
 import { fetchPending } from "../../../services/AdminAuthServices";
 
-interface PaymentRequest {
-  laborerId?: {
-    firstName?: string;
-    lastName?: string;
-  };
-  amount: number;
-  paymentMethod: string;
-  createdAt: string;
-  status: "pending" | "approved" | "rejected";
-}
 
 interface LaborerID {
   firstName: string;
@@ -31,8 +21,16 @@ interface Withdrawal {
   paymentDetails: string;
 }
 
+// Create a type that matches both Withdrawal and WithdrawalTableItem requirements
+interface WithdrawalTableData extends WithdrawalTableItem {
+  laborerId: LaborerID;
+  createdAt: string;
+  paymentMethod: string;
+  paymentDetails: string;
+}
+
 const WithdrawalManage = () => {
-  const [pendingWallets, setPendingWallets] = useState<Withdrawal[]>([]);
+  const [tableData, setTableData] = useState<WithdrawalTableData[]>([]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -49,7 +47,19 @@ const WithdrawalManage = () => {
     try {
       const response = await fetchPending();
       if (response.status === 200) {
-        setPendingWallets(response.data.fetchedResponse);
+        const withdrawals = response.data.fetchedResponse;
+        
+        // Transform the data to match WithdrawalTableData
+        const transformedData = withdrawals.map((item: Withdrawal) => ({
+          ...item,
+          // Add any additional fields needed for WithdrawalTableItem
+          // This ensures it satisfies the index signature requirement
+          laborName: `${item.laborerId?.firstName || ""} ${item.laborerId?.lastName || ""}`,
+          requestedAmount: item.amount,
+          requestDate: formatDate(item.createdAt),
+        }));
+        
+        setTableData(transformedData);
       }
     } catch (error) {
       console.log(error);
@@ -69,7 +79,7 @@ const WithdrawalManage = () => {
     {
       key: "laborName",
       label: "Labor Name",
-      render: (item: PaymentRequest) => (
+      render: (item: WithdrawalTableData) => (
         <span className="text-gray-200">
           {item.laborerId?.firstName || ""} {item.laborerId?.lastName || ""}
         </span>
@@ -78,28 +88,28 @@ const WithdrawalManage = () => {
     {
       key: "requestedAmount",
       label: "Requested Amount",
-      render: (item: PaymentRequest) => (
+      render: (item: WithdrawalTableData) => (
         <span className="text-gray-200 font-medium">₹{item.amount}</span>
       ),
     },
     {
       key: "paymentMethod",
       label: "Payment Method",
-      render: (item: PaymentRequest) => (
+      render: (item: WithdrawalTableData) => (
         <span className="text-gray-200">{item.paymentMethod}</span>
       ),
     },
     {
       key: "requestDate",
       label: "Request Date & Time",
-      render: (item: PaymentRequest) => (
+      render: (item: WithdrawalTableData) => (
         <span className="text-gray-200">{formatDate(item.createdAt)}</span>
       ),
     },
     {
       key: "status",
       label: "Status",
-      render: (item: PaymentRequest) => (
+      render: (item: WithdrawalTableData) => (
         <span
           className={`py-1 px-3 rounded-full text-sm font-medium text-white ${
             item.status === "pending"
@@ -128,7 +138,7 @@ const WithdrawalManage = () => {
         <AdminTable
           title="Pending Withdrawals"
           columns={columns}
-          data={pendingWallets}
+          data={tableData}
           tableType="withdrawals"
           itemsPerPage={5}
         />

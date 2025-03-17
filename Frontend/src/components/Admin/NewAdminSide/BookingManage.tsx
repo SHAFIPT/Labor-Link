@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import AdminTable from '../../ui/table'
+import AdminTable, { Column } from '../../ui/table'
 import { fetchAllBookings } from '../../../services/AdminAuthServices';
 import { IBooking } from '../../../@types/IBooking';
 import Pagination from '../../ui/pegination';
 interface ItemType {
-    userId?: { name?: string };
     laborId?: { firstName?: string; lastName?: string };
     quote?: { description?: string };
     status?: string;
@@ -39,7 +38,7 @@ const BookingManage = () => {
         fetchBooings();
     }, [page, limit, selectedFilter]);
    
-    const columns = [
+    const columns: Column<ItemType>[] = [
       { key: "index", label: "ID" },
       {
         key: "userId",
@@ -94,9 +93,10 @@ const BookingManage = () => {
     ];
     
     const tableData = bookingDetils.map((user, index) => ({
-        ...user,
-        index: index + 1,
-    }));
+      ...user,
+      index: index + 1,
+      createdAt: user.createdAt ? new Date(user.createdAt).toISOString() : "N/A", // Convert Date to string
+  }));
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage);

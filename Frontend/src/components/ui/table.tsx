@@ -40,7 +40,7 @@ interface PaymentTableItem extends BaseTableItem {
 }
 
 // Interface for Withdrawal table items
-interface WithdrawalTableItem extends BaseTableItem {
+export interface WithdrawalTableItem extends BaseTableItem {
   _id: string;
   amount: number;
   status: string;
@@ -50,7 +50,7 @@ interface WithdrawalTableItem extends BaseTableItem {
 type TableItemType = UserTableItem | LaborTableItem | BookingTableItem | PaymentTableItem | WithdrawalTableItem;
 
 // Define the Column interface
-interface Column<T> {
+export interface Column<T> {
   key: keyof T | string;
   label: string;
   sortable?: boolean;
