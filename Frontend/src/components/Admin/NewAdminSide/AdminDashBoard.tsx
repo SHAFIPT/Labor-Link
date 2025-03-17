@@ -295,101 +295,101 @@ const AdminDashBoard = () => {
         ))}
       </div>
 
-      {/* Chart Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Earnings Overview
-          </h2>
-          <div className="flex mt-4 sm:mt-0 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-            <button
-              onClick={() => setTimeFrame("daily")}
-              className={`px-4 py-2 text-sm font-medium ${
-                timeFrame === "daily"
-                  ? "bg-blue-500 text-white"
-                  : "text-gray-700 dark:text-gray-300"
-              }`}
-            >
-              Daily
-            </button>
-            <button
-              onClick={() => setTimeFrame("monthly")}
-              className={`px-4 py-2 text-sm font-medium ${
-                timeFrame === "monthly"
-                  ? "bg-blue-500 text-white"
-                  : "text-gray-700 dark:text-gray-300"
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setTimeFrame("yearly")}
-              className={`px-4 py-2 text-sm font-medium ${
-                timeFrame === "yearly"
-                  ? "bg-blue-500 text-white"
-                  : "text-gray-700 dark:text-gray-300"
-              }`}
-            >
-              Yearly
-            </button>
+        {/* Chart Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Earnings Overview
+            </h2>
+            <div className="flex mt-4 sm:mt-0 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setTimeFrame("daily")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  timeFrame === "daily"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
+              >
+                Daily
+              </button>
+              <button
+                onClick={() => setTimeFrame("monthly")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  timeFrame === "monthly"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setTimeFrame("yearly")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  timeFrame === "yearly"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-700 dark:text-gray-300"
+                }`}
+              >
+                Yearly
+              </button>
+            </div>
+          </div>
+
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={chartData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis
+                  dataKey="name"
+                  stroke="#6B7280"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="#6B7280"
+                  tickFormatter={(value) => `$${value}`}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  formatter={(value) => [`${formatCurrency(Number(value))}`, "Earnings"]}
+                  contentStyle={{
+                    backgroundColor: "#1F2937",
+                    border: "none",
+                    borderRadius: "8px",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                  }}
+                  itemStyle={{ color: "#E5E7EB" }}
+                  labelStyle={{
+                    color: "#E5E7EB",
+                    fontWeight: "bold",
+                    marginBottom: "5px",
+                  }}
+                />
+                <Legend />
+                <defs>
+                  <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Line
+                  type="monotone"
+                  dataKey="earnings"
+                  stroke="#3B82F6"
+                  strokeWidth={3}
+                  dot={{ r: 6, strokeWidth: 2 }}
+                  activeDot={{ r: 8, strokeWidth: 2 }}
+                  fillOpacity={1}
+                  fill="url(#colorEarnings)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
-
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis
-                dataKey="name"
-                stroke="#6B7280"
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke="#6B7280"
-                tickFormatter={(value) => `$${value}`}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip
-                formatter={(value) => [`${formatCurrency(Number(value))}`, "Earnings"]}
-                contentStyle={{
-                  backgroundColor: "#1F2937",
-                  border: "none",
-                  borderRadius: "8px",
-                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                }}
-                itemStyle={{ color: "#E5E7EB" }}
-                labelStyle={{
-                  color: "#E5E7EB",
-                  fontWeight: "bold",
-                  marginBottom: "5px",
-                }}
-              />
-              <Legend />
-              <defs>
-                <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <Line
-                type="monotone"
-                dataKey="earnings"
-                stroke="#3B82F6"
-                strokeWidth={3}
-                dot={{ r: 6, strokeWidth: 2 }}
-                activeDot={{ r: 8, strokeWidth: 2 }}
-                fillOpacity={1}
-                fill="url(#colorEarnings)"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
 
       {/* Booking & Payment Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
