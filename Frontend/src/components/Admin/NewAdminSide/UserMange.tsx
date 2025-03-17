@@ -1,55 +1,95 @@
-// import React, { useState } from "react";
-// import { Pencil, Trash } from "lucide-react";
-// import { Button } from "../../ui/buttonAdmin";
-// import AdminTable from "../../ui/table";
+import React, { useEffect, useState } from "react";
+import AdminTable from "../../ui/table";
+import UseDebounce from "../../../Hooks/useDebounce";
+import { toast } from "react-toastify";
+import { fetchUser } from "../../../services/AdminAuthServices";
+import Pagination from "../../ui/pegination";
 
-// const UserManagement = () => {
-//   const [users, setUsers] = useState([
-//     { id: 1, name: "John Doe", email: "john@example.com", role: "Admin" },
-//     { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User" },
-//     { id: 3, name: "Alice Brown", email: "alice@example.com", role: "Editor" },
-//   ]);
+// Define the User interface
+export interface User {
+  _id: string;
+  firstName?: string;
+  email: string;
+  isBlocked: boolean;
+  role?: string;
+  index?: number;
+}
 
-//   const handleEdit = (id) => {
-//     console.log("Edit user with ID:", id);
-//   };
+const UserManagement = () => {
+  const [searchTerm] = useState("");
+  const debouncedSearchTerm = UseDebounce(searchTerm, 500);
+  const [users, setUsers] = useState<User[]>([]);
+  const [selectedFilter] = useState("Filter");
+  const [totalPages, setTotalPages] = useState(1);
 
-//   const handleDelete = (id) => {
-//     if (window.confirm("Are you sure you want to delete this user?")) {
-//       setUsers(users.filter((user) => user.id !== id));
-//     }
-//   };
+  // Retrieve stored page number or default to 1
+  const storedPage = localStorage.getItem("userManagementPage");
+  const [page, setPage] = useState(storedPage ? parseInt(storedPage) : 1);
 
-//   const columns = [
-//     { key: "id", label: "ID" },
-//     { key: "name", label: "Name" },
-//     { key: "email", label: "Email" },
-//     { key: "role", label: "Role" },
-//     {
-//       key: "actions",
-//       label: "Actions",
-//       render: (user) => (
-//         <div className="flex gap-2">
-//           <Button size="sm" variant="outline" onClick={() => handleEdit(user.id)}>
-//             <Pencil className="w-4 h-4" />
-//           </Button>
-//           <Button size="sm" variant="danger" onClick={() => handleDelete(user.id)}>
-//             <Trash className="w-4 h-4" />
-//           </Button>
+  const fetchUsers = async (
+    query = "",
+    pageNumber = 1,
+    selectedFilter: string
+  ) => {
+    try {
+      const response = await fetchUser({ query, pageNumber, selectedFilter });
 
-//         </div>
-//       ),
-//     },
-//   ];
+      if (response.status === 200) {
+        const { usersFound, totalPage } = response.data.data;
+        setTotalPages(totalPage);
+        setUsers(usersFound);
+      } else {
+        toast.error("Error occurred during fetchUser!");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Error occurred while fetching users!");
+    }
+  };
 
-//   return (
-//      <div className="p-6 bg-gray-900 rounded-lg shadow-lg">
-//       <h1 className="text-2xl md:text-3xl font-[Rockwell] text-white text-center md:text-left mb-6 tracking-wide">
-//         User Management
-//       </h1>
-//       <AdminTable title="" columns={columns} data={users} tableType='users' />
-//     </div>
-//   );
-// };
+  useEffect(() => {
+    fetchUsers(debouncedSearchTerm, page, selectedFilter);
+  }, [debouncedSearchTerm, page, selectedFilter]);
 
-// export default UserManagement;
+  useEffect(() => {
+    localStorage.setItem("userManagementPage", page.toString()); // Store the current page
+  }, [page]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  return (
+    <div className="p-6 bg-gray-900 rounded-lg shadow-lg">
+      <h1 className="text-2xl md:text-3xl font-[Rockwell] text-white text-center md:text-left mb-6 tracking-wide">
+        User Management
+      </h1>
+      <AdminTable
+        title="User List"
+        columns={[
+          { key: "index", label: "ID" },
+          { key: "firstName", label: "Name", sortable: true },
+          { key: "email", label: "Email", sortable: true },
+          { key: "role", label: "Role" },
+          { key: "status", label: "Status", sortable: true },
+          { key: "actions", label: "Actions" },
+        ]}
+        data={users.map((user, index) => ({
+          ...user,
+          index: index + 1,
+          status: user.isBlocked ? "Inactive" : "Active",
+        }))}
+        tableType="users"
+      />
+      <div className="mt-4">
+        <Pagination
+          totalPages={totalPages}
+          currentPage={page}
+          onPageChange={handlePageChange}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default UserManagement;

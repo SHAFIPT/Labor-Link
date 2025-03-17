@@ -1,9 +1,9 @@
-import AdminAuth from '../../components/Admin/AdminAuth'
+import AdminNewAuth from '../../components/Admin/AdminNewAuth'
 
 const AdminLogin = () => {
   return (
     <div>
-      <AdminAuth/>
+      <AdminNewAuth/>
     </div>
   )
 }

@@ -1,64 +1,103 @@
-// import { useState } from "react";
-// import AdminTable from "../../ui/table";
-// import { Eye, Pencil, Trash } from "lucide-react";
-// import { Button } from "../../ui/buttonAdmin";
-// const LaborManage = () => {
+import { useEffect, useState } from "react";
+import AdminTable from "../../ui/table";
+import UseDebounce from "../../../Hooks/useDebounce";
+import { toast } from "react-toastify";
+import { fetchLabor } from "../../../services/AdminAuthServices";
+import Pagination from "../../ui/pegination";
 
-//     const [labors, setLabors] = useState([
-//         { id: 1, name: "John Doe", role: "Electrician", status: "Active" },
-//         { id: 2, name: "Jane Smith", role: "Plumber", status: "Inactive" },
-//         { id: 3, name: "Samuel Green", role: "Carpenter", status: "Active" },
-//     ]);
-//     const handleView = (id) => {
-//         console.log('hiii')
-//     }
+interface Labor {
+  _id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  isBlocked?: boolean;
+  categories?: string[];
+  status?: "pending" | "approved" | "rejected";
+}
 
-//    const handleEdit = (id) => {
-//       console.log("Edit user with ID:", id);
-//     };
-  
-//     const handleDelete = (id) => {
-//       if (window.confirm("Are you sure you want to delete this user?")) {
-//         setLabors(labors.filter((user) => user.id !== id));
-//       }
-//     };
-  
-//    const columns = [
-//   { key: "id", label: "ID" },
-//   { key: "name", label: "Name" },
-//   { key: "role", label: "Role" },
-//   { key: "status", label: "Status" },
-//   {
-//     key: "actions",
-//     label: "Actions",
-//     render: (user) => (
-//       <div className="flex gap-2">
-//         <Button size="sm" variant="outline" onClick={() => handleView(user.id)}>
-//           <Eye className="w-4 h-4" />
-//         </Button>
-//         <Button size="sm" variant="outline" onClick={() => handleEdit(user.id)}>
-//           <Pencil className="w-4 h-4" />
-//         </Button>
-//         <Button size="sm" variant="destructive" onClick={() => handleDelete(user.id)}>
-//           <Trash className="w-4 h-4" />
-//         </Button>
-//       </div>
-//     ),
-//   },
-// ];
+const LaborManage = () => {
+  const [searchTerm] = useState("");
+  const [Labors, setLabors] = useState<Labor[]>([]);
+  const debouncedSearchTerm = UseDebounce(searchTerm, 500);
+  const [selectedFilter] = useState("Filter");
+  const [totalPages, setTotalPages] = useState(1);
 
+  // Retrieve stored page number or default to 1
+  const storedPage = localStorage.getItem("userManagementPage");
+  const [page, setPage] = useState(storedPage ? parseInt(storedPage) : 1);
 
+  const fetchUsers = async (
+    query = "",
+    pageNumber = 1,
+    selectedFilter: string
+  ) => {
+    const resoponse = await fetchLabor({ query, pageNumber, selectedFilter });
 
-//   return (
-//     <div className="p-6 bg-gray-900 rounded-lg shadow-lg">
-//       <h1 className="text-2xl md:text-3xl font-[Rockwell] text-white text-center md:text-left mb-6 tracking-wide">
-//         Labor Management
-//       </h1>
-//       <AdminTable title='' columns={columns} data={labors} tableType='labors' />
-//     </div>
-      
-    
-//   );
-// };
+    if (resoponse.status === 200) {
+      const { laborFound, totalPage } = resoponse.data.data;
+      setTotalPages(totalPage);
+      setLabors(laborFound);
+    } else {
+      toast.error("Error occurd during fetchUser....!");
+    }
+  };
 
-// export default LaborManage;
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchUsers(debouncedSearchTerm, page, selectedFilter);
+    };
+
+    fetchData();
+  }, [debouncedSearchTerm, page, selectedFilter]);
+
+  useEffect(() => {
+    localStorage.setItem("userManagementPage", page.toString()); // Store the current page
+  }, [page]);
+
+  const columns = [
+    { key: "index", label: "ID" },
+    { key: "firstName", label: "Name" },
+    { key: "categories", label: "Role" },
+    {
+      key: "status",
+      label: "Status",
+      sortable: true,
+    },
+    {
+      key: "actions",
+      label: "Actions",
+    },
+  ];
+
+  const tableData = Labors.map((user, index) => ({
+    ...user,
+    index: index + 1,
+  }));
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  return (
+    <div className="p-6 bg-gray-900 rounded-lg shadow-lg">
+      <h1 className="text-2xl md:text-3xl font-[Rockwell] text-white text-center md:text-left mb-6 tracking-wide">
+        Labor Management
+      </h1>
+      <AdminTable
+        title=""
+        columns={columns}
+        data={tableData}
+        tableType="labors"
+      />
+      <div className="mt-4">
+        <Pagination
+          totalPages={totalPages}
+          currentPage={page}
+          onPageChange={handlePageChange}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default LaborManage;

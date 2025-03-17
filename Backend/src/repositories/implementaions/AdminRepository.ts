@@ -340,12 +340,14 @@ export class AdminRepositooy implements IAdminRepository {
       paymentPending: number;
       paymentFailed: number;
       monthlyEarnings: Array<{ month: string; earnings: number }>;
+      dailyEarnings: Array<{ date: string; earnings: number }>;
+      yearlyEarnings: Array<{ year: string; earnings: number }>;
     };
   }> {
     try {
       const query: any = {};
 
-      console.log('This si the filter  ss',filter)
+      console.log('This is the filter', filter)
 
       // Apply filter if needed
        if (filter === "confirmed") {
@@ -366,7 +368,7 @@ export class AdminRepositooy implements IAdminRepository {
         .sort({ createdAt: -1 })  
         .populate({
           path: "laborId", // Field to populate
-          select: "firstName lastName  phone  categories profilePicture address", // Fields to include from the Labor schema
+          select: "firstName lastName phone categories profilePicture address", // Fields to include from the Labor schema
         }) 
       
       const statusCounts = await Booking.aggregate([
@@ -387,54 +389,156 @@ export class AdminRepositooy implements IAdminRepository {
         }
       ]);
 
+      // Monthly earnings aggregation
       const monthlyEarnings = await Booking.aggregate([
-      {
-        $match: { 
-          status: 'completed',
-          'paymentDetails.commissionAmount': { $exists: true }
+        {
+          $match: { 
+            status: 'completed',
+            'paymentDetails.commissionAmount': { $exists: true }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: '$createdAt' },
+              month: { $month: '$createdAt' }
+            },
+            earnings: { $sum: '$paymentDetails.commissionAmount' }
+          }
+        },
+        {
+          $sort: {
+            '_id.year': 1,
+            '_id.month': 1
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            month: {
+              $concat: [
+                { $toString: '$_id.year' },
+                '-',
+                {
+                  $substr: [
+                    { $cond: [{ $lt: ['$_id.month', 10] }, 
+                      { $concat: ['0', { $toString: '$_id.month' }] },
+                      { $toString: '$_id.month' }
+                    ]},
+                    0,
+                    2
+                  ]
+                }
+              ]
+            },
+            earnings: 1
+          }
+        },
+        {
+          $limit: 12
         }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: '$createdAt' },
-            month: { $month: '$createdAt' }
-          },
-          earnings: { $sum: '$paymentDetails.commissionAmount' }
+      ]);
+
+      // Daily earnings aggregation (for current month)
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1;
+      
+      const startOfMonth = new Date(currentYear, currentMonth - 1, 1);
+      const endOfMonth = new Date(currentYear, currentMonth, 0);
+      
+      const dailyEarnings = await Booking.aggregate([
+        {
+          $match: { 
+            status: 'completed',
+            'paymentDetails.commissionAmount': { $exists: true },
+            createdAt: { 
+              $gte: startOfMonth, 
+              $lte: endOfMonth 
+            }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: '$createdAt' },
+              month: { $month: '$createdAt' },
+              day: { $dayOfMonth: '$createdAt' }
+            },
+            earnings: { $sum: '$paymentDetails.commissionAmount' }
+          }
+        },
+        {
+          $sort: {
+            '_id.year': 1,
+            '_id.month': 1,
+            '_id.day': 1
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            date: {
+              $concat: [
+                { $toString: '$_id.year' },
+                '-',
+                {
+                  $substr: [
+                    { $cond: [{ $lt: ['$_id.month', 10] }, 
+                      { $concat: ['0', { $toString: '$_id.month' }] },
+                      { $toString: '$_id.month' }
+                    ]},
+                    0,
+                    2
+                  ]
+                },
+                '-',
+                {
+                  $substr: [
+                    { $cond: [{ $lt: ['$_id.day', 10] }, 
+                      { $concat: ['0', { $toString: '$_id.day' }] },
+                      { $toString: '$_id.day' }
+                    ]},
+                    0,
+                    2
+                  ]
+                }
+              ]
+            },
+            earnings: 1
+          }
         }
-      },
-      {
-        $sort: {
-          '_id.year': 1,
-          '_id.month': 1
+      ]);
+
+      // Yearly earnings aggregation
+      const yearlyEarnings = await Booking.aggregate([
+        {
+          $match: { 
+            status: 'completed',
+            'paymentDetails.commissionAmount': { $exists: true }
+          }
+        },
+        {
+          $group: {
+            _id: {
+              year: { $year: '$createdAt' }
+            },
+            earnings: { $sum: '$paymentDetails.commissionAmount' }
+          }
+        },
+        {
+          $sort: {
+            '_id.year': 1
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            year: { $toString: '$_id.year' },
+            earnings: 1
+          }
         }
-      },
-      {
-        $project: {
-          _id: 0,
-          month: {
-            $concat: [
-              { $toString: '$_id.year' },
-              '-',
-              {
-                $substr: [
-                  { $cond: [{ $lt: ['$_id.month', 10] }, 
-                    { $concat: ['0', { $toString: '$_id.month' }] },
-                    { $toString: '$_id.month' }
-                  ]},
-                  0,
-                  2
-                ]
-              }
-            ]
-          },
-          earnings: 1
-        }
-      },
-      {
-        $limit: 12
-      }
-    ]);
+      ]);
 
       // Get total amount of completed bookings
       const totalAmountResult = await Booking.aggregate([
@@ -465,7 +569,7 @@ export class AdminRepositooy implements IAdminRepository {
             total : {$sum : '$paymentDetails.laborEarnings'}
           }
         }
-      ])
+      ]);
 
       const totalCommissionAmount = await Booking.aggregate([
         {
@@ -480,7 +584,7 @@ export class AdminRepositooy implements IAdminRepository {
             total : {$sum : '$paymentDetails.commissionAmount'}
           } 
         }
-      ])
+      ]);
 
       const totalAmount =
         totalAmountResult.length > 0 ? totalAmountResult[0].total : 0;
@@ -497,7 +601,7 @@ export class AdminRepositooy implements IAdminRepository {
         currentStage: "experience",
       });
 
-       const bookingStats = {
+      const bookingStats = {
         completed: statusCounts.find(s => s._id === 'completed')?.count || 0,
         inProgress: statusCounts.find(s => s._id === 'in-progress')?.count || 0,
         pending: statusCounts.find(s => s._id === 'confirmed')?.count || 0,
@@ -505,7 +609,9 @@ export class AdminRepositooy implements IAdminRepository {
         paid: paymentCounts.find(p => p._id === 'paid')?.count || 0,
         paymentPending: paymentCounts.find(p => p._id === 'pending')?.count || 0,
         paymentFailed: paymentCounts.find(p => p._id === 'failed')?.count || 0,
-        monthlyEarnings
+        monthlyEarnings,
+        dailyEarnings,
+        yearlyEarnings
       };
 
       return {

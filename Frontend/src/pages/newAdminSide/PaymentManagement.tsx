@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import LaborManage from "../../components/Admin/NewAdminSide/LaborMange";
+import PaymentManage from "../../components/Admin/NewAdminSide/PaymentManage";
 import SideDrower from "../../components/Admin/NewAdminSide/SideDrower";
 import NavBar from "../../components/Admin/NewAdminSide/NavBar";
-const LaborMangementPage = () => {
+
+const PaymentManagement = () => {
   // Shared state for sidebar collapse
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -10,7 +11,6 @@ const LaborMangementPage = () => {
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
-
   return (
     <div>
       <div className="flex h-screen bg-gray-100">
@@ -27,7 +27,7 @@ const LaborMangementPage = () => {
         >
           <NavBar />
           <main className="flex-1 overflow-y-auto p-4">
-            <LaborManage />
+            <PaymentManage />
           </main>
         </div>
       </div>
@@ -35,4 +35,4 @@ const LaborMangementPage = () => {
   );
 };
 
-export default LaborMangementPage;
+export default PaymentManagement;

@@ -64,7 +64,7 @@ class AdminController {
     req: Request,
     res: Response,
     next: NextFunction
-  ) => {
+  ) => {        
     try {
       const query = (req.query.query as string) || "";
       const filter = (req.query.filter as string) || "";
@@ -72,13 +72,22 @@ class AdminController {
       const perPage = 6;
       const skip = (page - 1) * perPage;
 
+      console.log('Thsi si teh reseved quresues :::: ', {
+        query,
+        filter,
+        page,
+
+      })
+
       const totalCount = await this.adminService.getTotalLaborsCount(query);
+      console.log('This sthe totalCount totalCount ::::',totalCount)    
       const laborFound = await this.adminService.fetchLabors(
         query,
-        skip,
+        skip,   
         perPage,
         filter
       );
+      console.log('This sthe labors found ::::',laborFound)
 
       if (laborFound) {
         const totalPages = Math.ceil(totalCount / perPage);
