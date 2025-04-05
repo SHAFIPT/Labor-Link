@@ -19,6 +19,8 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import { Icon } from 'leaflet';
 import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
 import { AxiosError } from "axios";
+import { HttpStatus } from "../../enums/HttpStaus";
+import { Messages } from "../../constants/Messages";
 
 interface LocationMapProps {
   setLatLng: (location: { lat: number; lng: number }) => void;
@@ -88,8 +90,8 @@ const LaborListingPage = () => {
       try {
         await userFetch();
       } catch (error) {
-        if (error instanceof AxiosError && error.response && error.response.status === 403) {
-            toast.error("Your account has been blocked.");
+        if (error instanceof AxiosError && error.response && error.response.status === HttpStatus.FORBIDDEN) {
+            toast.error(Messages.YOUR_ACCOUNT_AS_BEEN_BLOCKED);
           localStorage.removeItem("UserAccessToken");
           // Reset User State
           dispatch(setUser({}));
@@ -131,8 +133,7 @@ const LaborListingPage = () => {
       sortOrder,
     });
 
-    if (response.status === 200) {
-      console.log("Labor fetched successfully: ", response.data);
+    if (response.status === HttpStatus.OK) {
       dispatch(setLoading(false));
       setLaborsList(response.data.laborers);
     } else {

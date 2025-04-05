@@ -27,6 +27,8 @@ import Breadcrumb from "../../BreadCrumb"
 import { sendPasswordResetEmail } from "firebase/auth"
 import { IUser } from "../../../@types/user"
 import { FirebaseError } from "firebase/app"
+import { HttpStatus } from "../../../enums/HttpStaus"
+import { Messages } from "../../../constants/Messages"
 
 interface LaborData {
   firstName: string;
@@ -54,9 +56,6 @@ interface Review {
   imageUrl?: string[]; // Optional array of image URLs
 }
 
-
-
-
 const LaborProfile = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -64,10 +63,6 @@ const LaborProfile = () => {
   const isUserAuthenticated = useSelector((state: RootState) => state.user.isUserAthenticated); 
   const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
   const Laborer = useSelector((state: RootState) => state.labor.laborer)
-  
-  console.log('This is the authenticated labor ::',Laborer)
-  console.log('This is the isLaborAuthenticated ::',isLaborAuthenticated)
-
   const email = useSelector((state : RootState) => state.labor.laborer.email)
   const loading = useSelector((state : RootState) => state.labor.loading)
   const currentUser = useSelector((state: RootState) => state.labor.laborer._id)
@@ -357,8 +352,7 @@ const prepareAvailabilityForSubmission = () => {
 };
 
   useEffect(() => {
-  if (Laborer && Object.keys(Laborer).length > 0) {  // Check if Laborer is not empty
-    console.log("Hi I am here++++++-----");
+  if (Laborer && Object.keys(Laborer).length > 0) { 
    const LaborfullAddress = Laborer?.address 
       ? `${Laborer.address.city || ''}, ${Laborer.address.state || ''}, ${Laborer.address.postalCode || ''}, ${Laborer.address.country || ''}`.trim()
       : '';
@@ -380,7 +374,6 @@ const prepareAvailabilityForSubmission = () => {
       ...user,
       address: UserLaborfullAddress,
     });
-    console.log('This is the Labor laborData +++++____+++++++++++ ;', laborData);
   }
 }, [Laborer, user]);
 
@@ -416,13 +409,13 @@ const handleSubmit = async () => {
 
     const { AboutMe } = response.data
 
-    if (response.status === 200) {
+    if (response.status === HttpStatus.OK) {
 
        dispatch(setLaborer({
       ...Laborer,
       aboutMe: AboutMe, // Update only the aboutMe field
     }));
-      toast.success('about page uploaded succefully.....')
+      toast.success(Messages.ABOUT_PAGE_UPLOADED_SUCCESSFULY)
     } else {
       toast.error('Errro in about me')
     }
@@ -449,13 +442,6 @@ const updateFirebaseLaborProfilePicture = async (
       // Loop through matching documents and update
       const updatePromises = querySnapshot.docs.map(async (docSnapshot) => {
         const userDocRef = doc(db, "Labors", docSnapshot.id);
-        
-        // Log the data being updated
-        console.log("Updating document ID:", docSnapshot.id);
-        console.log("Data being updated:", {
-          profilePicture: profilePictureUrl || "",
-          name: name || "",
-        });
 
         // Ensure no undefined values are passed
         await updateDoc(userDocRef, {
@@ -465,7 +451,6 @@ const updateFirebaseLaborProfilePicture = async (
       });
 
       await Promise.all(updatePromises);
-      console.log("Labor profile picture and name updated successfully in Firebase.");
     } else {
       console.error("No labor found with the provided email.");
     }
@@ -498,7 +483,6 @@ const updateFirebaseLaborProfilePicture = async (
       endTime : validateEndTime(formData.endTime),
       availability : validateAvailability(availabilityDays)
     }
-    console.log("Therse are teh errros occurd :",ValidateError)
     // Check if any errors exist
     const hasErrors = Object.values(ValidateError).some(error => error !== null);
     if (hasErrors) {
@@ -530,19 +514,18 @@ const updateFirebaseLaborProfilePicture = async (
 
       const response = await updateProfile(formDataToSubmit);
       
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
 
         const { profilePicture, firstName, lastName } = response.data.updatedLabor
 
            const fullName = `${firstName} ${lastName}`.trim();
-          
-          console.log('About to update Firebase'); // Add this before Firebase update
+
           await updateFirebaseLaborProfilePicture(email, profilePicture, fullName);
             
         // fetchLabor()
         dispatch(setLaborer(response.data.updatedLabor))
         setAboutFromData(response.data.updatedLabor)
-        toast.success('The profile updated succefully')
+        toast.success(Messages.FAILD_TO_UPDATE_PROFILE)
         setOpenEditProfile(false)
         dispatch(setLoading(false))
       } else {
@@ -614,7 +597,7 @@ const updateFirebaseLaborProfilePicture = async (
         dispatch(setError({}));
         const response = await editPassword(PasswodData)
   
-        if (response.status === 200) {
+        if (response.status === HttpStatus.OK) {
            await handleFirebasePasswordReset(email);
             setOpenModal(true);
           dispatch(setLoading(false))
@@ -673,33 +656,20 @@ const updateFirebaseLaborProfilePicture = async (
   }
 
 // Updated chat creation function
-const handleChatPage = async (user : IUser) => {
+const handleChatPage = async (user: IUser) => {
   const laborEmail = user?.email;
-  if (!laborEmail) {
-    console.log("Labor email is undefined");
-    return;
-  }
 
   try {
     const userId = auth.currentUser?.uid;
-    if (!userId) {
-      console.log("User not authenticated");
-      return;
-    }
 
     const laborId = await findLaborIdByEmail(laborEmail);
-    if (!laborId) {
-      console.log("Labor not found");
-      return;
-    }
-
     const db = getFirestore(app);
-    
+
     // Create or get chat document
     const chatRef = query(
-      collection(db, 'Chats'),
-      where('userId', '==', userId),
-      where('laborId', '==', laborId)
+      collection(db, "Chats"),
+      where("userId", "==", userId),
+      where("laborId", "==", laborId)
     );
 
     const chatSnapshot = await getDocs(chatRef);
@@ -713,25 +683,23 @@ const handleChatPage = async (user : IUser) => {
         lastMessage: "",
         lastUpdated: serverTimestamp(),
         quoteSent: false,
-        lastReadTimestamp: serverTimestamp(),  // Mark the time when chat was first created
+        lastReadTimestamp: serverTimestamp(), // Mark the time when chat was first created
       };
-      const newChatRef = await addDoc(collection(db, 'Chats'), newChat);
+      const newChatRef = await addDoc(collection(db, "Chats"), newChat);
       chatId = newChatRef.id;
     } else {
       // Use existing chat
       chatId = chatSnapshot.docs[0].id;
 
       // Mark as read by updating lastReadTimestamp
-      const chatDocRef = doc(db, 'Chats', chatId);
+      const chatDocRef = doc(db, "Chats", chatId);
       await updateDoc(chatDocRef, {
-        lastReadTimestamp: serverTimestamp()  // Update the lastReadTimestamp to the current time
+        lastReadTimestamp: serverTimestamp(), // Update the lastReadTimestamp to the current time
       });
-      console.log("Chat marked as read");
     }
 
     // Navigate to chat page
     navigate(`/chatingPage`, { state: { user, chatId } });
-    
   } catch (error) {
     console.error("Error in handleChatPage:", error);
     throw error;
@@ -741,7 +709,7 @@ const handleChatPage = async (user : IUser) => {
 // Function to find labor ID by email
 const findLaborIdByEmail = async (email  : string) => {
   if (!email) {
-    console.log("Invalid email value");
+    toast.error("Invalid email value");
     return null;
   }
 
@@ -2225,9 +2193,6 @@ const findLaborIdByEmail = async (email  : string) => {
             </>  
           )}
 
-          {/* Read More Button */}
-          {/* console.log("This is the user object length ++___))((((()))))::", )
-  console.log("This is the user object length ++___))((((()))))::", ) */}
           {Laborer && Laborer?.aboutMe && (
           <div className="mt-8">
             <button

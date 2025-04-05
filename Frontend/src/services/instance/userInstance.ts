@@ -80,9 +80,6 @@
         `${normalizeBaseURL(API_URL)}/api/auth/refresh-token`,
         { withCredentials: true }
       );
-
-      console.log('Refresh Token Response:', response.data); // Add detailed logging
-      
       if (!response.data?.data?.accessToken) {
         throw new Error("No access token received from refresh token endpoint");
       }

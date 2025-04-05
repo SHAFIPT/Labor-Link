@@ -5,6 +5,7 @@ import { IUser } from "../@types/user";
 import { userAxiosInstance } from "./instance/userInstance";
 import { AxiosError } from "axios";
 import { doc, setDoc } from "firebase/firestore";
+import { FirebaseError } from "firebase/app";
 
 
 const api = userAxiosInstance
@@ -43,23 +44,20 @@ export const verifyOtp = async (email: string, otp: string) => {
 
 
 export const registUser = async (user: Partial<IUser>) => {
-    try {
+  try {
+    const role = "user";
+    const resoponce = await api.post("/api/auth/register", { ...user, role });
 
-        console.log('thsi is backend user',user)
-        const role = 'user'    
-        const resoponce = await api.post('/api/auth/register',{ ...user ,role})
-        
-        return resoponce
-        
-    } catch (error) {
-        console.error(error)
-        if (error instanceof AxiosError) {
-            return error.response
-        } else {
-            return null
-        }
+    return resoponce;
+  } catch (error) {
+    console.error(error);
+    if (error instanceof AxiosError) {
+      return error.response;
+    } else {
+      return null;
     }
-}
+  }
+};
 
 
 export const resendOtp = async (credentials: Partial<IUser>) => {
@@ -82,25 +80,14 @@ export const resendOtp = async (credentials: Partial<IUser>) => {
 
 export const googleAuth = async () => {
   try {
-    console.log('Starting Google authentication')
     const role = 'user'
+    googleProvider.setCustomParameters({
+      prompt: 'select_account'
+    });
     const result = await signInWithPopup(auth, googleProvider);
-    
-    console.log('Google auth response:', result)
-
     const { user } = result;
-    const { displayName, photoURL, email, uid } = user;
-    
-    console.log('This is the diplay Nmae ::',displayName)
-    console.log('This is the photoURL ::',photoURL)
-    console.log('This is the email Nmae ::',email)
-    console.log('This is the uid Nmae ::',uid)
-    
-      console.log('Google user:', user)
-      
-      
-
-      const defaultProfilePicture = "https://res.cloudinary.com/dni3mqui7/image/upload/v1740922929/labor_profiles/cem3eten6knkkbtbqz2z.jpg";
+    const { displayName, email, uid } = user;
+    const defaultProfilePicture = "https://res.cloudinary.com/dni3mqui7/image/upload/v1740922929/labor_profiles/cem3eten6knkkbtbqz2z.jpg";
 
     // Save user data to Firestore
     const userData = {
@@ -112,15 +99,19 @@ export const googleAuth = async () => {
 
     // Set the document in Firestore with the user's UID
     await setDoc(doc(db, "Users", uid), userData);
-    console.log("Google user data saved to Firestore successfully");
 
     // Continue with your API call
     const response = await api.post("/api/auth/google-sign-in", {...user, role});
-    console.log('API response:', response)
-
     return response;
-  } catch (error) {
-    console.error(error);
+    } catch (error) {
+    console.error("Google Sign-In error:", error);
+
+    // Handle user closing the popup
+     if (error instanceof FirebaseError && error.code === "auth/popup-closed-by-user") {
+        console.warn("User closed the Google sign-in popup.");
+        return { status: 400, data: { message: "Google sign-in was canceled." } };
+      }
+      
     if (error instanceof AxiosError) {
       return error.response;
     } else {
@@ -146,25 +137,22 @@ export const Login = async (user: Partial<IUser>,role: string) => {
     }
 }
 
-export const forgotPasswordSendOTP = async (email: string, role : string) => {
-    try {
+export const forgotPasswordSendOTP = async (email: string, role: string) => {
+  try {
+    const ForgetResoponce = await api.post("/api/auth/forgettPassword", {
+      email: email,
+      role,
+    });
 
-        console.log('this is email :',email)
-        const ForgetResoponce = await api.post('/api/auth/forgettPassword', { email: email , role})
-        
-         console.log('this is ForgetResoponce :' ,ForgetResoponce)
-    
-
-        return ForgetResoponce
-        
-    } catch (error) {
-        if (error instanceof AxiosError) {
-        return error.response;
-        } else {
-        return null;
-        }
+    return ForgetResoponce;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return error.response;
+    } else {
+      return null;
     }
-}
+  }
+};
 
 export const forgetPasswordVerify = async (otp : string,email: string,role : string) => {
     try {
@@ -202,8 +190,6 @@ export const logout = async () => {
     try {
 
         const response = await api.post('/api/auth/logout')
-
-        console.log('here the responce :',response)
 
         return response;
         

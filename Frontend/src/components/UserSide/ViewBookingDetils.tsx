@@ -7,6 +7,7 @@ import Breadcrumb from "../BreadCrumb";
 import { IBooking } from "../../@types/IBooking";
 import { toast } from "react-toastify";
 import { fetchAllBooings } from "../../services/UserSurvice";
+import { HttpStatus } from "../../enums/HttpStaus";
 
 const ViewBookingDetils = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const ViewBookingDetils = () => {
 
 const fetchBookings = useCallback(async () => {
     const resoponse = await fetchAllBooings(UserId, currentPage, limit, filter);
-    if (resoponse.status === 200) {
+    if (resoponse.status === HttpStatus.OK) {
       const {
         bookings,
         totalPages,

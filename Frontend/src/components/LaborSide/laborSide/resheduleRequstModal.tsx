@@ -7,6 +7,8 @@ import { setError } from '../../../redux/slice/laborSlice';
 import { toast } from 'react-toastify';
 import { acceptReshedule, rejectReshedule } from '../../../services/LaborServices';
 import { BookingDetails } from '../../../redux/slice/bookingSlice';
+import { HttpStatus } from '../../../enums/HttpStaus';
+import { Messages } from '../../../constants/Messages';
 
 
 
@@ -73,12 +75,12 @@ const requestSentBy = isUserAthenticated ? "user" : (isLaborAuthenticated ? "lab
             //   const rejectedBy = 'labor'
               const response = await rejectReshedule({...rejectionData , bookingId , rejectedBy , requestSentBy})
 
-            if (response.status === 200) {
+            if (response.status === HttpStatus.OK) {
                 
                   const {reshedule} = response.data
                 onClose()
                 onUpdateBooking(reshedule);
-                  toast.success('Rejeect submitted succesfully....')
+                  toast.success(Messages.REJECTION_SUBMITED_SUCCESSFULY)
               }
             
           } catch (error) {
@@ -91,12 +93,12 @@ const requestSentBy = isUserAthenticated ? "user" : (isLaborAuthenticated ? "lab
       try {
         const response = await acceptReshedule(bookingId , acceptedBy);
 
-        if (response.status === 200) {
+        if (response.status === HttpStatus.OK) {
           const { reshedule } = response.data
           
           onUpdateBooking(reshedule);
           onClose();
-          toast.success("reshedule requst accepted succesfully....");
+          toast.success(Messages.RESHEDULE_REQUEST_SUBMITTED_SUCCESSFULY);
 
         }
       } catch (error) {

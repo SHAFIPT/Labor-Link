@@ -1,6 +1,7 @@
 import React from 'react'
 import './LaborExperience.css';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 interface UploadModalProps {
   onClose: () => void; 
@@ -25,7 +26,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ onClose, onImageSelect, uploa
       onImageSelect(selectedFile); 
       onClose();
     } else {
-      alert("No file selected!");
+      toast.warning("No file selected!");
     }
   };
 

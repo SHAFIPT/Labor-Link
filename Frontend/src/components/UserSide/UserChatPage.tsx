@@ -49,7 +49,6 @@ const UserChatPage = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const dispatch = useDispatch();
-  console.log("This is my chatssssssssssssss:",chats)
 
   const breadcrumbItems = [
     { label: 'Home', link: '/' },

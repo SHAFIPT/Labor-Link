@@ -20,6 +20,8 @@ import { Login, forgotPasswordSendOTP, forgetPasswordVerify, forgotPasswordReset
 import Forgottpasswod from "../UserSide/Forgottpasswod";
 import AnimatedPage from "../AnimatedPage/Animated";
 import ResetPassword from "../UserSide/ResetPassword";
+import { HttpStatus } from "../../enums/HttpStaus";
+import { Messages } from "../../constants/Messages";
 
 const UserLoginForm = () => {
   const [email, setEmail] = useState("");
@@ -56,20 +58,18 @@ const UserLoginForm = () => {
 
       try {
         const role = imaUser ? "user" : "labor";
-        console.log("Thsis it hro role ::", role);
         const loginResponse = await Login({ email, password }, role);
 
-        if (loginResponse && loginResponse.status === 200) {
+        if (loginResponse && loginResponse.status === HttpStatus.OK) {
           const { userFound, LaborFound, accessToken } =
             loginResponse.data.data;
 
           try {
-            const firebaseUserCredential = await signInWithEmailAndPassword(
+             await signInWithEmailAndPassword(
               auth,
               email,
               password
             );
-            console.log("Firebase Login Successful:", firebaseUserCredential);
 
             localStorage.setItem(`${role}AccessToken`, accessToken);
             toast.success(loginResponse.data.message || "Login successful!");
@@ -92,7 +92,7 @@ const UserLoginForm = () => {
               navigate("/labor/laborDashBoard");
             }
           } catch (firebaseError) {
-            console.error("Firebase Authentication failed:", firebaseError);
+            console.error(Messages.FIREBASE_AUTH_FAILD, firebaseError);
 
             if (firebaseError instanceof Error) {
               toast.error(
@@ -129,12 +129,11 @@ const UserLoginForm = () => {
   };
   const handleForgetPassword = async (email: string) => {
     try {
-      console.log("this is email", email);
       const role = imaUser ? "user" : "labor";
       dispatch(setLoading(true));
       const response = await forgotPasswordSendOTP(email, role);
 
-      if (response && response.status === 200) {
+      if (response && response.status === HttpStatus.OK) {
         toast.success(response.data.message || "Otp sended successfully");
         dispatch(setLoading(false));
         return true;
@@ -143,7 +142,7 @@ const UserLoginForm = () => {
       if (response && (response.status === 500 || response.status === 404)) {
         toast.error(
           response.data.message ||
-            "An error occurred during the otp send for forgetpassword...!"
+            Messages.ERROR_IN_FORGETPASSWORD_OTP_SENT
         );
         dispatch(setLoading(false));
         return;
@@ -171,13 +170,13 @@ const UserLoginForm = () => {
       const role = imaUser ? "user" : "labor";
       const response = await forgetPasswordVerify(otp, email, role);
 
-      if (response && response.status === 200) {
-        toast.success("Otp verify successfully...!");
+      if (response && response.status === HttpStatus.OK) {
+        toast.success(Messages.OTP_VARIFIED_SUCCESSFULLY);
       }
 
       if (
-        response?.data.statusCode == 400 ||
-        response?.data.statusCode == 500
+        response?.data.statusCode == HttpStatus.BAD_REQUEST ||
+        response?.data.statusCode == HttpStatus.INTERNAL_SERVER_ERROR
       ) {
         toast.error(response.data.message || "Enter valid OTP");
       }
@@ -234,7 +233,7 @@ const UserLoginForm = () => {
       dispatch(setLoading(true));
       const googleResoponse = await googleAuth();
 
-      if (googleResoponse && googleResoponse.status === 200) {
+      if (googleResoponse && googleResoponse.status === HttpStatus.OK) {
         const { user, accessToken } = googleResoponse.data.data;
         localStorage.setItem("UserAccessToken", accessToken);
         dispatch(resetLaborer());
@@ -243,7 +242,7 @@ const UserLoginForm = () => {
         dispatch(setAccessToken(accessToken));
         dispatch(setisUserAthenticated(true));
         dispatch(setLoading(false));
-        toast.success("Successfully signed in with Google!");
+        toast.success(Messages.GOOGLE_SIGNIN_SUCCESSFUL);
         navigate("/");
       } else {
         toast.error(googleResoponse?.data?.message || "Google Sign-In failed.");

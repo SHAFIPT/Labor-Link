@@ -21,6 +21,8 @@ import RescheduleRequestModal from "./resheduleRequstModal";
 import ChatComponents from "../../ChatPage/ChatComponets";
 import { IBooking } from "../../../@types/IBooking";
 import { IconType } from "react-icons/lib";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 interface ChatDocument {
   laborId: string;
@@ -346,7 +348,7 @@ const LaborDashBoard = () => {
           filter
         );
 
-        if (responseInBacked.status == 200) {
+        if (responseInBacked.status == HttpStatus.OK) {
           const {
             bookings,
             totalPages,
@@ -356,8 +358,6 @@ const LaborDashBoard = () => {
             total,
             pendingBookings,
           } = responseInBacked.data;
-
-          // console.log("brrrrrrrrrronoddddddddddddn", responseInBacked);
           setTotalPages(totalPages);
           dispatch(setBookingDetails(bookings));
           setBookingDetils(bookings);
@@ -403,24 +403,8 @@ const LaborDashBoard = () => {
     setSelectedChatId(chatId);
     markChatAsRead(chatId);
   };
-useEffect(() => {
-    const fetchLabors = async () => {
-      try {
-        const fetchLabor = await laborFetch();
-        const { fetchUserResponse } = fetchLabor
-        console.log("Fetched Labors:", fetchUserResponse);
-      } catch (error) {
-        console.error(error);
-        toast.error("Error in fetching labor");
-      }
-    };
-
-    fetchLabors();
-  }, []); 
 
   const handleWithdraw = async () => {
-    // Add withdrawal logic here
-    console.log("Withdrawing:", amount, bankDetails);
     try {
       const numericAmount = Number(amount);
 
@@ -436,12 +420,11 @@ useEffect(() => {
         }
       
       const response = await handlewithdrowAmount({ amount: numericAmount, bankDetails  })
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
         // onUpdateBooking={handleRescheduleUpdate}
         const {withdrawalResponse } = response.data
-        console.log('response setnd is this ', withdrawalResponse)
         setUpdatedBooking(withdrawalResponse)
-        toast.success('withdrow amount succefflyll')
+        toast.success(Messages.AMOUNT_WITHDROWED_SUCCESSFULLY)
       }
 
     } catch (error) {
@@ -458,7 +441,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchWithdrowalRequest = async () => {
       const response = await fetchWithdrowalRequests(laborId)
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
         const { withdrowalRequests } = response.data
         setUpdatedBooking(withdrowalRequests)
       }

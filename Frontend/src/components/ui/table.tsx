@@ -73,7 +73,6 @@ const AdminTable = <T extends TableItemType>({
   itemsPerPage = 6,
   tableType,
 }: AdminTableProps<T>) => {
-  console.log('This is the table data ::::', data);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -93,7 +92,7 @@ const AdminTable = <T extends TableItemType>({
       
       if (response.status === 200) {
         toast.success("Labor deleted successfully!");
-        setOpenConfirm(false);
+        setOpenConfirm(false);  
       } else {
         toast.error("Error occurred during deletion!");
       }
@@ -110,7 +109,7 @@ const AdminTable = <T extends TableItemType>({
         toast.success("Data uploaded successfully");
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error("Error in submit actions...");
     }
   };

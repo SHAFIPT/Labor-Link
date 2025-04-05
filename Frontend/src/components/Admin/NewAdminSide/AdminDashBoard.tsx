@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Users, HardHat, Calendar, DollarSign, Briefcase, Handshake } from 'lucide-react';
 import { fetchAllBookings } from '../../../services/AdminAuthServices';
+import { toast } from 'react-toastify';
+import { HttpStatus } from '../../../enums/HttpStaus';
+import { Messages } from '../../../constants/Messages';
 
 interface BookingStats {
   completed: number;
@@ -58,8 +61,7 @@ const AdminDashBoard = () => {
     const fetchBooings = async () => {
       try {
         const response = await fetchAllBookings(currentPage, limit, "");
-        if (response.status === 200) {
-          console.log("Thsi si teh preosnf", response);
+        if (response.status === HttpStatus.OK) {
           const {
             totalAmount,
             totalLabors,
@@ -82,7 +84,7 @@ const AdminDashBoard = () => {
 
         }
       } catch (error) {
-        console.error("Error fetching labor bookings:", error);
+        console.error(Messages.ERROR_FETCHBOOKING, error);
       }
     };
 
@@ -225,7 +227,7 @@ const AdminDashBoard = () => {
     }));
   } else {
     // Fallback case - empty data or unknown timeFrame
-    console.log(
+    toast.error(
       `No data available for ${timeFrame} view or bookingStats is missing required data`
     );
     return [];

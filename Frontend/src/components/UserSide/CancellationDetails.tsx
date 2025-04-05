@@ -7,6 +7,7 @@ import { FaBriefcase } from 'react-icons/fa';
 import { setLoading } from '../../redux/slice/userSlice';
 import { toast } from 'react-toastify';
 import { fetchLaobrs } from '../../services/LaborServices';
+import { HttpStatus } from '../../enums/HttpStaus';
 
 interface Labor {
   _id: string;
@@ -72,8 +73,7 @@ const CancellationModal = ({ booking, onClose, isOpen }: CancellationModalProps)
                     categorie: booking?.laborId?.categories[0], // Corrected
                     laborId: booking?.laborId?._id
                  });
-                // console.log("Thsi sit eh fetched :::",fetchedLabor)
-            if (fetchedLabor.status === 200) {
+            if (fetchedLabor.status === HttpStatus.OK) {
                 setSimilorLabors(fetchedLabor.data.labors)
                 // toast.success("labor fetched succeff")
             }

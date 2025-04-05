@@ -5,6 +5,8 @@ import { RootState } from "../../../redux/store/store";
 import { BookingDetails, updateSingleBooking } from "../../../redux/slice/bookingSlice";
 import { toast } from "react-toastify";
 import { submitAdditionalCharge } from "../../../services/LaborServices";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 
 interface AdditionalChargeProps {
@@ -34,7 +36,7 @@ const AdditionalCharge: React.FC<AdditionalChargeProps> = ({ onClose, bookingId,
         reason: formData.reason 
       });
         
-       if (response.status === 200) {
+       if (response.status === HttpStatus.OK) {
         const { additnalChageAdd } = response.data;
         
         // Restructure the data to match BookingDetails type
@@ -47,7 +49,7 @@ const AdditionalCharge: React.FC<AdditionalChargeProps> = ({ onClose, bookingId,
          onUpdateBooking(updatedBooking)
 
         dispatch(updateSingleBooking(updatedBooking));
-        toast.success("Additional charge added successfully");
+        toast.success(Messages.ADDITIONAL_CHARGE_ADDED_SUCCESSFULLY);
         onClose();
         }
     } catch (error) {

@@ -4,6 +4,8 @@ import UseDebounce from "../../../Hooks/useDebounce";
 import { toast } from "react-toastify";
 import { fetchLabor } from "../../../services/AdminAuthServices";
 import Pagination from "../../ui/pegination";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 interface Labor {
   _id: string;
@@ -33,12 +35,12 @@ const LaborManage = () => {
   ) => {
     const resoponse = await fetchLabor({ query, pageNumber, selectedFilter });
 
-    if (resoponse.status === 200) {
+    if (resoponse.status === HttpStatus.OK) {
       const { laborFound, totalPage } = resoponse.data.data;
       setTotalPages(totalPage);
       setLabors(laborFound);
     } else {
-      toast.error("Error occurd during fetchUser....!");
+      toast.error(Messages.ERROR_FETCH_USER);
     }
   };
 

@@ -30,6 +30,8 @@ import { collection, doc, getCountFromServer, getDoc, onSnapshot, query, Timesta
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Bell } from "lucide-react";
 import Button from "./ui/button";
+import { HttpStatus } from "../enums/HttpStaus";
+import { Messages } from "../constants/Messages";
 
 interface ChatDocument {
   laborId: string;
@@ -121,9 +123,6 @@ const HomeNavBar = () => {
 
  
   const shouldShowUserName = isUserAthenticated 
-  useEffect(() => {
-    console.log('shouldShowUserName :', shouldShowUserName)
-  },[shouldShowUserName])
 
   const primaryServices = [
     { name: "HandyPerson", icon: Handman, className: "w-6 h-6 sm:w-7 sm:h-7 lg:w-10 lg:h-10" },
@@ -237,7 +236,7 @@ const HomeNavBar = () => {
     try {
       const response = await logout();
       
-      if (response?.status === 200) {
+      if (response?.status === HttpStatus.OK) {
         // Clear all auth-related data
         localStorage.removeItem('UserAccessToken');
         localStorage.removeItem('LaborAccessToken');
@@ -257,7 +256,7 @@ const HomeNavBar = () => {
         // Clear persisted state
         await persistor.purge();
         
-        toast.success('Logged out successfully');
+        toast.success(Messages.LOGOUT_SUCCESSFUL);
         navigate('/');
       }
     } catch (error) {
@@ -283,7 +282,6 @@ const HomeNavBar = () => {
   };
 
   const handlenotificaiotn = (e: React.FormEvent) => {
-    console.log('Iam clicke dedd noti')
     e.stopPropagation(); 
   setNotificaionOn(true);
   }

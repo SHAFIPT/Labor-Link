@@ -15,6 +15,7 @@ import '../../Auth/LoadingBody.css'
 import { setLoading } from '../../../redux/slice/laborSlice';
 import AdditionalCharge from './AdditionalCharge';
 import WorkCompleteModal from '../../UserSide/workCompleteModal';
+import { HttpStatus } from '../../../enums/HttpStaus';
 
 interface Reschedule {
   isReschedule?: boolean;
@@ -211,7 +212,7 @@ const LaborViewDetailsPage = () => {
     dispatch(setLoading(true));
     try {
       const response = await fetchBookings(bookingId);
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
         dispatch(setBookingDetails(response.data.bookings));
       } else {
         toast.error('Error fetching booking details');

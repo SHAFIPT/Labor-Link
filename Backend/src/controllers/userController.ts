@@ -455,7 +455,7 @@ export class UserController {
       event = stripe.webhooks.constructEvent(
         req.body,
         sig,
-        "whsec_8fed201d762c6c7205f81574e77174f99eab11a6ebb18b1d2aed78baec8395af"
+        process.env.STRIPE_WEBHOOK_SECRET
       );
       await this.paymentService.updateWebhook(event, sig);
 

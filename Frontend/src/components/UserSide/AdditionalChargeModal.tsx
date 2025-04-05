@@ -3,6 +3,8 @@ import { toast } from 'react-toastify';
 import { acceptRequst, rejectRequst } from '../../services/LaborServices';
 import { XCircle } from 'lucide-react';
 import { BookingDetails } from '../../redux/slice/bookingSlice';
+import { HttpStatus } from '../../enums/HttpStaus';
+import { Messages } from '../../constants/Messages';
 
 interface AdditionalChargeModalProps {
   isOpen: boolean;
@@ -27,10 +29,10 @@ const AdditionalChargeModal: React.FC<AdditionalChargeModalProps> = ({
       try {
         const response = await acceptRequst(bookingId);
 
-        if (response.status === 200) {
+        if (response.status === HttpStatus.OK) {
           const { acceptRequst } = response.data;
           onUpdateBooking(acceptRequst)
-          toast.success("reshedule successfull");
+          toast.success(Messages.RESHEDULE_SUCCESSFULL);
           onClose();
         }
       } catch (error) {
@@ -41,10 +43,10 @@ const AdditionalChargeModal: React.FC<AdditionalChargeModalProps> = ({
     const handleRejectRequest = async () => {
       try {
         const response = await rejectRequst(bookingId);
-        if (response.status === 200) {
+        if (response.status === HttpStatus.OK) {
           const { rejectRequst } = response.data;
           onUpdateBooking(rejectRequst)
-          toast.success("reshedule successfull");
+          toast.success(Messages.RESHEDULE_REJECTED_SUCCESSFULL);
           onClose();
         }
       } catch (error) {

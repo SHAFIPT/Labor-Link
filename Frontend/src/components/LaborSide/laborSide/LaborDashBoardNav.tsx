@@ -19,6 +19,8 @@ import { collection, doc, DocumentData, getCountFromServer, getDoc, onSnapshot, 
 import NotificaionModal from "../../UserSide/notificaionModal";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { IconType } from "react-icons/lib";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 interface ChatDocument {
   laborId: string;
@@ -89,7 +91,7 @@ const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }
       const handleLogoutLabor = async () => {
         const response = await logout()
         
-        if (response.status === 200) {
+        if (response.status === HttpStatus.OK) {
           localStorage.removeItem('LaborAccessToken');
             dispatch(resetUser())
             dispatch(resetLaborer())
@@ -97,7 +99,7 @@ const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }
             dispatch(setFormData({}))
           dispatch(setIsLaborAuthenticated(false))
           await persistor.purge();
-            toast('logout successfully....!')
+            toast(Messages.LOGOUT_SUCCESSFUL)
             navigate('/');
         }
   }
@@ -205,7 +207,6 @@ const LaborDashBoardNav: React.FC<LaborDashBoardNavProps> = ({ setCurrentStage }
 
   
    const handlenotificaiotn = (e: React.FormEvent) => {
-     console.log('Iam clicke dedd noti')
      toggleMenu();
       setIsMenuOn(false); 
       e.stopPropagation(); // Prevent menu from closing

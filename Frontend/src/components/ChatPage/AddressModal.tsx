@@ -57,8 +57,6 @@ const AddressModal = ({ isOpen, onClose, onSubmit, userAddress, setUserAddress }
     return Object.values(errors).every((error) => error === null || error === undefined);
   };
 
-  console.log('This is are the errorr showing;;;; ',error)
-
   // Handle Input Changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserAddress({ ...userAddress, [e.target.name]: e.target.value });

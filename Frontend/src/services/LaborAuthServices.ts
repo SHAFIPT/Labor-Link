@@ -9,9 +9,6 @@ const api = laborAxiosInstance
 
 
 export const registerAboutYou = async (formData: Partial<ILaborer>) => {
-  
-  console.log('this is response formdata :',formData)
-
   try {
      const role = 'labor'
      const response = await api.post('/api/auth/registerAboutYou', {
@@ -63,25 +60,20 @@ export const logout = async () => {
   
 
 export const laborForgotPasswordSendOTP = async (email: string) => {
-    try {
+  try {
+    const ForgetResoponce = await api.post("/api/auth/forgettPassword", {
+      email: email,
+    });
 
-        console.log('this is email :',email)
-
-        const ForgetResoponce = await api.post('/api/auth/forgettPassword', { email: email })
-        
-         console.log('this is ForgetResoponce :' ,ForgetResoponce)
-    
-
-        return ForgetResoponce
-        
-    } catch (error) {
-        if (error instanceof AxiosError) {
-        return error.response;
-        } else {
-        return null;
-        }
+    return ForgetResoponce;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return error.response;
+    } else {
+      return null;
     }
-}
+  }
+};
 
 
 

@@ -13,6 +13,8 @@ import { setError, setLoading } from '../../redux/slice/userSlice';
 import { RootState } from '../../redux/store/store';
 import '../Auth/LoadingBody.css'
 import { cancelSubmision } from '../../services/UserSurvice';
+import { HttpStatus } from '../../enums/HttpStaus';
+import { Messages } from '../../constants/Messages';
 
 interface CancelBookingFormProps {
   onClose: () => void; 
@@ -78,8 +80,8 @@ const CancelBookingForm: React.FC<CancelBookingFormProps> = ({ onClose, bookingI
     try {
       const cancelResponse = await cancelSubmision({ ...cancelFormData, bookingId });
 
-      if (cancelResponse.status === 200) {
-        toast.success("The cancel form is successfully submitted...");
+      if (cancelResponse.status === HttpStatus.OK) {
+        toast.success(Messages.CANCEL_FORM_SUCCESSFULY_SUBMITTED);
         onClose()
       }
     } catch (error) {

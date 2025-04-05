@@ -15,6 +15,8 @@ import { validateEmail } from '../../utils/laborRegisterValidators';
 import { toast } from 'react-toastify';
 import { AdminLogin } from '../../services/AdminAuthServices';
 import { useNavigate } from 'react-router-dom';
+import { HttpStatus } from '../../enums/HttpStaus';
+import { Messages } from '../../constants/Messages';
 
 const AdminNewAuth = () => {
   const [email, setEmail] = useState('');
@@ -44,7 +46,7 @@ const AdminNewAuth = () => {
       const role = "admin";
       const response = await AdminLogin({ email, password }, role);
 
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
 
         const { admin, accessToken } = response.data.data;
         localStorage.setItem("AdminAccessToken", accessToken);
@@ -52,7 +54,7 @@ const AdminNewAuth = () => {
         dispatch(setIsAdminAuthenticated(true));
         dispatch(setAccessToken(accessToken));
         dispatch(setLoading(false));
-        toast.success('Admin login successfully.....')
+        toast.success(Messages.ADMIN_LOGIN_SUCCESSFULLY)
         navigate('/admin/adminDashBoard')
       } else {
         dispatch(setLoading(false));

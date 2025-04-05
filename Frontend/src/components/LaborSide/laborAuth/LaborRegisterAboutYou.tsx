@@ -23,6 +23,8 @@ import '../../Auth/LoadingBody.css'
 import { toast } from 'react-toastify';
 import { registerAboutYou } from "../../../services/LaborAuthServices"
 import { ILaborer } from "../../../@types/labor"
+import { HttpStatus } from "../../../enums/HttpStaus"
+import { Messages } from "../../../constants/Messages"
 
 const LaborRegister = () => {
 
@@ -169,12 +171,10 @@ const LaborRegister = () => {
     // Re-trigger geocoding when address fields are updated
     if ( field === "city" || field === "state" || field === "postalCode" || field === "country") {
       const fullAddress = `${address.city.trim()}, ${address.state.trim()}, ${address.postalCode.trim()}, ${address.country.trim()}`;
-      console.log("This is the fullAddress ++++++++++++++++ :", fullAddress);
       
       // Call OpenCage geocoding API
       const coordinates = await geocodeAddress(fullAddress);
       if (coordinates) {
-        console.log("Geocoded Coordinates:   +++++ ------- ++++++++", coordinates);
         setAddress((prevAddress) => ({   
           ...prevAddress,
           latitude: coordinates.latitude,
@@ -276,7 +276,6 @@ const LaborRegister = () => {
       setTimeout(() => {
         dispatch(setLoading(false));
         dispatch(setError(formDataError));
-        console.log("Thei sseie formDatate errorr ====++++++======",formDataError)
         toast.error("Please correct the highlighted errors.");
       }, 1000);
       return;
@@ -303,8 +302,8 @@ const LaborRegister = () => {
 
         const Response = await registerAboutYou(dataTOStore)
 
-        if (Response.status === 200) {
-          toast.success('About page completed ')
+        if (Response.status === HttpStatus.OK) {
+          toast.success(Messages.ABOUT_PAGE_COMPLETED)
           dispatch(setError({}))
           dispatch(setFormData(dataTOStore))
           dispatch(setLoading(false))

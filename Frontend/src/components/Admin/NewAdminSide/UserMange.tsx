@@ -4,6 +4,8 @@ import UseDebounce from "../../../Hooks/useDebounce";
 import { toast } from "react-toastify";
 import { fetchUser } from "../../../services/AdminAuthServices";
 import Pagination from "../../ui/pegination";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 // Define the User interface
 export interface User {
@@ -34,16 +36,16 @@ const UserManagement = () => {
     try {
       const response = await fetchUser({ query, pageNumber, selectedFilter });
 
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
         const { usersFound, totalPage } = response.data.data;
         setTotalPages(totalPage);
         setUsers(usersFound);
       } else {
-        toast.error("Error occurred during fetchUser!");
+        toast.error(Messages.ERROR_FETCH_USER);
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("Error occurred while fetching users!");
+      console.error(Messages.ERROR_FETCH_USER, error);
+      toast.error(Messages.ERROR_FETCH_USER);
     }
   };
 

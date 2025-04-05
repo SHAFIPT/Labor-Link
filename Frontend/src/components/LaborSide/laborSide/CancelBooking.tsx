@@ -14,6 +14,8 @@ import { RootState } from '../../../redux/store/store';
 import '../../Auth/LoadingBody.css'
 import { cancelSubmision } from '../../../services/LaborServices';
 import { setBookingDetails } from '../../../redux/slice/bookingSlice';
+import { HttpStatus } from '../../../enums/HttpStaus';
+import { Messages } from '../../../constants/Messages';
 
 interface CancelBookingFormProps {
   onClose: () => void; // Function type
@@ -83,14 +85,14 @@ const CancelBookingForm: FC<CancelBookingFormProps> = ({ onClose, bookingId }) =
         bookingId,
       });
 
-      if (cancelResponse.status === 200) {
-        toast.success("The cancel form is successfully submitted...");
+      if (cancelResponse.status === HttpStatus.OK) {
+        toast.success(Messages.CANCEL_FORM_SUCCESSFULLY_SUBMITTED);
         dispatch(setBookingDetails(cancelResponse.data.booking))
         onClose();
       }
     } catch (error) {
       console.error(error);
-      toast.error("Error in the cancel submission ....");
+      toast.error(Messages.ERROR_IN_CANCEL_SUBMITION);
     } finally {
       dispatch(setLoading(false));
     }

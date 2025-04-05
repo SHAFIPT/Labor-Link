@@ -19,6 +19,8 @@ import './LoadingBody.css'
 import { useNavigate } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { resetLaborer, setIsLaborAuthenticated } from '../../redux/slice/laborSlice';
+import { HttpStatus } from '../../enums/HttpStaus';
+import { Messages } from '../../constants/Messages';
 
 interface OtpFormProps {
   isVisible: boolean;
@@ -31,8 +33,6 @@ const OtpForm: React.FC<OtpFormProps> = ({ isVisible, onClose }) => {
   const { formData, loading } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  console.log('This si the form data :::::::&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',formData)
-
   const handleOtpChange = (value: string, index: number) => {
     if (/^[0-9]?$/.test(value)) {
       const newOtp = [...otp];
@@ -65,8 +65,8 @@ const OtpForm: React.FC<OtpFormProps> = ({ isVisible, onClose }) => {
         throw new Error("Invalid response from server.");
       }
 
-      if (VerifyOtpResponse.status === 200) {
-        toast.success("OTP Verified Successfully!", {
+      if (VerifyOtpResponse.status === HttpStatus.OK) {
+        toast.success(Messages.OTP_VARIFIED_SUCCESSFULLY, {
           position: "top-right",
           autoClose: 3000,
         });
@@ -114,8 +114,6 @@ const OtpForm: React.FC<OtpFormProps> = ({ isVisible, onClose }) => {
 
             const DEFAULT_PROFILE_PICTURE =
               "https://res.cloudinary.com/dni3mqui7/image/upload/v1741595871/user_profiles/zc75ffpiqbyhfxvh1c6f.avif";
-            
-            console.log('This is the formdataa to send :::::::::::::::::::::::::::::::::::::',formData)
 
             // Save user data to Firestore
             const userData = {
@@ -127,11 +125,9 @@ const OtpForm: React.FC<OtpFormProps> = ({ isVisible, onClose }) => {
 
             try {
               await setDoc(doc(db, "Users", user.uid), userData);
-              console.log("User data saved to Firestore successfully");
 
               // Save user data in MongoDB (if required)
               const registernewUser = await registUser(formData);
-              console.log("User Registered Successfully:", registernewUser);
 
               if (!registernewUser || !registernewUser.data) {
                 throw new Error(

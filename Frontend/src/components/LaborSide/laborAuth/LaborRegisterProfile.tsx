@@ -23,12 +23,11 @@ import '../../Auth/LoadingBody.css'
 import { profilePage } from "../../../services/LaborAuthServices"
 import { getDocs, query, collection, where, updateDoc, doc, addDoc } from "firebase/firestore";
 import { db } from '../../../utils/firbase';
+import { HttpStatus } from "../../../enums/HttpStaus"
+import { Messages } from "../../../constants/Messages"
 
 const LaborRegisterProfile = () => {
-
-const navigate = useNavigate()
-
-  
+  const navigate = useNavigate()
   const [image, setImage] = useState<File | string>("");
   const [category, setCategory] = useState<string>("");
   const [skills, setSkills] = useState<string[]>([]);
@@ -95,7 +94,6 @@ const navigate = useNavigate()
   const handleInputChange =
   (setter: React.Dispatch<React.SetStateAction<string>>) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    console.log('Input changing:', event.target.value);
     const newValue = event.target.value;
     setter(newValue);
     dispatch(setUnsavedChanges(true));
@@ -169,7 +167,6 @@ const navigate = useNavigate()
   const handleFormsubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setShowErrors(true)
-    console.log('iam herer')
     dispatch(setLoading(true))
 
      
@@ -229,13 +226,12 @@ const navigate = useNavigate()
         const { profilePicture, email } = response.data.data
         
         if (profilePicture) {
-          console.log("Updating Firebase profile picture...");
           await updateFirebaseLaborProfilePicture(email, profilePicture);
         } else {
           console.warn("Profile picture is missing in API response.");
         }
         
-          if (response.status === 200) {
+          if (response.status === HttpStatus.OK) {
 
             const reduxData = {
             ...formData,
@@ -248,11 +244,10 @@ const navigate = useNavigate()
             // Handle image URL from response if needed
             image
             };
-            console.log('This it is the reduxData : ',reduxData)
       
             dispatch(setFormData(reduxData))
           dispatch(setLoading(false))
-          toast.success('Profile Page uploaded sucessfuly....!')
+          toast.success(Messages.PROFILE_PAGE_UPLOADED_SUCCESSFULLY)
           navigate("/labor/experiencePage");
         } else {
            dispatch(setLoading(false))

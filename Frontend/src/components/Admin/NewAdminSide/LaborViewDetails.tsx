@@ -32,6 +32,8 @@ import { toast } from "react-toastify";
 import { RootState } from "../../../redux/store/store";
 import { IBooking } from "../../../@types/IBooking";
 import Pagination from "../../ui/pegination";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 interface Certificate {
   url: string;
@@ -117,14 +119,13 @@ const LaborViewDetails = () => {
           limit,
           ""
         ); // Removed incorrect filter syntax
-        if (response.status === 200) {
-          console.log(response);
+        if (response.status === HttpStatus.OK) {
           const { bookings, totalPages } = response.data;
           setTotalPages(totalPages);
           setBookingDetils(bookings);
         }
       } catch (error) {
-        console.error("Error fetching labor bookings:", error);
+        console.error(Messages.ERROR_FETCH_LABORS_BOOKINGS, error);
       }
     };
 
@@ -136,11 +137,9 @@ const LaborViewDetails = () => {
       dispatch(setLoading(true));
       const response = await Approve({ email: labor.email });
 
-      if (response.status === 200) {
-        console.log("This is the labor resonse approval", response);
+      if (response.status === HttpStatus.OK) {
         const { isApproved } = response.data.labor;
         setLaborData((prev) => ({ ...prev, status: "approved" }));
-        console.log("This is the labor isApproved", isApproved);
         dispatch(setLoading(false));
         toast.success(
           `labor Approved succesfully ${
@@ -149,12 +148,12 @@ const LaborViewDetails = () => {
         );
       } else {
         dispatch(setLoading(false));
-        toast.error("error occud in approval");
+        toast.error(Messages.ERROR_IN_APPROVAL);
       }
     } catch (error) {
       console.error(error);
       dispatch(setLoading(false));
-      toast.error(`Failed to approve the list...!`);
+      toast.error(Messages.FAILD_TO_APPROVAL);
     }
   };
 
@@ -165,18 +164,13 @@ const LaborViewDetails = () => {
       reason: rejectionReason,
       email: labor.email,
     });
-    if (resoponse.status === 200) {
-      const { updatedLabor } = resoponse.data;
+    if (resoponse.status === HttpStatus.OK) {
       setLaborData((prev) => ({ ...prev, status: "rejected" }));
-      console.log("Thsi rejectd updated data : ", updatedLabor);
-
       setRejectModal(false);
       dispatch(setLoading(false));
-
-      // toast.success('you rejection Approval succesfully Done')
     } else {
       dispatch(setLoading(false));
-      toast.error("Error in reason submission..!");
+      toast.error(Messages.ERROR_IN_REASON_SUBMISSION);
     }
   };
 

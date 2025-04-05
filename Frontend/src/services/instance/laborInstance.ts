@@ -76,15 +76,11 @@ import { resetLaborer } from "../../redux/slice/laborSlice";
 
   async function getNewAccessToken() {
     try {
-       console.log("Starting refresh token requedd sft...");
-      console.log("Current cookies:", document.cookie); 
       const response = await axios.get(
         `${normalizeBaseURL(API_URL)}/api/auth/refresh-token`,
         { withCredentials: true }
       );
 
-      console.log('Refresh Token Response:', response.data); // Add detailed logging
-      
       if (!response.data?.data?.accessToken) {
         throw new Error("No access token received from refresh token endpoint");
       }

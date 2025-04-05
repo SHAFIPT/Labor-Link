@@ -11,6 +11,8 @@ import { toast } from "react-toastify";
 import "../Auth/LoadingBody.css";
 import { handleRescheduleWork } from "../../services/UserSurvice";
 import { BookingDetails } from "../../redux/slice/bookingSlice";
+import { HttpStatus } from "../../enums/HttpStaus";
+import { Messages } from "../../constants/Messages";
 
 interface ResheduleModalProps {
   onClose: () => void;
@@ -79,15 +81,15 @@ const ResheduleModal = ({
           requestSentBy,
         });
 
-        if (resheduleResponse.status === 200) {
+        if (resheduleResponse.status === HttpStatus.OK) {
           const { reshedule } = resheduleResponse.data;
           onUpdateBooking(reshedule);
-          toast.success("reshedule successfull");
+          toast.success(Messages.RESHEDULE_SUCCESSFULL);
           onClose();
         }
       } catch (error) {
         console.error(error);
-        toast.error("error isn the resheduleRequstSend");
+        toast.error(Messages.ERROR_IN_RESHEDULE_REQUEST);
       }
     }
   };

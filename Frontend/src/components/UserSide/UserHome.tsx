@@ -38,6 +38,7 @@ import Footer from '../Footer';
 import UseDebounce from '../../Hooks/useDebounce';
 import { fetchSuggessions } from '../../services/UserSurvice';
 import { ILaborer } from '../../@types/labor';
+import { HttpStatus } from '../../enums/HttpStaus';
 
 
 
@@ -58,12 +59,6 @@ const UserHome = () => {
   const [isPaused, setIsPaused] = useState(false);
   const isDarkmode = useSelector((state: RootState) => state.theme.mode)
   const isUserAthenticated = useSelector((state: RootState) => state.user.isUserAthenticated)
-  const isLaborAuthenticated = useSelector((state: RootState) => state.labor.isLaborAuthenticated)
-    const Laborer = useSelector((state: RootState) => state.labor.laborer)
-    
-    console.log('This is the user Home page authenticated labor ::',Laborer)
-    console.log('This is the Home page isLaborAuthenticated ::',isLaborAuthenticated)
-    console.log('This is the isUserAthenticated page isUserAthenticated ::',isUserAthenticated)
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -79,10 +74,9 @@ const UserHome = () => {
       const result = await fetchSuggessions(term);
       
       // Check the response structure and handle it appropriately
-      if (result.status === 200) {
+      if (result.status === HttpStatus.OK) {
         // Direct access to data array if that's the API's response structure
         const suggestionsData = result.data?.data || [];
-        console.log('Thsi is the suggestionsData;;;',suggestionsData)
         setSuggestions(suggestionsData);
       } else {
         setSuggestions([]);
@@ -118,12 +112,6 @@ const UserHome = () => {
     };
   }, []);
 
-
-  useEffect(() => {
-    console.log('isDarkMode is this', isDarkmode);
-  }, [isDarkmode]);
-
- 
   useEffect(() => {
     const preloadImages = [HomeImage, aboutImage, thridbg];
     Promise.all(
@@ -142,7 +130,7 @@ const UserHome = () => {
     const fetchAllLabors = async () => {
       try {
         const result = await fetchLabors();
-        if (result.status === 200) {
+        if (result.status === HttpStatus.OK) {
           const { fetchedLabors } = result.data;
           setAllLabors(fetchedLabors);
         } else {
@@ -185,7 +173,6 @@ const UserHome = () => {
   useEffect(() => {
     if (duplicatedLabors.length === 0 || isPaused) return;
     
-    console.log('Scroll interval created'); 
     
     const scrollInterval = setInterval(() => {
       setScrollPosition((prevPosition) => {
@@ -200,13 +187,11 @@ const UserHome = () => {
     }, 100); 
 
     return () => {
-      console.log('Scroll interval cleared'); 
       clearInterval(scrollInterval);
     };
   }, [allLabors.length, isPaused, duplicatedLabors.length, cardWidth]);
 
   const handleNavigeProfilePage = (user : Labor) => {
-    console.log('This is the user :::', user);
     if (isUserAthenticated) {
       navigate("/labor/ProfilePage", { state: user });
     } else {
@@ -216,7 +201,7 @@ const UserHome = () => {
 
   const handleFindLaborClick = () => {
   if (suggestions.length === 0) {
-    alert("No laborers found. Please refine your search.");
+    toast.warning("No laborers found. Please refine your search.");
     return;
   }
 

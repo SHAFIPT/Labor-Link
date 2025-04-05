@@ -20,6 +20,8 @@ import { sendOtp , googleAuth} from "../../services/UserAuthServices";
 import axios from "axios";
 import { toast } from 'react-toastify';
 import OtpForm from "./OtpModel";
+import { HttpStatus } from "../../enums/HttpStaus";
+import { Messages } from "../../constants/Messages";
 
 const UserRegisterPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -88,13 +90,12 @@ const UserRegisterPage = () => {
 
     try {
       const Otpresponce = await sendOtp({ email, password });
-      console.log("This is the Otpresponce:", Otpresponce);
 
-      if (Otpresponce && Otpresponce.status === 200) {
+      if (Otpresponce && Otpresponce.status === HttpStatus.OK) {
         const userEmail = Otpresponce.data.email;
         setEmail(userEmail);
         setOtpModalVisible(true);
-        toast.success("OTP sent successfully! Please check your email.");
+        toast.success(Messages.OTP_SENT_SUCCESSFULLY);
       } else {
         toast.error(Otpresponce?.data?.message || "Unexpected response from the server.");
 
@@ -118,23 +119,21 @@ const UserRegisterPage = () => {
       dispatch(setLoading(true));
       const googleResoponse = await googleAuth();
 
-      if (googleResoponse && googleResoponse.status === 200) {
+      if (googleResoponse && googleResoponse.status === HttpStatus.OK) {
         const { user, accessToken } = googleResoponse.data.data;
-        console.log("theis is the goole enter repsonws....", googleResoponse);
         localStorage.setItem("UserAccessToken", accessToken);
         dispatch(setUser(user));
         dispatch(setAccessToken(accessToken));
         dispatch(setisUserAthenticated(true));
         dispatch(setLoading(false));
-        toast.success("Successfully signed in with Google!");
+        toast.success(Messages.GOOGLE_SIGNIN_SUCCESSFUL);
         navigate("/");
       } else {
         toast.error(googleResoponse?.data?.message || "Google Sign-In failed.");
-
       }
     } catch (error) {
-      console.error("Google Sign-In error:", error);
-      toast.error("Something went wrong with Google Sign-In.");
+      console.error(Messages.ERROR_IN_GOOGLE_SIGNIN, error);
+      toast.error(Messages.ERROR_IN_GOOGLE_SIGNIN);
     } finally {
       dispatch(setLoading(false));
     }

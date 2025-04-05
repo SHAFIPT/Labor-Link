@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import AdminTable from "../../ui/table";
 import { IBooking } from "../../../@types/IBooking";
 import { fetchAllBookings } from "../../../services/AdminAuthServices";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 const PaymentManage = () => {
   const [bookingDetails, setBookingDetails] = useState<IBooking[]>([]);
@@ -14,13 +16,13 @@ const PaymentManage = () => {
     const fetchBookings = async () => {
       try {
         const response = await fetchAllBookings(page, limit, selectedFilter);
-        if (response.status === 200) {
+        if (response.status === HttpStatus.OK) {
           const { bookings, totalCompnyProfit } = response.data;
           setBookingDetails(bookings);
           setTotalAmount(totalCompnyProfit); // Set total amount dynamically
         }
       } catch (error) {
-        console.error("Error fetching labor bookings:", error);
+        console.error(Messages.ERROR_FETCH_LABORS_BOOKINGS, error);
       }
     };
 

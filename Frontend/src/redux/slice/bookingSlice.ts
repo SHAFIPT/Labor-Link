@@ -112,12 +112,8 @@ export const updateBookingReadStatusAsync = createAsyncThunk(
   "booking/updateReadStatus",
   async ({ bookingId, isUserRead }: { bookingId: string; isUserRead: boolean }, { dispatch }) => {
     try {
-      const response = await api.put(`/api/user/users/update-read-status/${bookingId}`, { isUserRead });
+       await api.put(`/api/user/users/update-read-status/${bookingId}`, { isUserRead });
       dispatch(updateBookingReadStatus({ bookingId, isUserRead }));
-      const { data } = response.data
-      
-      console.log("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL",data)
-      // dispatch(setBookingDetails(data))
     } catch (error) {
       console.error("Error updating read status", error);
     }

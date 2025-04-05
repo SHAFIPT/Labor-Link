@@ -3,6 +3,8 @@ import { RootState } from '../../redux/store/store';
 import { toast } from 'react-toastify';
 import { workCompletion } from '../../services/UserSurvice'
 import { BookingDetails } from '../../redux/slice/bookingSlice';
+import { HttpStatus } from '../../enums/HttpStaus';
+import { Messages } from '../../constants/Messages';
 interface WorkCompleteModalProps {
   onClose: () => void; // onClose should be a function that takes no parameters and returns nothing
   bookingId: string;  // Assuming bookingId is a string (adjust if it's another type)
@@ -29,11 +31,10 @@ const WorkCompleteModal: React.FC<WorkCompleteModalProps> = ({ onClose, bookingI
           
             const response = await workCompletion(updateData, bookingId)
             
-          if (response.status === 200) {
-            console.log('hellowww', response)
+          if (response.status === HttpStatus.OK) {
             const { reshedule } = response.data
             onUpdateBooking(reshedule)
-                toast.success('work has been completd succesfully')
+                toast.success(Messages.WORK_HAS_BEEN_COMPLETED_SUCCESSFULLY)
                 onClose()
             } else {
                 toast.error("Error occured in work completion")

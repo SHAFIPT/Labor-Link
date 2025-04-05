@@ -27,6 +27,8 @@ import "../../Auth/LoadingBody.css";
 import { auth, db } from "../../../utils/firbase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 
 interface Certificate {
@@ -69,10 +71,6 @@ const LaborRegisterExperience = () => {
     }
   },[isLaborAuthenticated , navigate])
 
-
-  useEffect(() => {
-  console.log('Success state:', sucess);
-}, [sucess]);
 
   const error: {
     idType?: string;
@@ -159,14 +157,12 @@ const LaborRegisterExperience = () => {
     ) => {
       const newValue = event.target.value;
       setter(newValue);
-      // console.log('Input changed:', newValue);
       dispatch(setUnsavedChanges(true));
     };
 
   const handleIdTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newValue = event.target.value;
     setIdType(newValue);
-    // console.log('ID Type changed:', newValue);
     dispatch(setUnsavedChanges(true));
   };
 
@@ -250,9 +246,7 @@ const LaborRegisterExperience = () => {
       
       const response = await ExperiencePage(formDataForAPI);
 
-      console.log("response is this :", response);
-
-      if (response.status === 200 && email && password) {
+      if (response.status === HttpStatus.OK && email && password) {
 
         const firebaseUser = await createUserWithEmailAndPassword(
           auth,
@@ -261,7 +255,6 @@ const LaborRegisterExperience = () => {
         );
 
         if (firebaseUser) {
-          console.log("User registered in Firebase: ", firebaseUser.user);
 
           const fullName = `${firstName} ${lastName}`;
 
@@ -273,34 +266,15 @@ const LaborRegisterExperience = () => {
           });
         }
 
-
-        const experienceData = {
-          ...formData, // Other form data
-          certificates: certificatesData,
-          email,
-          idImage,
-          idType,
-          responsiblity,
-          DurationofEmployment: {
-            startDate, // Assign the startDate here
-            currentlyWorking, // Assign currentlyWorking here
-          },
-          role: "labor",
-        };
-
         const { accessToken, laborData } = response.data.data;
-        console.log("laborData __++++++++ ",laborData)
         dispatch(setLaborer(laborData))
-
-        console.log("thisis seh response page data :", response);
         // Store access token in localStorage
         localStorage.setItem("LaborAccessToken", accessToken);
 
-        console.log("thisis seh exprence page data :", experienceData);
           setSucess(true);
         
         dispatch(setLoading(false));
-        toast.success("experience Page uploaded sucessfuly....!");
+        toast.success(Messages.EXPERIENCE_PAGE_UPLOADED_SUCCESFULLY);
       } else {
         dispatch(setLoading(false));
         throw new Error(response.data.message || "An error occurred");
@@ -348,7 +322,6 @@ const LaborRegisterExperience = () => {
     },200)
   };
 
-  //  console.log('this is the idType : to send ',idType)
   const handleNavigateTotheProfile = () => {
     const experienceData = {
       ...formData, // Other form data

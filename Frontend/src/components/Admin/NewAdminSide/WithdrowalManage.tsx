@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import AdminTable, { WithdrawalTableItem } from "../../ui/table";
 import { toast } from "react-toastify";
 import { fetchPending } from "../../../services/AdminAuthServices";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 
 interface LaborerID {
@@ -46,14 +48,12 @@ const WithdrawalManage = () => {
   const fetchPendingWithdrawals = async () => {
     try {
       const response = await fetchPending();
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
         const withdrawals = response.data.fetchedResponse;
         
         // Transform the data to match WithdrawalTableData
         const transformedData = withdrawals.map((item: Withdrawal) => ({
           ...item,
-          // Add any additional fields needed for WithdrawalTableItem
-          // This ensures it satisfies the index signature requirement
           laborName: `${item.laborerId?.firstName || ""} ${item.laborerId?.lastName || ""}`,
           requestedAmount: item.amount,
           requestDate: formatDate(item.createdAt),
@@ -63,7 +63,7 @@ const WithdrawalManage = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("Error fetching pending withdrawals");
+      toast.error(Messages.ERROR_IN_FETCH_PENDINGS);
     }
   };
 

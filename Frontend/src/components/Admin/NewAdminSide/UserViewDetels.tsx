@@ -15,6 +15,8 @@ import { toast } from "react-toastify";
 import { IBooking } from "../../../@types/IBooking";
 import { fetchAllBooings } from "../../../services/UserSurvice";
 import Pagination from "../../ui/pegination";
+import { HttpStatus } from "../../../enums/HttpStaus";
+import { Messages } from "../../../constants/Messages";
 
 const UserViewDetails = () => {
   const location = useLocation();
@@ -39,14 +41,13 @@ const UserViewDetails = () => {
           filter
         );
 
-        if (resoponse.status === 200) {
+        if (resoponse.status === HttpStatus.OK) {
           const { bookings, totalPages } = resoponse.data;
-          console.log("This is the booking", bookings);
           setBookingDetils(bookings);
           setTotalPages(totalPages);
         }
       } catch (error) {
-        console.error("Error in About me :", error);
+        console.error(Messages.ERROR_IN_ABOUT_ME, error);
         throw error;
       }
     };
@@ -61,14 +62,14 @@ const UserViewDetails = () => {
         ? await UnblockUser({ email: user.email })
         : await blockUser({ email: user.email });
 
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
         // Toggle the state on success
         setIsBlocked(!isBlocked);
         toast.success(
           `User successfully ${isBlocked ? "unblocked" : "blocked"}!`
         );
       } else {
-        toast.error("An error occurred. Please try again.");
+        toast.error(Messages.UNEXPECTED_ERROR_OCCURD);
       }
     } catch (error) {
       console.error(error);

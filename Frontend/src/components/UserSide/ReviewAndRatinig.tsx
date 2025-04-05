@@ -7,6 +7,8 @@ import { toast } from 'react-toastify';
 import { fetchBookingWithId, reviewSubmit } from '../../services/UserSurvice';
 import { setLoading } from '../../redux/slice/userSlice';
 import '../Auth/LoadingBody.css'
+import { HttpStatus } from '../../enums/HttpStaus';
+import { Messages } from '../../constants/Messages';
 
 const ReviewAndRating = () => {
     const [rating, setRating] = useState(0);
@@ -51,7 +53,6 @@ const ReviewAndRating = () => {
         const handleSubmit = async (e: React.FormEvent) => {
             dipatch(setLoading(true))
           e.preventDefault();
-          console.log(validateForm());
           if (validateForm()) return;
 
           const formData = new FormData();
@@ -72,9 +73,9 @@ const ReviewAndRating = () => {
               formData,
               bookingId || ""
             );
-            if (reviewSumbitResponse.status == 200) {
+            if (reviewSumbitResponse.status == HttpStatus.OK) {
                 dipatch(setLoading(false))
-              toast.success("Review sumiteed sussfully...");
+              toast.success(Messages.REVIEW_SUCCESSFULLY_SUBMITTED);
               navigate("/");
             }
           } catch (error) {
@@ -98,9 +99,8 @@ const ReviewAndRating = () => {
         const fetchBooking = async () => {
                 dipatch(setLoading(true))
                 const response = await fetchBookingWithId(bookingId || ""); 
-                if (response.status === 200) {
+                if (response.status === HttpStatus.OK) {
                     const { fetchedBooking } = response.data
-                    console.log('helooooooooooooooooooooooo',fetchedBooking)
                     setBookingDetils(fetchedBooking)
                     dipatch(setLoading(false))
                 } else {

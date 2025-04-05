@@ -77,7 +77,7 @@ const UserRoute = () => {
             </UserPrivateRoute>
           }
         />
-        <Route path="/chatingPage" element={<UserPublicRoute role='user'><ChatPage /></UserPublicRoute>} />
+        <Route path="/chatingPage" element={<UserPrivateRoute role='user'><ChatPage /></UserPrivateRoute>} />
         <Route path="/userChatPage" element={<UserPrivateRoute role='user'><UserChatView /></UserPrivateRoute>} />
         <Route path="/reviewRating" element={<UserPrivateRoute role='user'><ReviewRating /></UserPrivateRoute>} />
         ;

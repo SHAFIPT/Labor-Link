@@ -24,6 +24,8 @@ import { validateDate } from '../../utils/laborRegisterValidators';
 import { fetchAllBookingOfLabor, fetchIsBookingExist } from '../../services/LaborServices';
 import { IBooking } from '../../@types/IBooking';
 import { UserAddress } from '../../@types/userAddres';
+import { HttpStatus } from '../../enums/HttpStaus';
+import { Messages } from '../../constants/Messages';
 
 interface ChatComponentProps {
   chatId?: string;
@@ -64,7 +66,6 @@ interface ExtendedEmojiClickData extends EmojiClickData {
 
 
 const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, currentPage = null }) => {
-  console.log("hoooooooooooooo");
   const userLogin = useSelector((state: RootState) => state.user.user);
   const LaborLogin = useSelector((state: RootState) => state.labor.laborer);
   const isMobileChatListOpen = useSelector(
@@ -129,21 +130,16 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   useEffect(() => {
     const fetchLaborId = async () => {
       const laborEmail = participants.labor.email;
-      if (!laborEmail) {
-        console.log("Labor email is missing, skipping fetchLaborId.");
-        return; // If there's no labor email, skip the fetch
-      }
 
       try {
         const response = await fetchlaborId(laborEmail);
 
-        if (response.status === 200) {
+        if (response.status === HttpStatus.OK) {
           const { laborId } = response.data;
-          setFetchedLaborId(laborId); // Store the fetched labor ID in state
-          console.log("Fetched labor ID:", laborId);
+          setFetchedLaborId(laborId); 
         }
       } catch (error) {
-        console.error("Error fetching labor ID:", error);
+        console.error(Messages.ERROR_FETCH_LABOR_ID, error);
       }
     };
 
@@ -158,26 +154,11 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   const fetchParticipantsData = async () => {
     try {
       if (!chatDetails) {
-        console.log("No chat details available");
+        toast.error("No chat details available");
         return;
       }
-
-      // Debug logging
-      console.log("Fetching data for:", {
-        userId: chatDetails.userId,
-        laborId: chatDetails.laborId,
-      });
-
       // Fetch user data
       const userRef = collection(db, "Users");
-      // First, let's log a sample document to verify the field name
-      const userSample = await getDocs(userRef);
-      if (!userSample.empty) {
-        console.log(
-          "Sample User document structure:",
-          userSample.docs[0].data()
-        );
-      }
 
       // Try both "uid" and "id" fields
       const userQuery = query(
@@ -185,36 +166,17 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         where(documentId(), "==", chatDetails.userId)
       );
       const userSnapshot = await getDocs(userQuery);
-      console.log("User query results:", {
-        empty: userSnapshot.empty,
-        count: userSnapshot.size,
-      });
 
       // Fetch labor data
       const laborRef = collection(db, "Labors");
-      // Log sample labor document
-      const laborSample = await getDocs(laborRef);
-      if (!laborSample.empty) {
-        console.log(
-          "Sample Labor document structure:",
-          laborSample.docs[0].data()
-        );
-      }
-
       const laborQuery = query(
         laborRef,
         where(documentId(), "==", chatDetails.laborId)
       );
       const laborSnapshot = await getDocs(laborQuery);
-      console.log("Labor query results:", {
-        empty: laborSnapshot.empty,
-        count: laborSnapshot.size,
-      });
-
       // Process user data if found
       if (!userSnapshot.empty) {
         const userData = userSnapshot.docs[0].data();
-        console.log("Found user data:", userData);
         setParticipants((prev) => ({
           ...prev,
           user: {
@@ -223,14 +185,11 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
             email: userData.email || "",
           },
         }));
-      } else {
-        console.log("No user document found with ID:", chatDetails.userId);
       }
 
       // Process labor data if found
       if (!laborSnapshot.empty) {
         const laborData = laborSnapshot.docs[0].data();
-        console.log("Found labor data:", laborData);
         setParticipants((prev) => ({
           ...prev,
           labor: {
@@ -239,8 +198,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
             email: laborData.email,
           },
         }));
-      } else {
-        console.log("No labor document found with ID:", chatDetails.laborId);
       }
     } catch (error) {
       console.error("Error fetching participants data:", error);
@@ -270,24 +227,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       mounted = false;
     };
   }, [chatDetails]);
-
-  // Add this useEffect to fetch user data from Firebase
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const email = userLogin?.email || LaborLogin?.email;
-
-        if (!email) {
-          console.log("No email found");
-          return;
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserData();
-  }, [userLogin?.email, LaborLogin?.email]);
 
   //   const [laborData , setLaborData] = useState('')
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -336,11 +275,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     return () => unsubscribe();
   }, [chatId, db]);
 
-  console.log(
-    "Thsi is the login labaor Profile image :::",
-    participants.labor.profilePicture
-  );
-
   // Send message function
   // Modify your handleSendMessage function to handle both text and media
 
@@ -359,11 +293,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
 
       const chatDocRef = doc(db, "Chats", chatId);
       const chatSnap = await getDoc(chatDocRef);
-
-      if (!chatSnap) {
-        console.log("Chat is not found");
-        return;
-      }
 
       const ChatData = chatSnap.data();
       const laborId = ChatData?.laborId;
@@ -684,7 +613,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         const objectUrl: string = URL.createObjectURL(file);
         setPreviewUrl(objectUrl);
       } else {
-        alert("Please select an image or video file");
+        toast.warning("Please select an image or video file");
       }
     }
   };
@@ -1003,10 +932,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
               const isDisabled = messages
                 .slice(index + 1)
                 .some((m) => m.type === "quote");
-              console.log(
-                "TRhis is th timestaaabmghp ppppoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
-                message
-              );
               return (
                 <div
                   key={message.id}

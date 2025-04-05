@@ -34,6 +34,8 @@ import WorkCompleteModal from "./workCompleteModal";
 import { AxiosError } from "axios";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
+import { HttpStatus } from "../../enums/HttpStaus";
+import { Messages } from "../../constants/Messages";
 
 interface UserData {
   email: string;
@@ -61,8 +63,6 @@ const UserProfile = () => {
   const theam = useSelector((state: RootState) => state.theme.mode);
   const email = useSelector((state: RootState) => state.user.user.email);
   const loading = useSelector((state: RootState) => state.user.loading);
-  const formDataUser = useSelector((state: RootState) => state.user);
-  console.log('Thsi is the formData :::: ',formDataUser)
   const dispatch = useDispatch();
   const [openEditProfile, setOpenEditProfile] = useState(false);
   const [OpenCancelationModal, setOpenCancelationModal] = useState(false);
@@ -70,7 +70,6 @@ const UserProfile = () => {
   const [workCompleteModal ,setWorkCompleteModal] = useState(null)
   const [userData, setUserData] = useState<UserData | null>(null);
   const [openModal, setOpenModal] = useState(false);
-  console.log('Thsi ise teh userData ::::',userData)
   const [resheduleModals, setResheduleModal] = useState(null);
   const [additionalChageModal, setAdditionalChageModal] = useState(null);
   const [password, setPassword] = useState("");
@@ -124,8 +123,8 @@ const UserProfile = () => {
         setUser(fetchUserResponse);
         setUserData(fetchUserResponse);
       } catch (error) {
-       if (error instanceof AxiosError && error.response && error.response.status === 403) {
-           toast.error("Your account has been blocked.");
+       if (error instanceof AxiosError && error.response && error.response.status === HttpStatus.FORBIDDEN) {
+           toast.error(Messages.YOUR_ACCOUNT_AS_BEEN_BLOCKED);
           localStorage.removeItem("UserAccessToken");
           // Reset User State
           dispatch(setUser({}));
@@ -183,13 +182,6 @@ const UserProfile = () => {
         const updatePromises = querySnapshot.docs.map(async (docSnapshot) => {
           const userDocRef = doc(db, "Users", docSnapshot.id);
 
-          // Log the data being updated
-          console.log("Updating document ID:", docSnapshot.id);
-          console.log("Data being updated:", {
-            profilePicture: profilePictureUrl || "",
-            name: name || "",
-          });
-
           // Ensure no undefined values are passed
           await updateDoc(userDocRef, {
             profilePicture: profilePictureUrl || "",
@@ -233,16 +225,9 @@ const UserProfile = () => {
         formDataObj.append("image", formData.image);
       }
 
-      console.log("FormData contents:", {
-        firstName: formDataObj.get("firstName"),
-        lastName: formDataObj.get("lastName"),
-        email: formDataObj.get("email"),
-        image: formDataObj.get("image"),
-      });
-
       const response = await updateUser(formDataObj);
 
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
         const { updatedUser } = response.data;
 
         const { ProfilePic, email, firstName, lastName } = updatedUser;
@@ -259,7 +244,6 @@ const UserProfile = () => {
       console.error("Error in handleSave:", error); // Modified error log
       toast.error("An error occurred. Please try again.");
     } finally {
-      console.log("HandleSave completed"); // Add this to verify function completion
       dispatch(setLoading(false));
       dispatch(setError({}));
     }
@@ -321,7 +305,7 @@ const UserProfile = () => {
       dispatch(setError({}));
       const response = await editPassword(PasswodData);
 
-      if (response.status === 200) {
+      if (response.status === HttpStatus.OK) {
         await handleFirebasePasswordReset(email);
          setOpenModal(true);
         dispatch(setLoading(false));
@@ -347,8 +331,7 @@ const UserProfile = () => {
     const fetchBooking = async () => {
       try {
         const response = await fetchBookings(currentPage, limit , filter); // Assuming fetchBookings is an API call
-        if (response.status === 200) {
-          console.log("Bookings fetched successfully:", response.data);
+        if (response.status === HttpStatus.OK) {
           const { bookings , totalPages } = response.data;
           dispatch(setBookingDetails(bookings));
           setUpdatedBooking(bookings);
@@ -404,48 +387,38 @@ const UserProfile = () => {
 
 
 
-  const handleProceedToPay = async (bookingId: string, laborId: string, userId: string) => {
+  const handleProceedToPay = async (
+    bookingId: string,
+    laborId: string,
+    userId: string
+  ) => {
     try {
-      dispatch(setLoading(true))
-
-      //  const stripePromise = loadStripe("pk_test_51QptmEJLpjNdl80OuFdHAnnBNJazlv9gHMbHgUaRgXFy2cjgIkMUDml6y9GDga07mC7cgP3T47wFRCDsXMfKN8Qu008iPGiYpz"); 
-
-      console.log('This sit is the dataa to passs :::', {
-        bookingId,
-        laborId,
-        userId
-      })
+      dispatch(setLoading(true));
 
       if (!bookingId || !laborId || !userId) {
-        toast.error('Missing Requarid fileds...')
-        return
+        toast.error("Missing Requarid fileds...");
+        return;
       }
 
       const pymnetData = {
         bookingId,
         laborId,
-        userId
+        userId,
+      };
+
+      const pymnetResponse = await pymnetSuccess(pymnetData);
+
+      if (pymnetResponse.status === HttpStatus.OK) {
+        dispatch(setLoading(false));
+        window.location.href = pymnetResponse.data.pymentRespnose.url;
       }
-
-      const pymnetResponse = await pymnetSuccess(pymnetData)
-
-      if (pymnetResponse.status === 200) {
-           dispatch(setLoading(false))
-//         console.log(pymnetResponse.data.pymentRespnose
-// .url)
-        console.log("this si the succesfully payment ;;;;", pymnetResponse)
-        window.location.href=pymnetResponse.data.pymentRespnose
-          .url
-
-        
-        toast.success('your paymnet is successfull')
-      }
-      
     } catch (error) {
-      console.error(error)
-      toast.error('Error in the pyament')
-    }finally{ dispatch(setLoading(false))}
-  }
+      console.error(error);
+      toast.error("Error in the pyament");
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
 
   const handleCloseModal = () => {
     setOpenModal(false);

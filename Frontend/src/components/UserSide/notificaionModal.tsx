@@ -115,7 +115,6 @@ const NotificationModal = ({
   }
 
   const handleNavigateToBookings = useCallback((bookingId: string) => {
-     console.log('Ths is t clicked........')
     if (!bookingId) return;
      
     dispatch(updateBookingReadStatusAsync({ bookingId, isUserRead: true }));
@@ -126,7 +125,6 @@ const NotificationModal = ({
     }
 
      if (isLaborAuthenticated) {
-      console.log('Thsi is t bookingDetails')
       setCurrentStage?.("Bookings");
     }
   }, [dispatch, isLaborAuthenticated, isUserAthenticated, navigate, onClose, setCurrentStage]);
