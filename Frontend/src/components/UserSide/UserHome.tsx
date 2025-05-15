@@ -52,7 +52,7 @@ interface Labor {
 }
 
 const UserHome = () => {
-  const [displayCount, setDisplayCount] = useState(4);
+  const [, setDisplayCount] = useState(4);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showMore, setShowMore] = useState(false);
   const [allLabors, setAllLabors] = useState<Labor[]>([]);

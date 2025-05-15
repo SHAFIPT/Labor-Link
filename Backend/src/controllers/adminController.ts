@@ -72,13 +72,6 @@ class AdminController {
       const perPage = 6;
       const skip = (page - 1) * perPage;
 
-      console.log('Thsi si teh reseved quresues :::: ', {
-        query,
-        filter,
-        page,
-
-      })
-
       const totalCount = await this.adminService.getTotalLaborsCount(query);   
       const laborFound = await this.adminService.fetchLabors(
         query,

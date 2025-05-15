@@ -3,7 +3,7 @@ name: CI/CD for Labor Link Backend
 on:
   push:
     branches:
-      - master   # or master
+      - master
 
 jobs:
   deploy:
@@ -34,7 +34,12 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            docker image rm ${{ secrets.DOCKER_USERNAME }}/labor-link-backend:latest || true
             docker pull ${{ secrets.DOCKER_USERNAME }}/labor-link-backend:latest
             docker stop labor-link-backend || true
             docker rm labor-link-backend || true
-            docker run -d --name labor-link-backend -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/labor-link-backend:latest
+            docker run -d --name labor-link-backend -p 5000:5000 \
+              --env-file /home/ubuntu/laborlink-backend/Backend/.env \
+              ${{ secrets.DOCKER_USERNAME }}/labor-link-backend:latest
+            docker ps -a
+            docker logs labor-link-backend || true

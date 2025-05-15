@@ -218,7 +218,7 @@ const UserChatPage = () => {
                   />
                 </div>
                 <div className="p-4 flex items-center justify-between">
-                  <h1 className="text-xl font-bold text-slate-800">Messages</h1>
+                  <h1 className="text-xl font-bold text-slate-800">Messa-ges</h1>
                   <span className="text-sm text-slate-500">
                     {chats.length} conversations
                   </span>

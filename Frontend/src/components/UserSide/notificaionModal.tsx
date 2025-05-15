@@ -194,7 +194,7 @@ const NotificationModal = ({
   return (
     <>
       {theme === "light" ? (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center ">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-11/12 md:w-2/5 lg:w-1/3 p-8 ">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">

@@ -26,6 +26,7 @@ import { IBooking } from '../../@types/IBooking';
 import { UserAddress } from '../../@types/userAddres';
 import { HttpStatus } from '../../enums/HttpStaus';
 import { Messages } from '../../constants/Messages';
+import { setLoading } from '../../redux/slice/userSlice';
 
 interface ChatComponentProps {
   chatId?: string;
@@ -275,8 +276,6 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     return () => unsubscribe();
   }, [chatId, db]);
 
-  // Send message function
-  // Modify your handleSendMessage function to handle both text and media
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -285,6 +284,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       console.error("No user is signed in.");
       return;
     }
+
+    dispatch(setLoading(true))
 
     try {
       let messageData;
@@ -352,6 +353,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
     } catch (error) {
       console.error("Error sending message:", error);
       // Optionally add error handling UI feedback here
+    } finally {
+      dispatch(setLoading(false))
     }
   };
 
@@ -361,23 +364,21 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   ): boolean => {
     const requestedDate = new Date(requestedTime);
 
-    // Calculate the 1-hour before and 1-hour after time ranges
-    const oneHourBefore = new Date(requestedDate.getTime() - 60 * 60 * 1000); // 1 hour before
-    const oneHourAfter = new Date(requestedDate.getTime() + 60 * 60 * 1000); // 1 hour after
+    const oneHourBefore = new Date(requestedDate.getTime() - 60 * 60 * 1000); 
+    const oneHourAfter = new Date(requestedDate.getTime() + 60 * 60 * 1000);
 
     for (const booking of allBookings) {
       const existingBookingDate = new Date(booking.quote.arrivalTime);
 
-      // Check if the existing booking overlaps with the 1-hour before or after range
       if (
         existingBookingDate >= oneHourBefore &&
         existingBookingDate <= oneHourAfter
       ) {
-        return false; // Time slot is not available
+        return false;
       }
     }
 
-    return true; // Time slot is available
+    return true;
   };
 
   // Send quote function
@@ -395,7 +396,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
       const arrivalTimeError = validateDate(quoteData.arrivalTime);
       if (arrivalTimeError) {
         toast.error(arrivalTimeError);
-        return; // Stop execution if validation fails
+        return;
       }
 
       const isAvailable = isTimeSlotAvailable(
@@ -406,7 +407,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         toast.error(
           "The requested time and date slot is already booked. Please choose another time."
         );
-        return; // Stop execution if the time slot is unavailable
+        return; 
       }
 
       if (!auth.currentUser) {
@@ -419,7 +420,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         content: {
           description: quoteData.description,
           estimatedCost: quoteData.estimatedCost,
-          arrivalTime: quoteData.arrivalTime, // New field
+          arrivalTime: quoteData.arrivalTime,
           status: "pending",
         },
         senderId: auth.currentUser.uid,
@@ -443,29 +444,25 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   const formatTimestamp = (
     timestamp: Timestamp | Date | number | null | undefined
   ): string => {
-    if (!timestamp) return ""; // Handle null or undefined
+    if (!timestamp) return "";
 
-    // Define options to exclude seconds
     const options: Intl.DateTimeFormatOptions = {
       hour: "2-digit",
       minute: "2-digit",
-      hour12: true, // Optional: Change to 'false' for 24-hour format
+      hour12: true, 
     };
-
-    // If it's a Date object, directly format the time
+    
     if (timestamp instanceof Date) {
-      return timestamp.toLocaleTimeString([], options); // Show only hours and minutes
+      return timestamp.toLocaleTimeString([], options); 
     }
 
-    // Handle number (timestamp in milliseconds)
     if (typeof timestamp === "number") {
-      return new Date(timestamp).toLocaleTimeString([], options); // Show only hours and minutes
+      return new Date(timestamp).toLocaleTimeString([], options);
     }
 
-    // Handle Firebase Timestamp (Firestore Timestamp)
     const milliseconds =
       timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000;
-    return new Date(milliseconds).toLocaleTimeString([], options); // Show only hours and minutes
+    return new Date(milliseconds).toLocaleTimeString([], options);
   };
 
   const handleChange = (
@@ -473,9 +470,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
   ) => {
     const { name, value } = e.target;
 
-    // Apply validation only if the input field is "estimatedCost"
     if (name === "estimatedCost") {
-      const isValidNumber = /^\d*\.?\d*$/.test(value); // Allows only digits and optional decimal point
+      const isValidNumber = /^\d*\.?\d*$/.test(value); 
 
       if (!isValidNumber) {
         toast.error("Please enter a valid positive estimate cost number!");
@@ -576,8 +572,8 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
         place: userAddress.place ?? "",
         address: userAddress.address ?? "",
         pincode: userAddress.pincode ?? "",
-        latitude: userAddress.latitude ?? 0, // Provide default value
-        longitude: userAddress.longitude ?? 0, // Provide default value
+        latitude: userAddress.latitude ?? 0, 
+        longitude: userAddress.longitude ?? 0, 
       };
 
       // Send booking request with the address details
@@ -877,7 +873,7 @@ const ChatComponents: React.FC<ChatComponentProps> = ({ chatId: chatIdProp, curr
             {isUserAthenticated && currentPages == "chatingPage" && (
               <button
                 onClick={() => window.history.back()}
-                className="hidden md:block text-white px-2 py-1 rounded-lg"
+                className="hidden md:block text-black px-2 py-1 rounded-lg"
               >
                 ← Back
               </button>
