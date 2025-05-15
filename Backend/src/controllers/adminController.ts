@@ -79,15 +79,13 @@ class AdminController {
 
       })
 
-      const totalCount = await this.adminService.getTotalLaborsCount(query);
-      console.log('This sthe totalCount totalCount ::::',totalCount)    
+      const totalCount = await this.adminService.getTotalLaborsCount(query);   
       const laborFound = await this.adminService.fetchLabors(
         query,
         skip,   
         perPage,
         filter
       );
-      console.log('This sthe labors found ::::',laborFound)
 
       if (laborFound) {
         const totalPages = Math.ceil(totalCount / perPage);
@@ -112,7 +110,6 @@ class AdminController {
       }
     } catch (error) {
       console.error("Error in admin login:", error);
-      // Remove the res.status().json() here and just use next(error)
       return next(error);
     }
   };

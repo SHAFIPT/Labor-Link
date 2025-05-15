@@ -151,8 +151,7 @@ export class UserController {
       next(error);
     }
   };
-
-  //Done .....................................
+  
 
   public bookingLabor = async (
     req: Request,

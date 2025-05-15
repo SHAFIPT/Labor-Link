@@ -405,8 +405,6 @@ export class UnifiedAuthController {
           : role === "labor"
           ? "LaborRefreshToken"
             : "AdminRefreshToken";
-      
-      console.log('This is teh google auth user ::::',result)
 
         return res.status(HttpStatus.OK)
         .cookie(cookieName, result.refreshToken, this.options)    
@@ -422,18 +420,15 @@ export class UnifiedAuthController {
     try {
       const { email, role } = req.body;
 
-        // Validate required fields
         if (!email || !role) {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.EMAIL_AND_ROLE_REQUIRED));
-        }
-
-        // Get authentication strategy
+      }
+      
       const strategy = AuthStrategyFactory.createStrategy(role);
         if (!strategy) {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.INVALID_ROLE));
         }
 
-        // Check if the user exists and is not blocked
         const user = await strategy.findUserWithEmail(email);
         if (!user || user.isBlocked) {
             return res.status(HttpStatus.BAD_REQUEST).json(
@@ -463,18 +458,14 @@ export class UnifiedAuthController {
     try {
         const { email, otp, role } = req.body;
 
-        // Validate required fields
         if (!email || !role || !otp) {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.EMAIL_AND_OTP_REQUIRD));
-        }
-
-        // Get authentication strategy
+      }
+      
         const strategy = AuthStrategyFactory.createStrategy(role);
         if (!strategy) {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.INVALID_ROLE));
         }
-
-        // Check if the user exists and is not blocked
         const user = await strategy.findUserWithEmail(email);
         if (!user) {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiResponse(HttpStatus.BAD_REQUEST, null, Messages.CHECK_YOU_EMIL));
@@ -482,15 +473,13 @@ export class UnifiedAuthController {
 
         if (user.isBlocked) {
             return res.status(HttpStatus.FORBIDDEN).json(new ApiResponse(HttpStatus.FORBIDDEN, null, Messages.ACCOUNT_IS_BLOCKED));    
-        }
-
-        // Verify OTP
+      }
+      
         const isOtpValid = await strategy.isVerify(user, req.body);
         if (!isOtpValid) {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.ENTERD_WRONG_OTP));
-        }
-
-        // Generate access token
+      }
+      
         const { password, refreshToken, ...userData } = user;
         const accessToken = await strategy.generateTokenForForgotPassword(userData);
 
@@ -506,18 +495,15 @@ export class UnifiedAuthController {
     try {
         const { password, token, role } = req.body;
 
-        // Validate required fields
         if (!password || !role || !token) {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.PASSWORD_ROLE_TOKEN_REQURIED));
         }
 
-        // Get authentication strategy
         const strategy = AuthStrategyFactory.createStrategy(role);
         if (!strategy) {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.INVALID_ROLE_PROVIDED));
-        }
-
-        // Decode and verify token
+      }
+      
         const decoded = await strategy.decodeAndVerifyToken(token);
         if (!decoded) {
             return res.status(HttpStatus.UNAUTHORIZED).json(new ApiResponse(HttpStatus.UNAUTHORIZED, null, Messages.SESSION_EXPIRED));
@@ -530,13 +516,11 @@ export class UnifiedAuthController {
 
         const email = user._doc?.email;
 
-        // Check if user exists
         const isUserExists = await strategy.findUserWithEmail(email);
         if (!isUserExists) {
             return res.status(HttpStatus.NOT_FOUND).json(new ApiResponse(HttpStatus.NOT_FOUND, null, Messages.USER_NOT_FOUND));
-        }
-
-        // Change password
+      }
+      
         const passwordUpdated = await strategy.changePassword(password, email);
         if (passwordUpdated) {
             return res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, null, Messages.PASSWORD_RESET_SUCCESSFULY));
@@ -557,13 +541,11 @@ export class UnifiedAuthController {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST, Messages.ROLE_AND_USER_DATA_REQURIED));
         }
 
-        // Get authentication strategy
         const strategy = AuthStrategyFactory.createStrategy(role);
         if (!strategy || !strategy.resendOtp) {
             return res.status(HttpStatus.BAD_REQUEST).json(new ApiError(HttpStatus.BAD_REQUEST,Messages.INVALID_ROLE_OR_RESEND_OTP_NOT_SUPPORTED ));
         }
 
-        // Attempt to resend OTP
         const response = await strategy.resendOtp(user as IUser);
 
         if (!response) {
@@ -762,8 +744,6 @@ export class UnifiedAuthController {
             email: email[0],
           };
     
-            console.log('Experience Data:', experienceData);
-            
             const strategy = AuthStrategyFactory.createStrategy(role);
 
                 if (!strategy.registerAboutYou) {
@@ -773,22 +753,22 @@ export class UnifiedAuthController {
              const response = await strategy.registerExperience(experienceData);
     
           if (response) {
-            const laborData = { ...response.labor.toObject() }; // Convert to plain object
+            const laborData = { ...response.labor.toObject() };
     
             // Remove sensitive fields
             delete laborData.password;
             delete laborData.refreshToken;
     
             return res.status(HttpStatus.OK)
-              .cookie("LaborRefreshToken", response.refreshToken, this.options) // HTTP-only cookie for refresh token
+              .cookie("LaborRefreshToken", response.refreshToken, this.options) 
               .json({
                 success: true,
                 message: Messages.EXPERIENCE_SAVED_SUCCESSFULLY,
                 data: {
                   ...experienceData,
                   certificateUrls,
-                  accessToken: response.accessToken, // Include access token here
-                  laborData, // Include the labor data
+                  accessToken: response.accessToken,
+                  laborData, 
                 },
               });
           } else {

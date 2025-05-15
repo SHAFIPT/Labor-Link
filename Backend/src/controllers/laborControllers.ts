@@ -93,7 +93,6 @@ class LaborSideController {
         const imageFile = files.profilePicture ? files.profilePicture[0] : null;
         let profilePictureUrl;
 
-        // Upload image to Cloudinary if provided
         if (imageFile) {
           const uploadResult = await cloudinary.uploader.upload(
             imageFile.filepath,
@@ -163,18 +162,15 @@ class LaborSideController {
     try {
       const { latitude, longitude, sortOrder } = req.query;
 
-      // Check if latitude and longitude are provided
       if (!latitude || !longitude) {
         return res
           .status(HttpStatus.BAD_REQUEST)
           .json({ message: Messages.LATITTUDE_LOGITUDE_REQUIERD });
       }
 
-      // Convert latitude and longitude to numbers
       const lat = parseFloat(latitude as string);
       const lng = parseFloat(longitude as string);
 
-      // Check if the conversion resulted in valid numbers
       if (isNaN(lat) || isNaN(lng)) {
         return res
           .status(HttpStatus.BAD_REQUEST)
@@ -184,7 +180,6 @@ class LaborSideController {
       const validatedSortOrder =
         sortOrder === "asc" || sortOrder === "desc" ? sortOrder : undefined;
 
-      // Explicitly cast the other optional query parameters
       const country = req.query.country as string | undefined;
       const state = req.query.state as string | undefined;
       const city = req.query.city as string | undefined;
@@ -194,7 +189,6 @@ class LaborSideController {
         ? parseFloat(req.query.rating as string)
         : undefined;
 
-      // Call the service method with the converted numbers
       const laborers = await this.laborService.fetchLabor({
         latitude: lat,
         longitude: lng,
@@ -318,12 +312,12 @@ class LaborSideController {
       const lat = parseFloat(latitude as string);
       const lng = parseFloat(longitude as string);
 
-      // Ensure categorie is always a string
+     
       const category: string =
         typeof categorie === "string"
           ? categorie
           : Array.isArray(categorie)
-          ? String(categorie[0]) // Ensure it's converted to a string
+          ? String(categorie[0]) 
           : "";
 
       if (!category) {
