@@ -1,0 +1,11 @@
+# docker-compose.yml
+version: "3.8"
+services:
+  backend:
+    build: .
+    container_name: labor-link-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb+srv://Shafi:Shafi@cluster0.gduua.mongodb.net/LaborLink?retryWrites=true&w=majority
+    command: npm start
